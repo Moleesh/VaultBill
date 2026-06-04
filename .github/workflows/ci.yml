@@ -1,0 +1,55 @@
+# @format
+
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Format check
+        run: npm run format:check
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Unit tests
+        run: npm run test
+
+      - name: Coverage check
+        run: npm run coverage
+
+      - name: Build web
+        run: npm run build:web
+
+      - name: Rebuild Electron native modules
+        run: npm run rebuild:native
+
+      - name: Build desktop shell
+        run: npm run build:desktop
+
+      - name: Package desktop directory
+        run: npm run package:desktop
+
+      - name: Installer smoke test
+        run: npm run smoke:installer

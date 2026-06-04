@@ -1,0 +1,20 @@
+@media print {
+  body {
+    background: var(--color-surface);
+  }
+
+  .app-shell__sidebar,
+  .app-shell__topbar,
+  .action-bar,
+  .skip-link {
+    display: none;
+  }
+
+  .app-shell,
+  .app-shell__body,
+  .app-shell__content {
+    display: block;
+    min-height: auto;
+    padding: 0;
+  }
+}

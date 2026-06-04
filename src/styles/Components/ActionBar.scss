@@ -1,0 +1,47 @@
+.action-bar {
+  position: sticky;
+  z-index: 15;
+  bottom: var(--space-4);
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+  padding: var(--space-3);
+  border: var(--line-width) solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--color-surface) 88%, transparent);
+  box-shadow: var(--shadow-panel);
+  backdrop-filter: blur(18px);
+}
+
+.action-bar button {
+  display: grid;
+  gap: var(--space-1);
+  place-items: center;
+  min-height: 44px;
+  border: var(--line-width) solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-raised);
+  color: var(--color-text);
+  font-weight: 800;
+}
+
+.action-bar kbd {
+  border-radius: var(--radius-sm);
+  background: var(--color-accent-soft);
+  color: var(--color-text-muted);
+  padding: 0 var(--space-2);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+}
+
+.action-bar .action-bar__primary {
+  background: var(--color-primary);
+  color: var(--color-primary-text);
+}
+
+@media (max-width: 640px) {
+  .action-bar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

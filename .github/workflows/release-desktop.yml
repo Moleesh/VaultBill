@@ -1,0 +1,54 @@
+# @format
+
+name: Release Desktop
+
+on:
+  workflow_dispatch:
+
+jobs:
+  package:
+    runs-on: windows-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Build web
+        run: npm run build:web
+
+      - name: Rebuild Electron native modules
+        run: npm run rebuild:native
+
+      - name: Build Electron shell
+        run: npm run build:electron
+
+      - name: Package desktop installer
+        run: npm run package:desktop:installer
+
+      - name: Installer smoke test
+        run: npm run smoke:installer:required
+
+      - name: First-run DB startup patch smoke
+        run: npm run smoke:first-run-db
+
+      - name: Generate release notes
+        run: npm run release:notes
+
+      - name: Upload desktop artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: vaultbill-desktop-release
+          path: |
+            release/**
+            artifacts/release-notes.md
