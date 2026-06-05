@@ -232,3 +232,6 @@
   USB/HID support to tested desktop devices, and validate SVG path-only storage.
 - Added generic GSP request planning with masked client secrets and explicit
   non-compliance-guarantee messaging.
+- Hardened GitHub Actions test execution by running the SQLite-heavy Vitest
+  suites in serial mode on CI and release smoke jobs, and opted the workflows
+  into the Node 24 JavaScript action runtime ahead of the deprecation window.

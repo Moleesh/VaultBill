@@ -42,6 +42,9 @@ The CI workflow runs install, format check, lint, typecheck, unit tests,
 coverage, web build, Electron native-module rebuild, desktop build, desktop
 directory packaging, and installer smoke.
 
+To keep the SQLite-backed startup tests deterministic on hosted runners, CI and
+release smoke use Vitest with `--no-file-parallelism --maxWorkers=1`.
+
 The desktop release workflow runs on Windows, creates the installer, requires
 an installer artifact during smoke, validates first-run DB startup patch tests,
 generates release notes, and uploads `release/**` plus the generated notes.

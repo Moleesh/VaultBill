@@ -10,6 +10,8 @@ jobs:
     runs-on: windows-latest
     permissions:
       contents: read
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
 
     steps:
       - name: Checkout
@@ -40,7 +42,7 @@ jobs:
         run: npm run smoke:installer:required
 
       - name: First-run DB startup patch smoke
-        run: npm run smoke:first-run-db
+        run: npm run smoke:first-run-db:ci
 
       - name: Generate release notes
         run: npm run release:notes
