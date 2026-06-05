@@ -1,3 +1,5 @@
+// @vitest-environment node
+
 import { afterEach, describe, expect, it } from 'vitest';
 
 import type { PrinterProfileConfig } from '../../engines/printEngine/PrinterProfileTypes';

@@ -32,11 +32,6 @@ export default defineConfig({
   },
   test: {
     environment: 'jsdom',
-    environmentMatchGlobs: [
-      ['src/db/**', 'node'],
-      ['src/features/auth/**', 'node'],
-      ['src/features/records/**', 'node'],
-    ],
     globals: true,
     setupFiles: './vitest.setup.ts',
     coverage: {

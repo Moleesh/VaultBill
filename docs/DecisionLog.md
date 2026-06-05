@@ -242,8 +242,8 @@
   workflows so the `node:sqlite` startup smoke stays compatible with hosted
   runners.
 - Routed SQLite-backed Vitest suites to the Node environment with
-  `environmentMatchGlobs` so jsdom UI tests can keep running while database
-  tests import `node:sqlite` safely.
+  file-level `@vitest-environment node` annotations so jsdom UI tests can keep
+  running while database tests import `node:sqlite` safely.
 - Switched the `Deploy Web` workflow to automatic GitHub Pages deployment on
   `main` pushes and configured the Vite base path for the `/VaultBill/`
   project Pages subpath.
