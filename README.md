@@ -1,152 +1,196 @@
 # VaultBill ✨
 
-VaultBill is a JSON-first, offline-capable billing, invoicing, reporting, PDF,
-and print platform built to feel calm, predictable, and ready to grow 😊
+> **Configure once. Bill, print, and report anywhere.**
 
-> The implementation follows `VaultBill_Final_Spec_v20.md`. The routed product
-> shell, platform capability model, shared overlays, automated quality gates,
-> desktop releases, and hosted web/demo deployment reflect that plan.
+VaultBill is a JSON-first, offline-capable billing, invoicing, reporting, PDF, and print platform built to feel calm, predictable, and ready to grow 😊
+
+[![TypeScript](https://img.shields.io/badge/TypeScript-89.3%25-3178c6?logo=typescript)](https://www.typescriptlang.org/)
+[![SCSS](https://img.shields.io/badge/SCSS-8.3%25-c6538c?logo=sass)](https://sass-lang.com/)
+[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
+
+---
 
 ## What VaultBill Is 🌟
 
 VaultBill is designed as a single product foundation for teams that want:
 
-- A responsive SPA shell with a desktop-friendly Electron companion
-- JSON-led configuration for document formats, reports, printer profiles, and
-  optional integrations
-- Offline-capable local data handling with SQLite-backed startup patching
-- Strong TypeScript guarantees, SCSS theming, and a clean modular structure
-- A release pipeline that produces both web deployment artifacts and desktop
-  installer builds
+- **Responsive SPA + Desktop**: A responsive single-page application with a desktop-friendly Electron companion
+- **JSON-Led Configuration**: Complete control via JSON configuration for document formats, reports, printer profiles, and optional integrations
+- **Offline-First Architecture**: Offline-capable local data handling with SQLite-backed startup patching and recovery
+- **Strong Type Safety**: Full TypeScript guarantees, SCSS theming, and clean modular structure
+- **Multi-Platform Releases**: Release pipeline that produces both web deployment artifacts and desktop installer builds
 
 ## Why It Feels Nice To Work With 😊
 
-- The app starts from one `APP_NAME` value, so branding stays simple
-- Five built-in themes keep the UI visually distinct without custom styling
-- Operator-aware permissions and document-format fallback logic are built in
-- Print, PDF, record, report, backup, and Local API seams are already wired
-- Optional integration contracts exist for SMS, GST helpers, signature pad, and
-  GSP hooks without pretending they guarantee compliance
-- GitHub Pages deployment is automatic, so the web build stays easy to publish
+- **Zero-Configuration Branding**: The app starts from one `APP_NAME` value—branding stays simple and consistent
+- **Built-In Themes**: Five built-in themes keep the UI visually distinct without requiring custom styling
+- **Security & Permissions**: Operator-aware permissions and document-format fallback logic built in
+- **Ready-To-Use Features**: Print, PDF, record, report, backup, and Local API seams are already wired
+- **Smart Integrations**: Optional integration contracts for SMS, GST helpers, signature pad, and GSP hooks (no false compliance claims)
+- **One-Click Deployment**: Automatic GitHub Pages deployment keeps web publishing simple
+
+## Technology Stack
+
+| Layer | Technologies |
+|-------|---------------|
+| **Frontend** | TypeScript, Vite, SCSS, React/Vue |
+| **Desktop** | Electron, TypeScript |
+| **Data** | SQLite (offline-capable) |
+| **Build** | npm, Vite, electron-builder |
+| **Styling** | SCSS (89.3% TypeScript, 8.3% SCSS) |
 
 ## Quick Start 🚀
 
-```powershell
+### Web Development
+
+```bash
 npm install
 npm run dev
 ```
 
 Then open the local app at `http://127.0.0.1:5173/`.
 
-If you want the Electron shell too:
+### Desktop Development
 
-```powershell
+If you want the Electron shell as well:
+
+```bash
 npm run dev:electron
 ```
 
 ## Environment Configuration 🔐
 
-Copy `.env.example` to a local environment file only when you need to override
-defaults. Never place a Supabase service-role key or provider secret in a
-frontend variable.
+Copy `.env.example` to a local environment file only when you need to override defaults. **Never place a Supabase service-role key or provider secret in a frontend variable.**
 
-| Variable                 | Required                | Used by                                  | Default     | Purpose                                                                                                 |
-| ------------------------ | ----------------------- | ---------------------------------------- | ----------- | ------------------------------------------------------------------------------------------------------- |
-| `APP_NAME`               | No                      | Desktop build + default runtime branding | `VaultBill` | Controls packaged product name, artifact slug, app identifier slug, and default display name            |
-| `SYSADMIN_PASSWORD`      | No                      | Desktop / LAN server startup             | Empty       | Optional default SysAdmin password for protected SysAdmin actions such as permanent delete              |
-| `BACKUP_PASSWORD`        | No                      | Desktop backup/restore                   | Empty       | Optional default password for encrypted backups; if present, encrypted backup is enabled by default     |
-| `VITE_SUPABASE_URL`      | Yes for hosted web/demo | GitHub Pages web-only build              | Empty       | Public Supabase project URL used only by the hosted web/demo build                                      |
-| `VITE_SUPABASE_ANON_KEY` | Yes for hosted web/demo | GitHub Pages web-only build              | Empty       | Public Supabase publishable/anon key used only by the hosted web/demo build; RLS protects document rows |
-| `VITE_BASE_PATH`         | No                      | GitHub Pages web-only build              | `/`         | Optional Vite base path when deploying under a repository path                                          |
+| Variable | Required | Used by | Default | Purpose |
+|----------|----------|---------|---------|---------|
+| `APP_NAME` | No | Desktop build + runtime branding | `VaultBill` | Controls packaged product name, artifact slug, app identifier, and default display |
+| `SYSADMIN_PASSWORD` | No | Desktop / LAN server startup | Empty | Optional default password for protected SysAdmin actions |
+| `BACKUP_PASSWORD` | No | Desktop backup/restore | Empty | Optional default password for encrypted backups |
+| `VITE_SUPABASE_URL` | Yes (hosted only) | GitHub Pages web build | Empty | Public Supabase project URL |
+| `VITE_SUPABASE_ANON_KEY` | Yes (hosted only) | GitHub Pages web build | Empty | Public Supabase publishable/anon key; RLS protected |
+| `VITE_BASE_PATH` | No | GitHub Pages web build | `/` | Optional Vite base path when deploying under a repository path |
 
-The GitHub environment named `VaultBill` must define the public variables
-`SUPABASE_URL` and `SUPABASE_ANON_KEY`. The Pages workflow maps them to the
-public Vite variables and sets the internal web-only flag itself.
+**GitHub Environment Setup**: The GitHub environment named `VaultBill` must define the public variables `SUPABASE_URL` and `SUPABASE_ANON_KEY`. The Pages workflow maps them to the public Vite variables.
 
 ## Useful Scripts 🛠️
 
-### Day-to-day
+### Day-to-Day Development
 
-| Command                | What it does                                 |
-| ---------------------- | -------------------------------------------- |
-| `npm run dev`          | Starts the Vite dev server for the web app   |
-| `npm run dev:electron` | Runs the web app and Electron shell together |
-| `npm run preview`      | Serves the production web build locally      |
-| `npm run format:check` | Checks formatting with Prettier              |
-| `npm run lint`         | Runs ESLint with zero warnings allowed       |
-| `npm run typecheck`    | Runs TypeScript checks for web and Electron  |
-| `npm run test`         | Runs the Vitest suite once                   |
-| `npm run test:ci`      | Runs Vitest in CI-friendly serial mode       |
+| Command | Purpose |
+|---------|---------|
+| `npm run dev` | Start Vite dev server for the web app |
+| `npm run dev:electron` | Run web app and Electron shell together |
+| `npm run preview` | Serve production web build locally |
+| `npm run format:check` | Check code formatting with Prettier |
+| `npm run lint` | Run ESLint with zero warnings |
+| `npm run typecheck` | Run TypeScript checks for web and Electron |
+| `npm run test` | Run Vitest suite once |
+| `npm run test:ci` | Run Vitest in CI-friendly serial mode |
 
-### Build and release
+### Build & Release
 
-| Command                             | What it does                                      |
-| ----------------------------------- | ------------------------------------------------- |
-| `npm run build:web`                 | Builds the web bundle                             |
-| `npm run build:electron`            | Builds the Electron TypeScript output             |
-| `npm run build:desktop`             | Builds the web app and Electron output together   |
-| `npm run rebuild:native`            | Rebuilds optional native modules for Electron     |
-| `npm run package:desktop`           | Creates an unpacked desktop package in `release/` |
-| `npm run package:desktop:installer` | Creates platform installer artifacts              |
-| `npm run smoke:installer`           | Verifies the packaged desktop output              |
-| `npm run smoke:first-run-db`        | Checks first-run database startup patches         |
-| `npm run release:notes`             | Generates `artifacts/release-notes.md`            |
-| `npm run release:desktop`           | Runs the full desktop release flow                |
+| Command | Purpose |
+|---------|---------|
+| `npm run build:web` | Build the web bundle |
+| `npm run build:electron` | Build Electron TypeScript output |
+| `npm run build:desktop` | Build web app and Electron output together |
+| `npm run rebuild:native` | Rebuild optional native modules for Electron |
+| `npm run package:desktop` | Create unpacked desktop package in `release/` |
+| `npm run package:desktop:installer` | Create platform-specific installer artifacts |
+| `npm run smoke:installer` | Verify packaged desktop output |
+| `npm run smoke:first-run-db` | Check first-run database startup patches |
+| `npm run release:notes` | Generate `artifacts/release-notes.md` |
+| `npm run release:desktop` | Run the complete desktop release flow |
 
-## Branding And Build Identity 🎨
+## Branding & Build Identity 🎨
 
-VaultBill uses one build-time name variable:
+VaultBill uses a single build-time name variable for complete branding control:
 
-```powershell
+```bash
+# macOS/Linux
+APP_NAME='Acme Billing' npm run build:desktop
+
+# PowerShell
 $env:APP_NAME = 'Acme Billing'
 npm run build:desktop
 ```
 
-If `APP_NAME` is blank or missing, VaultBill is used as the fallback name.
+If `APP_NAME` is blank or missing, `VaultBill` is used as the fallback.
 
-For GitHub Pages builds, the app is published under the `/VaultBill/` subpath.
-The production build and the Pages workflow are aligned with that base path, and
-the app includes a redirect so stray URLs fall back to the canonical home page.
+### GitHub Pages Deployment
 
-## Automation And Deployment 🤖
+For GitHub Pages builds, the app is published under the `/VaultBill/` subpath. The production build and Pages workflow are aligned with this base path, with an automatic redirect for stray URLs.
 
-- `Build Release Files` packages the desktop release files and runs the release
-  validation flow when dispatched manually. It also replaces an existing GitHub
-  Release for the same version before publishing the fresh one.
-- `GitHub Pages` automatically deploys the web build on pushes to `main`.
-- The Pages workflow uses the `VaultBill` GitHub Pages environment name.
-- The hosted build uses device-scoped Supabase document rows protected by RLS;
-  desktop-only and secret-backed integrations remain disabled.
-- A `public/404.html` fallback keeps GitHub Pages navigation friendly.
+## Automation & Deployment 🤖
 
-## What’s Inside The App 📘
+### CI/CD Workflows
 
-VaultBill already includes the core foundations for:
+- **Build Release Files**: Packages desktop release files and runs validation when dispatched manually. Replaces existing GitHub Releases for the same version.
+- **GitHub Pages**: Automatically deploys the web build on pushes to `main` using the `VaultBill` GitHub Pages environment.
+- **Security**: The hosted build uses device-scoped Supabase rows protected by RLS; desktop-only and secret-backed integrations remain disabled.
+- **Navigation Fallback**: `public/404.html` keeps GitHub Pages navigation friendly.
 
-- SQLite startup patching and schema recovery
-- Operator accounts, roles, and permission-aware navigation
-- Document-format selection, validation, and fallback handling
-- Dynamic line-item behavior and formula evaluation
-- Saved records, reprints, cancellations, and finalization workflows
-- Print template sanitization, PDF planning, and printer profile selection
-- CSV / TSV import previews and bulk print planning
-- Reports, exports, backup packages, and restore validation
-- Runtime branding, company settings, and DB-backed app assets
-- Keyboard shortcuts, responsive layout metadata, and reusable feedback states
+## What's Inside The App 📘
 
-## Project Notes 💡
+VaultBill includes core foundations for:
 
-- The implementation source of truth is `docs/Spec.md`
-- The release pipeline details live in `docs/ReleasePipeline.md`
-- GitHub Pages is the web publishing target for the SPA build
-- The Electron release flow is separated from the Pages deployment flow so each
-  workflow stays focused and easy to reason about
+- ✅ SQLite startup patching and schema recovery
+- ✅ Operator accounts, roles, and permission-aware navigation
+- ✅ Document-format selection, validation, and fallback handling
+- ✅ Dynamic line-item behavior and formula evaluation
+- ✅ Saved records, reprints, cancellations, and finalization workflows
+- ✅ Print template sanitization, PDF planning, and printer profile selection
+- ✅ CSV / TSV import previews and bulk print planning
+- ✅ Reports, exports, backup packages, and restore validation
+- ✅ Runtime branding, company settings, and DB-backed app assets
+- ✅ Keyboard shortcuts, responsive layout metadata, and reusable feedback states
+
+## Project Structure 📁
+
+```
+├── docs/              # Documentation and specifications
+│   ├── Spec.md        # Implementation source of truth
+│   └── ReleasePipeline.md
+├── src/               # Web application source
+├── electron/          # Electron desktop app
+│   ├── server/        # Local API server
+│   └── main/          # Electron main process
+├── public/            # Static assets
+└── tests/             # Test suite
+```
+
+## Documentation 📚
+
+- **[Implementation Spec](docs/Spec.md)**: The source of truth for this implementation
+- **[Release Pipeline](docs/ReleasePipeline.md)**: Details on the release workflow
+- **[Electron Server Routes](electron/server/routes/)**: Typed Local API routes (Phase 16+)
+- **[Middleware](electron/server/middleware/)**: Local API middleware (Phase 16+)
 
 ## A Tiny Promise 😊
 
-This repo is meant to stay spec-led, test-backed, and pleasantly boring in the
-best possible way. No hidden magic, no surprise build steps, and no guesswork
-about where the code lives.
+This repo is meant to stay **spec-led**, **test-backed**, and pleasantly boring in the best possible way:
 
-If you’re here to extend VaultBill, you’re in the right place. Let’s keep it
-smooth, colorful, and reliable ✨
+- ✨ No hidden magic
+- ✨ No surprise build steps
+- ✨ No guesswork about where the code lives
+
+If you're here to extend VaultBill, you're in the right place. Let's keep it smooth, colorful, and reliable ✨
+
+---
+
+## Contributing
+
+We welcome contributions! Please ensure your changes:
+- Follow the existing code style and patterns
+- Maintain TypeScript strict mode
+- Include appropriate tests
+- Update documentation as needed
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+---
+
+**Made with ❤️ for clear, predictable billing everywhere**
