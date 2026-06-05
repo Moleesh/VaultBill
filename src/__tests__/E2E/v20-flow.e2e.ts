@@ -56,8 +56,6 @@ test('hosted web saves and reloads a draft through Supabase', async ({ page }) =
   await page.getByPlaceholder('Business or customer name').fill(customerName);
   await page.getByRole('button', { name: /Save draft/u }).click();
   await expect(page.getByText('Draft saved to hosted web storage.')).toBeVisible();
-  await page.getByRole('button', { name: 'Drafts' }).click();
-  await expect(page.getByText(customerName)).toBeVisible();
 
   const clientId = await page.evaluate(() =>
     window.localStorage.getItem('vaultbill.web.client-id'),
@@ -74,12 +72,33 @@ test('hosted web saves and reloads a draft through Supabase', async ({ page }) =
       global: { headers: { 'x-vaultbill-client-id': clientId } },
     },
   );
-  const { error } = await cleanupClient
-    .from('vaultbill_documents')
-    .delete()
-    .eq('client_id', clientId)
-    .eq('document_type', 'record');
-  expect(error).toBeNull();
+
+  try {
+    const { data, error: readError } = await cleanupClient
+      .from('vaultbill_documents')
+      .select('payload')
+      .eq('client_id', clientId)
+      .eq('document_type', 'record');
+    expect(readError).toBeNull();
+    expect(data).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          payload: expect.objectContaining({ customerName }),
+        }),
+      ]),
+    );
+
+    await page.getByRole('button', { name: 'Drafts' }).click();
+    await page.reload();
+    await expect(page.getByText(customerName)).toBeVisible({ timeout: 15_000 });
+  } finally {
+    const { error: cleanupError } = await cleanupClient
+      .from('vaultbill_documents')
+      .delete()
+      .eq('client_id', clientId)
+      .eq('document_type', 'record');
+    expect(cleanupError).toBeNull();
+  }
 });
 
 for (const viewport of viewports) {
