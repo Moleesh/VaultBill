@@ -53,5 +53,5 @@ and the Vitest suites can run in serial mode where needed.
 The `GitHub Pages` workflow automatically publishes the web build to GitHub
 Pages on pushes to `main`, and uses the `VaultBill` Pages environment name for
 the deployment record. It sets `VITE_WEB_ONLY=true`, reads the public Supabase
-URL/key from environment secrets, runs formatting, lint, typecheck, coverage,
+URL/key from environment variables, runs formatting, lint, typecheck, coverage,
 and Playwright gates, then builds with the `/VaultBill/` base path.

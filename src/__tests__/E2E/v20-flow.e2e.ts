@@ -8,7 +8,7 @@ const viewports = [
 ] as const;
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('/login');
+  await page.goto('login');
   await page.evaluate(() => {
     window.localStorage.clear();
   });
@@ -29,7 +29,7 @@ test('Admin is blocked from Builder', async ({ page }) => {
   await page.getByRole('button', { name: /Operator account/u }).click();
   await page.getByRole('option', { name: /Operations Admin/u }).click();
   await page.getByRole('button', { name: 'Log in' }).click();
-  await page.goto('/app/builder');
+  await page.goto(page.url().replace(/\/app\/[^/?]+(?:\?.*)?$/u, '/app/builder'));
   await expect(page.getByRole('heading', { name: /not available/u })).toBeVisible();
 });
 

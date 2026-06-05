@@ -59,9 +59,9 @@ frontend variable.
 | `VITE_SUPABASE_ANON_KEY` | Yes for hosted web/demo | GitHub Pages web-only build              | Empty       | Public Supabase publishable/anon key used only by the hosted web/demo build; RLS protects document rows |
 | `VITE_BASE_PATH`         | No                      | GitHub Pages web-only build              | `/`         | Optional Vite base path when deploying under a repository path                                          |
 
-The GitHub environment named `VaultBill` must define `SUPABASE_URL` and
-`SUPABASE_ANON_KEY`. The Pages workflow maps them to the public Vite variables
-and sets the internal web-only flag itself.
+The GitHub environment named `VaultBill` must define the public variables
+`SUPABASE_URL` and `SUPABASE_ANON_KEY`. The Pages workflow maps them to the
+public Vite variables and sets the internal web-only flag itself.
 
 ## Useful Scripts 🛠️
 
