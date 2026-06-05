@@ -36,20 +36,20 @@ so upgrades resolve to the same app identity.
   upgrade safety.
 - `npm run release:notes` writes `artifacts/release-notes.md`.
 
-## CI Gate
+## Workflows
 
-The CI workflow runs install, format check, lint, typecheck, unit tests,
+The `Build Release Files` workflow runs on manual dispatch and has two jobs.
+The `verify` job runs install, format check, lint, typecheck, unit tests,
 coverage, web build, Electron native-module rebuild, desktop build, desktop
-directory packaging, and installer smoke.
+directory packaging, and installer smoke on Ubuntu. The `package` job runs on
+Windows, creates the installer, requires an installer artifact during smoke,
+validates first-run DB startup patch tests, generates release notes, and
+uploads `release/**` plus the generated notes.
 
-To keep the SQLite-backed startup tests deterministic on hosted runners, CI and
-release smoke use Vitest with `--no-file-parallelism --maxWorkers=1`, and the
-workflows install Node 24 so `node:sqlite` stays available on hosted runners.
+To keep the SQLite-backed startup tests deterministic on hosted runners, the
+workflow installs Node 24 so `node:sqlite` stays available on hosted runners
+and the Vitest suites can run in serial mode where needed.
 
-The `Deploy Web` workflow automatically publishes the web build to GitHub
+The `GitHub Pages` workflow automatically publishes the web build to GitHub
 Pages on pushes to `main`, and uses the `VaultBill` Pages environment name for
 the deployment record.
-
-The desktop release workflow runs on Windows, creates the installer, requires
-an installer artifact during smoke, validates first-run DB startup patch tests,
-generates release notes, and uploads `release/**` plus the generated notes.

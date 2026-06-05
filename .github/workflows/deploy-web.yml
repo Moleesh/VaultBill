@@ -1,6 +1,6 @@
 # @format
 
-name: Deploy Web
+name: GitHub Pages
 
 on:
   push:

@@ -238,14 +238,17 @@
 
 ## 2026-06-05
 
-- Pinned `actions/setup-node` to Node 24 in the CI, release, and web deploy
+- Pinned `actions/setup-node` to Node 24 in the release and web deploy
   workflows so the `node:sqlite` startup smoke stays compatible with hosted
   runners.
 - Routed SQLite-backed Vitest suites to the Node environment with
   file-level `@vitest-environment node` annotations so jsdom UI tests can keep
   running while database tests import `node:sqlite` safely.
-- Switched the `Deploy Web` workflow to automatic GitHub Pages deployment on
-  `main` pushes and configured the Vite base path for the `/VaultBill/`
-  project Pages subpath.
+- Reduced GitHub Actions to two workflows by removing the standalone CI file,
+  keeping a dedicated release-file builder, and keeping a separate GitHub Pages
+  deploy workflow.
+- Switched the `GitHub Pages` workflow to automatic deployment on `main`
+  pushes and configured the Vite base path for the `/VaultBill/` project Pages
+  subpath.
 - Added a GitHub Pages 404 fallback plus a production bootstrap redirect so
   stray URLs resolve back to the canonical `/VaultBill/` home path.
