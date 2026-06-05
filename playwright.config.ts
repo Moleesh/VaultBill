@@ -2,7 +2,7 @@ import { defineConfig } from '@playwright/test';
 
 const requestedBasePath = process.env.VITE_BASE_PATH?.trim() ?? '/';
 const normalizedBasePath = `/${requestedBasePath.replace(/^\/+|\/+$/gu, '')}`;
-const applicationUrl = `http://127.0.0.1:5173${
+const applicationUrl = `http://127.0.0.1:4173${
   normalizedBasePath === '/' ? '/' : `${normalizedBasePath}/`
 }`;
 
@@ -16,8 +16,8 @@ export default defineConfig({
     trace: 'retain-on-failure',
   },
   webServer: {
-    command: 'npm run dev',
+    command: 'npm run dev -- --host 127.0.0.1 --port 4173 --strictPort',
     url: applicationUrl,
-    reuseExistingServer: true,
+    reuseExistingServer: false,
   },
 });

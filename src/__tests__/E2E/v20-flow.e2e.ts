@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { createClient } from '@supabase/supabase-js';
 
 const viewports = [
   { name: 'mobile', width: 390, height: 844 },
@@ -41,6 +42,44 @@ test('mobile help opens as a full-screen sheet', async ({ page }) => {
   const helpDialog = page.getByRole('dialog', { name: 'dashboard help' });
   await expect(helpDialog).toBeVisible();
   await expect(helpDialog).toHaveClass(/app-sheet/u);
+});
+
+test('hosted web saves and reloads a draft through Supabase', async ({ page }) => {
+  test.skip(
+    !process.env.VITE_SUPABASE_URL || !process.env.VITE_SUPABASE_ANON_KEY,
+    'Hosted Supabase configuration is required.',
+  );
+
+  const customerName = `Playwright ${Date.now().toString()}`;
+  await page.getByRole('button', { name: 'Log in' }).click();
+  await page.getByRole('link', { name: /Records/u }).click();
+  await page.getByPlaceholder('Business or customer name').fill(customerName);
+  await page.getByRole('button', { name: /Save draft/u }).click();
+  await expect(page.getByText('Draft saved to hosted web storage.')).toBeVisible();
+  await page.getByRole('button', { name: 'Drafts' }).click();
+  await expect(page.getByText(customerName)).toBeVisible();
+
+  const clientId = await page.evaluate(() =>
+    window.localStorage.getItem('vaultbill.web.client-id'),
+  );
+  if (!clientId) {
+    throw new Error('Hosted draft test did not create a browser identity.');
+  }
+
+  const cleanupClient = createClient(
+    process.env.VITE_SUPABASE_URL ?? '',
+    process.env.VITE_SUPABASE_ANON_KEY ?? '',
+    {
+      auth: { persistSession: false },
+      global: { headers: { 'x-vaultbill-client-id': clientId } },
+    },
+  );
+  const { error } = await cleanupClient
+    .from('vaultbill_documents')
+    .delete()
+    .eq('client_id', clientId)
+    .eq('document_type', 'record');
+  expect(error).toBeNull();
 });
 
 for (const viewport of viewports) {

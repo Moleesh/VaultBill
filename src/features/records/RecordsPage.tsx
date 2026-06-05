@@ -3,12 +3,13 @@ import { useSearchParams } from 'react-router-dom';
 import type { FC } from 'react';
 
 import { ActionBar } from '../../components/ActionBar';
-import { AppConfirmDialog } from '../../components/AppConfirmDialog/AppConfirmDialog';
-import { AppModal } from '../../components/AppModal/AppModal';
 import { HorizontalProgress } from '../../components/HorizontalProgress/HorizontalProgress';
 import { SearchableDropdown } from '../../components/SearchableDropdown/SearchableDropdown';
 import { documentFormatSummaries } from '../../constants/PhaseFourFormats';
 import { useSession } from '../auth/SessionContext';
+import { RecordCollection } from './RecordCollection';
+import { RecordDialogs } from './RecordDialogs';
+import { useWebRecordStore } from './useWebRecordStore';
 
 const tabs = ['New', 'Drafts', 'Finalized', 'Cancelled', 'Reprint'] as const;
 
@@ -18,8 +19,10 @@ export const RecordsPage: FC = () => {
   const [formatId, setFormatId] = useState(documentFormatSummaries[0]?.formatId ?? 'TaxInvoice');
   const [pendingFormatId, setPendingFormatId] = useState<string>();
   const [customerName, setCustomerName] = useState('');
+  const [recordId] = useState(() => crypto.randomUUID());
   const [isFinalizeOpen, setIsFinalizeOpen] = useState(false);
   const [notice, setNotice] = useState('');
+  const webRecordStore = useWebRecordStore();
   const activeTab = searchParams.get('tab') ?? 'new';
   const formatOptions = documentFormatSummaries.map((format) => ({
     value: format.formatId,
@@ -27,6 +30,7 @@ export const RecordsPage: FC = () => {
     description: format.description,
   }));
   const isDirty = customerName.trim().length > 0;
+  const activeFormat = documentFormatSummaries.find((format) => format.formatId === formatId);
 
   const selectFormat = (nextFormatId: string) => {
     if (isDirty) {
@@ -41,7 +45,29 @@ export const RecordsPage: FC = () => {
       setIsFinalizeOpen(true);
       return;
     }
-    setNotice(`${actionId === 'save-draft' ? 'Draft saved' : 'Output prepared'} successfully.`);
+
+    if (actionId === 'save-draft') {
+      setNotice('Draft saved successfully.');
+      void persistRecord('Draft');
+      return;
+    }
+
+    setNotice('Output prepared successfully.');
+  };
+
+  const persistRecord = async (status: 'Draft' | 'Finalized') => {
+    const stored = await webRecordStore.saveRecord({
+      recordId,
+      formatId,
+      formatName: activeFormat?.formatName ?? formatId,
+      status,
+      customerName: customerName.trim(),
+      updatedAt: new Date().toISOString(),
+    });
+
+    if (stored) {
+      setNotice(`${status} saved to hosted web storage.`);
+    }
   };
 
   return (
@@ -138,63 +164,35 @@ export const RecordsPage: FC = () => {
           <ActionBar onAction={runAction} role={operatorContext?.role ?? 'User'} />
         </section>
       ) : (
-        <section className="empty-panel">
-          <p className="eyebrow">{activeTab}</p>
-          <h2>No matching records yet</h2>
-          <p>Records in this category will appear here with search and filters.</p>
-        </section>
+        <RecordCollection
+          activeTab={activeTab}
+          error={webRecordStore.error}
+          isLoading={webRecordStore.isLoading}
+          records={webRecordStore.records}
+        />
       )}
 
-      <AppModal
-        isOpen={pendingFormatId !== undefined}
-        onClose={() => {
+      <RecordDialogs
+        isFinalizeOpen={isFinalizeOpen}
+        onCancelFormat={() => {
           setPendingFormatId(undefined);
         }}
-        title="Change document format?"
-      >
-        <p>You have unsaved values. Choose how VaultBill should handle them.</p>
-        <div className="popup-actions popup-actions--stack">
-          <button
-            onClick={() => {
-              if (pendingFormatId) setFormatId(pendingFormatId);
-              setPendingFormatId(undefined);
-            }}
-            type="button"
-          >
-            Keep matching fields
-          </button>
-          <button
-            onClick={() => {
-              if (pendingFormatId) setFormatId(pendingFormatId);
-              setCustomerName('');
-              setPendingFormatId(undefined);
-            }}
-            type="button"
-          >
-            Clear form
-          </button>
-          <button
-            onClick={() => {
-              setPendingFormatId(undefined);
-            }}
-            type="button"
-          >
-            Cancel
-          </button>
-        </div>
-      </AppModal>
-      <AppConfirmDialog
-        confirmLabel="Finalize"
-        description="VaultBill will allocate the next document number and lock this record for editing."
-        isOpen={isFinalizeOpen}
-        onCancel={() => {
-          setIsFinalizeOpen(false);
+        onClearAndChangeFormat={() => {
+          if (pendingFormatId) setFormatId(pendingFormatId);
+          setCustomerName('');
+          setPendingFormatId(undefined);
         }}
-        onConfirm={() => {
+        onFinalize={() => {
           setIsFinalizeOpen(false);
           setNotice('Document finalized successfully.');
+          void persistRecord('Finalized');
         }}
-        title="Finalize this document?"
+        onKeepAndChangeFormat={() => {
+          if (pendingFormatId) setFormatId(pendingFormatId);
+          setPendingFormatId(undefined);
+        }}
+        onSetFinalizeOpen={setIsFinalizeOpen}
+        pendingFormatId={pendingFormatId}
       />
     </div>
   );
