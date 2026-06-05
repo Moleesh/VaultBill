@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VaultBill</title>
+    <script>
+      (function () {
+        var segments = window.location.pathname.split('/').filter(Boolean);
+        var canonicalBasePath = segments.length > 0 ? '/' + segments[0] + '/' : '/';
+        window.location.replace(canonicalBasePath);
+      })();
+    </script>
+  </head>
+  <body>
+    <noscript>
+      <p>VaultBill is redirecting to its canonical home page.</p>
+    </noscript>
+  </body>
+</html>

@@ -247,3 +247,5 @@
 - Switched the `Deploy Web` workflow to automatic GitHub Pages deployment on
   `main` pushes and configured the Vite base path for the `/VaultBill/`
   project Pages subpath.
+- Added a GitHub Pages 404 fallback plus a production bootstrap redirect so
+  stray URLs resolve back to the canonical `/VaultBill/` home path.
