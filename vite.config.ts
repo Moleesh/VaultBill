@@ -9,8 +9,13 @@ const generatedSlug = appName
   .replace(/[^a-z0-9]+/g, '-')
   .replace(/^-+|-+$/g, '');
 const appSlug = generatedSlug || 'vaultbill';
+const githubRepositoryName = process.env.GITHUB_REPOSITORY?.split('/').pop()?.trim();
+const githubPagesBasePath =
+  process.env.VITE_BASE_PATH?.trim() ||
+  (githubRepositoryName ? `/${githubRepositoryName}/` : '/');
 
 export default defineConfig({
+  base: githubPagesBasePath,
   plugins: [react()],
   define: {
     __APP_NAME__: JSON.stringify(appName),

@@ -46,6 +46,10 @@ To keep the SQLite-backed startup tests deterministic on hosted runners, CI and
 release smoke use Vitest with `--no-file-parallelism --maxWorkers=1`, and the
 workflows install Node 24 so `node:sqlite` stays available on hosted runners.
 
+The `Deploy Web` workflow automatically publishes the web build to GitHub
+Pages on pushes to `main`, and uses the `VaultBill` Pages environment name for
+the deployment record.
+
 The desktop release workflow runs on Windows, creates the installer, requires
 an installer artifact during smoke, validates first-run DB startup patch tests,
 generates release notes, and uploads `release/**` plus the generated notes.
