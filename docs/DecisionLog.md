@@ -252,3 +252,6 @@
   subpath.
 - Added a GitHub Pages 404 fallback plus a production bootstrap redirect so
   stray URLs resolve back to the canonical `/VaultBill/` home path.
+- Added GitHub Release publication to the desktop release workflow and made it
+  delete any existing release and tag for the same version before recreating
+  the release assets.

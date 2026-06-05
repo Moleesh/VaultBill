@@ -58,9 +58,10 @@ jobs:
     runs-on: windows-latest
     needs: verify
     permissions:
-      contents: read
+      contents: write
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+      GH_TOKEN: ${{ github.token }}
 
     steps:
       - name: Checkout
@@ -103,3 +104,39 @@ jobs:
           path: |
             release/**
             artifacts/release-notes.md
+
+      - name: Publish GitHub Release
+        shell: pwsh
+        run: |
+          $package = Get-Content package.json -Raw | ConvertFrom-Json
+          $appName = $env:APP_NAME
+
+          if ([string]::IsNullOrWhiteSpace($appName)) {
+            $appName = 'VaultBill'
+          } else {
+            $appName = $appName.Trim()
+          }
+
+          $releaseTag = "v$($package.version)"
+          $releaseTitle = "$appName $releaseTag"
+          $releaseNotesPath = Join-Path $PWD 'artifacts\release-notes.md'
+          $releaseFiles = @(
+            Get-ChildItem -Path release -File |
+              Sort-Object Name |
+              Select-Object -ExpandProperty FullName
+          )
+
+          if ($releaseFiles.Count -eq 0) {
+            throw 'No release files were found in release/.'
+          }
+
+          gh release view $releaseTag *> $null
+
+          if ($LASTEXITCODE -eq 0) {
+            Write-Host "Deleting existing GitHub release and tag for $releaseTag."
+            gh release delete $releaseTag -y --cleanup-tag
+          } else {
+            Write-Host "No existing GitHub release found for $releaseTag."
+          }
+
+          gh release create $releaseTag @releaseFiles --title $releaseTitle --notes-file $releaseNotesPath --target $env:GITHUB_SHA

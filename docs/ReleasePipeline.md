@@ -2,7 +2,7 @@
 
 # Release Pipeline
 
-Phase 19 packages VaultBill with Electron Builder after the web and Electron
+Phase 20 packages VaultBill with Electron Builder after the web and Electron
 shell builds complete.
 
 ## Build Identity
@@ -44,7 +44,9 @@ coverage, web build, Electron native-module rebuild, desktop build, desktop
 directory packaging, and installer smoke on Ubuntu. The `package` job runs on
 Windows, creates the installer, requires an installer artifact during smoke,
 validates first-run DB startup patch tests, generates release notes, and
-uploads `release/**` plus the generated notes.
+uploads `release/**` plus the generated notes. It also publishes a GitHub
+Release for `v${package.json version}`, and if that release tag already exists
+it deletes the old release and tag before recreating them with the new files.
 
 To keep the SQLite-backed startup tests deterministic on hosted runners, the
 workflow installs Node 24 so `node:sqlite` stays available on hosted runners

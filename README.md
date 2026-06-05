@@ -94,7 +94,8 @@ the app includes a redirect so stray URLs fall back to the canonical home page.
 ## Automation And Deployment 🤖
 
 - `Build Release Files` packages the desktop release files and runs the release
-  validation flow when dispatched manually.
+  validation flow when dispatched manually. It also replaces an existing GitHub
+  Release for the same version before publishing the fresh one.
 - `GitHub Pages` automatically deploys the web build on pushes to `main`.
 - The Pages workflow uses the `VaultBill` GitHub Pages environment name.
 - A `public/404.html` fallback keeps GitHub Pages navigation friendly.
