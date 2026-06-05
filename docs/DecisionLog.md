@@ -241,3 +241,6 @@
 - Pinned `actions/setup-node` to Node 24 in the CI, release, and web deploy
   workflows so the `node:sqlite` startup smoke stays compatible with hosted
   runners.
+- Routed SQLite-backed Vitest suites to the Node environment with
+  `environmentMatchGlobs` so jsdom UI tests can keep running while database
+  tests import `node:sqlite` safely.
