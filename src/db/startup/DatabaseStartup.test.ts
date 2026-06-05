@@ -40,16 +40,15 @@ describe('runDatabaseStartupChecks', () => {
     expect(result.appliedPatches).toContain('seed:builtInDefaultFormat');
     expect(result.appliedPatches).toContain('settings:startupHealth');
     expect(db.get('PRAGMA foreign_keys;')).toEqual({ foreign_keys: 1 });
-    expect(
-      db.get('SELECT COUNT(*) AS count FROM document_formats WHERE is_default = 1;'),
-    ).toEqual({ count: 1 });
+    expect(db.get('SELECT COUNT(*) AS count FROM document_formats WHERE is_default = 1;')).toEqual({
+      count: 1,
+    });
     expect(
       db.get('SELECT setting_json FROM settings WHERE setting_key = ?;', [
         'settings.startupHealth',
       ]),
     ).toEqual({
-      setting_json:
-        '{"LastStartupCheckAt":"2026-06-04T10:00:00.000Z","SchemaVersion":2}',
+      setting_json: '{"LastStartupCheckAt":"2026-06-04T10:00:00.000Z","SchemaVersion":2}',
     });
   });
 
@@ -59,9 +58,7 @@ describe('runDatabaseStartupChecks', () => {
 
     runDatabaseStartupChecks(db, { nowIso: fixedNow });
 
-    const columns = db
-      .all('PRAGMA table_info(printer_profiles);')
-      .map((row) => row.name);
+    const columns = db.all('PRAGMA table_info(printer_profiles);').map((row) => row.name);
 
     expect(columns).toContain('profile_json');
     expect(columns).toContain('is_default');
@@ -90,9 +87,7 @@ describe('runDatabaseStartupChecks', () => {
       fixedNow(),
     ]);
 
-    expect(() => runDatabaseStartupChecks(db, { nowIso: fixedNow })).toThrow(
-      DatabaseRecoveryError,
-    );
+    expect(() => runDatabaseStartupChecks(db, { nowIso: fixedNow })).toThrow(DatabaseRecoveryError);
   });
 
   it('stops startup when the single default format JSON does not match metadata', () => {

@@ -1,5 +1,3 @@
-# @format
-
 name: GitHub Pages
 
 on:
@@ -9,6 +7,8 @@ on:
 
 permissions:
   contents: read
+  pages: write
+  id-token: write
 
 concurrency:
   group: pages
@@ -17,9 +17,14 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    environment:
+      name: VaultBill
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
       VITE_BASE_PATH: '/VaultBill/'
+      VITE_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+      VITE_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      VITE_WEB_ONLY: 'true'
 
     steps:
       - name: Checkout
@@ -37,6 +42,24 @@ jobs:
       - name: Install
         run: npm ci
 
+      - name: Format check
+        run: npm run format:check
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Coverage check
+        run: npm run coverage:ci
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Browser flows
+        run: npm run test:e2e
+
       - name: Build web
         run: npm run build:web
 
@@ -48,10 +71,6 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: build
-    permissions:
-      contents: read
-      pages: write
-      id-token: write
     environment:
       name: VaultBill
       url: ${{ steps.deployment.outputs.page_url }}

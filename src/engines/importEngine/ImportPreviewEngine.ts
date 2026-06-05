@@ -25,24 +25,12 @@ export type BuildImportPreviewInput = {
   readonly rowIdFactory: (rowNumber: number) => string;
 };
 
-export const buildImportPreview = (
-  input: BuildImportPreviewInput,
-): ImportPreviewResult => {
+export const buildImportPreview = (input: BuildImportPreviewInput): ImportPreviewResult => {
   const detection = detectImportMapping(input.scope, input.sourceTable);
   const mapping = input.mapping ?? detection.proposedMapping;
-  const duplicateExternalNumbers = findDuplicateExternalNumbers(
-    detection.dataRows,
-    mapping,
-  );
+  const duplicateExternalNumbers = findDuplicateExternalNumbers(detection.dataRows, mapping);
   const rows = detection.dataRows.map((sourceRow, index) =>
-    previewRow(
-      input,
-      sourceRow,
-      index + 1,
-      mapping,
-      detection.fields,
-      duplicateExternalNumbers,
-    ),
+    previewRow(input, sourceRow, index + 1, mapping, detection.fields, duplicateExternalNumbers),
   );
 
   return {
@@ -77,12 +65,7 @@ const previewRow = (
   const calculatedValues = calculateDerivedValues(input, values, rowNumber);
   const issues = [
     ...validatePreviewValues(input, calculatedValues, rowNumber),
-    ...getDuplicateExternalNumberIssue(
-      mapping,
-      rowNumber,
-      duplicateExternalNumbers,
-      sourceRow,
-    ),
+    ...getDuplicateExternalNumberIssue(mapping, rowNumber, duplicateExternalNumbers, sourceRow),
   ];
   const warnings = getPreviewWarnings(fields, mapping, rowNumber);
 

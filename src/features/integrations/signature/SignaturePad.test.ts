@@ -6,9 +6,7 @@ const usbSettings = {
   SignaturePad: {
     Enabled: true,
     Mode: 'UsbHid' as const,
-    TestedUsbDevices: [
-      { VendorId: '1234', ProductId: 'abcd', DisplayName: 'Tested Pad' },
-    ],
+    TestedUsbDevices: [{ VendorId: '1234', ProductId: 'abcd', DisplayName: 'Tested Pad' }],
   },
 };
 

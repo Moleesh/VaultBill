@@ -8,11 +8,7 @@ type FormatSelectorProps = {
   readonly onChange: (format: DocumentFormatSummary) => void;
 };
 
-export const FormatSelector: FC<FormatSelectorProps> = ({
-  activeFormatId,
-  formats,
-  onChange,
-}) => {
+export const FormatSelector: FC<FormatSelectorProps> = ({ activeFormatId, formats, onChange }) => {
   const handleChange = (value: string) => {
     const selectedFormat = formats.find((format) => format.formatId === value);
 
@@ -37,9 +33,7 @@ export const FormatSelector: FC<FormatSelectorProps> = ({
           </option>
         ))}
       </select>
-      <small id="format-selector-help">
-        Same-page format switching keeps VaultBill SPA-first.
-      </small>
+      <small id="format-selector-help">Same-page format switching keeps VaultBill SPA-first.</small>
     </label>
   );
 };

@@ -20,20 +20,15 @@ export const compilePrintTemplate = (
   input: CompilePrintTemplateInput,
 ): CompilePrintTemplateResult => {
   const warnings: PrintCompileWarning[] = [];
-  const assetByName = new Map(
-    input.assets.map((asset) => [asset.assetName, asset] as const),
-  );
+  const assetByName = new Map(input.assets.map((asset) => [asset.assetName, asset] as const));
   const sanitizedHtml = sanitizeTemplateHtml(input.templateHtml);
-  const html = sanitizedHtml.replace(
-    placeholderPattern,
-    (_match: string, placeholder: string) => {
-      if (placeholder.startsWith('Asset.')) {
-        return resolveAssetPlaceholder(placeholder, assetByName, warnings);
-      }
+  const html = sanitizedHtml.replace(placeholderPattern, (_match: string, placeholder: string) => {
+    if (placeholder.startsWith('Asset.')) {
+      return resolveAssetPlaceholder(placeholder, assetByName, warnings);
+    }
 
-      return resolveValuePlaceholder(placeholder, input.values, warnings);
-    },
-  );
+    return resolveValuePlaceholder(placeholder, input.values, warnings);
+  });
 
   return { html, warnings };
 };

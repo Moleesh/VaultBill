@@ -1,8 +1,4 @@
-import type {
-  PrintOutputPlan,
-  PrintOutputTarget,
-  PrintPlatform,
-} from './PrintWorkflowTypes';
+import type { PrintOutputPlan, PrintOutputTarget, PrintPlatform } from './PrintWorkflowTypes';
 import type { PrintCompileWarning } from './PrintTemplateTypes';
 
 export const buildPrintOutputPlan = (
@@ -13,15 +9,13 @@ export const buildPrintOutputPlan = (
   printerName?: string,
 ): PrintOutputPlan => {
   if (target === 'DownloadPdf') {
-    const pdfMode =
-      platform === 'DesktopElectron' ? 'DesktopGenerated' : 'BrowserSaveAsPdf';
+    const pdfMode = platform === 'DesktopElectron' ? 'DesktopGenerated' : 'BrowserSaveAsPdf';
 
     if (pdfMode === 'BrowserSaveAsPdf') {
       warnings.push({
         kind: 'OutputCapabilityWarning',
         placeholder: 'DownloadPdf',
-        message:
-          'Web PDF uses browser print preview; choose Save as PDF in the browser dialog.',
+        message: 'Web PDF uses browser print preview; choose Save as PDF in the browser dialog.',
       });
     }
 

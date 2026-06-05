@@ -72,18 +72,16 @@ describe('LineItemEngine', () => {
       createRowId,
     );
 
-    expect(
-      reorderLineItemRows(requireItemsSection(), rows, ['Row_2', 'Row_1']),
-    ).toEqual([
+    expect(reorderLineItemRows(requireItemsSection(), rows, ['Row_2', 'Row_1'])).toEqual([
       { RowId: 'Row_2', DisplayOrder: 1, Values: { Quantity: '1.000' } },
       { RowId: 'Row_1', DisplayOrder: 2, Values: { Quantity: '1.000' } },
     ]);
   });
 
   it('returns essential grid fields in configured order', () => {
-    expect(
-      getEssentialLineItemFields(requireItemsSection()).map((field) => field.FieldId),
-    ).toEqual(['ItemName', 'Quantity', 'Rate', 'Amount']);
+    expect(getEssentialLineItemFields(requireItemsSection()).map((field) => field.FieldId)).toEqual(
+      ['ItemName', 'Quantity', 'Rate', 'Amount'],
+    );
   });
 
   it('validates row values and skips missing calculated fields', () => {
@@ -115,8 +113,6 @@ describe('LineItemEngine', () => {
     const section = { ...requireItemsSection(), MaxRows: 1 };
     const rows = createInitialLineItemRows(section, rowIdFactory());
 
-    expect(() => addLineItemRow(section, rows, rowIdFactory())).toThrow(
-      /at most 1 rows/u,
-    );
+    expect(() => addLineItemRow(section, rows, rowIdFactory())).toThrow(/at most 1 rows/u);
   });
 });

@@ -96,15 +96,10 @@ export const loadDefaultPrinterProfile = (
   return row ? parsePrinterProfileRow(row) : undefined;
 };
 
-const validatePrinterProfileConfig = (
-  input: SavePrinterProfileInput,
-): PrinterProfileConfig => {
+const validatePrinterProfileConfig = (input: SavePrinterProfileInput): PrinterProfileConfig => {
   const parsed = PrinterProfileConfigSchema.parse(input.profileConfig);
 
-  if (
-    parsed.ProfileId !== input.profileId ||
-    parsed.ProfileName !== input.profileName
-  ) {
+  if (parsed.ProfileId !== input.profileId || parsed.ProfileName !== input.profileName) {
     throw new Error('Printer profile metadata must match profile JSON.');
   }
 

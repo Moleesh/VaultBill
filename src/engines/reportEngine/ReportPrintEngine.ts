@@ -21,9 +21,7 @@ export type PreparedReportPrint = {
 
 const reportTableToken = '__VAULTBILL_REPORT_TABLE__';
 
-export const prepareReportPrint = (
-  input: PrepareReportPrintInput,
-): PreparedReportPrint => {
+export const prepareReportPrint = (input: PrepareReportPrintInput): PreparedReportPrint => {
   const compiled = compilePrintTemplate({
     templateHtml: input.template.templateHtml,
     values: {
@@ -34,21 +32,13 @@ export const prepareReportPrint = (
   });
 
   return {
-    html: compiled.html.replaceAll(
-      reportTableToken,
-      renderReportTable(input.report, input.rows),
-    ),
+    html: compiled.html.replaceAll(reportTableToken, renderReportTable(input.report, input.rows)),
     warnings: compiled.warnings,
   };
 };
 
-const renderReportTable = (
-  report: ReportConfig,
-  rows: readonly ReportRow[],
-): string => {
-  const header = report.Columns.map(
-    (column) => `<th>${escapeHtml(column.Label)}</th>`,
-  ).join('');
+const renderReportTable = (report: ReportConfig, rows: readonly ReportRow[]): string => {
+  const header = report.Columns.map((column) => `<th>${escapeHtml(column.Label)}</th>`).join('');
   const body = rows.map((row) => renderReportTableRow(report, row)).join('');
 
   return `<table><thead><tr>${header}</tr></thead><tbody>${body}</tbody></table>`;

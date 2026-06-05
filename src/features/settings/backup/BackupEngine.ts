@@ -1,6 +1,7 @@
 import { buildBackupChecksums } from './BackupChecksums';
 import { fromBytes, toBytes } from './BackupEncoding';
 import { decryptDatabaseBytes, encryptDatabaseBytes } from './BackupEncryption';
+import { z } from 'zod';
 import type {
   BackupCreateInput,
   BackupManifest,
@@ -8,9 +9,28 @@ import type {
   RestoreBackupInput,
 } from './BackupTypes';
 
-export const createBackupPackage = async (
-  input: BackupCreateInput,
-): Promise<BackupPackage> => {
+const BackupManifestSchema = z.object({
+  Product: z.literal('VaultBill'),
+  CreatedAt: z.string().datetime(),
+  Encrypted: z.boolean(),
+  DatabaseFile: z.enum(['database.sqlite', 'database.sqlite.enc']),
+  Encryption: z
+    .object({
+      Algorithm: z.literal('AES-GCM'),
+      PayloadIv: z.string(),
+      PasswordWrap: z
+        .object({ Salt: z.string(), Iv: z.string(), WrappedKey: z.string() })
+        .optional(),
+      RecoveryWrap: z.object({
+        Salt: z.string(),
+        Iv: z.string(),
+        WrappedKey: z.string(),
+      }),
+    })
+    .optional(),
+});
+
+export const createBackupPackage = async (input: BackupCreateInput): Promise<BackupPackage> => {
   const encrypted = input.encryptionEnabled
     ? await encryptDatabaseBytes(input.databaseBytes, input.password)
     : undefined;
@@ -36,9 +56,7 @@ export const createBackupPackage = async (
   };
 };
 
-export const restoreBackupPackage = async (
-  input: RestoreBackupInput,
-): Promise<Uint8Array> => {
+export const restoreBackupPackage = async (input: RestoreBackupInput): Promise<Uint8Array> => {
   const manifest = parseManifest(input.backupPackage);
   await validateChecksums(input.backupPackage);
 
@@ -73,13 +91,28 @@ const parseManifest = (backupPackage: BackupPackage): BackupManifest => {
     throw new Error('Backup manifest.json is missing.');
   }
 
-  const manifest = JSON.parse(fromBytes(manifestBytes)) as BackupManifest;
+  const parsed = BackupManifestSchema.parse(JSON.parse(fromBytes(manifestBytes)));
+  const baseManifest: BackupManifest = {
+    Product: parsed.Product,
+    CreatedAt: parsed.CreatedAt,
+    Encrypted: parsed.Encrypted,
+    DatabaseFile: parsed.DatabaseFile,
+  };
 
-  if (manifest.Product !== 'VaultBill') {
-    throw new Error('Backup manifest is not a VaultBill backup.');
+  if (!parsed.Encryption) {
+    return baseManifest;
   }
 
-  return manifest;
+  const { Algorithm, PasswordWrap, PayloadIv, RecoveryWrap } = parsed.Encryption;
+  return {
+    ...baseManifest,
+    Encryption: {
+      Algorithm,
+      PayloadIv,
+      RecoveryWrap,
+      ...(PasswordWrap ? { PasswordWrap } : {}),
+    },
+  };
 };
 
 const validateChecksums = async (backupPackage: BackupPackage) => {

@@ -63,10 +63,7 @@ export const decryptDatabaseBytes = async (
   );
 };
 
-const wrapDataKey = async (
-  dataKeyBytes: Uint8Array,
-  secret: string,
-): Promise<WrappedBackupKey> => {
+const wrapDataKey = async (dataKeyBytes: Uint8Array, secret: string): Promise<WrappedBackupKey> => {
   const salt = crypto.getRandomValues(new Uint8Array(16));
   const iv = crypto.getRandomValues(new Uint8Array(12));
   const wrappingKey = await deriveWrappingKey(secret, salt);
@@ -85,10 +82,7 @@ const wrapDataKey = async (
   };
 };
 
-const unwrapDataKey = async (
-  wrappedKey: WrappedBackupKey,
-  secret: string,
-): Promise<Uint8Array> => {
+const unwrapDataKey = async (wrappedKey: WrappedBackupKey, secret: string): Promise<Uint8Array> => {
   const wrappingKey = await deriveWrappingKey(secret, decodeBase64(wrappedKey.Salt));
 
   return new Uint8Array(
@@ -100,10 +94,7 @@ const unwrapDataKey = async (
   );
 };
 
-const deriveWrappingKey = async (
-  secret: string,
-  salt: Uint8Array,
-): Promise<CryptoKey> => {
+const deriveWrappingKey = async (secret: string, salt: Uint8Array): Promise<CryptoKey> => {
   const keyMaterial = await crypto.subtle.importKey(
     'raw',
     asBufferSource(toBytes(secret)),

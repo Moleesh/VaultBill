@@ -66,8 +66,7 @@ export const createLocalApiClient = (options: LocalApiClientOptions) => ({
   listReports: () => request<readonly ReportConfig[]>(options, 'GET', '/reports'),
   previewBulkImport: (input: unknown) =>
     request<unknown>(options, 'POST', '/bulk-import/preview', input),
-  getBackupCapability: () =>
-    request<BackupCapability>(options, 'GET', '/backup/capability'),
+  getBackupCapability: () => request<BackupCapability>(options, 'GET', '/backup/capability'),
 });
 
 const request = async <T>(

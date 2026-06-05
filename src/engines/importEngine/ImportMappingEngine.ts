@@ -71,19 +71,12 @@ const proposeColumnOrderMapping = (
 const getMappableFields = (
   fields: readonly ImportFieldDescriptor[],
 ): readonly ImportFieldDescriptor[] =>
-  fields.filter(
-    (field) => field.kind !== 'AutoCalculated' && field.kind !== 'SystemGenerated',
-  );
+  fields.filter((field) => field.kind !== 'AutoCalculated' && field.kind !== 'SystemGenerated');
 
-const matchesAnyField = (
-  value: string,
-  fields: readonly ImportFieldDescriptor[],
-): boolean =>
+const matchesAnyField = (value: string, fields: readonly ImportFieldDescriptor[]): boolean =>
   fields.some(
     (field) =>
-      normalize(value) === normalize(field.fieldId) ||
-      normalize(value) === normalize(field.label),
+      normalize(value) === normalize(field.fieldId) || normalize(value) === normalize(field.label),
   );
 
-const normalize = (value: string): string =>
-  value.toLowerCase().replace(/[^a-z0-9]+/gu, '');
+const normalize = (value: string): string => value.toLowerCase().replace(/[^a-z0-9]+/gu, '');

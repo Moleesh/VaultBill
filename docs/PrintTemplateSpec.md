@@ -1,5 +1,3 @@
-<!-- @format -->
-
 # Print Template Spec
 
 Phase 9 implements the template security and compilation baseline.

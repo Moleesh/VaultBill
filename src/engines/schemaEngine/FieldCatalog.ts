@@ -56,5 +56,4 @@ export const fieldCatalog: Readonly<Record<FieldType, FieldCatalogEntry>> = {
   LineItemSection: field('LineItemSection', 'LineItemRows'),
 };
 
-export const getFieldCatalogEntry = (type: FieldType): FieldCatalogEntry =>
-  fieldCatalog[type];
+export const getFieldCatalogEntry = (type: FieldType): FieldCatalogEntry => fieldCatalog[type];

@@ -1,5 +1,3 @@
-<!-- @format -->
-
 # Decision Log
 
 ## 2026-06-04
@@ -255,3 +253,22 @@
 - Added GitHub Release publication to the desktop release workflow and made it
   delete any existing release and tag for the same version before recreating
   the release assets.
+
+## 2026-06-05 Specification v20
+
+- Replaced the phase-status scaffold with a login-first routed product shell
+  for dashboard, records, reports, builder, and settings.
+- Added shared capability, overlay, searchable-dropdown, contextual-help, and
+  horizontal-overflow foundations so desktop, LAN browser, and hosted web/demo
+  behavior comes from one registry.
+- Added five semantic-token themes from v20 and removed obsolete theme IDs.
+- Used a device-scoped random UUID as the hosted demo's browser identity
+  because anonymous Supabase Auth is disabled on the project. RLS restricts
+  rows to that unguessable client identity; this is intentionally not presented
+  as a cross-device user account.
+- Kept the Supabase request helper in an unexposed `private` schema, as a stable
+  security-invoker function, and retained RLS on the public document table.
+- Used Prettier's native SCSS formatter because a maintained
+  `prettier-plugin-scss` package does not exist.
+- Added strict ESLint rules, Husky/lint-staged/commitlint hooks, coverage
+  thresholds, and Playwright role, help, routing, and responsive overflow gates.

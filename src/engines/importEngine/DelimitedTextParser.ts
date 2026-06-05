@@ -50,5 +50,4 @@ const parseDelimitedRow = (row: string, delimiter: ',' | '\t'): readonly string[
   return cells;
 };
 
-const countMatches = (value: string, search: string): number =>
-  value.split(search).length - 1;
+const countMatches = (value: string, search: string): number => value.split(search).length - 1;

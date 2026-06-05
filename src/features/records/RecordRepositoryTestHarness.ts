@@ -3,10 +3,7 @@ import { listStoredDocumentFormats } from '../../db/adapters/documentFormatRepos
 import type { SqliteConnection } from '../../db/sqlite/SqliteConnection';
 import { runDatabaseStartupChecks } from '../../db/startup/DatabaseStartup';
 import { resolveDocumentFormatSelection } from '../../engines/schemaEngine/DocumentFormatResolver';
-import {
-  bootstrapOperatorAccounts,
-  createOperatorContext,
-} from '../auth/AccountBootstrap';
+import { bootstrapOperatorAccounts, createOperatorContext } from '../auth/AccountBootstrap';
 import type { OperatorAccount } from '../auth/AccountTypes';
 import { saveDraftRecord } from './RecordRepository';
 
@@ -20,10 +17,7 @@ export const openStartedDatabase = () => {
 };
 
 export const getDefaultFormat = (db: SqliteConnection) =>
-  resolveDocumentFormatSelection(
-    { formatId: 'TaxInvoice' },
-    listStoredDocumentFormats(db),
-  ).format;
+  resolveDocumentFormatSelection({ formatId: 'TaxInvoice' }, listStoredDocumentFormats(db)).format;
 
 export const sampleLineItems = () => ({
   Items: [

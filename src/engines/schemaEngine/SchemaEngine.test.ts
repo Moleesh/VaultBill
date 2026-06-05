@@ -67,9 +67,7 @@ describe('SchemaEngine', () => {
     const nextFormat = {
       ...builtInDefaultFormat,
       FormatId: 'NewTaxInvoice',
-      Fields: builtInDefaultFormat.Fields.filter(
-        (field) => field.FieldId !== 'CustomerName',
-      ),
+      Fields: builtInDefaultFormat.Fields.filter((field) => field.FieldId !== 'CustomerName'),
     };
 
     expect(
@@ -85,8 +83,7 @@ describe('SchemaEngine', () => {
       },
       {
         kind: 'FieldRemovedWithReferences',
-        message:
-          'Customer Name cannot be deleted without reviewing dependent references.',
+        message: 'Customer Name cannot be deleted without reviewing dependent references.',
         affectedReferences: ['Sales Summary > Customer', 'Invoice A4 > Customer'],
       },
     ]);

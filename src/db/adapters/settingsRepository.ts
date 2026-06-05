@@ -139,10 +139,9 @@ const upsertSetting = (
   settingJson: string,
   updatedAt: string,
 ) => {
-  const existing = connection.get(
-    'SELECT setting_key FROM settings WHERE setting_key = ?;',
-    [settingKey],
-  );
+  const existing = connection.get('SELECT setting_key FROM settings WHERE setting_key = ?;', [
+    settingKey,
+  ]);
 
   if (existing) {
     connection.run(
@@ -166,10 +165,9 @@ const loadSetting = <T>(
   settingKey: string,
   schema: z.ZodType<T>,
 ): T | undefined => {
-  const row = connection.get(
-    'SELECT setting_json FROM settings WHERE setting_key = ?;',
-    [settingKey],
-  );
+  const row = connection.get('SELECT setting_json FROM settings WHERE setting_key = ?;', [
+    settingKey,
+  ]);
 
   if (!row || typeof row.setting_json !== 'string') {
     return undefined;

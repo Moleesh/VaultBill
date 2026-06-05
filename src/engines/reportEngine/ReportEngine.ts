@@ -1,10 +1,5 @@
 import type { DocumentRecord } from '../../features/records/DocumentRecordSchema';
-import type {
-  ReportConfig,
-  ReportFilterValues,
-  ReportPage,
-  ReportRow,
-} from './ReportTypes';
+import type { ReportConfig, ReportFilterValues, ReportPage, ReportRow } from './ReportTypes';
 
 export const getReportPage = (
   records: readonly DocumentRecord[],
@@ -60,16 +55,10 @@ const matchesFilters = (
     }
 
     const value = stringifyReportValue(resolveRecordValue(record, filter.FieldId));
-    return (
-      (!requested.from || value >= requested.from) &&
-      (!requested.to || value <= requested.to)
-    );
+    return (!requested.from || value >= requested.from) && (!requested.to || value <= requested.to);
   });
 
-export const resolveRecordValue = (
-  record: DocumentRecord,
-  sourceField: string,
-): unknown => {
+export const resolveRecordValue = (record: DocumentRecord, sourceField: string): unknown => {
   if (sourceField === 'InvoiceNumber' || sourceField === 'DocumentNumber') {
     return record.DocumentNumber;
   }

@@ -1,16 +1,10 @@
-import type {
-  CompanyProfileConfig,
-  RuntimeBrandingConfig,
-} from '../../db/startup/ConfigSchemas';
+import type { CompanyProfileConfig, RuntimeBrandingConfig } from '../../db/startup/ConfigSchemas';
 import type { RuntimeBranding } from '../../types/AppTypes';
 
-export const normalizeRuntimeBranding = (
-  branding: RuntimeBrandingConfig,
-): RuntimeBranding => ({
+export const normalizeRuntimeBranding = (branding: RuntimeBrandingConfig): RuntimeBranding => ({
   applicationName: branding.ApplicationName.trim() || 'VaultBill',
   companyName: branding.CompanyName,
-  tagline:
-    branding.Tagline.trim() || 'Configure once. Bill, print, and report anywhere.',
+  tagline: branding.Tagline.trim() || 'Configure once. Bill, print, and report anywhere.',
   applicationLogoAssetId: branding.ApplicationLogoAssetId,
   printLogoAssetId: branding.PrintLogoAssetId,
   faviconAssetId: branding.FaviconAssetId,

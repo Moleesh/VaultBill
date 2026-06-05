@@ -1,9 +1,7 @@
-<!-- @format -->
-
 # JSON Config Spec
 
-Phase 1 documents the initial contracts and reserves deeper validation for the
-schema engine in Phase 5.
+This document summarizes the persisted JSON contracts validated by the current
+schema, print, report, settings, and integration engines.
 
 ## Runtime Branding
 
@@ -20,8 +18,8 @@ schema engine in Phase 5.
 
 ## Document Format Summary
 
-The Phase 1 shell uses format summaries only. Full document format JSON starts
-in Phase 4 and schema validation starts in Phase 5.
+The product shell uses format summaries for selection while the schema engine
+validates complete document format JSON before persistence.
 
 ```json
 {
@@ -32,7 +30,7 @@ in Phase 4 and schema validation starts in Phase 5.
 }
 ```
 
-## Phase 2 Built-In Format Seed
+## Built-In Format Seed
 
 Clean SQLite databases seed one default document format:
 
@@ -60,9 +58,9 @@ The built-in theme IDs are:
 
 - `teal-flow`
 - `midnight-ink`
-- `rust-stone`
+- `sandstone-ledger`
 - `slate-pro`
-- `blush-ledger`
+- `indigo-mint`
 
 ## Print Template
 

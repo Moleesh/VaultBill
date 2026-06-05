@@ -2,9 +2,7 @@ import { escapeSpreadsheetFormula } from './SpreadsheetSafety';
 import { getImportFields } from './ImportFieldCatalog';
 import type { ImportScope, TemplateColumn } from './ImportTypes';
 
-export const buildImportTemplateColumns = (
-  scope: ImportScope,
-): readonly TemplateColumn[] =>
+export const buildImportTemplateColumns = (scope: ImportScope): readonly TemplateColumn[] =>
   getImportFields(scope).map((field) => ({
     label: field.label,
     fieldId: field.fieldId,

@@ -25,8 +25,7 @@ export const requiredIndexes: readonly IndexDefinition[] = [
   },
   {
     indexName: 'ix_attachments_record',
-    createSql:
-      'CREATE INDEX IF NOT EXISTS ix_attachments_record ON attachments(record_id);',
+    createSql: 'CREATE INDEX IF NOT EXISTS ix_attachments_record ON attachments(record_id);',
   },
   {
     indexName: 'ix_print_template_assets_template',

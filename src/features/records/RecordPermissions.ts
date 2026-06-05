@@ -2,10 +2,7 @@ import { hasCapability } from '../../engines/permissionEngine/PermissionEngine';
 import type { OperatorContext } from '../auth/AccountTypes';
 import type { DocumentRecord } from './DocumentRecordSchema';
 
-export const canEditDraft = (
-  record: DocumentRecord,
-  operatorContext: OperatorContext,
-): boolean =>
+export const canEditDraft = (record: DocumentRecord, operatorContext: OperatorContext): boolean =>
   record.Status === 'Draft' &&
   (record.CreatedBy === operatorContext.account.userId ||
     operatorContext.role === 'Admin' ||

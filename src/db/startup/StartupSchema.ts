@@ -4,27 +4,18 @@ import { requiredAuxiliaryTables } from './RequiredAuxiliaryTables';
 import { requiredIndexes } from './RequiredIndexes';
 import { requiredTables } from './RequiredTables';
 import type { ColumnPatch } from './StartupTypes';
-import {
-  DatabaseRecoveryError,
-  type SqliteConnection,
-} from '../sqlite/SqliteConnection';
+import { DatabaseRecoveryError, type SqliteConnection } from '../sqlite/SqliteConnection';
 
 const tableInfoRowSchema = z.object({ name: z.string() }).passthrough();
 
-export const createRequiredTables = (
-  connection: SqliteConnection,
-  appliedPatches: string[],
-) => {
+export const createRequiredTables = (connection: SqliteConnection, appliedPatches: string[]) => {
   for (const table of [...requiredTables, ...requiredAuxiliaryTables]) {
     connection.exec(table.createSql);
     appliedPatches.push(`table:${table.tableName}`);
   }
 };
 
-export const patchMissingColumns = (
-  connection: SqliteConnection,
-  appliedPatches: string[],
-) => {
+export const patchMissingColumns = (connection: SqliteConnection, appliedPatches: string[]) => {
   for (const table of [...requiredTables, ...requiredAuxiliaryTables]) {
     const existingColumns = new Set(
       connection
@@ -33,21 +24,12 @@ export const patchMissingColumns = (
     );
 
     for (const column of table.requiredColumns) {
-      addMissingColumn(
-        connection,
-        table.tableName,
-        existingColumns,
-        column,
-        appliedPatches,
-      );
+      addMissingColumn(connection, table.tableName, existingColumns, column, appliedPatches);
     }
   }
 };
 
-export const createRequiredIndexes = (
-  connection: SqliteConnection,
-  appliedPatches: string[],
-) => {
+export const createRequiredIndexes = (connection: SqliteConnection, appliedPatches: string[]) => {
   for (const index of requiredIndexes) {
     try {
       connection.exec(index.createSql);

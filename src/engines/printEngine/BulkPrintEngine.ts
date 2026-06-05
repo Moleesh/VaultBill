@@ -5,9 +5,7 @@ import type {
   PreparedBulkPrintJob,
 } from './BulkPrintTypes';
 
-export const prepareBulkPrint = (
-  input: PrepareBulkPrintInput,
-): PreparedBulkPrintJob => {
+export const prepareBulkPrint = (input: PrepareBulkPrintInput): PreparedBulkPrintJob => {
   if (input.records.length === 0) {
     return {
       source: input.source,
@@ -45,10 +43,7 @@ export const prepareBulkPrint = (
   };
 };
 
-export const getBulkPrintProgress = (
-  completed: number,
-  total: number,
-): BulkPrintProgress => {
+export const getBulkPrintProgress = (completed: number, total: number): BulkPrintProgress => {
   if (total <= 0) {
     return { completed: 0, total: 0, percent: 0, state: 'Idle' };
   }

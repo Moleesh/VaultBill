@@ -38,15 +38,11 @@ export const validateFieldValue = (
   }
 
   if (field.Type === 'MultiSelect' && !isStringArray(value)) {
-    return [
-      { fieldId: field.FieldId, message: `${field.Label} must be a string array.` },
-    ];
+    return [{ fieldId: field.FieldId, message: `${field.Label} must be a string array.` }];
   }
 
   if (field.Type === 'Checkbox' && typeof value !== 'boolean') {
-    return [
-      { fieldId: field.FieldId, message: `${field.Label} must be true or false.` },
-    ];
+    return [{ fieldId: field.FieldId, message: `${field.Label} must be true or false.` }];
   }
 
   if (requiresString(field.Type) && typeof value !== 'string') {
@@ -70,8 +66,7 @@ export const validateFieldValue = (
   return [];
 };
 
-const isEmpty = (value: unknown): boolean =>
-  value === undefined || value === null || value === '';
+const isEmpty = (value: unknown): boolean => value === undefined || value === null || value === '';
 
 const isDecimalType = (type: FieldConfig['Type']): boolean =>
   type === 'Decimal' || type === 'Money' || type === 'Quantity' || type === 'Rate';

@@ -3,16 +3,22 @@
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 
-const appName = process.env.APP_NAME?.trim() || 'VaultBill';
+const requestedAppName = process.env.APP_NAME?.trim();
+const appName =
+  requestedAppName === undefined || requestedAppName.length === 0 ? 'VaultBill' : requestedAppName;
 const generatedSlug = appName
   .toLowerCase()
   .replace(/[^a-z0-9]+/g, '-')
   .replace(/^-+|-+$/g, '');
-const appSlug = generatedSlug || 'vaultbill';
+const appSlug = generatedSlug.length === 0 ? 'vaultbill' : generatedSlug;
 const githubRepositoryName = process.env.GITHUB_REPOSITORY?.split('/').pop()?.trim();
+const requestedBasePath = process.env.VITE_BASE_PATH?.trim();
 const githubPagesBasePath =
-  process.env.VITE_BASE_PATH?.trim() ||
-  (githubRepositoryName ? `/${githubRepositoryName}/` : '/');
+  requestedBasePath === undefined || requestedBasePath.length === 0
+    ? githubRepositoryName
+      ? `/${githubRepositoryName}/`
+      : '/'
+    : requestedBasePath;
 
 export default defineConfig({
   base: githubPagesBasePath,
@@ -37,10 +43,10 @@ export default defineConfig({
     coverage: {
       reporter: ['text', 'html'],
       thresholds: {
-        lines: 60,
-        functions: 60,
-        branches: 50,
-        statements: 60,
+        lines: 85,
+        functions: 85,
+        branches: 65,
+        statements: 85,
       },
     },
   },

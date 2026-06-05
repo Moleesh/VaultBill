@@ -33,9 +33,7 @@ export const resolvePrinterProfile = (
 };
 
 export const isPrinterOutputTarget = (target: PrinterOutputTarget): boolean =>
-  target === 'SelectedPrinter' ||
-  target === 'SystemDefaultPrinter' ||
-  target === 'AskEveryTime';
+  target === 'SelectedPrinter' || target === 'SystemDefaultPrinter' || target === 'AskEveryTime';
 
 const resolveSelectedPrinter = (
   profile: PrinterProfileConfig,
@@ -43,19 +41,14 @@ const resolveSelectedPrinter = (
   availablePrinters: readonly PrinterSummary[],
 ): ResolvedPrinterProfile => {
   if (platform !== 'DesktopElectron') {
-    return disableProfile(
-      'Printer',
-      'Selected printer output is available only on desktop.',
-    );
+    return disableProfile('Printer', 'Selected printer output is available only on desktop.');
   }
 
   if (!profile.PrinterName) {
     return disableProfile('Printer', 'Selected printer profile has no printer name.');
   }
 
-  const printer = availablePrinters.find(
-    (candidate) => candidate.name === profile.PrinterName,
-  );
+  const printer = availablePrinters.find((candidate) => candidate.name === profile.PrinterName);
 
   return printer
     ? enableProfile('Printer', getPrinterCopyCount(profile), printer.name)

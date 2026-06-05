@@ -28,10 +28,7 @@ export const addLineItemRow = (
 
   assertBelowMaxRows(section, rows.length + 1);
 
-  return [
-    ...rows,
-    createLineItemRow(section, createRowId, rows.length + 1, draft.Values),
-  ];
+  return [...rows, createLineItemRow(section, createRowId, rows.length + 1, draft.Values)];
 };
 
 export const duplicateLineItemRow = (
@@ -121,9 +118,7 @@ const createLineItemRow = (
   },
 });
 
-const getDefaultValues = (
-  section: LineItemSectionConfig,
-): Readonly<Record<string, unknown>> =>
+const getDefaultValues = (section: LineItemSectionConfig): Readonly<Record<string, unknown>> =>
   Object.fromEntries(
     section.Fields.flatMap((field) =>
       field.DefaultValue === undefined ? [] : [[field.FieldId, field.DefaultValue]],
@@ -175,8 +170,6 @@ const validateLineItemRow = (
 
 const assertBelowMaxRows = (section: LineItemSectionConfig, nextCount: number) => {
   if (nextCount > section.MaxRows) {
-    throw new Error(
-      `${section.Label} allows at most ${section.MaxRows.toString()} rows.`,
-    );
+    throw new Error(`${section.Label} allows at most ${section.MaxRows.toString()} rows.`);
   }
 };

@@ -1,25 +1,26 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
 
 import { App } from './App';
-import { redirectToCanonicalBasePath } from './runtime/githubPagesRedirect';
+import { restoreGithubPagesRoute } from './runtime/githubPagesRedirect';
+import { getRouterBaseName } from './runtime/routerBase';
 import './styles/Reset.scss';
 import './styles/Tokens.scss';
 import './styles/Typography.scss';
 import './styles/Print.scss';
 import './styles/Themes/TealFlow.scss';
 import './styles/Themes/MidnightInk.scss';
-import './styles/Themes/RustStone.scss';
 import './styles/Themes/SlatePro.scss';
-import './styles/Themes/BlushLedger.scss';
+import './styles/Themes/SandstoneLedger.scss';
+import './styles/Themes/IndigoMint.scss';
 import './styles/Components/AppShell.scss';
 import './styles/Components/ActionBar.scss';
-import './styles/Components/CardGrid.scss';
 import './styles/Components/FeedbackStates.scss';
 import './styles/Components/FormPreview.scss';
-import './styles/Components/StatusRail.scss';
+import './styles/Components/ProductUi.scss';
 
-redirectToCanonicalBasePath();
+restoreGithubPagesRoute();
 
 const rootElement = document.getElementById('root');
 
@@ -29,6 +30,8 @@ if (!rootElement) {
 
 createRoot(rootElement).render(
   <StrictMode>
-    <App />
+    <BrowserRouter basename={getRouterBaseName()}>
+      <App />
+    </BrowserRouter>
   </StrictMode>,
 );

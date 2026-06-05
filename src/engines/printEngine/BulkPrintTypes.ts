@@ -1,18 +1,11 @@
 import type { DocumentRecord } from '../../features/records/DocumentRecordSchema';
 import type { PrinterProfileConfig, PrinterSummary } from './PrinterProfileTypes';
-import type {
-  PreparedPrintJob,
-  PrintAction,
-  PrintPlatform,
-} from './PrintWorkflowTypes';
+import type { PreparedPrintJob, PrintAction, PrintPlatform } from './PrintWorkflowTypes';
 import type { PrintTemplateAsset, PrintTemplateRecord } from './PrintTemplateTypes';
 
 export type BulkPrintSource = 'SelectedRecords' | 'FilteredReport';
 
-export type BulkPrintOutputMode =
-  | 'CombinedPdf'
-  | 'IndividualPdf'
-  | 'PrinterEachDocument';
+export type BulkPrintOutputMode = 'CombinedPdf' | 'IndividualPdf' | 'PrinterEachDocument';
 
 export type PrepareBulkPrintInput = {
   readonly source: BulkPrintSource;

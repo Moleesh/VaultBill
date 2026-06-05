@@ -1,5 +1,3 @@
-<!-- @format -->
-
 # Optional Integrations
 
 Phase 20 adds optional integration contracts only. VaultBill does not guarantee

@@ -40,10 +40,7 @@ export type PrintTemplateAsset = {
   readonly createdAt: string;
 };
 
-export type PrintWarningKind =
-  | 'MissingPlaceholder'
-  | 'MissingAsset'
-  | 'OutputCapabilityWarning';
+export type PrintWarningKind = 'MissingPlaceholder' | 'MissingAsset' | 'OutputCapabilityWarning';
 
 export type PrintCompileWarning = {
   readonly kind: PrintWarningKind;

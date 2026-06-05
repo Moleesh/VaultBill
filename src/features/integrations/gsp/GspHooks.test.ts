@@ -22,8 +22,7 @@ describe('GspHooks', () => {
       method: 'POST',
       url: 'https://gsp.example/api/einvoice',
       body: { invoice: 'INV-1' },
-      userMessage:
-        'GSP hook request is prepared. VaultBill does not guarantee tax compliance.',
+      userMessage: 'GSP hook request is prepared. VaultBill does not guarantee tax compliance.',
     });
   });
 

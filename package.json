@@ -7,6 +7,7 @@
   "description": "VaultBill JSON-first billing, print, and reporting platform.",
   "main": "dist-electron/Main.js",
   "scripts": {
+    "prepare": "husky",
     "dev": "vite",
     "dev:electron": "npm run build:electron && concurrently -k \"vite --host 0.0.0.0\" \"wait-on http://localhost:5173 && cross-env VITE_DEV_SERVER_URL=http://localhost:5173 electron .\"",
     "format": "prettier --write .",
@@ -15,6 +16,7 @@
     "typecheck": "tsc --noEmit && tsc -p tsconfig.electron.json --noEmit",
     "test": "vitest run",
     "test:ci": "vitest run --no-file-parallelism --maxWorkers=1",
+    "test:e2e": "playwright test",
     "coverage": "vitest run --coverage",
     "coverage:ci": "vitest run --coverage --no-file-parallelism --maxWorkers=1",
     "build:web": "vite build",
@@ -29,16 +31,31 @@
     "smoke:installer:required": "node scripts/installer-smoke.mjs --require-installer",
     "release:notes": "node scripts/generate-release-notes.mjs",
     "release:desktop": "npm run build:web && npm run rebuild:native && npm run build:electron && npm run package:desktop:installer && npm run smoke:installer:required && npm run smoke:first-run-db:ci && npm run release:notes",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "commitlint": "commitlint --from HEAD~1 --to HEAD"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,cjs,mjs}": [
+      "prettier --write",
+      "eslint --max-warnings=0"
+    ],
+    "*.{json,md,scss,yml,yaml,html}": "prettier --write"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.107.0",
+    "date-fns": "^4.4.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "react-router-dom": "^7.17.0",
+    "ts-pattern": "^5.9.0",
     "zod": "^3.25.0"
   },
   "devDependencies": {
+    "@commitlint/cli": "^21.0.2",
+    "@commitlint/config-conventional": "^21.0.2",
     "@electron/rebuild": "^4.0.4",
     "@eslint/js": "^9.28.0",
+    "@playwright/test": "^1.60.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
     "@types/node": "^22.15.29",
@@ -52,10 +69,13 @@
     "electron-builder": "^26.8.1",
     "eslint": "^9.28.0",
     "eslint-config-prettier": "^10.1.5",
+    "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^16.2.0",
+    "husky": "^9.1.7",
     "jsdom": "^26.1.0",
+    "lint-staged": "^17.0.7",
     "prettier": "^3.5.3",
     "sass": "^1.89.1",
     "typescript": "^5.8.3",

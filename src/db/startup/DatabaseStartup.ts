@@ -1,19 +1,9 @@
-import {
-  seedBuiltInDefaultFormatIfNeeded,
-  seedRuntimeBrandingIfNeeded,
-} from './StartupSeeds';
-import {
-  createRequiredIndexes,
-  createRequiredTables,
-  patchMissingColumns,
-} from './StartupSchema';
+import { seedBuiltInDefaultFormatIfNeeded, seedRuntimeBrandingIfNeeded } from './StartupSeeds';
+import { createRequiredIndexes, createRequiredTables, patchMissingColumns } from './StartupSchema';
 import { startupHealthSettingKey } from './StartupSettingKeys';
 import { enableAndVerifyForeignKeys } from './StartupPragmas';
 import type { StartupCheckOptions, StartupCheckResult } from './StartupTypes';
-import {
-  ensureSingleValidDefaultFormat,
-  validateSettingsReadWrite,
-} from './StartupValidation';
+import { ensureSingleValidDefaultFormat, validateSettingsReadWrite } from './StartupValidation';
 import type { SqliteConnection } from '../sqlite/SqliteConnection';
 
 export const runDatabaseStartupChecks = (

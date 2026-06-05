@@ -1,9 +1,6 @@
 import { z } from 'zod';
 
-import {
-  builtInDefaultFormat,
-  defaultRuntimeBrandingSetting,
-} from './BuiltInDefaultFormat';
+import { builtInDefaultFormat, defaultRuntimeBrandingSetting } from './BuiltInDefaultFormat';
 import { DocumentFormatConfigSchema, RuntimeBrandingSchema } from './ConfigSchemas';
 import { stringifyValidatedJson } from './JsonParsing';
 import { runtimeBrandingSettingKey } from './StartupSettingKeys';
@@ -54,10 +51,9 @@ export const seedRuntimeBrandingIfNeeded = (
   nowIso: string,
   appliedPatches: string[],
 ) => {
-  const existing = connection.get(
-    'SELECT setting_key FROM settings WHERE setting_key = ?;',
-    [runtimeBrandingSettingKey],
-  );
+  const existing = connection.get('SELECT setting_key FROM settings WHERE setting_key = ?;', [
+    runtimeBrandingSettingKey,
+  ]);
 
   if (existing) {
     return;

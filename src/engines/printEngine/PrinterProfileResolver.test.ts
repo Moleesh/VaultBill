@@ -8,9 +8,7 @@ const availablePrinters: readonly PrinterSummary[] = [
   { id: 'canon', name: 'Canon Office', isDefault: false },
 ];
 
-const createProfile = (
-  overrides: Partial<PrinterProfileConfig> = {},
-): PrinterProfileConfig => ({
+const createProfile = (overrides: Partial<PrinterProfileConfig> = {}): PrinterProfileConfig => ({
   ProfileId: 'OfficeA4',
   ProfileName: 'Office A4 Printer',
   OutputTarget: 'SelectedPrinter',
@@ -28,9 +26,7 @@ const createProfile = (
 
 describe('PrinterProfileResolver', () => {
   it('enables selected desktop printers only when the printer is available', () => {
-    expect(
-      resolvePrinterProfile(createProfile(), 'DesktopElectron', availablePrinters),
-    ).toEqual({
+    expect(resolvePrinterProfile(createProfile(), 'DesktopElectron', availablePrinters)).toEqual({
       isEnabled: true,
       workflowTarget: 'Printer',
       copyCount: 2,

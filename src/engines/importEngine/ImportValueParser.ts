@@ -1,9 +1,6 @@
 import type { FieldConfig } from '../schemaEngine/SchemaEngineTypes';
 
-export const parseImportValue = (
-  field: FieldConfig,
-  rawValue: string | undefined,
-): unknown => {
+export const parseImportValue = (field: FieldConfig, rawValue: string | undefined): unknown => {
   const value = rawValue?.trim() ?? '';
 
   if (!value) {

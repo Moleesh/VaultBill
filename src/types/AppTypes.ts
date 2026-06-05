@@ -5,9 +5,9 @@ export type Role = 'SysAdmin' | 'Admin' | 'User';
 export type ThemeId =
   | 'teal-flow'
   | 'midnight-ink'
-  | 'rust-stone'
   | 'slate-pro'
-  | 'blush-ledger';
+  | 'sandstone-ledger'
+  | 'indigo-mint';
 
 export type ShellSection = {
   readonly id: string;
@@ -33,12 +33,6 @@ export type DocumentFormatSummary = {
   readonly isDefault: boolean;
 };
 
-export type PhaseCard = {
-  readonly title: string;
-  readonly summary: string;
-  readonly state: 'ready' | 'next' | 'planned';
-};
-
 export type ThemeController = {
   readonly themeId: ThemeId;
   readonly setThemeId: (themeId: ThemeId) => void;
@@ -49,3 +43,5 @@ export type ThemeOption = {
   readonly id: ThemeId;
   readonly label: string;
 };
+
+export type AppRouteId = 'dashboard' | 'records' | 'reports' | 'builder' | 'settings';

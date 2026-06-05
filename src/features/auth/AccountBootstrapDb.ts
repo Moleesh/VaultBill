@@ -18,23 +18,14 @@ export const seedBootstrapAccountsIfNeeded = (
     return { seeded: false, createdAccountIds: [] };
   }
 
-  const seededAccounts = bootstrapOperatorAccounts.filter(
-    (account) => account.role !== 'User',
-  );
+  const seededAccounts = bootstrapOperatorAccounts.filter((account) => account.role !== 'User');
 
   for (const account of seededAccounts) {
     connection.run(
       `INSERT INTO users
         (user_id, username, display_name, role, pin_hash, is_active, created_at, updated_at)
         VALUES (?, ?, ?, ?, NULL, 1, ?, ?);`,
-      [
-        account.userId,
-        account.username,
-        account.displayName,
-        account.role,
-        nowIso,
-        nowIso,
-      ],
+      [account.userId, account.username, account.displayName, account.role, nowIso, nowIso],
     );
   }
 

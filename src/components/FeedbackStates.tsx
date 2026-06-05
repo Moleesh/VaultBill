@@ -3,23 +3,19 @@ import type { FC } from 'react';
 const states = [
   {
     label: 'Loading',
-    message:
-      'Slow records, reports, imports, print, backup, and restore tasks show progress.',
+    message: 'Slow records, reports, imports, print, backup, and restore tasks show progress.',
   },
   {
     label: 'Empty',
-    message:
-      'No matching rows or records gets a calm empty state instead of a blank panel.',
+    message: 'No matching rows or records gets a calm empty state instead of a blank panel.',
   },
   {
     label: 'Error',
-    message:
-      'Validation and adapter failures surface in summaries with field follow-up.',
+    message: 'Validation and adapter failures surface in summaries with field follow-up.',
   },
   {
     label: 'Success',
-    message:
-      'Completed save, print, export, backup, and restore actions announce success.',
+    message: 'Completed save, print, export, backup, and restore actions announce success.',
   },
 ] as const;
 

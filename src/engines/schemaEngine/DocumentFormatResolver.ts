@@ -32,8 +32,7 @@ export const resolveDocumentFormatSelection = (
   const byName = selection.formatName
     ? validFormats.find(
         (format) =>
-          format.formatName.toLocaleLowerCase() ===
-          selection.formatName?.toLocaleLowerCase(),
+          format.formatName.toLocaleLowerCase() === selection.formatName?.toLocaleLowerCase(),
       )
     : undefined;
 
@@ -50,9 +49,7 @@ export const resolveDocumentFormatSelection = (
   };
 };
 
-export const canDeleteDocumentFormat = (
-  format: DocumentFormatRecord,
-): DeleteFormatDecision => {
+export const canDeleteDocumentFormat = (format: DocumentFormatRecord): DeleteFormatDecision => {
   if (format.isDefault) {
     return {
       canDelete: false,
@@ -70,10 +67,7 @@ const parseStoredDocumentFormat = (
   storedFormat: StoredDocumentFormat,
 ): DocumentFormatRecord | undefined => {
   try {
-    const config = parseJsonWithSchema(
-      storedFormat.formatJson,
-      DocumentFormatConfigSchema,
-    );
+    const config = parseJsonWithSchema(storedFormat.formatJson, DocumentFormatConfigSchema);
 
     if (
       config.FormatId !== storedFormat.formatId ||
@@ -93,9 +87,7 @@ const parseStoredDocumentFormat = (
   }
 };
 
-const getSingleDefaultFormat = (
-  formats: readonly DocumentFormatRecord[],
-): DocumentFormatRecord => {
+const getSingleDefaultFormat = (formats: readonly DocumentFormatRecord[]): DocumentFormatRecord => {
   const defaults = formats.filter((format) => format.isDefault);
 
   if (defaults.length !== 1) {
@@ -107,9 +99,7 @@ const getSingleDefaultFormat = (
   const defaultFormat = defaults[0];
 
   if (!defaultFormat) {
-    throw new DatabaseConfigurationError(
-      'Default document format could not be loaded.',
-    );
+    throw new DatabaseConfigurationError('Default document format could not be loaded.');
   }
 
   return defaultFormat;

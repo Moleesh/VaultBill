@@ -2,11 +2,7 @@ import { builtInDefaultFormat } from '../db/startup/BuiltInDefaultFormat';
 import type { StoredDocumentFormat } from '../engines/schemaEngine/DocumentFormatTypes';
 import type { DocumentFormatSummary } from '../types/AppTypes';
 
-const createFormatJson = (
-  formatId: string,
-  formatName: string,
-  description: string,
-): string =>
+const createFormatJson = (formatId: string, formatName: string, description: string): string =>
   JSON.stringify({
     ...builtInDefaultFormat,
     FormatId: formatId,
@@ -39,8 +35,8 @@ export const phaseFourStoredFormats: readonly StoredDocumentFormat[] = [
   },
 ];
 
-export const documentFormatSummaries: readonly DocumentFormatSummary[] =
-  phaseFourStoredFormats.map((format) => {
+export const documentFormatSummaries: readonly DocumentFormatSummary[] = phaseFourStoredFormats.map(
+  (format) => {
     const parsed: unknown = JSON.parse(format.formatJson);
     const description =
       typeof parsed === 'object' &&
@@ -56,4 +52,5 @@ export const documentFormatSummaries: readonly DocumentFormatSummary[] =
       description,
       isDefault: format.isDefault,
     };
-  });
+  },
+);

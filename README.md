@@ -1,13 +1,11 @@
-<!-- @format -->
-
 # VaultBill ✨
 
 VaultBill is a JSON-first, offline-capable billing, invoicing, reporting, PDF,
 and print platform built to feel calm, predictable, and ready to grow 😊
 
-> The implementation follows `VaultBill_Final_Spec_v9.md` in phase order. The
-> current completed scope is Phase 20, and the codebase, tests, and docs all
-> reflect that state.
+> The implementation follows `VaultBill_Final_Spec_v20.md`. The routed product
+> shell, platform capability model, shared overlays, automated quality gates,
+> desktop releases, and hosted web/demo deployment reflect that plan.
 
 ## What VaultBill Is 🌟
 
@@ -45,6 +43,25 @@ If you want the Electron shell too:
 ```powershell
 npm run dev:electron
 ```
+
+## Environment Configuration 🔐
+
+Copy `.env.example` to a local environment file only when you need to override
+defaults. Never place a Supabase service-role key or provider secret in a
+frontend variable.
+
+| Variable                 | Required                | Used by                                  | Default     | Purpose                                                                                                 |
+| ------------------------ | ----------------------- | ---------------------------------------- | ----------- | ------------------------------------------------------------------------------------------------------- |
+| `APP_NAME`               | No                      | Desktop build + default runtime branding | `VaultBill` | Controls packaged product name, artifact slug, app identifier slug, and default display name            |
+| `SYSADMIN_PASSWORD`      | No                      | Desktop / LAN server startup             | Empty       | Optional default SysAdmin password for protected SysAdmin actions such as permanent delete              |
+| `BACKUP_PASSWORD`        | No                      | Desktop backup/restore                   | Empty       | Optional default password for encrypted backups; if present, encrypted backup is enabled by default     |
+| `VITE_SUPABASE_URL`      | Yes for hosted web/demo | GitHub Pages web-only build              | Empty       | Public Supabase project URL used only by the hosted web/demo build                                      |
+| `VITE_SUPABASE_ANON_KEY` | Yes for hosted web/demo | GitHub Pages web-only build              | Empty       | Public Supabase publishable/anon key used only by the hosted web/demo build; RLS protects document rows |
+| `VITE_BASE_PATH`         | No                      | GitHub Pages web-only build              | `/`         | Optional Vite base path when deploying under a repository path                                          |
+
+The GitHub environment named `VaultBill` must define `SUPABASE_URL` and
+`SUPABASE_ANON_KEY`. The Pages workflow maps them to the public Vite variables
+and sets the internal web-only flag itself.
 
 ## Useful Scripts 🛠️
 
@@ -98,6 +115,8 @@ the app includes a redirect so stray URLs fall back to the canonical home page.
   Release for the same version before publishing the fresh one.
 - `GitHub Pages` automatically deploys the web build on pushes to `main`.
 - The Pages workflow uses the `VaultBill` GitHub Pages environment name.
+- The hosted build uses device-scoped Supabase document rows protected by RLS;
+  desktop-only and secret-backed integrations remain disabled.
 - A `public/404.html` fallback keeps GitHub Pages navigation friendly.
 
 ## What’s Inside The App 📘
@@ -125,9 +144,9 @@ VaultBill already includes the core foundations for:
 
 ## A Tiny Promise 😊
 
-This repo is meant to stay phase-ordered, test-backed, and pleasantly boring in
-the best possible way. No hidden magic, no surprise build steps, and no
-guesswork about where the code lives.
+This repo is meant to stay spec-led, test-backed, and pleasantly boring in the
+best possible way. No hidden magic, no surprise build steps, and no guesswork
+about where the code lives.
 
 If you’re here to extend VaultBill, you’re in the right place. Let’s keep it
 smooth, colorful, and reliable ✨

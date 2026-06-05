@@ -28,10 +28,7 @@ describe('SmsProvider', () => {
         'Production web SMS must use a server-side provider flow. Direct secrets are not allowed.',
     });
     expect(
-      canUseSmsProvider(
-        { ...enabledSettings, UseServerSideProxy: true },
-        'ProductionWeb',
-      ),
+      canUseSmsProvider({ ...enabledSettings, UseServerSideProxy: true }, 'ProductionWeb'),
     ).toMatchObject({ ok: true });
   });
 

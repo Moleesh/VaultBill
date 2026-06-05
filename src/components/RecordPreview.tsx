@@ -8,17 +8,12 @@ type RecordPreviewProps = {
   readonly operatorContext: OperatorContext;
 };
 
-export const RecordPreview: FC<RecordPreviewProps> = ({
-  activeFormat,
-  operatorContext,
-}) => (
+export const RecordPreview: FC<RecordPreviewProps> = ({ activeFormat, operatorContext }) => (
   <section className="form-preview" aria-labelledby="record-preview-title">
     <div className="form-preview__header">
       <div>
         <p className="eyebrow">Record entry</p>
-        <h2 id="record-preview-title">
-          {activeFormat?.formatName ?? 'Default format'} draft
-        </h2>
+        <h2 id="record-preview-title">{activeFormat?.formatName ?? 'Default format'} draft</h2>
       </div>
       <span className="status-pill">Draft by {operatorContext.CreatedByName}</span>
     </div>

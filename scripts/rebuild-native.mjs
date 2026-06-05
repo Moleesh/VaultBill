@@ -7,9 +7,7 @@ const require = createRequire(import.meta.url);
 const electronPackage = require('electron/package.json');
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
-console.log(
-  `Rebuilding production native modules for Electron ${electronPackage.version}.`,
-);
+console.log(`Rebuilding production native modules for Electron ${electronPackage.version}.`);
 
 await rebuild({
   buildPath: root,

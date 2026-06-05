@@ -6,11 +6,7 @@ import {
   assertCanFinalizeDraft,
   assertCanSaveDraft,
 } from './RecordPermissions';
-import type {
-  CancelRecordInput,
-  DraftRecordInput,
-  FinalizeRecordInput,
-} from './RecordTypes';
+import type { CancelRecordInput, DraftRecordInput, FinalizeRecordInput } from './RecordTypes';
 import { insertRecordRow, updateRecordRow } from './RecordRows';
 import { runRecordTransaction } from './RecordTransactions';
 import { allocateDocumentNumber } from './SequenceEngine';
@@ -19,9 +15,7 @@ export const loadDocumentRecord = (
   connection: SqliteConnection,
   recordId: string,
 ): DocumentRecord | undefined => {
-  const row = connection.get('SELECT record_json FROM records WHERE record_id = ?;', [
-    recordId,
-  ]);
+  const row = connection.get('SELECT record_json FROM records WHERE record_id = ?;', [recordId]);
 
   return row ? parseRecordJsonRow(row) : undefined;
 };
@@ -31,9 +25,7 @@ export const saveDraftRecord = (
   input: DraftRecordInput,
 ): DocumentRecord =>
   runRecordTransaction(connection, () => {
-    const existing = input.recordId
-      ? loadDocumentRecord(connection, input.recordId)
-      : undefined;
+    const existing = input.recordId ? loadDocumentRecord(connection, input.recordId) : undefined;
     assertCanSaveDraft(existing, input.operatorContext);
     const record = buildDraftRecord(input, existing);
 
@@ -125,10 +117,7 @@ const buildDraftRecord = (
     input.nowIso,
   );
 
-const requireDocumentRecord = (
-  connection: SqliteConnection,
-  recordId: string,
-): DocumentRecord => {
+const requireDocumentRecord = (connection: SqliteConnection, recordId: string): DocumentRecord => {
   const record = loadDocumentRecord(connection, recordId);
 
   if (!record) {
@@ -138,10 +127,7 @@ const requireDocumentRecord = (
   return record;
 };
 
-const updateCancellationColumns = (
-  connection: SqliteConnection,
-  input: CancelRecordInput,
-) => {
+const updateCancellationColumns = (connection: SqliteConnection, input: CancelRecordInput) => {
   connection.run(
     `UPDATE records
       SET cancelled_at = ?, cancelled_by = ?, cancelled_by_name = ?,

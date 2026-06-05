@@ -14,9 +14,7 @@ describe('ImportPreviewEngine', () => {
         format: builtInDefaultFormat,
         sectionId: 'Items',
       },
-      sourceTable: parseDelimitedText(
-        'Item Name,Quantity,Rate\nSample Item,2.000,500.0000',
-      ),
+      sourceTable: parseDelimitedText('Item Name,Quantity,Rate\nSample Item,2.000,500.0000'),
       calculateDerived: true,
       rowIdFactory,
     });

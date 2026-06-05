@@ -40,10 +40,7 @@ export const roleCapabilityMap: RoleCapabilityMap = {
 export const hasCapability = (role: Role, capability: Capability): boolean =>
   roleCapabilityMap[role].has(capability);
 
-export const evaluateCapability = (
-  role: Role,
-  capability: Capability,
-): PermissionDecision => {
+export const evaluateCapability = (role: Role, capability: Capability): PermissionDecision => {
   if (hasCapability(role, capability)) {
     return {
       isAllowed: true,
@@ -65,9 +62,7 @@ export const evaluateAnyCapability = (
     return { isAllowed: true, reason: 'No capability is required.' };
   }
 
-  const allowedCapability = capabilities.find((capability) =>
-    hasCapability(role, capability),
-  );
+  const allowedCapability = capabilities.find((capability) => hasCapability(role, capability));
 
   if (allowedCapability) {
     return evaluateCapability(role, allowedCapability);

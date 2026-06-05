@@ -4,7 +4,11 @@ export type BuildIdentity = {
 };
 
 export const getBuildIdentity = (): BuildIdentity => {
-  const appName = process.env.APP_NAME?.trim() || 'VaultBill';
+  const requestedAppName = process.env.APP_NAME?.trim();
+  const appName =
+    requestedAppName === undefined || requestedAppName.length === 0
+      ? 'VaultBill'
+      : requestedAppName;
   const generatedSlug = appName
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
@@ -12,6 +16,6 @@ export const getBuildIdentity = (): BuildIdentity => {
 
   return {
     appName,
-    appSlug: generatedSlug || 'vaultbill',
+    appSlug: generatedSlug.length === 0 ? 'vaultbill' : generatedSlug,
   };
 };

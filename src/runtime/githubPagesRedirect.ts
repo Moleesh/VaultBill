@@ -8,27 +8,15 @@ const ensureTrailingSlash = (value: string): string => {
   return trimmedValue.endsWith('/') ? trimmedValue : `${trimmedValue}/`;
 };
 
-export const getCanonicalBasePath = (): string =>
-  ensureTrailingSlash(import.meta.env.BASE_URL);
+export const getCanonicalBasePath = (): string => ensureTrailingSlash(import.meta.env.BASE_URL);
 
-export const shouldRedirectToBasePath = (
-  pathname: string,
-  basePath: string,
-): boolean => {
-  return ensureTrailingSlash(pathname) !== ensureTrailingSlash(basePath);
-};
+export const restoreGithubPagesRoute = (): void => {
+  const route = new URLSearchParams(window.location.search).get('route');
 
-export const redirectToCanonicalBasePath = (): void => {
-  if (!import.meta.env.PROD) {
+  if (!route?.startsWith('/')) {
     return;
   }
 
-  const canonicalBasePath = getCanonicalBasePath();
-
-  if (!shouldRedirectToBasePath(window.location.pathname, canonicalBasePath)) {
-    return;
-  }
-
-  const targetUrl = new URL(canonicalBasePath, window.location.origin);
-  window.location.replace(targetUrl.toString());
+  const basePath = getCanonicalBasePath().replace(/\/$/u, '');
+  window.history.replaceState(null, '', `${basePath}${route}`);
 };

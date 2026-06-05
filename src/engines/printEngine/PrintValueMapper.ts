@@ -23,11 +23,7 @@ export const buildRecordPrintValues = (
   const warnings: PrintCompileWarning[] = [];
 
   for (const [placeholder, mapping] of Object.entries(input.templateConfig.Mappings)) {
-    const resolved = resolveRecordSource(
-      input.record,
-      mapping.SourceField,
-      input.companyProfile,
-    );
+    const resolved = resolveRecordSource(input.record, mapping.SourceField, input.companyProfile);
 
     if (resolved === undefined || resolved === null || resolved === '') {
       warnings.push({
@@ -67,9 +63,7 @@ const resolveRecordSource = (
   return metadata[normalizedSource] ?? record.Values[normalizedSource];
 };
 
-const getRecordMetadata = (
-  record: DocumentRecord,
-): Readonly<Record<string, unknown>> => ({
+const getRecordMetadata = (record: DocumentRecord): Readonly<Record<string, unknown>> => ({
   RecordId: record.RecordId,
   FormatId: record.FormatId,
   FormatName: record.FormatName,

@@ -2,8 +2,7 @@ const blockedTagPattern = /<\s*\/?\s*(script|iframe|object|embed|form|meta|link)
 const eventHandlerPattern = /\son[a-z]+\s*=/i;
 const disallowedUrlAttributePattern =
   /\b(?:src|href)\s*=\s*["']?\s*(?:javascript:|https?:\/\/|\/\/|data:|file:)/i;
-const externalCssUrlPattern =
-  /(?:@import\s+|url\s*\(\s*["']?\s*(?:https?:\/\/|\/\/|data:|file:))/i;
+const externalCssUrlPattern = /(?:@import\s+|url\s*\(\s*["']?\s*(?:https?:\/\/|\/\/|data:|file:))/i;
 
 export const sanitizeTemplateHtml = (templateHtml: string): string => {
   if (!templateHtml.trim()) {

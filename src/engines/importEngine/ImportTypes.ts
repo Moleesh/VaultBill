@@ -11,11 +11,7 @@ export type SourceColumn = {
   readonly header: string;
 };
 
-export type ImportFieldKind =
-  | 'Required'
-  | 'Optional'
-  | 'SystemGenerated'
-  | 'AutoCalculated';
+export type ImportFieldKind = 'Required' | 'Optional' | 'SystemGenerated' | 'AutoCalculated';
 
 export type ImportFieldDescriptor = {
   readonly fieldId: string;

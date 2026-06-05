@@ -16,21 +16,17 @@ describe('TemplateHtmlSanitizer', () => {
   });
 
   it('rejects runtime script surfaces and inline event handlers', () => {
-    expect(() => sanitizeTemplateHtml('<script>alert(1)</script>')).toThrow(
-      'blocked HTML tags',
-    );
+    expect(() => sanitizeTemplateHtml('<script>alert(1)</script>')).toThrow('blocked HTML tags');
     expect(() => sanitizeTemplateHtml('<div onclick="print()">x</div>')).toThrow(
       'inline event handlers',
     );
-    expect(() => sanitizeTemplateHtml('<iframe src="/x"></iframe>')).toThrow(
-      'blocked HTML tags',
-    );
+    expect(() => sanitizeTemplateHtml('<iframe src="/x"></iframe>')).toThrow('blocked HTML tags');
   });
 
   it('rejects external assets and CSS resource loading', () => {
-    expect(() =>
-      sanitizeTemplateHtml('<img src="https://example.test/logo.png" />'),
-    ).toThrow('external assets');
+    expect(() => sanitizeTemplateHtml('<img src="https://example.test/logo.png" />')).toThrow(
+      'external assets',
+    );
     expect(() =>
       sanitizeTemplateHtml('<style>@import url("https://example.test/x.css")</style>'),
     ).toThrow('external resources');

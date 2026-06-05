@@ -24,9 +24,7 @@ const requireItemsSection = () => {
 
 describe('FormulaEngine', () => {
   it('adds decimal strings without JavaScript floating-point drift', () => {
-    expect(formatDecimal(addDecimal(parseDecimal('0.1'), parseDecimal('0.2')), 2)).toBe(
-      '0.30',
-    );
+    expect(formatDecimal(addDecimal(parseDecimal('0.1'), parseDecimal('0.2')), 2)).toBe('0.30');
   });
 
   it('rounds HALF_UP to the requested precision', () => {
@@ -57,9 +55,9 @@ describe('FormulaEngine', () => {
   });
 
   it('throws when a variable is missing', () => {
-    expect(() =>
-      evaluateFormula('Quantity * Rate', { Quantity: '2.000' }, policy, 2),
-    ).toThrow(/Rate/u);
+    expect(() => evaluateFormula('Quantity * Rate', { Quantity: '2.000' }, policy, 2)).toThrow(
+      /Rate/u,
+    );
   });
 
   it('throws for invalid formulas and decimal inputs', () => {
@@ -69,17 +67,17 @@ describe('FormulaEngine', () => {
     expect(() =>
       evaluateFormula('(Quantity + Rate', { Quantity: '2', Rate: '3' }, policy, 2),
     ).toThrow(/closing parenthesis/u);
-    expect(() =>
-      evaluateFormula('Quantity Rate', { Quantity: '2', Rate: '3' }, policy, 2),
-    ).toThrow(/trailing/u);
+    expect(() => evaluateFormula('Quantity Rate', { Quantity: '2', Rate: '3' }, policy, 2)).toThrow(
+      /trailing/u,
+    );
     expect(() => parseDecimal('not-a-decimal')).toThrow(/Invalid decimal/u);
     expect(() => decimalFromInteger(1.5)).toThrow(/integer/u);
   });
 
   it('throws for division by zero and unsupported rounding modes', () => {
-    expect(() =>
-      divideDecimal(parseDecimal('1'), parseDecimal('0'), 2, 'HALF_UP'),
-    ).toThrow(/Division by zero/u);
+    expect(() => divideDecimal(parseDecimal('1'), parseDecimal('0'), 2, 'HALF_UP')).toThrow(
+      /Division by zero/u,
+    );
     expect(() => toRoundingMode('BANKERS')).toThrow(/Unsupported rounding mode/u);
   });
 

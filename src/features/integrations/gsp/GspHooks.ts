@@ -12,9 +12,7 @@ export type GspHookPlan = {
   readonly userMessage: string;
 };
 
-export const maskGspSettings = (
-  settings: GspIntegrationSettings,
-): GspIntegrationSettings => ({
+export const maskGspSettings = (settings: GspIntegrationSettings): GspIntegrationSettings => ({
   ...settings,
   ClientSecret: maskSecret(settings.ClientSecret),
 });
@@ -44,8 +42,7 @@ export const buildGspHookPlan = (
       'X-VaultBill-GSP-Sandbox': settings.Sandbox ? 'true' : 'false',
     },
     body: payload,
-    userMessage:
-      'GSP hook request is prepared. VaultBill does not guarantee tax compliance.',
+    userMessage: 'GSP hook request is prepared. VaultBill does not guarantee tax compliance.',
   };
 };
 

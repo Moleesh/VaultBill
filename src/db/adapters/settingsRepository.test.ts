@@ -102,9 +102,7 @@ describe('settingsRepository', () => {
       {
         Enabled: true,
         DefaultSellerStateCode: '29',
-        HsnSacCatalog: [
-          { Code: '9983', Description: 'Services', TaxRatePercent: '18' },
-        ],
+        HsnSacCatalog: [{ Code: '9983', Description: 'Services', TaxRatePercent: '18' }],
       },
       fixedNow,
     );

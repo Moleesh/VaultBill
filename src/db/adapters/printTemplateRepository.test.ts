@@ -47,8 +47,7 @@ describe('printTemplateRepository', () => {
     savePrintTemplate(db, {
       templateId: 'TaxInvoiceA4',
       templateName: 'Tax Invoice A4',
-      templateHtml:
-        '<style>.page{page-break-after:always}</style>{{Record.CustomerName}}',
+      templateHtml: '<style>.page{page-break-after:always}</style>{{Record.CustomerName}}',
       templateConfig,
       scope: 'Record',
       updatedAt: fixedNow,

@@ -17,9 +17,7 @@ describe('PermissionEngine', () => {
   });
 
   it('allows an action when any required capability is available', () => {
-    expect(
-      evaluateAnyCapability('Admin', ['BrandingSettings', 'UserAccountManagement']),
-    ).toEqual({
+    expect(evaluateAnyCapability('Admin', ['BrandingSettings', 'UserAccountManagement'])).toEqual({
       isAllowed: true,
       reason: 'Admin can use UserAccountManagement.',
     });

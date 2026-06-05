@@ -1,8 +1,4 @@
-import type {
-  AccountLimitValidation,
-  OperatorAccount,
-  OperatorContext,
-} from './AccountTypes';
+import type { AccountLimitValidation, OperatorAccount, OperatorContext } from './AccountTypes';
 
 export const bootstrapOperatorAccounts: readonly OperatorAccount[] = [
   {
@@ -41,9 +37,7 @@ export const validateAccountLimits = (
   accounts: readonly OperatorAccount[],
 ): AccountLimitValidation => {
   const activeAccounts = accounts.filter((account) => account.isActive);
-  const activeSysAdmins = activeAccounts.filter(
-    (account) => account.role === 'SysAdmin',
-  );
+  const activeSysAdmins = activeAccounts.filter((account) => account.role === 'SysAdmin');
   const activeAdmins = activeAccounts.filter((account) => account.role === 'Admin');
   const activeUsers = activeAccounts.filter((account) => account.role === 'User');
   const messages: string[] = [];

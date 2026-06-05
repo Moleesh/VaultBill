@@ -4,9 +4,7 @@ import type { LineItemSectionConfig } from '../schemaEngine/LineItemTypes';
 import type { FieldConfig } from '../schemaEngine/SchemaEngineTypes';
 import type { ImportFieldDescriptor, ImportScope } from './ImportTypes';
 
-export const getImportFields = (
-  scope: ImportScope,
-): readonly ImportFieldDescriptor[] => {
+export const getImportFields = (scope: ImportScope): readonly ImportFieldDescriptor[] => {
   if (scope.kind === 'LineItem') {
     return getLineItemImportFields(scope.format, scope.sectionId);
   }
@@ -35,9 +33,7 @@ export const getLineItemSection = (
   format: DocumentFormatConfig,
   sectionId: string,
 ): LineItemSectionConfig => {
-  const section = format.LineItemSections.find(
-    (candidate) => candidate.SectionId === sectionId,
-  );
+  const section = format.LineItemSections.find((candidate) => candidate.SectionId === sectionId);
 
   if (!section) {
     throw new Error(`Line item section ${sectionId} was not found.`);
@@ -58,11 +54,7 @@ const toImportField = (field: FieldConfig): readonly ImportFieldDescriptor[] => 
       fieldId: field.FieldId,
       label: field.Label,
       type: field.Type,
-      kind: field.Calculated
-        ? 'AutoCalculated'
-        : field.Required
-          ? 'Required'
-          : 'Optional',
+      kind: field.Calculated ? 'AutoCalculated' : field.Required ? 'Required' : 'Optional',
       sampleValue: field.SampleValue,
       fieldConfig: field,
     },

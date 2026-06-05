@@ -33,19 +33,17 @@ describe('BackupEngine', () => {
     expect(backupPackage.files['database.sqlite']).toBeUndefined();
     expect(backupPackage.files['database.sqlite.enc']).toBeDefined();
     expect(
-      Array.from(
-        await restoreBackupPackage({ backupPackage, password: 'backup-password' }),
-      ),
+      Array.from(await restoreBackupPackage({ backupPackage, password: 'backup-password' })),
     ).toEqual(Array.from(databaseBytes));
-    const recoveryKey = backupPackage.recoveryKey;
+    const { recoveryKey } = backupPackage;
 
     if (!recoveryKey) {
       throw new Error('Expected encrypted backup recovery key.');
     }
 
-    expect(
-      Array.from(await restoreBackupPackage({ backupPackage, recoveryKey })),
-    ).toEqual(Array.from(databaseBytes));
+    expect(Array.from(await restoreBackupPackage({ backupPackage, recoveryKey }))).toEqual(
+      Array.from(databaseBytes),
+    );
   });
 
   it('rejects restore packages with missing or changed checksums', async () => {
@@ -62,8 +60,8 @@ describe('BackupEngine', () => {
       },
     };
 
-    await expect(
-      restoreBackupPackage({ backupPackage: tamperedPackage }),
-    ).rejects.toThrow('Backup checksums do not match.');
+    await expect(restoreBackupPackage({ backupPackage: tamperedPackage })).rejects.toThrow(
+      'Backup checksums do not match.',
+    );
   });
 });

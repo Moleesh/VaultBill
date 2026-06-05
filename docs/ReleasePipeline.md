@@ -1,9 +1,7 @@
-<!-- @format -->
-
 # Release Pipeline
 
-Phase 20 packages VaultBill with Electron Builder after the web and Electron
-shell builds complete.
+VaultBill packages the desktop product with Electron Builder after the shared
+web UI and Electron shell builds complete.
 
 ## Build Identity
 
@@ -40,13 +38,13 @@ so upgrades resolve to the same app identity.
 
 The `Build Release Files` workflow runs on manual dispatch and has two jobs.
 The `verify` job runs install, format check, lint, typecheck, unit tests,
-coverage, web build, Electron native-module rebuild, desktop build, desktop
-directory packaging, and installer smoke on Ubuntu. The `package` job runs on
-Windows, creates the installer, requires an installer artifact during smoke,
-validates first-run DB startup patch tests, generates release notes, and
-uploads `release/**` plus the generated notes. It also publishes a GitHub
-Release for `v${package.json version}`, and if that release tag already exists
-it deletes the old release and tag before recreating them with the new files.
+coverage, Playwright browser flows, web build, Electron native-module rebuild,
+desktop build, desktop directory packaging, and installer smoke on Ubuntu. The
+`package` job runs on Windows, creates the installer, requires an installer
+artifact during smoke, validates first-run DB startup patch tests, generates
+release notes, and uploads `release/**` plus the generated notes. It also
+publishes a GitHub Release for `v${package.json version}`, and if that release
+tag already exists it deletes the old release and tag before recreating them.
 
 To keep the SQLite-backed startup tests deterministic on hosted runners, the
 workflow installs Node 24 so `node:sqlite` stays available on hosted runners
@@ -54,4 +52,6 @@ and the Vitest suites can run in serial mode where needed.
 
 The `GitHub Pages` workflow automatically publishes the web build to GitHub
 Pages on pushes to `main`, and uses the `VaultBill` Pages environment name for
-the deployment record.
+the deployment record. It sets `VITE_WEB_ONLY=true`, reads the public Supabase
+URL/key from environment secrets, runs formatting, lint, typecheck, coverage,
+and Playwright gates, then builds with the `/VaultBill/` base path.

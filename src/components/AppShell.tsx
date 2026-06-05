@@ -1,38 +1,42 @@
-import type { FC, PropsWithChildren } from 'react';
+import { useState } from 'react';
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import type { FC } from 'react';
 
-import { AccountSwitcher } from './AccountSwitcher';
-import { buildTimeAppName } from '../constants/AppIdentity';
-import type { OperatorAccount, OperatorContext } from '../features/auth/AccountTypes';
-import type { ShellSection, ThemeController } from '../types/AppTypes';
+import { defaultRuntimeBranding, shellSections } from '../constants/PhaseOneSeed';
+import { applyNavigationPermissions } from '../engines/permissionEngine/PermissionEngine';
+import { useSession } from '../features/auth/SessionContext';
+import { useThemeController } from '../hooks/useThemeController';
+import type { AppRouteId, ThemeId } from '../types/AppTypes';
+import { AppBrandIcon } from './AppBrandIcon/AppBrandIcon';
+import { ContextualHelp } from './ContextualHelp';
+import { SearchableDropdown } from './SearchableDropdown/SearchableDropdown';
 
-type AppShellProps = PropsWithChildren<{
-  readonly appName: string;
-  readonly tagline: string;
-  readonly sections: readonly ShellSection[];
-  readonly themeController: ThemeController;
-  readonly accounts: readonly OperatorAccount[];
-  readonly operatorContext: OperatorContext;
-  readonly onOperatorChange: (account: OperatorAccount) => void;
-}>;
+const getPageId = (pathname: string): AppRouteId => {
+  const routeId = pathname.split('/').filter(Boolean)[1];
+  const knownRoute = shellSections.find((section) => section.id === routeId);
+  return (knownRoute?.id as AppRouteId | undefined) ?? 'dashboard';
+};
 
-export const AppShell: FC<AppShellProps> = ({
-  accounts,
-  appName,
-  children,
-  onOperatorChange,
-  operatorContext,
-  sections,
-  tagline,
-  themeController,
-}) => {
+export const AppShell: FC = () => {
+  const { logout, operatorContext } = useSession();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const themeController = useThemeController('teal-flow');
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
+
+  if (!operatorContext) {
+    return null;
+  }
+
+  const sections = applyNavigationPermissions(operatorContext.role, shellSections);
+  const pageId = getPageId(location.pathname);
+  const themeOptions = themeController.availableThemes.map((theme) => ({
+    value: theme.id,
+    label: theme.label,
+  }));
+
   const handleThemeChange = (value: string) => {
-    const selectedTheme = themeController.availableThemes.find(
-      (theme) => theme.id === value,
-    );
-
-    if (selectedTheme) {
-      themeController.setThemeId(selectedTheme.id);
-    }
+    themeController.setThemeId(value as ThemeId);
   };
 
   return (
@@ -40,62 +44,100 @@ export const AppShell: FC<AppShellProps> = ({
       <a className="skip-link" href="#main-content">
         Skip to main content
       </a>
-      <aside className="app-shell__sidebar" aria-label="Primary">
-        <div className="brand-mark" aria-hidden="true">
-          VB
-        </div>
-        <div>
-          <p className="app-shell__runtime-name">{appName}</p>
-          <p className="app-shell__build-name">Build: {buildTimeAppName}</p>
-        </div>
-        <nav className="app-shell__nav">
-          {sections.map((section) => (
-            <button
-              className="app-shell__nav-item"
-              disabled={!section.isEnabled}
-              key={section.id}
-              type="button"
-            >
-              <span>{section.label}</span>
-              <small>{section.description}</small>
-              {!section.isEnabled ? <small>Access restricted</small> : null}
-            </button>
-          ))}
+      <aside className="app-shell__sidebar">
+        <NavLink className="app-shell__brand" to="/app/dashboard">
+          <AppBrandIcon size="small" />
+          <span>
+            <strong>{defaultRuntimeBranding.applicationName}</strong>
+            <small>{defaultRuntimeBranding.tagline}</small>
+          </span>
+        </NavLink>
+        <nav aria-label="Primary" className="app-shell__nav">
+          {sections.map((section) =>
+            section.isEnabled ? (
+              <NavLink
+                className={({ isActive }) => `app-shell__nav-item${isActive ? ' is-active' : ''}`}
+                key={section.id}
+                to={`/app/${section.id}`}
+              >
+                <span>{section.label}</span>
+                <small>{section.description}</small>
+              </NavLink>
+            ) : (
+              <span
+                aria-disabled="true"
+                className="app-shell__nav-item is-disabled"
+                key={section.id}
+                title={section.permissionDecision.reason}
+              >
+                <span>{section.label}</span>
+                <small>Access restricted</small>
+              </span>
+            ),
+          )}
         </nav>
+        <div className="app-shell__operator">
+          <span>{operatorContext.account.displayName}</span>
+          <small>{operatorContext.role}</small>
+          <button
+            onClick={() => {
+              logout();
+              void navigate('/login');
+            }}
+            type="button"
+          >
+            Log out
+          </button>
+        </div>
       </aside>
 
       <div className="app-shell__body">
         <header className="app-shell__topbar">
-          <p>{tagline}</p>
-          <div className="app-shell__switchers">
-            <AccountSwitcher
-              accounts={accounts}
-              operatorContext={operatorContext}
-              onChange={onOperatorChange}
+          <div>
+            <p className="eyebrow">{pageId}</p>
+            <strong>GST Invoice</strong>
+          </div>
+          <div className="app-shell__topbar-actions">
+            <SearchableDropdown
+              label="Theme"
+              onChange={handleThemeChange}
+              options={themeOptions}
+              value={themeController.themeId}
             />
-            <label className="theme-switcher">
-              <span>Theme</span>
-              <select
-                aria-label="Select theme"
-                value={themeController.themeId}
-                onChange={(event) => {
-                  handleThemeChange(event.currentTarget.value);
-                }}
-              >
-                {themeController.availableThemes.map((theme) => (
-                  <option key={theme.id} value={theme.id}>
-                    {theme.label}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <button
+              onClick={() => {
+                setIsHelpOpen(true);
+              }}
+              type="button"
+            >
+              Help
+            </button>
           </div>
         </header>
-
         <main className="app-shell__content" id="main-content">
-          {children}
+          <Outlet />
         </main>
+        <nav aria-label="Mobile primary" className="app-shell__mobile-nav">
+          {sections
+            .filter((section) => section.isEnabled)
+            .map((section) => (
+              <NavLink key={section.id} to={`/app/${section.id}`}>
+                {section.label}
+              </NavLink>
+            ))}
+        </nav>
       </div>
+      <ContextualHelp
+        isOpen={isHelpOpen}
+        onClose={() => {
+          setIsHelpOpen(false);
+        }}
+        onOpen={() => {
+          setIsHelpOpen(true);
+        }}
+        page={pageId}
+        role={operatorContext.role}
+      />
     </div>
   );
 };

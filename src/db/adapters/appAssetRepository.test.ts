@@ -40,8 +40,6 @@ describe('appAssetRepository', () => {
       mimeType: 'image/png',
       sizeBytes: 3,
     });
-    expect(Array.from(loadAppAsset(db, 'asset_logo')?.assetBlob ?? [])).toEqual([
-      1, 2, 3,
-    ]);
+    expect(Array.from(loadAppAsset(db, 'asset_logo')?.assetBlob ?? [])).toEqual([1, 2, 3]);
   });
 });

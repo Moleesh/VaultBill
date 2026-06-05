@@ -101,8 +101,7 @@ describe('ReportEngine', () => {
     expect(firstPage.nextCursor).toBe(1);
     expect(firstPage.isComplete).toBe(false);
     expect(
-      getReportPage(records, report, { InvoiceDate: { from: '2026-06-05' } }, 5)
-        .totalMatchingRows,
+      getReportPage(records, report, { InvoiceDate: { from: '2026-06-05' } }, 5).totalMatchingRows,
     ).toBe(2);
   });
 

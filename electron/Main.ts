@@ -43,9 +43,7 @@ const createWindow = async () => {
 };
 
 ipcMain.handle('vaultbill:get-app-identity', () => identity);
-ipcMain.handle('vaultbill:download-pdf', (_event, request: unknown) =>
-  renderHtmlToPdf(request),
-);
+ipcMain.handle('vaultbill:download-pdf', (_event, request: unknown) => renderHtmlToPdf(request));
 ipcMain.handle('vaultbill:print-html', (_event, request: unknown) =>
   printHtmlWithElectron(request),
 );

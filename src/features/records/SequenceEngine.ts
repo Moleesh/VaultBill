@@ -10,10 +10,9 @@ export const allocateDocumentNumber = (
   formatName: string,
   nowIso: string,
 ): string => {
-  const existing = connection.get(
-    'SELECT current_value FROM sequences WHERE format_id = ?;',
-    [formatId],
-  );
+  const existing = connection.get('SELECT current_value FROM sequences WHERE format_id = ?;', [
+    formatId,
+  ]);
   const currentValue = existing ? sequenceRowSchema.parse(existing).current_value : 0;
   const nextValue = currentValue + 1;
 

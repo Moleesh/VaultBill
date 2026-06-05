@@ -43,9 +43,7 @@ const renderLineItemRows = (rows: readonly unknown[]): string => {
   }
 
   const columns = [...new Set(parsedRows.flatMap((row) => Object.keys(row)))];
-  const headerCells = columns
-    .map((column) => `<th>${escapeHtml(column)}</th>`)
-    .join('');
+  const headerCells = columns.map((column) => `<th>${escapeHtml(column)}</th>`).join('');
   const bodyRows = parsedRows.map((row) => renderLineItemRow(row, columns)).join('');
 
   return `<table><thead><tr>${headerCells}</tr></thead><tbody>${bodyRows}</tbody></table>`;

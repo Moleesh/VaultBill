@@ -1,7 +1,4 @@
-import type {
-  DocumentFormatConfig,
-  FieldConfigSchema,
-} from '../../db/startup/ConfigSchemas';
+import type { DocumentFormatConfig, FieldConfigSchema } from '../../db/startup/ConfigSchemas';
 import type { FieldType } from './FieldCatalog';
 import type { z } from 'zod';
 

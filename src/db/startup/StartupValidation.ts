@@ -1,15 +1,9 @@
 import { z } from 'zod';
 
-import {
-  DocumentFormatConfigSchema,
-  StartupHealthSettingSchema,
-} from './ConfigSchemas';
+import { DocumentFormatConfigSchema, StartupHealthSettingSchema } from './ConfigSchemas';
 import { parseJsonWithSchema, stringifyValidatedJson } from './JsonParsing';
 import { startupHealthSettingKey } from './StartupSettingKeys';
-import {
-  DatabaseConfigurationError,
-  type SqliteConnection,
-} from '../sqlite/SqliteConnection';
+import { DatabaseConfigurationError, type SqliteConnection } from '../sqlite/SqliteConnection';
 
 const defaultFormatRowSchema = z.object({
   format_id: z.string(),
@@ -17,13 +11,9 @@ const defaultFormatRowSchema = z.object({
   format_json: z.string(),
 });
 
-export const ensureSingleValidDefaultFormat = (
-  connection: SqliteConnection,
-): string => {
+export const ensureSingleValidDefaultFormat = (connection: SqliteConnection): string => {
   const rows = connection
-    .all(
-      'SELECT format_id, format_name, format_json FROM document_formats WHERE is_default = 1;',
-    )
+    .all('SELECT format_id, format_name, format_json FROM document_formats WHERE is_default = 1;')
     .map((row) => defaultFormatRowSchema.parse(row));
 
   if (rows.length !== 1) {
@@ -35,15 +25,10 @@ export const ensureSingleValidDefaultFormat = (
   const defaultRow = rows[0];
 
   if (!defaultRow) {
-    throw new DatabaseConfigurationError(
-      'Default document format could not be loaded.',
-    );
+    throw new DatabaseConfigurationError('Default document format could not be loaded.');
   }
 
-  const formatJson = parseJsonWithSchema(
-    defaultRow.format_json,
-    DocumentFormatConfigSchema,
-  );
+  const formatJson = parseJsonWithSchema(defaultRow.format_json, DocumentFormatConfigSchema);
 
   if (
     formatJson.FormatId !== defaultRow.format_id ||

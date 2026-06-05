@@ -6,15 +6,17 @@
     <title>VaultBill</title>
     <script>
       (function () {
-        var segments = window.location.pathname.split('/').filter(Boolean);
-        var canonicalBasePath = segments.length > 0 ? '/' + segments[0] + '/' : '/';
-        window.location.replace(canonicalBasePath);
+        const basePath = '/VaultBill/';
+        const route = window.location.pathname.startsWith('/VaultBill/')
+          ? window.location.pathname.slice('/VaultBill'.length)
+          : '/login';
+        window.location.replace(basePath + '?route=' + encodeURIComponent(route));
       })();
     </script>
   </head>
   <body>
     <noscript>
-      <p>VaultBill is redirecting to its canonical home page.</p>
+      <p>VaultBill is restoring your requested page.</p>
     </noscript>
   </body>
 </html>

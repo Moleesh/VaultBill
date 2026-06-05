@@ -3,11 +3,7 @@ import type { LineItemRow } from '../schemaEngine/LineItemTypes';
 import type { FieldConfig } from '../schemaEngine/SchemaEngineTypes';
 import { formatDecimal } from './DecimalMath';
 import { evaluateFormulaToDecimal } from './FormulaParser';
-import type {
-  CalculationPolicy,
-  FormulaEvaluation,
-  FormulaVariableMap,
-} from './FormulaTypes';
+import type { CalculationPolicy, FormulaEvaluation, FormulaVariableMap } from './FormulaTypes';
 import { toRoundingMode } from './FormulaTypes';
 import type { z } from 'zod';
 
@@ -31,17 +27,16 @@ export const calculateLineItemRows = (
   section: LineItemSectionConfig,
   rows: readonly LineItemRow[],
   policy: CalculationPolicy,
-): readonly LineItemRow[] =>
-  rows.map((row) => calculateLineItemRow(section, row, policy));
+): readonly LineItemRow[] => rows.map((row) => calculateLineItemRow(section, row, policy));
 
 const calculateLineItemRow = (
   section: LineItemSectionConfig,
   row: LineItemRow,
   policy: CalculationPolicy,
 ): LineItemRow => {
-  const calculatedFields = section.Fields.filter(
-    (field) => field.Calculated && field.Formula,
-  ).sort((left, right) => (left.CalculationOrder ?? 0) - (right.CalculationOrder ?? 0));
+  const calculatedFields = section.Fields.filter((field) => field.Calculated && field.Formula).sort(
+    (left, right) => (left.CalculationOrder ?? 0) - (right.CalculationOrder ?? 0),
+  );
   const nextValues: Record<string, unknown> = { ...row.Values };
 
   for (const field of calculatedFields) {
@@ -65,16 +60,11 @@ const calculateLineItemRow = (
   };
 };
 
-const toFormulaVariables = (
-  values: Readonly<Record<string, unknown>>,
-): FormulaVariableMap => {
+const toFormulaVariables = (values: Readonly<Record<string, unknown>>): FormulaVariableMap => {
   const variables: Record<string, string | number> = {};
 
   for (const [key, value] of Object.entries(values)) {
-    if (
-      typeof value === 'string' ||
-      (typeof value === 'number' && Number.isInteger(value))
-    ) {
+    if (typeof value === 'string' || (typeof value === 'number' && Number.isInteger(value))) {
       variables[key] = value;
     }
   }

@@ -36,8 +36,7 @@ export const requiredTables: readonly TableDefinition[] = [
       requiredJsonColumn('format_json'),
       {
         columnName: 'is_default',
-        addColumnSql:
-          'is_default INTEGER NOT NULL DEFAULT 0 CHECK (is_default IN (0, 1))',
+        addColumnSql: 'is_default INTEGER NOT NULL DEFAULT 0 CHECK (is_default IN (0, 1))',
       },
       requiredUpdatedAtColumn(),
     ],

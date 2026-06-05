@@ -105,10 +105,7 @@ const parseFactor = (cursor: FormulaCursor): DecimalValue => {
   throw new Error(`Unexpected formula token: ${token.value}`);
 };
 
-const resolveVariable = (
-  variables: FormulaVariableMap,
-  identifier: string,
-): DecimalValue => {
+const resolveVariable = (variables: FormulaVariableMap, identifier: string): DecimalValue => {
   const value = variables[identifier];
 
   if (value === undefined) {

@@ -1,9 +1,6 @@
 import { z } from 'zod';
 
-import {
-  ReportConfigSchema,
-  type ReportConfig,
-} from '../../engines/reportEngine/ReportTypes';
+import { ReportConfigSchema, type ReportConfig } from '../../engines/reportEngine/ReportTypes';
 import { stringifyValidatedJson } from '../startup/JsonParsing';
 import type { SqliteConnection } from '../sqlite/SqliteConnection';
 
@@ -30,10 +27,9 @@ const reportRowSchema = z.object({
 
 export const saveReport = (connection: SqliteConnection, input: SaveReportInput) => {
   const reportConfig = validateReportConfig(input);
-  const existing = connection.get(
-    'SELECT report_id FROM reports WHERE report_id = ?;',
-    [input.reportId],
-  );
+  const existing = connection.get('SELECT report_id FROM reports WHERE report_id = ?;', [
+    input.reportId,
+  ]);
   const parameters = [
     input.reportName,
     stringifyValidatedJson(reportConfig, ReportConfigSchema),

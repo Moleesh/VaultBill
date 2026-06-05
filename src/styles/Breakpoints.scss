@@ -1,0 +1,27 @@
+@mixin respond-to($bp) {
+  @if $bp == 'phone' {
+    @media (max-width: 480px) {
+      @content;
+    }
+  }
+  @if $bp == 'tablet' {
+    @media (max-width: 768px) {
+      @content;
+    }
+  }
+  @if $bp == 'laptop' {
+    @media (max-width: 1024px) {
+      @content;
+    }
+  }
+  @if $bp == 'desktop' {
+    @media (max-width: 1440px) {
+      @content;
+    }
+  }
+  @if $bp == 'wide' {
+    @media (min-width: 1441px) {
+      @content;
+    }
+  }
+}

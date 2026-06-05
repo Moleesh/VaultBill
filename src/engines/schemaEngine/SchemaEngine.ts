@@ -16,29 +16,21 @@ export { validateFieldValue } from './FieldValueValidation';
 export const parseDocumentFormatConfig = (rawJson: string): DocumentFormatConfig =>
   parseJsonWithSchema(rawJson, DocumentFormatConfigSchema);
 
-export const getAllFieldPaths = (
-  format: DocumentFormatConfig,
-): readonly SchemaFieldPath[] => [
+export const getAllFieldPaths = (format: DocumentFormatConfig): readonly SchemaFieldPath[] => [
   ...format.Fields.map((field) => toFieldPath(field)),
   ...format.LineItemSections.flatMap((section) =>
     section.Fields.map((field) => toFieldPath(field, section.SectionId)),
   ),
 ];
 
-export const getSavableFields = (
-  format: DocumentFormatConfig,
-): readonly SchemaFieldPath[] =>
-  getAllFieldPaths(format).filter(
-    (field) => getFieldCatalogEntry(field.type).isSavableByDefault,
-  );
+export const getSavableFields = (format: DocumentFormatConfig): readonly SchemaFieldPath[] =>
+  getAllFieldPaths(format).filter((field) => getFieldCatalogEntry(field.type).isSavableByDefault);
 
 export const validateDocumentValues = (
   format: DocumentFormatConfig,
   values: Readonly<Record<string, unknown>>,
 ): DocumentValidationResult => {
-  const issues = format.Fields.flatMap((field) =>
-    validateFieldValue(field, values[field.FieldId]),
-  );
+  const issues = format.Fields.flatMap((field) => validateFieldValue(field, values[field.FieldId]));
 
   return {
     isValid: issues.length === 0,
@@ -74,9 +66,7 @@ const detectRemovedFieldReferenceWarnings = (
   nextFormat: DocumentFormatConfig,
   references: FieldReferenceIndex,
 ): readonly BreakingChangeWarning[] => {
-  const nextFieldIds = new Set(
-    getAllFieldPaths(nextFormat).map((field) => field.fieldId),
-  );
+  const nextFieldIds = new Set(getAllFieldPaths(nextFormat).map((field) => field.fieldId));
   return getAllFieldPaths(previousFormat)
     .filter((field) => !nextFieldIds.has(field.fieldId))
     .flatMap((field) => {

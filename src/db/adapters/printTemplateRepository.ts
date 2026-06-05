@@ -38,20 +38,13 @@ const printTemplateAssetRowSchema = z.object({
   asset_name: z.string(),
   mime_type: z.string(),
   asset_blob: z
-    .custom<ArrayBufferView>((value): value is ArrayBufferView =>
-      ArrayBuffer.isView(value),
-    )
-    .transform(
-      (value) => new Uint8Array(value.buffer, value.byteOffset, value.byteLength),
-    ),
+    .custom<ArrayBufferView>((value): value is ArrayBufferView => ArrayBuffer.isView(value))
+    .transform((value) => new Uint8Array(value.buffer, value.byteOffset, value.byteLength)),
   size_bytes: z.number(),
   created_at: z.string(),
 });
 
-export const savePrintTemplate = (
-  connection: SqliteConnection,
-  input: SavePrintTemplateInput,
-) => {
+export const savePrintTemplate = (connection: SqliteConnection, input: SavePrintTemplateInput) => {
   const templateHtml = sanitizeTemplateHtml(input.templateHtml);
   const templateConfig = validateTemplateConfig(input);
   const existing = connection.get(

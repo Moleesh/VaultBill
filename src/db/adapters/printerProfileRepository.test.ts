@@ -83,10 +83,7 @@ describe('printerProfileRepository', () => {
       updatedAt: fixedNow,
     });
 
-    expect(listPrinterProfiles(db).map((profile) => profile.isDefault)).toEqual([
-      true,
-      false,
-    ]);
+    expect(listPrinterProfiles(db).map((profile) => profile.isDefault)).toEqual([true, false]);
     expect(loadDefaultPrinterProfile(db)?.profileId).toBe('Thermal');
   });
 

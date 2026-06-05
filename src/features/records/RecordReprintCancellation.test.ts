@@ -79,9 +79,7 @@ describe('RecordRepository cancellation and reprint flow', () => {
     expect(cancelled.Status).toBe('Cancelled');
     expect(getRecordForReprint(db, 'Record_01').Status).toBe('Cancelled');
     expect(
-      db.get('SELECT cancelled_reason FROM records WHERE record_id = ?;', [
-        'Record_01',
-      ]),
+      db.get('SELECT cancelled_reason FROM records WHERE record_id = ?;', ['Record_01']),
     ).toEqual({ cancelled_reason: 'Incorrect customer' });
   });
 });

@@ -178,8 +178,7 @@ export const requiredAuxiliaryTables: readonly TableDefinition[] = [
       textColumn('pin_hash'),
       {
         columnName: 'is_active',
-        addColumnSql:
-          'is_active INTEGER NOT NULL DEFAULT 1 CHECK (is_active IN (0, 1))',
+        addColumnSql: 'is_active INTEGER NOT NULL DEFAULT 1 CHECK (is_active IN (0, 1))',
       },
       requiredTextColumn('created_at'),
       requiredTextColumn('updated_at'),

@@ -15,9 +15,7 @@ export type PrintResult = {
   readonly warning?: string;
 };
 
-export const printHtmlWithElectron = async (
-  rawRequest: unknown,
-): Promise<PrintResult> => {
+export const printHtmlWithElectron = async (rawRequest: unknown): Promise<PrintResult> => {
   const request = PrintRequestSchema.parse(rawRequest);
   const printWindow = await createHiddenHtmlWindow(request.html);
 
@@ -62,20 +60,14 @@ const buildPrintOptions = (request: PrintRequest): Electron.WebContentsPrintOpti
   return options;
 };
 
-const printHtmlWindow = (
-  printWindow: BrowserWindow,
-  request: PrintRequest,
-): Promise<void> =>
+const printHtmlWindow = (printWindow: BrowserWindow, request: PrintRequest): Promise<void> =>
   new Promise((resolve, reject) => {
-    printWindow.webContents.print(
-      buildPrintOptions(request),
-      (success, failureReason) => {
-        if (success) {
-          resolve();
-          return;
-        }
+    printWindow.webContents.print(buildPrintOptions(request), (success, failureReason) => {
+      if (success) {
+        resolve();
+        return;
+      }
 
-        reject(new Error(failureReason || 'Electron print failed.'));
-      },
-    );
+      reject(new Error(failureReason || 'Electron print failed.'));
+    });
   });

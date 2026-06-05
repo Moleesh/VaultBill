@@ -13,11 +13,7 @@ import {
   openStartedDatabase,
   sampleLineItems,
 } from './RecordRepositoryTestHarness';
-import {
-  finalizeDraftRecord,
-  loadDocumentRecord,
-  saveDraftRecord,
-} from './RecordRepository';
+import { finalizeDraftRecord, loadDocumentRecord, saveDraftRecord } from './RecordRepository';
 
 let connection: SqliteConnection | undefined;
 
@@ -39,9 +35,7 @@ describe('RecordRepository draft and finalization flow', () => {
       CreatedBy: 'user_1',
       LastActionByName: 'Counter Operator',
     });
-    expect(loadDocumentRecord(db, 'Record_01')?.Values.CustomerName).toBe(
-      'Sample Customer',
-    );
+    expect(loadDocumentRecord(db, 'Record_01')?.Values.CustomerName).toBe('Sample Customer');
   });
 
   it('allows creator, Admin, and SysAdmin to edit drafts only', () => {

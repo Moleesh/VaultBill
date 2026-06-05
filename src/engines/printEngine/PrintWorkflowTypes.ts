@@ -7,18 +7,9 @@ import type {
   PrintTemplateRecord,
 } from './PrintTemplateTypes';
 
-export const PrintActionSchema = z.enum([
-  'DraftPrint',
-  'FinalPrint',
-  'Reprint',
-  'TestPrint',
-]);
+export const PrintActionSchema = z.enum(['DraftPrint', 'FinalPrint', 'Reprint', 'TestPrint']);
 
-export const PrintOutputTargetSchema = z.enum([
-  'PreviewOnly',
-  'DownloadPdf',
-  'Printer',
-]);
+export const PrintOutputTargetSchema = z.enum(['PreviewOnly', 'DownloadPdf', 'Printer']);
 
 export const PrintPlatformSchema = z.enum(['DesktopElectron', 'LanBrowser', 'Web']);
 

@@ -30,10 +30,9 @@ export type NavigationPermissionItem = {
   readonly requiredCapabilities?: readonly Capability[];
 };
 
-export type NavigationPermissionResult<TItem extends NavigationPermissionItem> =
-  TItem & {
-    readonly isEnabled: boolean;
-    readonly permissionDecision: PermissionDecision;
-  };
+export type NavigationPermissionResult<TItem extends NavigationPermissionItem> = TItem & {
+  readonly isEnabled: boolean;
+  readonly permissionDecision: PermissionDecision;
+};
 
 export type RoleCapabilityMap = Readonly<Record<Role, ReadonlySet<Capability>>>;

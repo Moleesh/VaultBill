@@ -1,9 +1,6 @@
 import type { SqliteConnection } from '../../db/sqlite/SqliteConnection';
 
-export const runRecordTransaction = <T>(
-  connection: SqliteConnection,
-  action: () => T,
-): T => {
+export const runRecordTransaction = <T>(connection: SqliteConnection, action: () => T): T => {
   connection.exec('BEGIN IMMEDIATE TRANSACTION;');
 
   try {

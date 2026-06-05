@@ -41,15 +41,10 @@ export const addDecimal = (left: DecimalValue, right: DecimalValue): DecimalValu
   });
 };
 
-export const subtractDecimal = (
-  left: DecimalValue,
-  right: DecimalValue,
-): DecimalValue => addDecimal(left, { mantissa: -right.mantissa, scale: right.scale });
+export const subtractDecimal = (left: DecimalValue, right: DecimalValue): DecimalValue =>
+  addDecimal(left, { mantissa: -right.mantissa, scale: right.scale });
 
-export const multiplyDecimal = (
-  left: DecimalValue,
-  right: DecimalValue,
-): DecimalValue =>
+export const multiplyDecimal = (left: DecimalValue, right: DecimalValue): DecimalValue =>
   normalizeDecimal({
     mantissa: left.mantissa * right.mantissa,
     scale: left.scale + right.scale,
@@ -70,9 +65,7 @@ export const divideDecimal = (
   const quotient = dividend / divisor;
   const remainder = dividend % divisor;
 
-  return normalizeDecimal(
-    roundQuotient(quotient, remainder, divisor, precision, roundingMode),
-  );
+  return normalizeDecimal(roundQuotient(quotient, remainder, divisor, precision, roundingMode));
 };
 
 export const roundDecimal = (
@@ -91,9 +84,7 @@ export const roundDecimal = (
   const quotient = value.mantissa / divisor;
   const remainder = value.mantissa % divisor;
 
-  return normalizeDecimal(
-    roundQuotient(quotient, remainder, divisor, precision, roundingMode),
-  );
+  return normalizeDecimal(roundQuotient(quotient, remainder, divisor, precision, roundingMode));
 };
 
 export const formatDecimal = (
@@ -123,7 +114,9 @@ const roundQuotient = (
   precision: number,
   roundingMode: RoundingMode,
 ): DecimalValue => {
-  if (roundingMode !== 'HALF_UP') {
+  const supportedRoundingModes: ReadonlySet<string> = new Set(['HALF_UP']);
+
+  if (!supportedRoundingModes.has(roundingMode)) {
     throw new Error('Unsupported rounding mode.');
   }
 
@@ -137,8 +130,7 @@ const roundQuotient = (
 };
 
 const normalizeDecimal = (value: DecimalValue): DecimalValue => {
-  let mantissa = value.mantissa;
-  let scale = value.scale;
+  let { mantissa, scale } = value;
 
   while (scale > 0 && mantissa % 10n === 0n) {
     mantissa /= 10n;

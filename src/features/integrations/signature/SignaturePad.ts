@@ -75,12 +75,8 @@ export const validateSignatureSvgPath = (pathData: string): SignatureAvailabilit
   return { available: true, userMessage: 'Signature path is valid.' };
 };
 
-const isTestedDevice = (
-  settings: SignaturePadSettings,
-  device: SignatureDevice,
-): boolean =>
+const isTestedDevice = (settings: SignaturePadSettings, device: SignatureDevice): boolean =>
   settings.SignaturePad.TestedUsbDevices.some(
     (testedDevice) =>
-      testedDevice.VendorId === device.VendorId &&
-      testedDevice.ProductId === device.ProductId,
+      testedDevice.VendorId === device.VendorId && testedDevice.ProductId === device.ProductId,
   );

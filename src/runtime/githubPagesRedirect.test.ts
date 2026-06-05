@@ -1,16 +1,15 @@
 import { describe, expect, it } from 'vitest';
 
-import { shouldRedirectToBasePath } from './githubPagesRedirect';
+import { getCanonicalBasePath, restoreGithubPagesRoute } from './githubPagesRedirect';
 
-describe('shouldRedirectToBasePath', () => {
-  it('accepts the canonical VaultBill path with or without a trailing slash', () => {
-    expect(shouldRedirectToBasePath('/VaultBill/', '/VaultBill/')).toBe(false);
-    expect(shouldRedirectToBasePath('/VaultBill', '/VaultBill/')).toBe(false);
+describe('GitHub Pages routing', () => {
+  it('returns a normalized canonical base path', () => {
+    expect(getCanonicalBasePath()).toBe('/');
   });
 
-  it('redirects every other pathname back to the canonical base path', () => {
-    expect(shouldRedirectToBasePath('/', '/VaultBill/')).toBe(true);
-    expect(shouldRedirectToBasePath('/VaultBill/reports', '/VaultBill/')).toBe(true);
-    expect(shouldRedirectToBasePath('/other-app/', '/VaultBill/')).toBe(true);
+  it('restores a deep route passed by the Pages fallback', () => {
+    window.history.replaceState(null, '', '/?route=%2Fapp%2Freports');
+    restoreGithubPagesRoute();
+    expect(window.location.pathname).toBe('/app/reports');
   });
 });

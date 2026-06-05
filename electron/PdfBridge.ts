@@ -35,8 +35,7 @@ export const renderHtmlToPdf = async (rawRequest: unknown): Promise<PdfResult> =
     return {
       success: false,
       fileName: sanitizePdfFileName(request.fileName),
-      warning:
-        error instanceof Error ? error.message : 'Electron PDF generation failed.',
+      warning: error instanceof Error ? error.message : 'Electron PDF generation failed.',
     };
   } finally {
     pdfWindow.close();

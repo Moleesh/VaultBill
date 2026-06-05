@@ -1,9 +1,6 @@
 import { z } from 'zod';
 
-import {
-  DatabaseConfigurationError,
-  type SqliteConnection,
-} from '../sqlite/SqliteConnection';
+import { DatabaseConfigurationError, type SqliteConnection } from '../sqlite/SqliteConnection';
 
 const pragmaForeignKeysSchema = z.object({ foreign_keys: z.number() });
 
