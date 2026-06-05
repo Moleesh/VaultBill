@@ -235,3 +235,9 @@
 - Hardened GitHub Actions test execution by running the SQLite-heavy Vitest
   suites in serial mode on CI and release smoke jobs, and opted the workflows
   into the Node 24 JavaScript action runtime ahead of the deprecation window.
+
+## 2026-06-05
+
+- Pinned `actions/setup-node` to Node 24 in the CI, release, and web deploy
+  workflows so the `node:sqlite` startup smoke stays compatible with hosted
+  runners.

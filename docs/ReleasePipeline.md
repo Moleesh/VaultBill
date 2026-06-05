@@ -43,7 +43,8 @@ coverage, web build, Electron native-module rebuild, desktop build, desktop
 directory packaging, and installer smoke.
 
 To keep the SQLite-backed startup tests deterministic on hosted runners, CI and
-release smoke use Vitest with `--no-file-parallelism --maxWorkers=1`.
+release smoke use Vitest with `--no-file-parallelism --maxWorkers=1`, and the
+workflows install Node 24 so `node:sqlite` stays available on hosted runners.
 
 The desktop release workflow runs on Windows, creates the installer, requires
 an installer artifact during smoke, validates first-run DB startup patch tests,
