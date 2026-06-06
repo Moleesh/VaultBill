@@ -29,7 +29,7 @@ export const RecordCollection: FC<RecordCollectionProps> = ({
     return (
       <section aria-live="polite" className="empty-panel">
         <p className="eyebrow">{activeTab}</p>
-        <h2>Loading hosted records…</h2>
+        <h2>Loading demo records…</h2>
       </section>
     );
   }

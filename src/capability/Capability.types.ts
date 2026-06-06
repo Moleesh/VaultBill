@@ -1,7 +1,7 @@
 export type CapabilityRegistry = {
   readonly isDesktop: boolean;
   readonly isLanBrowser: boolean;
-  readonly isWebOnly: boolean;
+  readonly isDemoMode: boolean;
   readonly canListPrinters: boolean;
   readonly canSelectExactPrinter: boolean;
   readonly canBrowserPrint: boolean;

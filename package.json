@@ -42,7 +42,6 @@
     "*.{json,md,scss,yml,yaml,html}": "prettier --write"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.107.0",
     "date-fns": "^4.4.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",

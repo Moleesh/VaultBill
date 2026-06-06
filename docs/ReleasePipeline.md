@@ -1,7 +1,7 @@
 # Release Pipeline
 
 VaultBill packages the desktop product with Electron Builder after the shared
-web UI and Electron shell builds complete.
+browser demo UI and Electron shell builds complete.
 
 ## Build Identity
 
@@ -50,8 +50,9 @@ To keep the SQLite-backed startup tests deterministic on hosted runners, the
 workflow installs Node 24 so `node:sqlite` stays available on hosted runners
 and the Vitest suites can run in serial mode where needed.
 
-The `GitHub Pages` workflow automatically publishes the web build to GitHub
-Pages on pushes to `main`, and uses the `VaultBill` Pages environment name for
-the deployment record. It sets `VITE_WEB_ONLY=true`, reads the public Supabase
-URL/key from environment variables, runs formatting, lint, typecheck, coverage,
-and Playwright gates, then builds with the `/VaultBill/` base path.
+The `GitHub Pages` workflow automatically publishes the browser demo build to
+GitHub Pages on pushes to `main`, and uses the `VaultBill` Pages environment
+name for the deployment record. It sets `VITE_DEMO_MODE=true`, runs
+formatting, lint, typecheck, coverage, and Playwright gates, then builds with
+the `/VaultBill/` base path. The demo build stores records in the browser
+only.

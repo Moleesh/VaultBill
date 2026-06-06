@@ -18,12 +18,12 @@ const platformHelp = (capabilities: CapabilityRegistry): readonly HelpSection[] 
     ];
   }
 
-  if (capabilities.isWebOnly) {
+  if (capabilities.isDemoMode) {
     return [
       {
-        title: 'Web demo limits',
-        body: 'Use browser print and Save as PDF. Exact printer selection, local folders, backup, restore, and USB devices are unavailable in this web build.',
-        keywords: ['web', 'printer', 'backup', 'pdf', 'local files', 'usb'],
+        title: 'Demo mode limits',
+        body: 'Use browser print and Save as PDF. Exact printer selection, local folders, backup, restore, and USB devices are unavailable in this demo build.',
+        keywords: ['demo', 'printer', 'backup', 'pdf', 'local files', 'usb'],
       },
     ];
   }

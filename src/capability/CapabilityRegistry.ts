@@ -2,13 +2,13 @@ import type { CapabilityRegistry } from './Capability.types';
 
 export const buildCapabilities = (): CapabilityRegistry => {
   const isDesktop = window.vaultBillDesktop !== undefined;
-  const isWebOnly = import.meta.env.VITE_WEB_ONLY === 'true';
-  const isLanBrowser = !isDesktop && !isWebOnly;
+  const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true';
+  const isLanBrowser = !isDesktop && !isDemoMode;
 
   return {
     isDesktop,
     isLanBrowser,
-    isWebOnly,
+    isDemoMode,
     canListPrinters: isDesktop,
     canSelectExactPrinter: isDesktop,
     canBrowserPrint: true,
@@ -17,8 +17,8 @@ export const buildCapabilities = (): CapabilityRegistry => {
     canRestore: isDesktop,
     canUsbSignaturePad: isDesktop,
     canLanServer: isDesktop,
-    canSmsIntegration: !isWebOnly,
-    canGspIntegration: !isWebOnly,
+    canSmsIntegration: !isDemoMode,
+    canGspIntegration: !isDemoMode,
     hasLocalDb: isDesktop,
   };
 };

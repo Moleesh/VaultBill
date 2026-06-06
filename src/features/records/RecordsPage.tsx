@@ -47,7 +47,6 @@ export const RecordsPage: FC = () => {
     }
 
     if (actionId === 'save-draft') {
-      setNotice('Draft saved successfully.');
       void persistRecord('Draft');
       return;
     }
@@ -66,7 +65,11 @@ export const RecordsPage: FC = () => {
     });
 
     if (stored) {
-      setNotice(`${status} saved to hosted web storage.`);
+      setNotice(
+        status === 'Draft'
+          ? 'Draft saved to browser storage.'
+          : 'Document finalized and saved to browser storage.',
+      );
     }
   };
 

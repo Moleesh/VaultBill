@@ -1,5 +1,4 @@
 import { expect, test } from '@playwright/test';
-import { createClient } from '@supabase/supabase-js';
 
 const viewports = [
   { name: 'mobile', width: 390, height: 844 },
@@ -44,61 +43,25 @@ test('mobile help opens as a full-screen sheet', async ({ page }) => {
   await expect(helpDialog).toHaveClass(/app-sheet/u);
 });
 
-test('hosted web saves and reloads a draft through Supabase', async ({ page }) => {
-  test.skip(
-    !process.env.VITE_SUPABASE_URL || !process.env.VITE_SUPABASE_ANON_KEY,
-    'Hosted Supabase configuration is required.',
-  );
+test('demo web saves and reloads a draft in browser storage', async ({ page }) => {
+  test.skip(process.env.VITE_DEMO_MODE !== 'true', 'Demo mode configuration is required.');
 
   const customerName = `Playwright ${Date.now().toString()}`;
   await page.getByRole('button', { name: 'Log in' }).click();
   await page.getByRole('link', { name: /Records/u }).click();
   await page.getByPlaceholder('Business or customer name').fill(customerName);
   await page.getByRole('button', { name: /Save draft/u }).click();
-  await expect(page.getByText('Draft saved to hosted web storage.')).toBeVisible();
+  await expect(page.getByText('Draft saved to browser storage.')).toBeVisible();
 
-  const clientId = await page.evaluate(() =>
-    window.localStorage.getItem('vaultbill.web.client-id'),
+  const storedRecordsJson = await page.evaluate<string>(
+    () => window.localStorage.getItem('vaultbill.demo.records') ?? '[]',
   );
-  if (!clientId) {
-    throw new Error('Hosted draft test did not create a browser identity.');
-  }
+  expect(storedRecordsJson).toContain(customerName);
+  expect(storedRecordsJson).toContain('"status":"Draft"');
 
-  const cleanupClient = createClient(
-    process.env.VITE_SUPABASE_URL ?? '',
-    process.env.VITE_SUPABASE_ANON_KEY ?? '',
-    {
-      auth: { persistSession: false },
-      global: { headers: { 'x-vaultbill-client-id': clientId } },
-    },
-  );
-
-  try {
-    const { data, error: readError } = await cleanupClient
-      .from('vaultbill_documents')
-      .select('payload')
-      .eq('client_id', clientId)
-      .eq('document_type', 'record');
-    expect(readError).toBeNull();
-    expect(data).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          payload: expect.objectContaining({ customerName }),
-        }),
-      ]),
-    );
-
-    await page.getByRole('button', { name: 'Drafts' }).click();
-    await page.reload();
-    await expect(page.getByText(customerName)).toBeVisible({ timeout: 15_000 });
-  } finally {
-    const { error: cleanupError } = await cleanupClient
-      .from('vaultbill_documents')
-      .delete()
-      .eq('client_id', clientId)
-      .eq('document_type', 'record');
-    expect(cleanupError).toBeNull();
-  }
+  await page.getByRole('button', { name: 'Drafts' }).click();
+  await page.reload();
+  await expect(page.getByText(customerName)).toBeVisible({ timeout: 15_000 });
 });
 
 for (const viewport of viewports) {

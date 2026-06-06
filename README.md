@@ -1,196 +1,210 @@
 # VaultBill ✨
 
-> **Configure once. Bill, print, and report anywhere.**
+VaultBill is a JSON-first, offline-capable billing, invoicing, reporting, PDF,
+and print platform built around two clearly separated flows:
 
-VaultBill is a JSON-first, offline-capable billing, invoicing, reporting, PDF, and print platform built to feel calm, predictable, and ready to grow 😊
+- A GitHub Pages demo that stays browser-only and secret-free
+- A full desktop app that keeps data local in SQLite and uses the local API
 
-[![TypeScript](https://img.shields.io/badge/TypeScript-89.3%25-3178c6?logo=typescript)](https://www.typescriptlang.org/)
-[![SCSS](https://img.shields.io/badge/SCSS-8.3%25-c6538c?logo=sass)](https://sass-lang.com/)
-[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
+> The implementation follows `VaultBill_Final_Spec_v23.md`. The routed product
+> shell, platform capability model, shared overlays, automated quality gates,
+> desktop releases, and GitHub Pages demo deployment reflect that plan.
 
----
+[![CI](https://img.shields.io/github/actions/workflow/status/Moleesh/VaultBill/build-release-files.yml?branch=main)](https://github.com/Moleesh/VaultBill/actions/workflows/build-release-files.yml)
+[![Demo Deploy](https://img.shields.io/github/actions/workflow/status/Moleesh/VaultBill/deploy-web.yml?branch=main)](https://github.com/Moleesh/VaultBill/actions/workflows/deploy-web.yml)
+[![Desktop Release](https://img.shields.io/github/actions/workflow/status/Moleesh/VaultBill/build-release-files.yml?branch=main)](https://github.com/Moleesh/VaultBill/actions/workflows/build-release-files.yml)
+[![Latest Release](https://img.shields.io/github/v/release/Moleesh/VaultBill)](https://github.com/Moleesh/VaultBill/releases/latest)
+[![Tests](https://img.shields.io/badge/tests-Vitest%20%2B%20Playwright-brightgreen)](https://github.com/Moleesh/VaultBill/actions/workflows/build-release-files.yml)
+[![Coverage](https://img.shields.io/badge/coverage-enforced-blue)](https://github.com/Moleesh/VaultBill/actions/workflows/build-release-files.yml)
+[![License](https://img.shields.io/github/license/Moleesh/VaultBill)](LICENSE)
+[![Platforms](https://img.shields.io/badge/platforms-Windows%20%7C%20Linux%20%7C%20macOS-informational)](https://github.com/Moleesh/VaultBill)
 
 ## What VaultBill Is 🌟
 
 VaultBill is designed as a single product foundation for teams that want:
 
-- **Responsive SPA + Desktop**: A responsive single-page application with a desktop-friendly Electron companion
-- **JSON-Led Configuration**: Complete control via JSON configuration for document formats, reports, printer profiles, and optional integrations
-- **Offline-First Architecture**: Offline-capable local data handling with SQLite-backed startup patching and recovery
-- **Strong Type Safety**: Full TypeScript guarantees, SCSS theming, and clean modular structure
-- **Multi-Platform Releases**: Release pipeline that produces both web deployment artifacts and desktop installer builds
+- A responsive SPA shell with a desktop-friendly Electron companion
+- JSON-led configuration for document formats, reports, printer profiles, and
+  optional integrations
+- Offline-capable local data handling with SQLite-backed startup patching
+- Strong TypeScript guarantees, SCSS theming, and a clean modular structure
+- A release pipeline that produces both browser demo artifacts and desktop
+  installer builds
+
+## Demo And Full App 🚀
+
+- Live demo: [moleesh.github.io/VaultBill](https://moleesh.github.io/VaultBill/)
+- Demo mode lives on GitHub Pages under `/VaultBill/`
+- Demo mode stores records in the browser only and never needs Supabase
+- Full app mode stores data locally in SQLite and uses the desktop shell
+- The full app keeps LAN, backup, restore, printer, and signing controls on the
+  desktop host
+
+## Screenshots 📸
+
+- The live GitHub Pages demo is the quickest way to see the current UI polish
+- Desktop screenshots are easiest to capture from the packaged app after build
+- Release notes call out the current visual and workflow state when releases go out
 
 ## Why It Feels Nice To Work With 😊
 
-- **Zero-Configuration Branding**: The app starts from one `APP_NAME` value—branding stays simple and consistent
-- **Built-In Themes**: Five built-in themes keep the UI visually distinct without requiring custom styling
-- **Security & Permissions**: Operator-aware permissions and document-format fallback logic built in
-- **Ready-To-Use Features**: Print, PDF, record, report, backup, and Local API seams are already wired
-- **Smart Integrations**: Optional integration contracts for SMS, GST helpers, signature pad, and GSP hooks (no false compliance claims)
-- **One-Click Deployment**: Automatic GitHub Pages deployment keeps web publishing simple
-
-## Technology Stack
-
-| Layer | Technologies |
-|-------|---------------|
-| **Frontend** | TypeScript, Vite, SCSS, React/Vue |
-| **Desktop** | Electron, TypeScript |
-| **Data** | SQLite (offline-capable) |
-| **Build** | npm, Vite, electron-builder |
-| **Styling** | SCSS (89.3% TypeScript, 8.3% SCSS) |
+- The app starts from one `APP_NAME` value, so branding stays simple
+- Five built-in themes keep the UI visually distinct without custom styling
+- Operator-aware permissions and document-format fallback logic are built in
+- Print, PDF, record, report, backup, and Local API seams are already wired
+- Optional integration contracts exist for SMS, GST helpers, signature pad, and
+  GSP hooks without pretending they guarantee compliance
+- GitHub Pages deployment is automatic, so the browser demo stays easy to publish
 
 ## Quick Start 🚀
 
-### Web Development
-
-```bash
+```powershell
 npm install
 npm run dev
 ```
 
 Then open the local app at `http://127.0.0.1:5173/`.
 
-### Desktop Development
+If you want the Electron shell too:
 
-If you want the Electron shell as well:
-
-```bash
+```powershell
 npm run dev:electron
 ```
 
 ## Environment Configuration 🔐
 
-Copy `.env.example` to a local environment file only when you need to override defaults. **Never place a Supabase service-role key or provider secret in a frontend variable.**
+Copy `.env.example` to a local environment file only when you need to override
+defaults. Never place a service-role key or provider secret in a frontend
+variable.
 
-| Variable | Required | Used by | Default | Purpose |
-|----------|----------|---------|---------|---------|
-| `APP_NAME` | No | Desktop build + runtime branding | `VaultBill` | Controls packaged product name, artifact slug, app identifier, and default display |
-| `SYSADMIN_PASSWORD` | No | Desktop / LAN server startup | Empty | Optional default password for protected SysAdmin actions |
-| `BACKUP_PASSWORD` | No | Desktop backup/restore | Empty | Optional default password for encrypted backups |
-| `VITE_SUPABASE_URL` | Yes (hosted only) | GitHub Pages web build | Empty | Public Supabase project URL |
-| `VITE_SUPABASE_ANON_KEY` | Yes (hosted only) | GitHub Pages web build | Empty | Public Supabase publishable/anon key; RLS protected |
-| `VITE_BASE_PATH` | No | GitHub Pages web build | `/` | Optional Vite base path when deploying under a repository path |
+| Variable            | Required | Used by                  | Default     | Purpose                                                                                  |
+| ------------------- | -------- | ------------------------ | ----------- | ---------------------------------------------------------------------------------------- |
+| `APP_NAME`          | No       | Desktop build + branding | `VaultBill` | Controls packaged product name, artifact slug, app identifier slug, and display name     |
+| `SYSADMIN_PASSWORD` | No       | Desktop / LAN startup    | Empty       | Optional default SysAdmin password for protected actions such as permanent delete        |
+| `BACKUP_PASSWORD`   | No       | Desktop backup/restore   | Empty       | Optional default password for encrypted backups; if present, encrypted backup is enabled |
 
-**GitHub Environment Setup**: The GitHub environment named `VaultBill` must define the public variables `SUPABASE_URL` and `SUPABASE_ANON_KEY`. The Pages workflow maps them to the public Vite variables.
+The GitHub Pages workflow sets `VITE_DEMO_MODE=true` and `VITE_BASE_PATH=/VaultBill/`
+automatically. Normal developers do not need to set those variables by hand.
 
 ## Useful Scripts 🛠️
 
-### Day-to-Day Development
+### Day-to-day
 
-| Command | Purpose |
-|---------|---------|
-| `npm run dev` | Start Vite dev server for the web app |
-| `npm run dev:electron` | Run web app and Electron shell together |
-| `npm run preview` | Serve production web build locally |
-| `npm run format:check` | Check code formatting with Prettier |
-| `npm run lint` | Run ESLint with zero warnings |
-| `npm run typecheck` | Run TypeScript checks for web and Electron |
-| `npm run test` | Run Vitest suite once |
-| `npm run test:ci` | Run Vitest in CI-friendly serial mode |
+| Command                | What it does                                 |
+| ---------------------- | -------------------------------------------- |
+| `npm run dev`          | Starts the Vite dev server for the web app   |
+| `npm run dev:electron` | Runs the web app and Electron shell together |
+| `npm run preview`      | Serves the production web build locally      |
+| `npm run format:check` | Checks formatting with Prettier              |
+| `npm run lint`         | Runs ESLint with zero warnings allowed       |
+| `npm run typecheck`    | Runs TypeScript checks for web and Electron  |
+| `npm run test`         | Runs the Vitest suite once                   |
+| `npm run test:ci`      | Runs Vitest in CI-friendly serial mode       |
 
-### Build & Release
+### Build and release
 
-| Command | Purpose |
-|---------|---------|
-| `npm run build:web` | Build the web bundle |
-| `npm run build:electron` | Build Electron TypeScript output |
-| `npm run build:desktop` | Build web app and Electron output together |
-| `npm run rebuild:native` | Rebuild optional native modules for Electron |
-| `npm run package:desktop` | Create unpacked desktop package in `release/` |
-| `npm run package:desktop:installer` | Create platform-specific installer artifacts |
-| `npm run smoke:installer` | Verify packaged desktop output |
-| `npm run smoke:first-run-db` | Check first-run database startup patches |
-| `npm run release:notes` | Generate `artifacts/release-notes.md` |
-| `npm run release:desktop` | Run the complete desktop release flow |
+| Command                             | What it does                                      |
+| ----------------------------------- | ------------------------------------------------- |
+| `npm run build:web`                 | Builds the web bundle                             |
+| `npm run build:electron`            | Builds the Electron TypeScript output             |
+| `npm run build:desktop`             | Builds the web app and Electron output together   |
+| `npm run rebuild:native`            | Rebuilds optional native modules for Electron     |
+| `npm run package:desktop`           | Creates an unpacked desktop package in `release/` |
+| `npm run package:desktop:installer` | Creates platform installer artifacts              |
+| `npm run smoke:installer`           | Verifies the packaged desktop output              |
+| `npm run smoke:first-run-db`        | Checks first-run database startup patches         |
+| `npm run release:notes`             | Generates `artifacts/release-notes.md`            |
+| `npm run release:desktop`           | Runs the full desktop release flow                |
 
-## Branding & Build Identity 🎨
+## Branding And Build Identity 🎨
 
-VaultBill uses a single build-time name variable for complete branding control:
+VaultBill uses one build-time name variable:
 
-```bash
-# macOS/Linux
-APP_NAME='Acme Billing' npm run build:desktop
-
-# PowerShell
+```powershell
 $env:APP_NAME = 'Acme Billing'
 npm run build:desktop
 ```
 
-If `APP_NAME` is blank or missing, `VaultBill` is used as the fallback.
+If `APP_NAME` is blank or missing, VaultBill is used as the fallback name.
 
-### GitHub Pages Deployment
+For GitHub Pages builds, the app is published under the `/VaultBill/` subpath.
+The production build and the Pages workflow are aligned with that base path, and
+the app includes a redirect so stray URLs fall back to the canonical home page.
 
-For GitHub Pages builds, the app is published under the `/VaultBill/` subpath. The production build and Pages workflow are aligned with this base path, with an automatic redirect for stray URLs.
+## Automation And Deployment 🤖
 
-## Automation & Deployment 🤖
+- `Build Release Files` packages the desktop release files and runs the release
+  validation flow when dispatched manually. It also replaces an existing GitHub
+  Release for the same version before publishing the fresh one.
+- `GitHub Pages` automatically deploys the web build on pushes to `main`.
+- The Pages workflow uses the `VaultBill` GitHub Pages environment name.
+- The Pages workflow sets `VITE_DEMO_MODE=true` and `VITE_BASE_PATH=/VaultBill/`
+  automatically, and the hosted demo stores records in browser storage only.
+- A `public/404.html` fallback keeps GitHub Pages navigation friendly.
 
-### CI/CD Workflows
+## Security And Release Safety 🔐
 
-- **Build Release Files**: Packages desktop release files and runs validation when dispatched manually. Replaces existing GitHub Releases for the same version.
-- **GitHub Pages**: Automatically deploys the web build on pushes to `main` using the `VaultBill` GitHub Pages environment.
-- **Security**: The hosted build uses device-scoped Supabase rows protected by RLS; desktop-only and secret-backed integrations remain disabled.
-- **Navigation Fallback**: `public/404.html` keeps GitHub Pages navigation friendly.
+- Demo mode is not a production deployment.
+- Full app mode stores data locally in SQLite.
+- LAN is disabled by default.
+- Backups may contain sensitive data.
+- Encrypted backup is recommended when `BACKUP_PASSWORD` is set.
+- Public desktop releases should use signed installers when available.
+- Android is future scope and has a separate security gate.
 
-## What's Inside The App 📘
+## Testing 🧪
 
-VaultBill includes core foundations for:
+- `npm run format:check`
+- `npm run lint`
+- `npm run typecheck`
+- `npm run test:ci`
+- `npm run coverage:ci`
+- `npm run test:e2e`
 
-- ✅ SQLite startup patching and schema recovery
-- ✅ Operator accounts, roles, and permission-aware navigation
-- ✅ Document-format selection, validation, and fallback handling
-- ✅ Dynamic line-item behavior and formula evaluation
-- ✅ Saved records, reprints, cancellations, and finalization workflows
-- ✅ Print template sanitization, PDF planning, and printer profile selection
-- ✅ CSV / TSV import previews and bulk print planning
-- ✅ Reports, exports, backup packages, and restore validation
-- ✅ Runtime branding, company settings, and DB-backed app assets
-- ✅ Keyboard shortcuts, responsive layout metadata, and reusable feedback states
+## Release Process 🚚
 
-## Project Structure 📁
+- `Build Release Files` is the manual desktop release pipeline.
+- If the same release version already exists, the workflow deletes the old
+  GitHub Release and tag before publishing fresh assets.
+- GitHub Pages publishes automatically on `main` and uses the `VaultBill`
+  environment.
 
-```
-├── docs/              # Documentation and specifications
-│   ├── Spec.md        # Implementation source of truth
-│   └── ReleasePipeline.md
-├── src/               # Web application source
-├── electron/          # Electron desktop app
-│   ├── server/        # Local API server
-│   └── main/          # Electron main process
-├── public/            # Static assets
-└── tests/             # Test suite
-```
+## Troubleshooting 🧰
 
-## Documentation 📚
+- If the GitHub Pages route looks blank after a refresh, verify the app is
+  being served under `/VaultBill/`.
+- If a desktop release smoke test fails, re-run `npm run smoke:installer`.
+- If demo data seems missing, clear browser storage for the Pages origin and
+  create a new draft.
 
-- **[Implementation Spec](docs/Spec.md)**: The source of truth for this implementation
-- **[Release Pipeline](docs/ReleasePipeline.md)**: Details on the release workflow
-- **[Electron Server Routes](electron/server/routes/)**: Typed Local API routes (Phase 16+)
-- **[Middleware](electron/server/middleware/)**: Local API middleware (Phase 16+)
+## What’s Inside The App 📘
+
+VaultBill already includes the core foundations for:
+
+- SQLite startup patching and schema recovery
+- Operator accounts, roles, and permission-aware navigation
+- Document-format selection, validation, and fallback handling
+- Dynamic line-item behavior and formula evaluation
+- Saved records, reprints, cancellations, and finalization workflows
+- Print template sanitization, PDF planning, and printer profile selection
+- CSV / TSV import previews and bulk print planning
+- Reports, exports, backup packages, and restore validation
+- Runtime branding, company settings, and DB-backed app assets
+- Keyboard shortcuts, responsive layout metadata, and reusable feedback states
+
+## Project Notes 💡
+
+- The implementation source of truth is `docs/Spec.md`
+- The release pipeline details live in `docs/ReleasePipeline.md`
+- GitHub Pages is the web publishing target for the SPA demo build
+- The Electron release flow is separated from the Pages deployment flow so each
+  workflow stays focused and easy to reason about
 
 ## A Tiny Promise 😊
 
-This repo is meant to stay **spec-led**, **test-backed**, and pleasantly boring in the best possible way:
+This repo is meant to stay spec-led, test-backed, and pleasantly boring in the
+best possible way. No hidden magic, no surprise build steps, and no guesswork
+about where the code lives.
 
-- ✨ No hidden magic
-- ✨ No surprise build steps
-- ✨ No guesswork about where the code lives
-
-If you're here to extend VaultBill, you're in the right place. Let's keep it smooth, colorful, and reliable ✨
-
----
-
-## Contributing
-
-We welcome contributions! Please ensure your changes:
-- Follow the existing code style and patterns
-- Maintain TypeScript strict mode
-- Include appropriate tests
-- Update documentation as needed
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
----
-
-**Made with ❤️ for clear, predictable billing everywhere**
+If you’re here to extend VaultBill, you’re in the right place. Let’s keep it
+smooth, colorful, and reliable ✨

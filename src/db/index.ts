@@ -1,4 +1,4 @@
-export type DataMode = 'DesktopSQLite' | 'LanLocalApi' | 'WebSupabase';
+export type DataMode = 'DesktopSQLite' | 'LanLocalApi' | 'WebDemo';
 
 export type AdapterStatus = {
   readonly mode: DataMode;
@@ -18,13 +18,11 @@ export const getAdapterStatus = (): readonly AdapterStatus[] => [
     message: 'Local API access is available when the desktop host enables LAN access.',
   },
   {
-    mode: 'WebSupabase',
-    isAvailable:
-      import.meta.env.VITE_WEB_ONLY === 'true' &&
-      Boolean(import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY),
+    mode: 'WebDemo',
+    isAvailable: import.meta.env.VITE_DEMO_MODE === 'true',
     message:
-      import.meta.env.VITE_WEB_ONLY === 'true'
-        ? 'Supabase document storage is used by the hosted web/demo build.'
-        : 'Supabase storage is disabled outside the hosted web/demo build.',
+      import.meta.env.VITE_DEMO_MODE === 'true'
+        ? 'Browser storage is available in the demo build.'
+        : 'Browser storage is available only in demo mode.',
   },
 ];

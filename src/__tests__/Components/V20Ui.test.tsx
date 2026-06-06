@@ -16,7 +16,7 @@ import { SettingsPage } from '../../features/settings/SettingsPage';
 const webCapabilities: CapabilityRegistry = {
   isDesktop: false,
   isLanBrowser: false,
-  isWebOnly: true,
+  isDemoMode: true,
   canListPrinters: false,
   canSelectExactPrinter: false,
   canBrowserPrint: true,
