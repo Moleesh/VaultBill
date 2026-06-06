@@ -10,12 +10,11 @@ and print platform built around two clearly separated flows:
 > shell, platform capability model, shared overlays, automated quality gates,
 > desktop releases, and GitHub Pages demo deployment reflect that plan.
 
-[![CI](https://img.shields.io/github/actions/workflow/status/Moleesh/VaultBill/build-release-files.yml?branch=main)](https://github.com/Moleesh/VaultBill/actions/workflows/build-release-files.yml)
-[![Demo Deploy](https://img.shields.io/github/actions/workflow/status/Moleesh/VaultBill/deploy-web.yml?branch=main)](https://github.com/Moleesh/VaultBill/actions/workflows/deploy-web.yml)
-[![Desktop Release](https://img.shields.io/github/actions/workflow/status/Moleesh/VaultBill/build-release-files.yml?branch=main)](https://github.com/Moleesh/VaultBill/actions/workflows/build-release-files.yml)
+[![Demo Deploy](https://img.shields.io/github/actions/workflow/status/Moleesh/VaultBill/demo-pages.yml?branch=main)](https://github.com/Moleesh/VaultBill/actions/workflows/demo-pages.yml)
+[![Desktop Release](https://img.shields.io/github/actions/workflow/status/Moleesh/VaultBill/release-app.yml)](https://github.com/Moleesh/VaultBill/actions/workflows/release-app.yml)
 [![Latest Release](https://img.shields.io/github/v/release/Moleesh/VaultBill)](https://github.com/Moleesh/VaultBill/releases/latest)
-[![Tests](https://img.shields.io/badge/tests-Vitest%20%2B%20Playwright-brightgreen)](https://github.com/Moleesh/VaultBill/actions/workflows/build-release-files.yml)
-[![Coverage](https://img.shields.io/badge/coverage-enforced-blue)](https://github.com/Moleesh/VaultBill/actions/workflows/build-release-files.yml)
+[![Tests](https://img.shields.io/badge/tests-Vitest%20%2B%20Playwright-brightgreen)](https://github.com/Moleesh/VaultBill/actions/workflows/release-app.yml)
+[![Security](https://img.shields.io/badge/security-release%20gated-0f766e)](https://github.com/Moleesh/VaultBill/actions/workflows/release-app.yml)
 [![License](https://img.shields.io/github/license/Moleesh/VaultBill)](LICENSE)
 [![Platforms](https://img.shields.io/badge/platforms-Windows%20%7C%20Linux%20%7C%20macOS-informational)](https://github.com/Moleesh/VaultBill)
 
@@ -35,7 +34,7 @@ VaultBill is designed as a single product foundation for teams that want:
 
 - Live demo: [moleesh.github.io/VaultBill](https://moleesh.github.io/VaultBill/)
 - Demo mode lives on GitHub Pages under `/VaultBill/`
-- Demo mode stores records in the browser only and never needs Supabase
+- Demo mode stores records in the browser only and has no backend or secrets
 - Full app mode stores data locally in SQLite and uses the desktop shell
 - The full app keeps LAN, backup, restore, printer, and signing controls on the
   desktop host
@@ -48,7 +47,7 @@ VaultBill is designed as a single product foundation for teams that want:
 
 ## Why It Feels Nice To Work With 😊
 
-- The app starts from one `APP_NAME` value, so branding stays simple
+- VaultBill has a fixed product/package identity so upgrades stay reliable
 - Five built-in themes keep the UI visually distinct without custom styling
 - Operator-aware permissions and document-format fallback logic are built in
 - Print, PDF, record, report, backup, and Local API seams are already wired
@@ -77,11 +76,10 @@ Copy `.env.example` to a local environment file only when you need to override
 defaults. Never place a service-role key or provider secret in a frontend
 variable.
 
-| Variable            | Required | Used by                  | Default     | Purpose                                                                                  |
-| ------------------- | -------- | ------------------------ | ----------- | ---------------------------------------------------------------------------------------- |
-| `APP_NAME`          | No       | Desktop build + branding | `VaultBill` | Controls packaged product name, artifact slug, app identifier slug, and display name     |
-| `SYSADMIN_PASSWORD` | No       | Desktop / LAN startup    | Empty       | Optional default SysAdmin password for protected actions such as permanent delete        |
-| `BACKUP_PASSWORD`   | No       | Desktop backup/restore   | Empty       | Optional default password for encrypted backups; if present, encrypted backup is enabled |
+| Variable            | Required | Used by                | Default | Purpose                                                                   |
+| ------------------- | -------- | ---------------------- | ------- | ------------------------------------------------------------------------- |
+| `SYSADMIN_PASSWORD` | No       | Desktop/LAN startup    | Empty   | Optional SysAdmin password for protected actions such as permanent delete |
+| `BACKUP_PASSWORD`   | No       | Desktop backup/restore | Empty   | Enables encrypted backup by default when configured                       |
 
 The GitHub Pages workflow sets `VITE_DEMO_MODE=true` and `VITE_BASE_PATH=/VaultBill/`
 automatically. Normal developers do not need to set those variables by hand.
@@ -90,16 +88,18 @@ automatically. Normal developers do not need to set those variables by hand.
 
 ### Day-to-day
 
-| Command                | What it does                                 |
-| ---------------------- | -------------------------------------------- |
-| `npm run dev`          | Starts the Vite dev server for the web app   |
-| `npm run dev:electron` | Runs the web app and Electron shell together |
-| `npm run preview`      | Serves the production web build locally      |
-| `npm run format:check` | Checks formatting with Prettier              |
-| `npm run lint`         | Runs ESLint with zero warnings allowed       |
-| `npm run typecheck`    | Runs TypeScript checks for web and Electron  |
-| `npm run test`         | Runs the Vitest suite once                   |
-| `npm run test:ci`      | Runs Vitest in CI-friendly serial mode       |
+| Command                  | What it does                                         |
+| ------------------------ | ---------------------------------------------------- |
+| `npm run dev`            | Starts the Vite dev server for the web app           |
+| `npm run dev:electron`   | Runs the web app and Electron shell together         |
+| `npm run preview`        | Serves the production web build locally              |
+| `npm run format:check`   | Checks formatting with Prettier                      |
+| `npm run lint`           | Runs ESLint with zero warnings allowed               |
+| `npm run typecheck`      | Runs TypeScript checks for web and Electron          |
+| `npm run test`           | Runs the Vitest suite once                           |
+| `npm run test:ci`        | Runs Vitest in CI-friendly serial mode               |
+| `npm run scan:secrets`   | Scans tracked release source for secrets             |
+| `npm run security:check` | Verifies Electron, CSP, identity, and workflow gates |
 
 ### Build and release
 
@@ -118,14 +118,9 @@ automatically. Normal developers do not need to set those variables by hand.
 
 ## Branding And Build Identity 🎨
 
-VaultBill uses one build-time name variable:
-
-```powershell
-$env:APP_NAME = 'Acme Billing'
-npm run build:desktop
-```
-
-If `APP_NAME` is blank or missing, VaultBill is used as the fallback name.
+The product name, package identity, and artifact slug are fixed to VaultBill.
+Business profile, logo, tagline, print identity, accent, and themes remain
+configurable without changing the installed application identity.
 
 For GitHub Pages builds, the app is published under the `/VaultBill/` subpath.
 The production build and the Pages workflow are aligned with that base path, and
@@ -133,10 +128,10 @@ the app includes a redirect so stray URLs fall back to the canonical home page.
 
 ## Automation And Deployment 🤖
 
-- `Build Release Files` packages the desktop release files and runs the release
-  validation flow when dispatched manually. It also replaces an existing GitHub
+- `Release App` packages desktop release files on version tags or manual
+  dispatch. It also replaces an existing GitHub
   Release for the same version before publishing the fresh one.
-- `GitHub Pages` automatically deploys the web build on pushes to `main`.
+- `Demo Pages` automatically deploys the demo on pushes to `main`.
 - The Pages workflow uses the `VaultBill` GitHub Pages environment name.
 - The Pages workflow sets `VITE_DEMO_MODE=true` and `VITE_BASE_PATH=/VaultBill/`
   automatically, and the hosted demo stores records in browser storage only.
@@ -147,9 +142,12 @@ the app includes a redirect so stray URLs fall back to the canonical home page.
 - Demo mode is not a production deployment.
 - Full app mode stores data locally in SQLite.
 - LAN is disabled by default.
+- Electron uses isolation, sandboxing, typed IPC validation, and a restrictive CSP.
+- Local API requests have origin, role, validation, and upload-size checks.
 - Backups may contain sensitive data.
 - Encrypted backup is recommended when `BACKUP_PASSWORD` is set.
 - Public desktop releases should use signed installers when available.
+- Release artifacts include SHA-256 checksums and recorded signing status.
 - Android is future scope and has a separate security gate.
 
 ## Testing 🧪
@@ -163,10 +161,10 @@ the app includes a redirect so stray URLs fall back to the canonical home page.
 
 ## Release Process 🚚
 
-- `Build Release Files` is the manual desktop release pipeline.
+- `Release App` is the tag/manual desktop release pipeline.
 - If the same release version already exists, the workflow deletes the old
   GitHub Release and tag before publishing fresh assets.
-- GitHub Pages publishes automatically on `main` and uses the `VaultBill`
+- Demo Pages publishes automatically on `main` and uses the `VaultBill`
   environment.
 
 ## Troubleshooting 🧰
@@ -189,7 +187,7 @@ VaultBill already includes the core foundations for:
 - Print template sanitization, PDF planning, and printer profile selection
 - CSV / TSV import previews and bulk print planning
 - Reports, exports, backup packages, and restore validation
-- Runtime branding, company settings, and DB-backed app assets
+- Fixed product branding, business profile settings, and DB-backed app assets
 - Keyboard shortcuts, responsive layout metadata, and reusable feedback states
 
 ## Project Notes 💡

@@ -1,64 +1,83 @@
 import type { FC } from 'react';
 
-import type { WebRecord } from './useWebRecordStore';
+import type { AppRecord } from './RecordStoreContext';
 
 type RecordCollectionProps = {
-  readonly activeTab: string;
   readonly error: string;
   readonly isLoading: boolean;
-  readonly records: readonly WebRecord[];
-};
-
-const matchesTab = (record: WebRecord, activeTab: string): boolean => {
-  if (activeTab === 'reprint') {
-    return record.status === 'Finalized' || record.status === 'Cancelled';
-  }
-
-  return record.status.toLocaleLowerCase() === activeTab.replace(/s$/u, '');
+  readonly records: readonly AppRecord[];
+  readonly selectedRecordId?: string;
+  readonly onSelect: (record: AppRecord) => void;
 };
 
 export const RecordCollection: FC<RecordCollectionProps> = ({
-  activeTab,
   error,
   isLoading,
+  onSelect,
   records,
+  selectedRecordId,
 }) => {
-  const matchingRecords = records.filter((record) => matchesTab(record, activeTab));
-
   if (isLoading) {
     return (
       <section aria-live="polite" className="empty-panel">
-        <p className="eyebrow">{activeTab}</p>
-        <h2>Loading demo records…</h2>
+        <p className="eyebrow">Reprint</p>
+        <h2>Loading records</h2>
+        <div className="loading-skeleton" />
       </section>
     );
   }
 
-  if (matchingRecords.length === 0) {
+  if (records.length === 0) {
     return (
       <section className="empty-panel">
-        <p className="eyebrow">{activeTab}</p>
-        <h2>No matching records yet</h2>
-        <p>{error || 'Records in this category will appear here with search and filters.'}</p>
+        <p className="eyebrow">Reprint</p>
+        <h2>No finalized records yet</h2>
+        <p>{error || 'Finalize a document and it will appear here for read-only reprinting.'}</p>
       </section>
     );
   }
 
   return (
-    <section className="record-list" aria-label={`${activeTab} records`}>
+    <div className="product-table-wrap">
       {error ? <p className="feedback-error">{error}</p> : null}
-      {matchingRecords.map((record) => (
-        <article key={record.recordId}>
-          <div>
-            <strong>{record.customerName || 'Unnamed customer'}</strong>
-            <small>{record.formatName}</small>
-          </div>
-          <div>
-            <span className="status-pill">{record.status}</span>
-            <small>{new Date(record.updatedAt).toLocaleString()}</small>
-          </div>
-        </article>
-      ))}
-    </section>
+      <table className="product-table">
+        <thead>
+          <tr>
+            <th>Document</th>
+            <th>Customer</th>
+            <th>Date</th>
+            <th>Status</th>
+            <th className="numeric-cell">Amount</th>
+            <th aria-label="Actions" />
+          </tr>
+        </thead>
+        <tbody>
+          {records.map((record) => (
+            <tr
+              className={record.recordId === selectedRecordId ? 'is-selected' : ''}
+              key={record.recordId}
+            >
+              <td>{record.documentNumber ?? 'Draft'}</td>
+              <td>{record.customerName || 'Unnamed customer'}</td>
+              <td>{record.invoiceDate}</td>
+              <td>
+                <span className="status-pill">{record.status}</span>
+              </td>
+              <td className="numeric-cell">₹{record.grandTotal}</td>
+              <td>
+                <button
+                  onClick={() => {
+                    onSelect(record);
+                  }}
+                  type="button"
+                >
+                  Open
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 };

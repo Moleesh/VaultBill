@@ -3,15 +3,13 @@ import { Link } from 'react-router-dom';
 import type { FC } from 'react';
 
 import { useSession } from '../auth/SessionContext';
-
-const recentRecords = [
-  { number: 'INV-1042', customer: 'Northstar Supplies', amount: '₹18,420.00' },
-  { number: 'INV-1041', customer: 'Mango Street Retail', amount: '₹7,860.00' },
-  { number: 'INV-1040', customer: 'Aster Works', amount: '₹12,300.00' },
-] as const;
+import { useRecordStore } from '../records/RecordStoreContext';
 
 export const DashboardPage: FC = () => {
   const { operatorContext } = useSession();
+  const { records } = useRecordStore();
+  const draftCount = records.filter((record) => record.status === 'Draft').length;
+  const recentRecords = records.filter((record) => record.status !== 'Draft').slice(0, 3);
 
   return (
     <div className="page-stack">
@@ -31,9 +29,13 @@ export const DashboardPage: FC = () => {
           <span>New document</span>
           <small>Choose a format and begin entry</small>
         </Link>
-        <Link to="/app/records?tab=drafts">
+        <Link to="/app/records">
           <span>Continue drafts</span>
-          <small>3 records need attention</small>
+          <small>
+            {draftCount === 0
+              ? 'No drafts need attention'
+              : `${String(draftCount)} draft${draftCount === 1 ? '' : 's'} need attention`}
+          </small>
         </Link>
         <Link to="/app/reports">
           <span>Open reports</span>
@@ -47,18 +49,25 @@ export const DashboardPage: FC = () => {
             <p className="eyebrow">Recent activity</p>
             <h2>Finalized records</h2>
           </div>
-          <Link to="/app/records?tab=finalized">View all</Link>
+          <Link to="/app/records?tab=reprint">View all</Link>
         </div>
-        <div className="record-list">
-          {recentRecords.map((record) => (
-            <article key={record.number}>
-              <strong>{record.number}</strong>
-              <span>{record.customer}</span>
-              <span>{record.amount}</span>
-              <button type="button">Reprint</button>
-            </article>
-          ))}
-        </div>
+        {recentRecords.length === 0 ? (
+          <div className="empty-panel">
+            <h3>No finalized records yet</h3>
+            <p>Finalized documents will appear here for quick reprint access.</p>
+          </div>
+        ) : (
+          <div className="record-list">
+            {recentRecords.map((record) => (
+              <article key={record.recordId}>
+                <strong>{record.documentNumber ?? ''}</strong>
+                <span>{record.customerName}</span>
+                <span>₹{record.grandTotal}</span>
+                <Link to={`/app/records?tab=reprint&record=${record.recordId}`}>Reprint</Link>
+              </article>
+            ))}
+          </div>
+        )}
       </section>
     </div>
   );

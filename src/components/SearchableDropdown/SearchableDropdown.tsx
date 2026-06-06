@@ -32,7 +32,7 @@ export const SearchableDropdown: FC<SearchableDropdownProps> = ({
   const menuRef = useRef<HTMLDivElement>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState('');
-  const [activeIndex, setActiveIndex] = useState(0);
+  const [activeIndex, setActiveIndex] = useState(-1);
   const selectedOption = options.find((option) => option.value === value);
   const normalizedQuery = normalize(query);
   const filteredOptions = options.filter((option) => {
@@ -50,7 +50,13 @@ export const SearchableDropdown: FC<SearchableDropdownProps> = ({
 
     if (rect && menu) {
       menu.style.setProperty('--dropdown-left', `${String(rect.left)}px`);
-      menu.style.setProperty('--dropdown-top', `${String(rect.bottom + 8)}px`);
+      const expectedHeight = Math.min(448, window.innerHeight - 32);
+      const opensAbove =
+        window.innerHeight - rect.bottom < expectedHeight && rect.top > expectedHeight;
+      menu.style.setProperty(
+        '--dropdown-top',
+        `${String(opensAbove ? Math.max(16, rect.top - expectedHeight - 8) : rect.bottom + 8)}px`,
+      );
       menu.style.setProperty('--dropdown-width', `${String(Math.max(rect.width, 280))}px`);
     }
 
@@ -87,11 +93,11 @@ export const SearchableDropdown: FC<SearchableDropdownProps> = ({
 
     if (event.key === 'ArrowDown') {
       event.preventDefault();
-      setActiveIndex((index) => Math.min(index + 1, lastIndex));
+      setActiveIndex((index) => Math.min(index < 0 ? 0 : index + 1, lastIndex));
     }
     if (event.key === 'ArrowUp') {
       event.preventDefault();
-      setActiveIndex((index) => Math.max(index - 1, 0));
+      setActiveIndex((index) => Math.max(index < 0 ? lastIndex : index - 1, 0));
     }
     if (event.key === 'Home') setActiveIndex(0);
     if (event.key === 'End') setActiveIndex(lastIndex);
@@ -120,6 +126,7 @@ export const SearchableDropdown: FC<SearchableDropdownProps> = ({
         disabled={loading}
         onClick={() => {
           setIsOpen((current) => !current);
+          setActiveIndex(-1);
         }}
         ref={triggerRef}
         type="button"
@@ -136,7 +143,7 @@ export const SearchableDropdown: FC<SearchableDropdownProps> = ({
                   autoFocus
                   onChange={(event) => {
                     setQuery(event.currentTarget.value);
-                    setActiveIndex(0);
+                    setActiveIndex(-1);
                   }}
                   placeholder="Search options"
                   value={query}
@@ -158,7 +165,10 @@ export const SearchableDropdown: FC<SearchableDropdownProps> = ({
                       role="option"
                       type="button"
                     >
-                      <strong>{option.label}</strong>
+                      <strong>
+                        {option.value === value ? <span aria-hidden="true">✓ </span> : null}
+                        {option.label}
+                      </strong>
                       {option.description ? <small>{option.description}</small> : null}
                     </button>
                   ))

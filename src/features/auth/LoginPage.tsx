@@ -5,11 +5,13 @@ import type { FC } from 'react';
 import { AppBrandIcon } from '../../components/AppBrandIcon/AppBrandIcon';
 import { AppModal } from '../../components/AppModal/AppModal';
 import { SearchableDropdown } from '../../components/SearchableDropdown/SearchableDropdown';
+import { useCapabilities } from '../../capability/CapabilityContext';
 import { defaultRuntimeBranding } from '../../constants/PhaseOneSeed';
 import { VENDOR } from '../../constants/Vendor';
 import { useSession } from './SessionContext';
 
 export const LoginPage: FC = () => {
+  const capabilities = useCapabilities();
   const { accounts, login, operatorContext } = useSession();
   const navigate = useNavigate();
   const [selectedAccountId, setSelectedAccountId] = useState(accounts[0]?.userId ?? '');
@@ -22,7 +24,7 @@ export const LoginPage: FC = () => {
   }));
 
   if (operatorContext) {
-    return <Navigate replace to="/app/dashboard" />;
+    return <Navigate replace to={capabilities.isDemoMode ? '/app/records' : '/app/dashboard'} />;
   }
 
   return (
@@ -33,14 +35,24 @@ export const LoginPage: FC = () => {
           <p className="eyebrow">Secure billing workspace</p>
           <h1 id="login-title">{defaultRuntimeBranding.applicationName}</h1>
           <p>{defaultRuntimeBranding.tagline}</p>
+          {capabilities.isDemoMode ? (
+            <span className="status-pill">Browser-only product demo</span>
+          ) : null}
         </div>
         <div className="login-card__form">
-          <SearchableDropdown
-            label="Operator account"
-            onChange={setSelectedAccountId}
-            options={accountOptions}
-            value={selectedAccountId}
-          />
+          {capabilities.isDemoMode ? (
+            <div className="demo-login-summary">
+              <strong>Demo User</strong>
+              <p>Create GST invoices, finalize records, reprint, and explore reports.</p>
+            </div>
+          ) : (
+            <SearchableDropdown
+              label="Operator account"
+              onChange={setSelectedAccountId}
+              options={accountOptions}
+              value={selectedAccountId}
+            />
+          )}
           <p className="field-note">
             A PIN or password appears here only when your administrator enables it.
           </p>
@@ -49,11 +61,11 @@ export const LoginPage: FC = () => {
             disabled={!selectedAccountId}
             onClick={() => {
               login(selectedAccountId);
-              void navigate('/app/dashboard');
+              void navigate(capabilities.isDemoMode ? '/app/records' : '/app/dashboard');
             }}
             type="button"
           >
-            Log in
+            {capabilities.isDemoMode ? 'Start demo' : 'Log in'}
           </button>
           <button
             onClick={() => {

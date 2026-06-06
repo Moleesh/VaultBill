@@ -6,9 +6,13 @@
 
 .app-shell {
   display: grid;
-  grid-template-columns: minmax(15rem, var(--sidebar-width)) minmax(0, 1fr);
+  grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
   min-height: 100vh;
   background: var(--gradient-page);
+}
+
+.app-shell.is-sidebar-expanded {
+  --sidebar-width: 17rem;
 }
 
 .skip-link {
@@ -34,7 +38,7 @@
   flex-direction: column;
   gap: var(--space-6);
   height: 100vh;
-  padding: var(--space-6);
+  padding: var(--space-4) var(--space-3);
   border-right: var(--line-width) solid var(--color-border);
   background: color-mix(in srgb, var(--color-surface) 90%, transparent);
   backdrop-filter: blur(22px);
@@ -46,12 +50,31 @@
   gap: var(--space-3);
   color: var(--color-text-heading);
   text-decoration: none;
+  justify-content: center;
 }
 
 .app-shell__brand > span,
 .app-shell__operator {
   display: grid;
   gap: var(--space-1);
+}
+
+.app-shell:not(.is-sidebar-expanded) .app-shell__nav-label,
+.app-shell:not(.is-sidebar-expanded) .app-shell__brand > span {
+  display: none;
+}
+
+.app-shell.is-sidebar-expanded .app-shell__brand {
+  justify-content: flex-start;
+}
+
+.app-shell__sidebar-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-width: 2.75rem;
+  padding: var(--space-2);
 }
 
 .app-shell__brand strong {
@@ -66,16 +89,35 @@
 
 .app-shell__nav-item {
   display: grid;
+  grid-template-columns: 2rem minmax(0, 1fr);
+  align-items: center;
   gap: var(--space-1);
   border: var(--line-width) solid transparent;
   border-radius: var(--radius-md);
   color: var(--color-text-body);
-  padding: var(--space-3) var(--space-4);
+  padding: var(--space-3);
   text-decoration: none;
   transition:
     background var(--motion-fast),
     border-color var(--motion-fast),
     transform var(--motion-fast);
+}
+
+.app-shell__nav-icon {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  border-radius: var(--radius-sm);
+  background: var(--color-secondary);
+  color: var(--color-primary);
+  font-family: var(--font-mono);
+  font-weight: var(--font-weight-bold);
+}
+
+.app-shell:not(.is-sidebar-expanded) .app-shell__nav-item {
+  grid-template-columns: 1fr;
+  justify-items: center;
 }
 
 .app-shell__nav-item:hover,
@@ -98,7 +140,21 @@
 }
 
 .app-shell__operator button {
-  justify-self: start;
+  width: 100%;
+  padding-inline: var(--space-2);
+}
+
+.app-shell:not(.is-sidebar-expanded) .app-shell__logout {
+  overflow: hidden;
+  width: 2.75rem;
+  color: transparent;
+  font-size: 0;
+}
+
+.app-shell:not(.is-sidebar-expanded) .app-shell__logout::after {
+  color: var(--color-text-body);
+  content: 'Out';
+  font-size: var(--font-size-xs);
 }
 
 .app-shell__body {
@@ -137,10 +193,6 @@
 }
 
 @include respond-to('laptop') {
-  .app-shell {
-    grid-template-columns: 13.5rem minmax(0, 1fr);
-  }
-
   .app-shell__sidebar {
     padding: var(--space-4);
   }

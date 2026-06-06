@@ -1,58 +1,43 @@
 # Release Pipeline
 
-VaultBill packages the desktop product with Electron Builder after the shared
-browser demo UI and Electron shell builds complete.
+VaultBill has exactly two public automation flows.
 
-## Build Identity
+## Demo Pages
 
-The package identity is derived from `APP_NAME` with the same fallback as the
-desktop runtime:
+`.github/workflows/demo-pages.yml` runs automatically for pushes to `main`.
+It installs from the lockfile, runs formatting, lint, typecheck, demo-safe tests,
+secret scanning, Playwright smoke tests, and builds with:
 
-```json
-{
-  "APP_NAME": "VaultBill",
-  "ProductName": "VaultBill",
-  "AppId": "com.vaultbill.vaultbill",
-  "ArtifactSlug": "vaultbill"
-}
+```env
+VITE_DEMO_MODE=true
+VITE_BASE_PATH=/VaultBill/
 ```
 
-Use the same `APP_NAME` for every release of an existing branded installation
-so upgrades resolve to the same app identity.
+The resulting secret-free bundle deploys to the `VaultBill` Pages environment.
 
-## Scripts
+## Release App
 
-- `npm run rebuild:native` rebuilds production and optional native modules for
-  the installed Electron runtime.
-- `npm run package:desktop` creates an unpacked desktop package in `release/`.
-- `npm run package:desktop:installer` creates platform installer artifacts.
-- `npm run smoke:installer` verifies build outputs, package main entry, build
-  identity, and unpacked package presence.
-- `npm run smoke:installer:required` additionally requires an installer
-  artifact in `release/`.
-- `npm run smoke:first-run-db` runs startup patch tests for first-run and
-  upgrade safety.
-- `npm run release:notes` writes `artifacts/release-notes.md`.
+`.github/workflows/release-app.yml` runs for `v*` tags or manual dispatch. Its
+verification job runs the strict quality and security gates, Playwright flows,
+native-module rebuild, desktop build, and package smoke checks.
 
-## Workflows
+The mandatory Windows job builds the installer in CI, runs first-run SQLite
+smoke tests, generates release notes and SHA-256 checksums, records whether
+signing credentials were available, and uploads all artifacts.
 
-The `Build Release Files` workflow runs on manual dispatch and has two jobs.
-The `verify` job runs install, format check, lint, typecheck, unit tests,
-coverage, Playwright browser flows, web build, Electron native-module rebuild,
-desktop build, desktop directory packaging, and installer smoke on Ubuntu. The
-`package` job runs on Windows, creates the installer, requires an installer
-artifact during smoke, validates first-run DB startup patch tests, generates
-release notes, and uploads `release/**` plus the generated notes. It also
-publishes a GitHub Release for `v${package.json version}`, and if that release
-tag already exists it deletes the old release and tag before recreating them.
+The GitHub Release tag is `v${package.json version}`. If that release already
+exists, the workflow deletes the old release and tag before publishing the new
+assets and notes for the same version.
 
-To keep the SQLite-backed startup tests deterministic on hosted runners, the
-workflow installs Node 24 so `node:sqlite` stays available on hosted runners
-and the Vitest suites can run in serial mode where needed.
+## Local Gates
 
-The `GitHub Pages` workflow automatically publishes the browser demo build to
-GitHub Pages on pushes to `main`, and uses the `VaultBill` Pages environment
-name for the deployment record. It sets `VITE_DEMO_MODE=true`, runs
-formatting, lint, typecheck, coverage, and Playwright gates, then builds with
-the `/VaultBill/` base path. The demo build stores records in the browser
-only.
+- `npm run format:check`
+- `npm run lint`
+- `npm run typecheck`
+- `npm run test:ci`
+- `npm run test:e2e`
+- `npm run audit:security`
+- `npm run scan:secrets`
+- `npm run test:security`
+- `npm run security:check`
+- `npm run build:desktop`

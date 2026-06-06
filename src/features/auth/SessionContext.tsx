@@ -1,6 +1,7 @@
 import { createContext, useContext, useState } from 'react';
 import type { FC, PropsWithChildren } from 'react';
 
+import { useCapabilities } from '../../capability/CapabilityContext';
 import { bootstrapOperatorAccounts, createOperatorContext } from './AccountBootstrap';
 import type { OperatorAccount, OperatorContext } from './AccountTypes';
 
@@ -12,12 +13,37 @@ type SessionContextValue = {
 };
 
 const sessionStorageKey = 'vaultbill.operator';
+const accountStorageKey = 'vaultbill.accounts';
 const SessionContext = createContext<SessionContextValue | undefined>(undefined);
 
-const findAccount = (userId: string | null): OperatorAccount | undefined =>
-  bootstrapOperatorAccounts.find((account) => account.userId === userId && account.isActive);
+const demoAccount: OperatorAccount = {
+  userId: 'demo_user',
+  username: 'demo',
+  displayName: 'Demo User',
+  role: 'User',
+  isActive: true,
+};
+
+const readStoredAccounts = (): readonly OperatorAccount[] => {
+  const rawAccounts = window.localStorage.getItem(accountStorageKey);
+
+  if (!rawAccounts) {
+    return bootstrapOperatorAccounts;
+  }
+
+  try {
+    const parsedAccounts = JSON.parse(rawAccounts) as readonly OperatorAccount[];
+    return parsedAccounts.length > 0 ? parsedAccounts : bootstrapOperatorAccounts;
+  } catch {
+    return bootstrapOperatorAccounts;
+  }
+};
 
 export const SessionProvider: FC<PropsWithChildren> = ({ children }) => {
+  const capabilities = useCapabilities();
+  const accounts = capabilities.isDemoMode ? [demoAccount] : readStoredAccounts();
+  const findAccount = (userId: string | null): OperatorAccount | undefined =>
+    accounts.find((candidate) => candidate.userId === userId && candidate.isActive);
   const [account, setAccount] = useState<OperatorAccount | undefined>(() =>
     findAccount(window.localStorage.getItem(sessionStorageKey)),
   );
@@ -41,7 +67,7 @@ export const SessionProvider: FC<PropsWithChildren> = ({ children }) => {
   return (
     <SessionContext.Provider
       value={{
-        accounts: bootstrapOperatorAccounts,
+        accounts,
         operatorContext: account ? createOperatorContext(account) : undefined,
         login,
         logout,

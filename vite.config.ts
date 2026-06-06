@@ -3,14 +3,6 @@
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 
-const requestedAppName = process.env.APP_NAME?.trim();
-const appName =
-  requestedAppName === undefined || requestedAppName.length === 0 ? 'VaultBill' : requestedAppName;
-const generatedSlug = appName
-  .toLowerCase()
-  .replace(/[^a-z0-9]+/g, '-')
-  .replace(/^-+|-+$/g, '');
-const appSlug = generatedSlug.length === 0 ? 'vaultbill' : generatedSlug;
 const githubRepositoryName = process.env.GITHUB_REPOSITORY?.split('/').pop()?.trim();
 const requestedBasePath = process.env.VITE_BASE_PATH?.trim();
 const githubPagesBasePath =
@@ -24,8 +16,8 @@ export default defineConfig({
   base: githubPagesBasePath,
   plugins: [react()],
   define: {
-    __APP_NAME__: JSON.stringify(appName),
-    __APP_SLUG__: JSON.stringify(appSlug),
+    __APP_NAME__: JSON.stringify('VaultBill'),
+    __APP_SLUG__: JSON.stringify('vaultbill'),
   },
   server: {
     host: '0.0.0.0',

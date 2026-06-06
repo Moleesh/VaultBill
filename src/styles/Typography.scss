@@ -20,9 +20,9 @@ h3 {
 }
 
 h1 {
-  max-width: 12ch;
-  font-size: clamp(2.7rem, 8vw, 6.8rem);
-  letter-spacing: -0.07em;
+  max-width: 24ch;
+  font-size: clamp(1.8rem, 3vw, 2.5rem);
+  letter-spacing: -0.045em;
 }
 
 h2 {
@@ -42,4 +42,10 @@ small {
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
+}
+
+.login-card__brand h1 {
+  max-width: 12ch;
+  font-size: var(--font-size-hero);
+  letter-spacing: -0.07em;
 }

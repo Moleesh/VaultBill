@@ -43,5 +43,8 @@
 @media (max-width: 640px) {
   .action-bar {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    right: var(--space-2);
+    bottom: 5.25rem;
+    left: var(--space-2);
   }
 }

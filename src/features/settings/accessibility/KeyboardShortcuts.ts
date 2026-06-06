@@ -7,8 +7,8 @@ export type KeyboardShortcut = {
 
 export const recordActionShortcuts: readonly KeyboardShortcut[] = [
   {
-    actionId: 'save-draft',
-    label: 'Save draft',
+    actionId: 'draft',
+    label: 'Draft',
     keys: 'Control+S',
     description: 'Save the current document as a draft.',
   },
@@ -19,16 +19,22 @@ export const recordActionShortcuts: readonly KeyboardShortcut[] = [
     description: 'Preview or print the current draft without finalizing.',
   },
   {
-    actionId: 'download-pdf',
-    label: 'Download PDF',
-    keys: 'Control+Shift+D',
-    description: 'Download the current printable document as PDF.',
-  },
-  {
     actionId: 'finalize',
     label: 'Finalize',
     keys: 'Control+Enter',
     description: 'Finalize the current draft using the sequence workflow.',
+  },
+  {
+    actionId: 'print',
+    label: 'Print',
+    keys: 'Control+P',
+    description: 'Run the configured output profile for the finalized document.',
+  },
+  {
+    actionId: 'reprint',
+    label: 'Reprint',
+    keys: 'Control+P',
+    description: 'Reprint the selected read-only record.',
   },
 ];
 

@@ -2,7 +2,9 @@ const blockedTagPattern = /<\s*\/?\s*(script|iframe|object|embed|form|meta|link)
 const eventHandlerPattern = /\son[a-z]+\s*=/i;
 const disallowedUrlAttributePattern =
   /\b(?:src|href)\s*=\s*["']?\s*(?:javascript:|https?:\/\/|\/\/|data:|file:)/i;
-const externalCssUrlPattern = /(?:@import\s+|url\s*\(\s*["']?\s*(?:https?:\/\/|\/\/|data:|file:))/i;
+const cssUrlPattern = /url\s*\(\s*["']?([^"')]+)["']?\s*\)/giu;
+const allowedCssDataUrlPattern = /^data:image\/(?:png|jpeg|gif|webp);base64,[a-z0-9+/=]+$/i;
+const allowedAssetPlaceholderPattern = /^\{\{Asset\.[A-Za-z0-9_.-]+\}\}$/;
 
 export const sanitizeTemplateHtml = (templateHtml: string): string => {
   if (!templateHtml.trim()) {
@@ -21,8 +23,15 @@ export const sanitizeTemplateHtml = (templateHtml: string): string => {
     throw new Error('Print template HTML cannot contain external assets.');
   }
 
-  if (externalCssUrlPattern.test(templateHtml)) {
+  if (/@import\s+/iu.test(templateHtml)) {
     throw new Error('Print template CSS cannot load external resources.');
+  }
+
+  for (const match of templateHtml.matchAll(cssUrlPattern)) {
+    const url = match[1]?.trim() ?? '';
+    if (!allowedAssetPlaceholderPattern.test(url) && !allowedCssDataUrlPattern.test(url)) {
+      throw new Error('Print template CSS contains an unapproved URL.');
+    }
   }
 
   return templateHtml;

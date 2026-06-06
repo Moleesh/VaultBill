@@ -1,16 +1,8 @@
-const appName = process.env.APP_NAME?.trim() || 'VaultBill';
-const generatedSlug = appName
-  .toLowerCase()
-  .replace(/[^a-z0-9]+/g, '-')
-  .replace(/^-+|-+$/g, '');
-const appSlug = generatedSlug || 'vaultbill';
-const identifierSlug = appSlug.replace(/-/g, '.');
-
 module.exports = {
-  appId: `com.vaultbill.${identifierSlug}`,
-  productName: appName,
+  appId: 'com.vaultbill.app',
+  productName: 'VaultBill',
   asar: true,
-  artifactName: `${appSlug}-\${version}-\${os}-\${arch}.\${ext}`,
+  artifactName: `vaultbill-\${version}-\${os}-\${arch}.\${ext}`,
   directories: {
     output: 'release',
   },
@@ -19,6 +11,7 @@ module.exports = {
     main: 'dist-electron/Main.js',
   },
   win: {
+    icon: 'build/icon.png',
     signAndEditExecutable: false,
     target: [
       {
@@ -34,9 +27,11 @@ module.exports = {
     allowToChangeInstallationDirectory: true,
   },
   mac: {
+    icon: 'build/icon.png',
     target: ['dmg'],
   },
   linux: {
+    icon: 'build/icon.png',
     target: ['AppImage'],
     category: 'Office',
   },

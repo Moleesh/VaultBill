@@ -1,59 +1,71 @@
 import type { FC } from 'react';
 
-import { hasCapability } from '../engines/permissionEngine/PermissionEngine';
 import { getShortcutForAction } from '../features/settings/accessibility/KeyboardShortcuts';
-import type { Role } from '../types/AppTypes';
+
+export type RecordActionState = 'New' | 'DraftSaved' | 'DraftDirty' | 'Finalized' | 'Reprint';
 
 type ActionBarProps = {
-  readonly role: Role;
-  readonly onAction?: ((actionId: string) => void) | undefined;
+  readonly state: RecordActionState;
+  readonly onAction: (actionId: string) => void;
+  readonly showShortcuts?: boolean;
+  readonly printLabel?: string;
 };
 
-export const ActionBar: FC<ActionBarProps> = ({ onAction, role }) => {
-  const canSaveDraft = hasCapability(role, 'SaveDraft');
-  const canDraftPrint = hasCapability(role, 'DraftPrint');
-  const canFinalPrint = hasCapability(role, 'FinalPrintReprint');
+const getActions = (
+  state: RecordActionState,
+  printLabel: string,
+): readonly { id: string; label: string; enabled: boolean; primary?: boolean }[] => [
+  {
+    id: 'draft',
+    label: 'Draft',
+    enabled: state === 'New' || state === 'DraftDirty',
+  },
+  {
+    id: 'draft-print',
+    label: 'Draft Print',
+    enabled: state === 'DraftSaved',
+  },
+  {
+    id: 'finalize',
+    label: 'Finalize',
+    enabled: state === 'DraftSaved',
+    primary: state === 'DraftSaved',
+  },
+  {
+    id: state === 'Reprint' ? 'reprint' : 'print',
+    label: state === 'Reprint' ? 'Reprint' : printLabel,
+    enabled: state === 'Finalized' || state === 'Reprint',
+    primary: state === 'Finalized' || state === 'Reprint',
+  },
+];
 
-  return (
-    <div className="action-bar" role="region" aria-label="Record actions">
-      <ActionButton actionId="save-draft" disabled={!canSaveDraft} onAction={onAction} />
-      <ActionButton actionId="draft-print" disabled={!canDraftPrint} onAction={onAction} />
-      <ActionButton actionId="download-pdf" disabled={!canFinalPrint} onAction={onAction} />
-      <ActionButton
-        actionId="finalize"
-        className="action-bar__primary"
-        disabled={!canFinalPrint}
-        onAction={onAction}
-      />
-    </div>
-  );
-};
+export const ActionBar: FC<ActionBarProps> = ({
+  onAction,
+  printLabel = 'Print',
+  showShortcuts = true,
+  state,
+}) => (
+  <div className="action-bar" role="region" aria-label="Record actions">
+    {getActions(state, printLabel).map((action) => {
+      const shortcut = getShortcutForAction(action.id);
 
-type ActionButtonProps = {
-  readonly actionId: string;
-  readonly className?: string;
-  readonly disabled: boolean;
-  readonly onAction?: ((actionId: string) => void) | undefined;
-};
-
-const ActionButton: FC<ActionButtonProps> = ({ actionId, className, disabled, onAction }) => {
-  const shortcut = getShortcutForAction(actionId);
-
-  if (!shortcut) {
-    return null;
-  }
-
-  return (
-    <button
-      aria-keyshortcuts={shortcut.keys}
-      className={className}
-      disabled={disabled}
-      onClick={() => onAction?.(actionId)}
-      title={`${shortcut.description} Shortcut: ${shortcut.keys}`}
-      type="button"
-    >
-      <span>{shortcut.label}</span>
-      <kbd>{shortcut.keys}</kbd>
-    </button>
-  );
-};
+      return (
+        <button
+          aria-keyshortcuts={showShortcuts ? shortcut?.keys : undefined}
+          className={action.primary ? 'action-bar__primary' : undefined}
+          data-action-id={action.id}
+          disabled={!action.enabled}
+          key={action.id}
+          onClick={() => {
+            onAction(action.id);
+          }}
+          title={shortcut ? shortcut.description : action.label}
+          type="button"
+        >
+          <span>{action.label}</span>
+          {showShortcuts && shortcut ? <kbd>{shortcut.keys}</kbd> : null}
+        </button>
+      );
+    })}
+  </div>
+);

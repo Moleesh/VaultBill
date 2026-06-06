@@ -30,5 +30,16 @@ describe('TemplateHtmlSanitizer', () => {
     expect(() =>
       sanitizeTemplateHtml('<style>@import url("https://example.test/x.css")</style>'),
     ).toThrow('external resources');
+    expect(() =>
+      sanitizeTemplateHtml('<style>.logo { background: url("./logo.png") }</style>'),
+    ).toThrow('unapproved URL');
+    expect(() =>
+      sanitizeTemplateHtml('<style>.logo { background: url("file:///tmp/logo.png") }</style>'),
+    ).toThrow('unapproved URL');
+  });
+
+  it('allows generated image data URLs in CSS', () => {
+    const html = '<style>.logo { background: url("data:image/png;base64,AAAA") }</style>';
+    expect(sanitizeTemplateHtml(html)).toBe(html);
   });
 });

@@ -7,6 +7,7 @@ import { App } from '../App';
 describe('App', () => {
   beforeEach(() => {
     window.localStorage.clear();
+    window.localStorage.setItem('vaultbill.setup.complete', 'true');
     const portalRoot = document.createElement('div');
     portalRoot.id = 'portal-root';
     document.body.append(portalRoot);

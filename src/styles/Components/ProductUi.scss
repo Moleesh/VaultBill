@@ -40,6 +40,18 @@ button:hover:not(:disabled) {
   gap: var(--space-6);
 }
 
+.operational-header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: var(--space-5);
+}
+
+.operational-header > div:first-child {
+  display: grid;
+  gap: var(--space-2);
+}
+
 .page-hero,
 .section-heading {
   display: flex;
@@ -130,6 +142,43 @@ button:hover:not(:disabled) {
   background: var(--color-card);
   padding: clamp(var(--space-4), 4vw, var(--space-6));
   box-shadow: var(--shadow-card);
+}
+
+.product-table-wrap {
+  overflow-x: auto;
+  margin-top: var(--space-4);
+  border: var(--line-width) solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.product-table {
+  width: 100%;
+  min-width: 46rem;
+  border-collapse: collapse;
+}
+
+.product-table th,
+.product-table td {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: var(--line-width) solid var(--color-border);
+  text-align: left;
+}
+
+.product-table th {
+  background: var(--color-surface-muted);
+  color: var(--color-label);
+  font-size: var(--font-size-xs);
+  letter-spacing: var(--letter-spacing-label);
+  text-transform: uppercase;
+}
+
+.product-table tbody tr:hover {
+  background: var(--color-card-hover);
+}
+
+.numeric-cell {
+  font-variant-numeric: tabular-nums;
+  text-align: right !important;
 }
 
 .record-list {
@@ -231,13 +280,79 @@ button:hover:not(:disabled) {
 .form-grid textarea,
 .report-filters input,
 .help-search input,
-.searchable-dropdown__menu input {
+.searchable-dropdown__menu input,
+.record-search input,
+.builder-field-list input,
+.setup-card input {
   min-height: 2.8rem;
   border: var(--line-width) solid var(--color-border);
   border-radius: var(--radius-sm);
   background: var(--color-surface-raised);
   color: var(--color-text-body);
   padding: var(--space-3);
+}
+
+.record-search,
+.builder-field-list label,
+.setup-card label,
+.app-date-picker {
+  display: grid;
+  gap: var(--space-2);
+  color: var(--color-label);
+  font-weight: var(--font-weight-semibold);
+}
+
+.record-status-row,
+.record-total,
+.report-toolbar,
+.background-task > div,
+.wizard-actions,
+.settings-actions,
+.setup-card__actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.record-total {
+  justify-content: flex-end;
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: var(--line-width) solid var(--color-border);
+  font-size: var(--font-size-lg);
+}
+
+.record-total strong {
+  font-size: var(--font-size-xl);
+  font-variant-numeric: tabular-nums;
+}
+
+.report-filters {
+  grid-template-columns: minmax(12rem, 1fr) minmax(12rem, 1fr) auto;
+  align-items: end;
+}
+
+.report-toolbar {
+  margin-top: var(--space-5);
+}
+
+.report-toolbar > div:last-child {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.background-task {
+  display: grid;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+  border: var(--line-width) solid var(--color-primary);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+}
+
+.background-task progress {
+  width: 100%;
 }
 
 input::placeholder,
@@ -301,14 +416,78 @@ textarea::placeholder {
   color: var(--color-secondary-text);
 }
 
-.builder-panel {
+.builder-panel,
+.builder-workspace {
   display: grid;
   grid-template-columns: minmax(13rem, 0.4fr) minmax(0, 1fr);
   gap: var(--space-6);
 }
 
-.builder-panel aside {
+.builder-panel aside,
+.builder-preview {
   border-right: var(--line-width) solid var(--color-border);
+}
+
+.builder-editor,
+.builder-preview {
+  display: grid;
+  align-content: start;
+  gap: var(--space-4);
+}
+
+.builder-workspace {
+  border: var(--line-width) solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-card);
+  padding: clamp(var(--space-4), 4vw, var(--space-6));
+  box-shadow: var(--shadow-card);
+}
+
+.builder-field-list {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.builder-field-list label {
+  grid-template-columns: minmax(10rem, 0.4fr) minmax(0, 1fr);
+  align-items: center;
+}
+
+.builder-preview dl {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.builder-preview dl div {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: var(--line-width) solid var(--color-border);
+  padding-block: var(--space-2);
+}
+
+.builder-preview dd {
+  margin: 0;
+  font-weight: var(--font-weight-bold);
+}
+
+.checkbox-field {
+  display: flex !important;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.checkbox-field input {
+  width: 1.2rem;
+  min-height: auto;
+  height: 1.2rem;
+}
+
+.settings-actions,
+.wizard-actions {
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: var(--line-width) solid var(--color-border);
 }
 
 .settings-panel,
@@ -372,6 +551,105 @@ textarea::placeholder {
 .searchable-dropdown__menu [role='option'].is-active,
 .searchable-dropdown__menu [role='option'][aria-selected='true'] {
   background: var(--color-secondary);
+}
+
+.app-date-picker__label {
+  color: var(--color-label);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--letter-spacing-label);
+  text-transform: uppercase;
+}
+
+.app-date-picker__trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-width: 12rem;
+  background: var(--color-surface-raised);
+}
+
+.app-date-picker__popup {
+  position: fixed;
+  z-index: 130;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  width: min(23rem, calc(100vw - 2rem));
+  gap: var(--space-3);
+  transform: translate(-50%, -50%);
+  border: var(--line-width) solid var(--color-border-strong);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  padding: var(--space-4);
+  box-shadow: var(--shadow-popover);
+}
+
+.app-date-picker__popup header,
+.app-date-picker__popup footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.app-date-picker__weekdays,
+.app-date-picker__days {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: var(--space-1);
+  text-align: center;
+}
+
+.app-date-picker__weekdays {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+}
+
+.app-date-picker__days button {
+  min-height: 2.4rem;
+  padding: 0;
+}
+
+.app-date-picker__days button[aria-pressed='true'] {
+  background: var(--color-primary);
+  color: var(--color-primary-text);
+}
+
+.setup-page {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  background: var(--gradient-page);
+  padding: var(--space-4);
+}
+
+.setup-card {
+  display: grid;
+  width: min(62rem, 100%);
+  gap: var(--space-5);
+  border: var(--line-width) solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background: var(--color-card);
+  padding: clamp(var(--space-5), 5vw, var(--space-10));
+  box-shadow: var(--shadow-card-hover);
+}
+
+.setup-card__header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.setup-card__content {
+  display: grid;
+  min-height: 15rem;
+  align-content: start;
+  gap: var(--space-5);
+  border: var(--line-width) solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-muted);
+  padding: var(--space-6);
 }
 
 .popup-backdrop {
@@ -594,14 +872,22 @@ textarea::placeholder {
   }
 
   .dashboard-actions,
-  .builder-panel {
+  .builder-panel,
+  .builder-workspace {
     grid-template-columns: 1fr;
   }
 
-  .builder-panel aside {
+  .builder-panel aside,
+  .builder-preview {
     border-right: 0;
     border-bottom: var(--line-width) solid var(--color-border);
     padding-bottom: var(--space-4);
+  }
+
+  .operational-header,
+  .report-toolbar {
+    align-items: stretch;
+    flex-direction: column;
   }
 
   .app-drawer {
@@ -618,6 +904,47 @@ textarea::placeholder {
   .report-filters,
   .login-card {
     grid-template-columns: 1fr;
+  }
+
+  .product-table {
+    min-width: 0;
+  }
+
+  .product-table thead {
+    display: none;
+  }
+
+  .product-table,
+  .product-table tbody,
+  .product-table tr,
+  .product-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .product-table tr {
+    border-bottom: var(--line-width) solid var(--color-border);
+    padding: var(--space-3);
+  }
+
+  .product-table td {
+    border: 0;
+    padding: var(--space-1) 0;
+    text-align: left !important;
+  }
+
+  .builder-field-list label {
+    grid-template-columns: 1fr;
+  }
+
+  .app-date-picker__popup {
+    top: auto;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    transform: none;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   }
 
   .span-2 {

@@ -1,7 +1,10 @@
-name: Build Release Files
+name: Release App
 
 on:
   workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
 
 jobs:
   verify:
@@ -34,8 +37,17 @@ jobs:
       - name: Unit tests
         run: npm run test:ci
 
-      - name: Coverage check
-        run: npm run coverage:ci
+      - name: Dependency audit
+        run: npm run audit:security
+
+      - name: Secret scan
+        run: npm run scan:secrets
+
+      - name: Security tests
+        run: npm run test:security
+
+      - name: Security configuration
+        run: npm run security:check
 
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
@@ -101,6 +113,18 @@ jobs:
       - name: Generate release notes
         run: npm run release:notes
 
+      - name: Generate SHA-256 checksums
+        run: npm run release:checksums
+
+      - name: Record signing status
+        shell: pwsh
+        run: |
+          if ($env:CSC_LINK) {
+            "Signing credentials configured." | Add-Content artifacts\release-notes.md
+          } else {
+            "Unsigned/internal Windows build. Not a public production release." | Add-Content artifacts\release-notes.md
+          }
+
       - name: Upload desktop artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -113,16 +137,8 @@ jobs:
         shell: pwsh
         run: |
           $package = Get-Content package.json -Raw | ConvertFrom-Json
-          $appName = $env:APP_NAME
-
-          if ([string]::IsNullOrWhiteSpace($appName)) {
-            $appName = 'VaultBill'
-          } else {
-            $appName = $appName.Trim()
-          }
-
           $releaseTag = "v$($package.version)"
-          $releaseTitle = "$appName $releaseTag"
+          $releaseTitle = "VaultBill $releaseTag"
           $releaseNotesPath = Join-Path $PWD 'artifacts\release-notes.md'
           $releaseFiles = @(
             Get-ChildItem -Path release -File |

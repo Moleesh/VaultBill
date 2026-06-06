@@ -1,11 +1,13 @@
 # Unresolved Issues
 
-The v20 implementation has no phase-blocking issues.
+The v23 implementation has no phase-blocking product issues.
 
-- GitHub Pages is intentionally a limited demo. Its random browser identity
-  isolates document rows through RLS but is not a human account or cross-device
-  login. Production multi-device access should use Supabase Auth.
-- Browser PDF output uses the browser print dialog and Save as PDF, as required;
-  direct browser PDF generation remains outside the current scope.
-- Exact printer selection, local backup/restore, USB devices, and secret-backed
-  integrations remain desktop-only by design.
+- GitHub Pages is intentionally a browser-only demo and is not a production
+  deployment.
+- Exact printer selection, database backup/restore, LAN hosting, and USB devices
+  remain desktop capabilities by design.
+- Public production releases require configured signing credentials; unsigned
+  packages are labelled internal/testing builds.
+- Linux and macOS packages are produced when runner and signing setup permit.
+- Android is not a v1 target and remains blocked until its separate security
+  gate is implemented.

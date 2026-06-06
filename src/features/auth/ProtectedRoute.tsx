@@ -17,7 +17,7 @@ export const ProtectedRoute: FC<ProtectedRouteProps> = ({ children, roles }) => 
   }
 
   if (roles && !roles.includes(operatorContext.role)) {
-    return <Navigate replace to="/access-denied" />;
+    return <Navigate replace to="/app/records" />;
   }
 
   return children;

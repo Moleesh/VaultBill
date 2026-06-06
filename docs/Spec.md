@@ -10,7 +10,7 @@ This repository follows that handoff as a production application and includes:
 - Shared modal, confirmation, drawer, mobile sheet, popover, dropdown, and
   overflow progress foundations
 - Capability-aware desktop, LAN browser, and GitHub Pages demo behavior
-- Build-time app name derivation from one `APP_NAME` environment variable
+- Fixed VaultBill product/package identity with configurable business branding
 - Five built-in themes using shared CSS variables
 - Responsive SPA shell with GitHub Pages deep-link restoration
 - SQLite startup patching, account/operator context, document format fallback,
@@ -26,4 +26,5 @@ This repository follows that handoff as a production application and includes:
 - Prettier, strict ESLint, Husky, commitlint, Vitest coverage, and Playwright
   browser-flow gates
 
-The v23 plan is represented in code, migrations, tests, workflows, and docs.
+The v23 plan is represented in code, tests, workflows, and docs. The demo is
+browser-only; the full app uses local SQLite through Electron or the Local API.
