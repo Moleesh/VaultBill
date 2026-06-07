@@ -39,7 +39,21 @@ export const tryServeStaticApp = async (
 };
 
 const isApiPath = (url: string | undefined): boolean =>
-  url === '/health' || Boolean(url?.startsWith('/records'));
+  url === '/health' ||
+  [
+    '/auth',
+    '/accounts',
+    '/records',
+    '/builder',
+    '/document-formats',
+    '/reports',
+    '/print',
+    '/backup',
+    '/credentials',
+    '/application',
+    '/settings',
+    '/trial',
+  ].some((prefix) => url?.startsWith(prefix) === true);
 
 const isFile = async (filePath: string): Promise<boolean> => {
   try {

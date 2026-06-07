@@ -20,7 +20,7 @@ import { isFirstRunSetupRequired, SetupPage } from './features/setup/SetupPage';
 const AppRoutes: FC = () => {
   const capabilities = useCapabilities();
   const [, setSetupRevision] = useState(0);
-  const setupRequired = isFirstRunSetupRequired(capabilities.isDemoMode);
+  const setupRequired = isFirstRunSetupRequired(capabilities.isDemoMode, capabilities.isLanBrowser);
 
   return (
     <SessionProvider>

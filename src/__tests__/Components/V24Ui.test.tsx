@@ -71,7 +71,7 @@ describe('v24 product UI', () => {
       </>,
     );
 
-    expect(await screen.findByText('Aster Works')).toBeVisible();
+    expect((await screen.findAllByText('Aster Works')).length).toBeGreaterThan(0);
     fireEvent.click(screen.getByRole('button', { name: /5 Print/u }));
     expect(screen.getByRole('heading', { name: 'Print' })).toBeVisible();
     expect(
@@ -96,7 +96,7 @@ describe('v24 product UI', () => {
     const fullWebCapabilities = {
       ...webCapabilities,
       isDemoMode: false,
-      isLanBrowser: true,
+      isLanBrowser: false,
       canSmsIntegration: true,
       canGspIntegration: true,
     };

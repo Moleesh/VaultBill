@@ -4,6 +4,7 @@ import { z } from 'zod';
 import type { FC, PropsWithChildren } from 'react';
 
 import { useCapabilities } from '../../capability/CapabilityContext';
+import { requestHostedApi } from '../../runtime/HostedApi';
 import type { OperatorContext } from '../auth/AccountTypes';
 import { useSession } from '../auth/SessionContext';
 
@@ -15,6 +16,7 @@ const RecordLineItemSchema = z.object({
   rate: z.string(),
   taxPercent: z.string(),
   amount: z.string(),
+  values: z.record(z.string()).optional(),
 });
 
 export const AppRecordSchema = z.object({
@@ -30,6 +32,7 @@ export const AppRecordSchema = z.object({
   billingAddress: z.string(),
   lineItems: z.array(RecordLineItemSchema),
   grandTotal: z.string(),
+  fieldValues: z.record(z.string()).optional(),
   createdAt: z.string().min(1),
   updatedAt: z.string().min(1),
   createdBy: z.string().min(1),
@@ -51,6 +54,7 @@ export type EditableRecord = Pick<
   | 'billingAddress'
   | 'lineItems'
   | 'grandTotal'
+  | 'fieldValues'
 >;
 
 type RecordStoreContextValue = {
@@ -78,11 +82,6 @@ const legacyBrowserStorageKey = 'vaultbill.records.v23';
 const sequenceStorageKey = 'vaultbill.sequence.v24';
 const recordStoreEventName = 'vaultbill-record-store-change';
 const RecordStoreContext = createContext<RecordStoreContextValue | undefined>(undefined);
-const requestedLocalApiBaseUrl = import.meta.env.VITE_LOCAL_API_URL?.trim();
-const localApiBaseUrl =
-  requestedLocalApiBaseUrl === undefined || requestedLocalApiBaseUrl.length === 0
-    ? window.location.origin
-    : requestedLocalApiBaseUrl;
 
 const demoSeedRecords: readonly AppRecord[] = [
   {
@@ -105,11 +104,134 @@ const demoSeedRecords: readonly AppRecord[] = [
         rate: '12500.00',
         taxPercent: '18',
         amount: '14750.00',
+        values: {},
       },
     ],
     grandTotal: '14750.00',
+    fieldValues: {},
     createdAt: '2026-06-01T10:00:00.000Z',
     updatedAt: '2026-06-01T10:00:00.000Z',
+    createdBy: 'demo_user',
+    createdByName: 'Demo User',
+  },
+  {
+    recordId: 'demo-finalized-2',
+    formatId: 'TaxInvoice',
+    formatName: 'GST Invoice',
+    documentNumber: 'GST-000002',
+    status: 'Finalized',
+    invoiceDate: '2026-06-03',
+    customerName: 'Nila Foods',
+    gstin: '33AAACN1234A1Z2',
+    state: 'Tamil Nadu',
+    billingAddress: '8 Lake View Street, Chennai',
+    lineItems: [
+      {
+        rowId: 'demo-row-2',
+        itemName: 'Packaging design',
+        hsnSac: '9983',
+        quantity: '1',
+        rate: '7500.00',
+        taxPercent: '18',
+        amount: '8850.00',
+        values: {},
+      },
+    ],
+    grandTotal: '8850.00',
+    fieldValues: {},
+    createdAt: '2026-06-03T08:30:00.000Z',
+    updatedAt: '2026-06-03T08:30:00.000Z',
+    createdBy: 'demo_user',
+    createdByName: 'Demo User',
+  },
+  {
+    recordId: 'demo-cancelled-1',
+    formatId: 'TaxInvoice',
+    formatName: 'GST Invoice',
+    documentNumber: 'GST-000003',
+    status: 'Cancelled',
+    invoiceDate: '2026-06-04',
+    customerName: 'Aster Works',
+    gstin: '29ABCDE1234F1Z5',
+    state: 'Karnataka',
+    billingAddress: '12 Market Road, Bengaluru',
+    lineItems: [
+      {
+        rowId: 'demo-row-3',
+        itemName: 'Duplicate service entry',
+        hsnSac: '9983',
+        quantity: '1',
+        rate: '2000.00',
+        taxPercent: '18',
+        amount: '2360.00',
+        values: {},
+      },
+    ],
+    grandTotal: '2360.00',
+    fieldValues: {},
+    createdAt: '2026-06-04T09:00:00.000Z',
+    updatedAt: '2026-06-04T11:00:00.000Z',
+    createdBy: 'demo_user',
+    createdByName: 'Demo User',
+    cancellationReason: 'Duplicate invoice',
+  },
+  {
+    recordId: 'demo-draft-1',
+    formatId: 'TaxInvoice',
+    formatName: 'GST Invoice',
+    documentNumber: null,
+    status: 'Draft',
+    invoiceDate: '2026-06-06',
+    customerName: 'Harbor Retail',
+    gstin: '',
+    state: 'Kerala',
+    billingAddress: '21 Port Lane, Kochi',
+    lineItems: [
+      {
+        rowId: 'demo-row-4',
+        itemName: 'Store signage',
+        hsnSac: '9983',
+        quantity: '1',
+        rate: '5000.00',
+        taxPercent: '18',
+        amount: '5900.00',
+        values: {},
+      },
+    ],
+    grandTotal: '5900.00',
+    fieldValues: {},
+    createdAt: '2026-06-06T07:15:00.000Z',
+    updatedAt: '2026-06-06T07:15:00.000Z',
+    createdBy: 'demo_user',
+    createdByName: 'Demo User',
+  },
+  {
+    recordId: 'demo-finalized-4',
+    formatId: 'TaxInvoice',
+    formatName: 'GST Invoice',
+    documentNumber: 'GST-000004',
+    status: 'Finalized',
+    invoiceDate: '2026-06-07',
+    customerName: 'Meridian Labs',
+    gstin: '27AACCM9876B1Z1',
+    state: 'Maharashtra',
+    billingAddress: '44 Innovation Park, Pune',
+    lineItems: [
+      {
+        rowId: 'demo-row-5',
+        itemName: 'Annual support',
+        hsnSac: '9983',
+        quantity: '1',
+        rate: '18000.00',
+        taxPercent: '18',
+        amount: '21240.00',
+        values: {},
+      },
+    ],
+    grandTotal: '21240.00',
+    fieldValues: {},
+    createdAt: '2026-06-07T06:45:00.000Z',
+    updatedAt: '2026-06-07T06:45:00.000Z',
     createdBy: 'demo_user',
     createdByName: 'Demo User',
   },
@@ -195,7 +317,7 @@ export const RecordStoreProvider: FC<PropsWithChildren> = ({ children }) => {
         setIsLoading(false);
         return;
       }
-      void requestLocalApi('/records', 'GET', sessionOperator)
+      void requestHostedApi('/records')
         .then((storedRecords) => {
           setRecords(sortLatestFirst(z.array(AppRecordSchema).parse(storedRecords)));
           setError('');
@@ -244,10 +366,7 @@ export const RecordStoreProvider: FC<PropsWithChildren> = ({ children }) => {
       desktopBridge
         ? await desktopBridge.saveDraft({ record: input, operatorContext })
         : capabilities.isLanBrowser
-          ? await requestLocalApi('/records/draft', 'POST', operatorContext, {
-              record: input,
-              operatorContext,
-            })
+          ? await requestHostedApi('/records/draft', 'POST', { record: input })
           : buildStoredRecord(input, operatorContext, existing, 'Draft'),
     );
     const nextRecords = sortLatestFirst([
@@ -274,10 +393,7 @@ export const RecordStoreProvider: FC<PropsWithChildren> = ({ children }) => {
       desktopBridge
         ? await desktopBridge.finalizeRecord({ record: input, operatorContext })
         : capabilities.isLanBrowser
-          ? await requestLocalApi('/records/finalize', 'POST', operatorContext, {
-              record: input,
-              operatorContext,
-            })
+          ? await requestHostedApi('/records/finalize', 'POST', { record: input })
           : buildStoredRecord(input, operatorContext, existing, 'Finalized'),
     );
     const nextRecords = sortLatestFirst([
@@ -309,10 +425,9 @@ export const RecordStoreProvider: FC<PropsWithChildren> = ({ children }) => {
       desktopBridge
         ? await desktopBridge.cancelRecord({ recordId, reason, operatorContext })
         : capabilities.isLanBrowser
-          ? await requestLocalApi('/records/cancel', 'POST', operatorContext, {
+          ? await requestHostedApi('/records/cancel', 'POST', {
               recordId,
               reason,
-              operatorContext,
             })
           : {
               ...existing,
@@ -351,36 +466,6 @@ export const RecordStoreProvider: FC<PropsWithChildren> = ({ children }) => {
       {children}
     </RecordStoreContext.Provider>
   );
-};
-
-const requestLocalApi = async (
-  path: string,
-  method: 'GET' | 'POST',
-  operatorContext: OperatorContext,
-  body?: unknown,
-): Promise<unknown> => {
-  const response = await fetch(`${localApiBaseUrl}${path}`, {
-    method,
-    headers: {
-      accept: 'application/json',
-      'content-type': 'application/json',
-      'x-vaultbill-role': operatorContext.role,
-    },
-    ...(body === undefined ? {} : { body: JSON.stringify(body) }),
-  });
-  const responseBody = await response.text();
-  const payload = responseBody.length > 0 ? (JSON.parse(responseBody) as unknown) : undefined;
-  if (!response.ok) {
-    throw new Error(
-      typeof payload === 'object' &&
-        payload !== null &&
-        'error' in payload &&
-        typeof payload.error === 'string'
-        ? payload.error
-        : `Local API request failed with status ${String(response.status)}.`,
-    );
-  }
-  return payload;
 };
 
 export const useRecordStore = (): RecordStoreContextValue => {

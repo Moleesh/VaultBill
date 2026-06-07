@@ -3,6 +3,7 @@ import { z } from 'zod';
 
 export const PrintRequestSchema = z.object({
   html: z.string().min(1),
+  jobId: z.string().min(1).optional(),
   printerName: z.string().min(1).optional(),
   copies: z.number().int().positive().max(99).optional(),
   silent: z.boolean().optional(),
@@ -14,10 +15,11 @@ export type PrintResult = {
   readonly success: boolean;
   readonly warning?: string;
 };
+const activeOutputWindows = new Map<string, BrowserWindow>();
 
 export const printHtmlWithElectron = async (rawRequest: unknown): Promise<PrintResult> => {
   const request = PrintRequestSchema.parse(rawRequest);
-  const printWindow = await createHiddenHtmlWindow(request.html);
+  const printWindow = await createHiddenHtmlWindow(request.html, request.jobId);
 
   try {
     await printHtmlWindow(printWindow, request);
@@ -28,11 +30,23 @@ export const printHtmlWithElectron = async (rawRequest: unknown): Promise<PrintR
       warning: error instanceof Error ? error.message : 'Electron print failed.',
     };
   } finally {
-    printWindow.close();
+    if (request.jobId) activeOutputWindows.delete(request.jobId);
+    if (!printWindow.isDestroyed()) printWindow.close();
   }
 };
 
-export const createHiddenHtmlWindow = async (html: string): Promise<BrowserWindow> => {
+export const cancelOutputJob = (jobId: string): boolean => {
+  const outputWindow = activeOutputWindows.get(jobId);
+  if (!outputWindow || outputWindow.isDestroyed()) return false;
+  activeOutputWindows.delete(jobId);
+  outputWindow.close();
+  return true;
+};
+
+export const createHiddenHtmlWindow = async (
+  html: string,
+  jobId?: string,
+): Promise<BrowserWindow> => {
   const printWindow = new BrowserWindow({
     show: false,
     webPreferences: {
@@ -43,6 +57,12 @@ export const createHiddenHtmlWindow = async (html: string): Promise<BrowserWindo
   });
 
   await printWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(html)}`);
+  if (jobId) {
+    activeOutputWindows.set(jobId, printWindow);
+    printWindow.once('closed', () => {
+      activeOutputWindows.delete(jobId);
+    });
+  }
   return printWindow;
 };
 

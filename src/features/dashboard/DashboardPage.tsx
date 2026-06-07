@@ -1,10 +1,12 @@
 /* eslint-disable max-lines */
 import { format, parseISO } from 'date-fns';
 import { AlertTriangle, FileCheck2, FileCog, Printer } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { FC } from 'react';
 
-import { documentFormatSummaries } from '../../constants/PhaseFourFormats';
+import { useCapabilities } from '../../capability/CapabilityContext';
+import { requestHostedApi } from '../../runtime/HostedApi';
 import { useSession } from '../auth/SessionContext';
 import { useRecordStore } from '../records/RecordStoreContext';
 
@@ -147,72 +149,129 @@ const Metric: FC<{ readonly label: string; readonly value: string }> = ({ label,
   </article>
 );
 
-const SysAdminDashboard: FC = () => (
-  <div className="page-stack">
-    <section className="page-hero page-hero--compact">
-      <div>
-        <p className="eyebrow">System administration</p>
-        <h1>Configuration control centre</h1>
-        <p>Review document formats, print readiness, and installation health.</p>
-      </div>
-      <Link className="button-primary" to="/app/builder">
-        Create format
-      </Link>
-    </section>
-    <section className="dashboard-metrics">
-      <Metric label="Document formats" value={String(documentFormatSummaries.length)} />
-      <Metric
-        label="Default formats"
-        value={String(documentFormatSummaries.filter((item) => item.isDefault).length)}
-      />
-      <Metric label="Print templates" value="1" />
-      <Metric label="Configuration warnings" value="1" />
-    </section>
-    <section className="configuration-grid">
-      {documentFormatSummaries.map((formatSummary) => (
-        <article className="data-panel configuration-card" key={formatSummary.formatId}>
+type InventoryItem = {
+  readonly formatId: string;
+  readonly formatName: string;
+  readonly isDefault: boolean;
+  readonly updatedAt: string;
+  readonly templateName?: string;
+  readonly assetCount: number;
+  readonly isValid: boolean;
+};
+
+const SysAdminDashboard: FC = () => {
+  const capabilities = useCapabilities();
+  const [inventory, setInventory] = useState<readonly InventoryItem[]>([]);
+  const [message, setMessage] = useState('');
+
+  useEffect(() => {
+    const request = window.vaultBillDesktop
+      ? window.vaultBillDesktop.listBuilderInventory()
+      : capabilities.isLanBrowser
+        ? requestHostedApi<readonly InventoryItem[]>('/builder/inventory')
+        : Promise.resolve([]);
+    void request.then(setInventory).catch((reason: unknown) => {
+      setMessage(reason instanceof Error ? reason.message : 'Builder inventory could not load.');
+    });
+  }, [capabilities.isLanBrowser]);
+
+  const warningCount = inventory.filter((item) => !item.isValid || !item.templateName).length;
+  return (
+    <div className="page-stack">
+      <section className="page-hero page-hero--compact">
+        <div>
+          <p className="eyebrow">System administration</p>
+          <h1>Configuration control centre</h1>
+          <p>Review document formats, print readiness, and installation health.</p>
+        </div>
+        <Link className="button-primary" to="/app/builder">
+          Create format
+        </Link>
+      </section>
+      <section className="dashboard-metrics">
+        <Metric label="Document formats" value={String(inventory.length)} />
+        <Metric
+          label="Default formats"
+          value={String(inventory.filter((item) => item.isDefault).length)}
+        />
+        <Metric
+          label="Print templates"
+          value={String(inventory.filter((item) => item.templateName).length)}
+        />
+        <Metric label="Configuration warnings" value={String(warningCount)} />
+      </section>
+      <section className="configuration-grid">
+        {inventory.map((item) => (
+          <article
+            className={`data-panel configuration-card${item.isValid ? '' : ' is-warning'}`}
+            key={item.formatId}
+          >
+            <header>
+              <FileCog aria-hidden="true" />
+              <div>
+                <p className="eyebrow">Document format</p>
+                <h2>{item.formatName}</h2>
+              </div>
+            </header>
+            <dl>
+              <div>
+                <dt>Status</dt>
+                <dd>
+                  {item.isValid ? <FileCheck2 aria-hidden="true" size={17} /> : null}
+                  {item.isValid ? 'Valid' : 'Needs attention'}
+                </dd>
+              </div>
+              <div>
+                <dt>Default</dt>
+                <dd>{item.isDefault ? 'Yes' : 'No'}</dd>
+              </div>
+              <div>
+                <dt>Print template</dt>
+                <dd>
+                  <Printer aria-hidden="true" size={17} /> {item.templateName ?? 'Missing template'}
+                </dd>
+              </div>
+              <div>
+                <dt>Shared assets</dt>
+                <dd>{item.assetCount}</dd>
+              </div>
+              <div>
+                <dt>Last updated</dt>
+                <dd>{format(parseISO(item.updatedAt), 'd MMM yyyy')}</dd>
+              </div>
+            </dl>
+            <div className="configuration-card__actions">
+              <Link to={`/app/builder?format=${item.formatId}`}>Edit</Link>
+              <Link to={`/app/builder?format=${item.formatId}&step=preview`}>Preview</Link>
+            </div>
+          </article>
+        ))}
+        {inventory.length === 0 ? (
+          <article className="data-panel configuration-card is-warning">
+            <header>
+              <AlertTriangle aria-hidden="true" />
+              <div>
+                <p className="eyebrow">Builder</p>
+                <h2>No published document format</h2>
+              </div>
+            </header>
+            <p>Publish a document format and HTML print template before operators begin work.</p>
+            <Link to="/app/builder">Open Builder</Link>
+          </article>
+        ) : null}
+        <article className="data-panel configuration-card is-warning">
           <header>
-            <FileCog aria-hidden="true" />
+            <AlertTriangle aria-hidden="true" />
             <div>
-              <p className="eyebrow">Document format</p>
-              <h2>{formatSummary.formatName}</h2>
+              <p className="eyebrow">Attention</p>
+              <h2>Backup readiness</h2>
             </div>
           </header>
-          <dl>
-            <div>
-              <dt>Status</dt>
-              <dd>
-                <FileCheck2 aria-hidden="true" size={17} /> Valid
-              </dd>
-            </div>
-            <div>
-              <dt>Default</dt>
-              <dd>{formatSummary.isDefault ? 'Yes' : 'No'}</dd>
-            </div>
-            <div>
-              <dt>Print template</dt>
-              <dd>
-                <Printer aria-hidden="true" size={17} /> GST Invoice Standard
-              </dd>
-            </div>
-          </dl>
-          <div className="configuration-card__actions">
-            <Link to={`/app/builder?format=${formatSummary.formatId}`}>Edit</Link>
-            <Link to={`/app/builder?format=${formatSummary.formatId}&step=preview`}>Preview</Link>
-          </div>
+          <p>Confirm the backup password and create a verified backup before production use.</p>
+          <Link to="/app/settings#security">Review security</Link>
         </article>
-      ))}
-      <article className="data-panel configuration-card is-warning">
-        <header>
-          <AlertTriangle aria-hidden="true" />
-          <div>
-            <p className="eyebrow">Attention</p>
-            <h2>Backup readiness</h2>
-          </div>
-        </header>
-        <p>Confirm the backup password and create a verified backup before production use.</p>
-        <Link to="/app/settings#security">Review security</Link>
-      </article>
-    </section>
-  </div>
-);
+      </section>
+      {message ? <p className="feedback-error">{message}</p> : null}
+    </div>
+  );
+};

@@ -11,6 +11,7 @@ const LineItemSchema = z.object({
   rate: z.string(),
   taxPercent: z.string(),
   amount: z.string(),
+  values: z.record(z.string()).optional(),
 });
 
 const EditableRecordSchema = z.object({
@@ -24,6 +25,7 @@ const EditableRecordSchema = z.object({
   billingAddress: z.string(),
   lineItems: z.array(LineItemSchema),
   grandTotal: z.string(),
+  fieldValues: z.record(z.string()).optional(),
 });
 
 const OperatorSchema = z.object({
@@ -70,6 +72,25 @@ export type TrialStatus = {
   readonly isExpired: boolean;
   readonly accumulatedSeconds: number;
   readonly remainingSeconds: number;
+};
+
+const ReportQuerySchema = z.object({
+  reportId: z.enum(['sales-register', 'tax-summary', 'customer-ledger']),
+  customer: z.string().default(''),
+  invoiceNumber: z.string().default(''),
+  fromDate: z.string().default(''),
+  toDate: z.string().default(''),
+  status: z.enum(['All', 'Draft', 'Finalized', 'Cancelled']).default('All'),
+  preset: z.enum(['All', 'Today', 'ThisMonth', 'FinancialYear', 'Last100']).default('All'),
+  cursor: z.string().optional(),
+  limit: z.number().int().min(1).max(50).default(50),
+});
+
+export type ReportQuery = z.input<typeof ReportQuerySchema>;
+export type ReportQueryResult = {
+  readonly rows: readonly StoredRecord[];
+  readonly total: number;
+  readonly nextCursor?: string;
 };
 
 export class DesktopRecordStore {
@@ -146,6 +167,36 @@ export class DesktopRecordStore {
       .prepare('SELECT record_json FROM app_records ORDER BY updated_at DESC;')
       .all()
       .map((row) => StoredRecordSchema.parse(JSON.parse(String(row.record_json))));
+
+  public queryReport = (rawQuery: unknown): ReportQueryResult => {
+    const query = ReportQuerySchema.parse(rawQuery);
+    const customer = query.customer.trim().toLocaleLowerCase();
+    const invoiceNumber = query.invoiceNumber.trim().toLocaleLowerCase();
+    let records = this.list()
+      .filter((record) => query.status === 'All' || record.status === query.status)
+      .filter((record) => !customer || record.customerName.toLocaleLowerCase().includes(customer))
+      .filter(
+        (record) =>
+          !invoiceNumber || record.documentNumber?.toLocaleLowerCase().includes(invoiceNumber),
+      )
+      .filter((record) => !query.fromDate || record.invoiceDate >= query.fromDate)
+      .filter((record) => !query.toDate || record.invoiceDate <= query.toDate)
+      .sort(
+        (left, right) =>
+          right.updatedAt.localeCompare(left.updatedAt) ||
+          left.recordId.localeCompare(right.recordId),
+      );
+    if (query.preset === 'Last100') records = records.slice(0, 100);
+    const total = records.length;
+    const offset = Math.max(0, Number.parseInt(query.cursor ?? '0', 10) || 0);
+    const rows = records.slice(offset, offset + query.limit);
+    const nextOffset = offset + rows.length;
+    return {
+      rows,
+      total,
+      ...(nextOffset < total ? { nextCursor: String(nextOffset) } : {}),
+    };
+  };
 
   public saveDraft = (rawRequest: unknown): StoredRecord => {
     const request = RecordWriteRequestSchema.parse(rawRequest);

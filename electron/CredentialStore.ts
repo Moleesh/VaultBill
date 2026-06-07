@@ -23,6 +23,11 @@ export type SecureStringProtector = {
   readonly decryptString: (value: Buffer) => string;
 };
 
+export type CredentialStatus = {
+  readonly sysAdminUsesDefaultPassword: boolean;
+  readonly backupUsesDefaultPassword: boolean;
+};
+
 type AccountRow = {
   readonly user_id: unknown;
   readonly username: unknown;
@@ -78,7 +83,11 @@ export class CredentialStore {
       .all()
       .map((row) => this.#parseAccount(row as AccountRow));
 
-  public authenticate = (userId: string, password: string): DesktopOperatorAccount => {
+  public authenticate = (
+    userId: string,
+    password: string,
+    allowPasswordless = true,
+  ): DesktopOperatorAccount => {
     const row = this.#database
       .prepare(
         `SELECT user_id, username, display_name, role, is_active, password_salt,
@@ -97,6 +106,8 @@ export class CredentialStore {
       if (supplied.length !== expected.length || !timingSafeEqual(supplied, expected)) {
         throw new Error('The password is incorrect.');
       }
+    } else if (!allowPasswordless) {
+      throw new Error('Set a password on this account before using hosted web access.');
     }
     return this.#parseAccount(row);
   };
@@ -203,6 +214,13 @@ export class CredentialStore {
       )
       .run(encrypted, new Date().toISOString());
   };
+
+  public getCredentialStatus = (): CredentialStatus => ({
+    sysAdminUsesDefaultPassword:
+      this.listAccounts().find((account) => account.userId === 'sysadmin_1')?.usesDefaultPassword ??
+      true,
+    backupUsesDefaultPassword: this.getBackupPassword() === defaultCredential,
+  });
 
   public close = () => {
     this.#database.close();

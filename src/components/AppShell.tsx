@@ -7,6 +7,7 @@ import {
   FileText,
   KeyRound,
   LogOut,
+  Server,
   RotateCcw,
   Settings,
   SlidersHorizontal,
@@ -20,6 +21,7 @@ import { defaultRuntimeBranding, shellSections } from '../constants/PhaseOneSeed
 import { useSession } from '../features/auth/SessionContext';
 import { useRecordStore } from '../features/records/RecordStoreContext';
 import { useThemeController } from '../hooks/useThemeController';
+import { requestHostedApi } from '../runtime/HostedApi';
 import type { AppRouteId } from '../types/AppTypes';
 import { AppBrandIcon } from './AppBrandIcon/AppBrandIcon';
 import { AppConfirmDialog } from './AppConfirmDialog/AppConfirmDialog';
@@ -44,7 +46,7 @@ const getPageId = (pathname: string): AppRouteId => {
 
 export const AppShell: FC = () => {
   const capabilities = useCapabilities();
-  const { logout, operatorContext } = useSession();
+  const { logout, operatorContext, resetPassword } = useSession();
   const { resetDemoData } = useRecordStore();
   const location = useLocation();
   const navigate = useNavigate();
@@ -55,6 +57,10 @@ export const AppShell: FC = () => {
   const [isActivationOpen, setIsActivationOpen] = useState(false);
   const [licenseKey, setLicenseKey] = useState('');
   const [activationMessage, setActivationMessage] = useState('');
+  const [isPasswordOpen, setIsPasswordOpen] = useState(false);
+  const [accountPassword, setAccountPassword] = useState('');
+  const [accountPasswordConfirmation, setAccountPasswordConfirmation] = useState('');
+  const [accountPasswordMessage, setAccountPasswordMessage] = useState('');
   const [trialStatus, setTrialStatus] =
     useState<Awaited<ReturnType<NonNullable<typeof window.vaultBillDesktop>['getTrialStatus']>>>();
   const [scrollProgress, setScrollProgress] = useState(0);
@@ -70,8 +76,12 @@ export const AppShell: FC = () => {
   }, [location.pathname]);
 
   useEffect(() => {
-    void window.vaultBillDesktop?.getTrialStatus().then(setTrialStatus);
-  }, []);
+    if (window.vaultBillDesktop) {
+      void window.vaultBillDesktop.getTrialStatus().then(setTrialStatus);
+    } else if (capabilities.isLanBrowser) {
+      void requestHostedApi<NonNullable<typeof trialStatus>>('/trial/status').then(setTrialStatus);
+    }
+  }, [capabilities.isLanBrowser]);
 
   if (!operatorContext) return null;
 
@@ -131,9 +141,30 @@ export const AppShell: FC = () => {
           <div className="app-shell__operator-copy app-shell__nav-label">
             <strong>{operatorContext.account.displayName}</strong>
             <small>{capabilities.isDemoMode ? 'Demo mode' : operatorContext.role}</small>
+            {!capabilities.isDemoMode && (capabilities.isDesktop || capabilities.isLanBrowser) ? (
+              <small className="app-shell__host-status">
+                <Server aria-hidden="true" size={13} />
+                {capabilities.isDesktop ? 'Hosted web active' : 'Connected to desktop host'}
+              </small>
+            ) : null}
           </div>
           <div className="app-shell__operator-actions">
             <ThemePalette controller={themeController} />
+            {!capabilities.isDemoMode ? (
+              <button
+                className="icon-button"
+                aria-label="Change my password"
+                onClick={() => {
+                  setAccountPassword('');
+                  setAccountPasswordConfirmation('');
+                  setAccountPasswordMessage('');
+                  setIsPasswordOpen(true);
+                }}
+                type="button"
+              >
+                <KeyRound aria-hidden="true" size={20} />
+              </button>
+            ) : null}
             {capabilities.isDemoMode ? (
               <button
                 className="icon-button"
@@ -168,6 +199,46 @@ export const AppShell: FC = () => {
             <strong>{capabilities.isDemoMode ? 'VaultBill Demo' : 'Business workspace'}</strong>
           </div>
           <div className="app-shell__topbar-actions">
+            <div className="app-shell__mobile-account-actions">
+              <ThemePalette controller={themeController} />
+              {!capabilities.isDemoMode ? (
+                <button
+                  className="icon-button"
+                  aria-label="Change my password"
+                  onClick={() => {
+                    setAccountPassword('');
+                    setAccountPasswordConfirmation('');
+                    setAccountPasswordMessage('');
+                    setIsPasswordOpen(true);
+                  }}
+                  type="button"
+                >
+                  <KeyRound aria-hidden="true" size={19} />
+                </button>
+              ) : (
+                <button
+                  className="icon-button"
+                  aria-label="Reset demo data"
+                  onClick={() => {
+                    setIsResetOpen(true);
+                  }}
+                  type="button"
+                >
+                  <RotateCcw aria-hidden="true" size={19} />
+                </button>
+              )}
+              <button
+                className="icon-button"
+                aria-label="Log out"
+                onClick={() => {
+                  logout();
+                  void navigate('/login');
+                }}
+                type="button"
+              >
+                <LogOut aria-hidden="true" size={19} />
+              </button>
+            </div>
             {!capabilities.isDemoMode && trialStatus && !trialStatus.isFullVersion ? (
               <button
                 className={trialStatus.isExpired ? 'button-danger' : ''}
@@ -245,6 +316,74 @@ export const AppShell: FC = () => {
         title="Reset demo data?"
       />
       <AppModal
+        isOpen={isPasswordOpen}
+        onClose={() => {
+          setIsPasswordOpen(false);
+        }}
+        title="Change my password"
+      >
+        <p>Set the password used by this operator on desktop and hosted-web login.</p>
+        <label>
+          <span>New password</span>
+          <input
+            autoComplete="new-password"
+            onChange={(event) => {
+              setAccountPassword(event.currentTarget.value);
+              setAccountPasswordMessage('');
+            }}
+            type="password"
+            value={accountPassword}
+          />
+        </label>
+        <label>
+          <span>Confirm new password</span>
+          <input
+            autoComplete="new-password"
+            onChange={(event) => {
+              setAccountPasswordConfirmation(event.currentTarget.value);
+              setAccountPasswordMessage('');
+            }}
+            type="password"
+            value={accountPasswordConfirmation}
+          />
+        </label>
+        {accountPasswordMessage ? (
+          <p className="feedback-info" role="status">
+            {accountPasswordMessage}
+          </p>
+        ) : null}
+        <div className="popup-actions">
+          <button
+            onClick={() => {
+              setIsPasswordOpen(false);
+            }}
+            type="button"
+          >
+            Cancel
+          </button>
+          <button
+            className="button-primary"
+            disabled={accountPassword.length < 8 || accountPassword !== accountPasswordConfirmation}
+            onClick={() => {
+              void resetPassword(operatorContext.account.userId, accountPassword)
+                .then(() => {
+                  setAccountPassword('');
+                  setAccountPasswordConfirmation('');
+                  setAccountPasswordMessage('Your password has been updated.');
+                })
+                .catch((reason: unknown) => {
+                  setAccountPasswordMessage(
+                    reason instanceof Error ? reason.message : 'Password could not be updated.',
+                  );
+                });
+            }}
+            type="button"
+          >
+            Update password
+          </button>
+        </div>
+      </AppModal>
+      <AppModal
         isOpen={isActivationOpen}
         onClose={() => {
           setIsActivationOpen(false);
@@ -278,8 +417,12 @@ export const AppShell: FC = () => {
           <button
             className="button-primary"
             onClick={() => {
-              void window.vaultBillDesktop
-                ?.activateLicense(licenseKey)
+              const activation = window.vaultBillDesktop
+                ? window.vaultBillDesktop.activateLicense(licenseKey)
+                : requestHostedApi<NonNullable<typeof trialStatus>>('/trial/activate', 'POST', {
+                    licenseKey,
+                  });
+              void activation
                 .then((status) => {
                   setTrialStatus(status);
                   setActivationMessage('VaultBill is activated.');

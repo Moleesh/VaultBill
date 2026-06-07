@@ -85,4 +85,22 @@ describe('CredentialStore', () => {
       usesDefaultPassword: false,
     });
   });
+
+  it('blocks passwordless accounts from remote hosted authentication', () => {
+    const opened = openStore();
+    opened.store.saveAccount({
+      userId: 'user_1',
+      username: 'operator',
+      displayName: 'Operator',
+      role: 'User',
+      isActive: true,
+    });
+
+    expect(opened.store.authenticate('user_1', '', true)).toMatchObject({
+      passwordConfigured: false,
+    });
+    expect(() => opened.store.authenticate('user_1', '', false)).toThrow(
+      'Set a password on this account before using hosted web access.',
+    );
+  });
 });

@@ -5,6 +5,7 @@ import { createHiddenHtmlWindow } from './PrintBridge.js';
 export const PdfRequestSchema = z.object({
   html: z.string().min(1),
   fileName: z.string().min(1),
+  jobId: z.string().min(1).optional(),
 });
 
 export type PdfRequest = z.infer<typeof PdfRequestSchema>;
@@ -18,7 +19,7 @@ export type PdfResult = {
 
 export const renderHtmlToPdf = async (rawRequest: unknown): Promise<PdfResult> => {
   const request = PdfRequestSchema.parse(rawRequest);
-  const pdfWindow = await createHiddenHtmlWindow(request.html);
+  const pdfWindow = await createHiddenHtmlWindow(request.html, request.jobId);
 
   try {
     const pdfData = await pdfWindow.webContents.printToPDF({
@@ -38,7 +39,7 @@ export const renderHtmlToPdf = async (rawRequest: unknown): Promise<PdfResult> =
       warning: error instanceof Error ? error.message : 'Electron PDF generation failed.',
     };
   } finally {
-    pdfWindow.close();
+    if (!pdfWindow.isDestroyed()) pdfWindow.close();
   }
 };
 

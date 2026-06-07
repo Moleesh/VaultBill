@@ -6,13 +6,16 @@ import {
   Download,
   FileCode2,
   FileJson2,
+  Pencil,
   Plus,
   Trash2,
   Upload,
 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import type { ChangeEvent, FC } from 'react';
 
+import { useCapabilities } from '../../capability/CapabilityContext';
 import { AppDrawer } from '../../components/AppDrawer/AppDrawer';
 import { HorizontalProgress } from '../../components/HorizontalProgress/HorizontalProgress';
 import { SearchableDropdown } from '../../components/SearchableDropdown/SearchableDropdown';
@@ -22,6 +25,8 @@ import {
   FieldTypeSchema,
   type DocumentFormatConfig,
 } from '../../db/startup/ConfigSchemas';
+import { evaluateFormula } from '../../engines/formulaEngine/FormulaEngine';
+import { requestHostedApi } from '../../runtime/HostedApi';
 
 const steps = [
   'Format',
@@ -35,7 +40,21 @@ const storageKey = 'vaultbill.builder.v24';
 const htmlStorageKey = 'vaultbill.builder.template-html';
 type BuilderStep = (typeof steps)[number];
 type FieldConfig = DocumentFormatConfig['Fields'][number];
-type AssetSummary = { readonly name: string; readonly type: string; readonly size: number };
+type AssetSummary = {
+  readonly name: string;
+  readonly type: string;
+  readonly size: number;
+  readonly dataBase64: string;
+};
+type StoredBuilderPackage = {
+  readonly config: unknown;
+  readonly templateHtml: string;
+  readonly assets: readonly {
+    readonly name: string;
+    readonly type: string;
+    readonly dataBase64: string;
+  }[];
+};
 
 const cloneDefault = (): DocumentFormatConfig =>
   DocumentFormatConfigSchema.parse(JSON.parse(JSON.stringify(builtInDefaultFormat)) as unknown);
@@ -59,7 +78,12 @@ const newField = (index: number): FieldConfig => ({
 });
 
 export const BuilderPage: FC = () => {
-  const [stepIndex, setStepIndex] = useState(0);
+  const capabilities = useCapabilities();
+  const [searchParams] = useSearchParams();
+  const requestedFormatId = searchParams.get('format') ?? undefined;
+  const [stepIndex, setStepIndex] = useState(() =>
+    searchParams.get('step') === 'preview' ? steps.length - 1 : 0,
+  );
   const [config, setConfig] = useState<DocumentFormatConfig>(readConfig);
   const [templateHtml, setTemplateHtml] = useState(
     () => window.localStorage.getItem(htmlStorageKey) ?? '',
@@ -76,6 +100,37 @@ export const BuilderPage: FC = () => {
       : editing?.kind === 'line'
         ? lineSection?.Fields[editing.index]
         : undefined;
+  const allFields = useMemo(
+    () => [...config.Fields, ...(lineSection?.Fields ?? [])],
+    [config.Fields, lineSection?.Fields],
+  );
+  const referencedFieldIds = useMemo(() => collectReferencedFieldIds(allFields), [allFields]);
+
+  useEffect(() => {
+    const applyPackage = (stored: StoredBuilderPackage | undefined) => {
+      if (!stored) return;
+      setConfig(DocumentFormatConfigSchema.parse(stored.config));
+      setTemplateHtml(stored.templateHtml);
+      setAssets(
+        stored.assets.map((asset) => ({
+          ...asset,
+          size: base64ByteLength(asset.dataBase64),
+        })),
+      );
+    };
+    if (window.vaultBillDesktop) {
+      void window.vaultBillDesktop.loadBuilderPackage(requestedFormatId).then(applyPackage);
+    } else if (capabilities.isLanBrowser) {
+      const query = requestedFormatId ? `?formatId=${encodeURIComponent(requestedFormatId)}` : '';
+      void requestHostedApi<StoredBuilderPackage | undefined>(`/builder/package${query}`)
+        .then(applyPackage)
+        .catch((reason: unknown) => {
+          setMessage(
+            reason instanceof Error ? reason.message : 'Builder data could not be loaded.',
+          );
+        });
+    }
+  }, [capabilities.isLanBrowser, requestedFormatId]);
 
   const validation = useMemo(() => {
     const result = DocumentFormatConfigSchema.safeParse(config);
@@ -90,9 +145,10 @@ export const BuilderPage: FC = () => {
         errors.push(`${field.Label} is calculated but has no formula.`);
       }
     }
+    errors.push(...validateCalculationGraph(allFields));
     if (!templateHtml.trim()) errors.push('Upload one HTML print template.');
     return errors;
-  }, [config, lineSection?.Fields, templateHtml]);
+  }, [allFields, config, lineSection?.Fields, templateHtml]);
 
   const updateFields = (kind: 'document' | 'line', fields: readonly FieldConfig[]) => {
     if (kind === 'document') {
@@ -119,6 +175,7 @@ export const BuilderPage: FC = () => {
   const importJson = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.currentTarget.files?.[0];
     if (!file) return;
+    if (file.size > 5 * 1024 * 1024 && !confirmLargeFile(file.name, file.size)) return;
     void file.text().then((text) => {
       try {
         const raw = JSON.parse(text) as { PackageVersion?: unknown; Format?: unknown };
@@ -147,6 +204,7 @@ export const BuilderPage: FC = () => {
       setMessage('Print templates must be a single .html file.');
       return;
     }
+    if (file.size > 5 * 1024 * 1024 && !confirmLargeFile(file.name, file.size)) return;
     void file.text().then((html) => {
       if (/<\s*(script|iframe|object|embed|form)\b/iu.test(html) || /\son\w+\s*=/iu.test(html)) {
         setMessage('The HTML contains blocked active content.');
@@ -160,18 +218,33 @@ export const BuilderPage: FC = () => {
 
   const importAssets = (event: ChangeEvent<HTMLInputElement>) => {
     const files = [...(event.currentTarget.files ?? [])];
+    const unusuallyLarge = files.filter((file) => file.size > 20 * 1024 * 1024);
+    if (
+      unusuallyLarge.length > 0 &&
+      !window.confirm(
+        `${String(unusuallyLarge.length)} selected asset(s) are unusually large. Continue loading them into the template package?`,
+      )
+    ) {
+      event.currentTarget.value = '';
+      return;
+    }
     const allowed = /^(image\/(?:png|jpeg|webp|svg\+xml)|font\/woff2?|application\/font-woff)$/u;
     const accepted = files.filter(
       (file) => allowed.test(file.type) || /\.(woff2?|svg)$/iu.test(file.name),
     );
-    setAssets((current) => [
-      ...current.filter((asset) => !accepted.some((file) => file.name === asset.name)),
-      ...accepted.map((file) => ({
+    void Promise.all(
+      accepted.map(async (file) => ({
         name: file.name.replace(/\.[^.]+$/u, ''),
-        type: file.type,
+        type: file.type || mimeTypeFromName(file.name),
         size: file.size,
+        dataBase64: bytesToBase64(new Uint8Array(await file.arrayBuffer())),
       })),
-    ]);
+    ).then((nextAssets) => {
+      setAssets((current) => [
+        ...current.filter((asset) => !nextAssets.some((next) => next.name === asset.name)),
+        ...nextAssets,
+      ]);
+    });
     if (accepted.length !== files.length) setMessage('Some unsupported assets were skipped.');
     event.currentTarget.value = '';
   };
@@ -245,6 +318,7 @@ export const BuilderPage: FC = () => {
         {activeStep === 'Fields' ? (
           <FieldEditor
             fields={config.Fields}
+            referencedFieldIds={referencedFieldIds}
             onAdd={() => {
               const fields = [...config.Fields, newField(config.Fields.length)];
               updateFields('document', fields);
@@ -292,6 +366,7 @@ export const BuilderPage: FC = () => {
             </div>
             <FieldEditor
               fields={lineSection.Fields}
+              referencedFieldIds={referencedFieldIds}
               onAdd={() => {
                 const fields = [...lineSection.Fields, newField(lineSection.Fields.length)];
                 updateFields('line', fields);
@@ -317,6 +392,7 @@ export const BuilderPage: FC = () => {
                     <code>{field.FieldId}</code>
                   </div>
                   <code>{field.Formula}</code>
+                  <small>{sampleFormula(field, allFields, config.CalculationPolicy)}</small>
                   <button
                     onClick={() => {
                       const documentIndex = config.Fields.findIndex(
@@ -372,7 +448,7 @@ export const BuilderPage: FC = () => {
                 Images and fonts are referenced with <code>{'{{Asset.Name}}'}</code>.
               </p>
               <label className="button-file">
-                <Plus aria-hidden="true" size={18} /> Add assets
+                <Plus aria-hidden="true" size={18} /> Add or replace assets
                 <input
                   accept=".png,.jpg,.jpeg,.webp,.svg,.woff,.woff2"
                   multiple
@@ -386,6 +462,32 @@ export const BuilderPage: FC = () => {
                 <article key={asset.name}>
                   <code>{`{{Asset.${asset.name}}}`}</code>
                   <span>{formatBytes(asset.size)}</span>
+                  <button
+                    aria-label={`Rename ${asset.name}`}
+                    onClick={() => {
+                      const nextName = window.prompt('Asset name', asset.name)?.trim();
+                      if (!nextName || nextName === asset.name) return;
+                      setAssets((current) =>
+                        current.map((candidate) =>
+                          candidate.name === asset.name
+                            ? { ...candidate, name: nextName }
+                            : candidate,
+                        ),
+                      );
+                    }}
+                    type="button"
+                  >
+                    <Pencil aria-hidden="true" size={17} />
+                  </button>
+                  <button
+                    aria-label={`Download ${asset.name}`}
+                    onClick={() => {
+                      downloadBase64Asset(asset);
+                    }}
+                    type="button"
+                  >
+                    <Download aria-hidden="true" size={17} />
+                  </button>
                   <button
                     aria-label={`Remove ${asset.name}`}
                     onClick={() => {
@@ -428,10 +530,7 @@ export const BuilderPage: FC = () => {
             </div>
             <iframe
               sandbox=""
-              srcDoc={
-                templateHtml ||
-                '<main style="font-family:sans-serif;padding:2rem"><h1>Upload an HTML template</h1><p>Your final document preview will appear here.</p></main>'
-              }
+              srcDoc={renderBuilderPreview(templateHtml, config, assets)}
               title="Print template preview"
             />
             {validation.length > 0 ? (
@@ -481,9 +580,23 @@ export const BuilderPage: FC = () => {
               className="button-primary"
               disabled={validation.length > 0}
               onClick={() => {
-                window.localStorage.setItem(storageKey, JSON.stringify(config));
-                window.localStorage.setItem(htmlStorageKey, templateHtml);
-                setMessage('Format and print template published.');
+                const orderedConfig = applyCalculationOrder(config);
+                const builderPackage = { config: orderedConfig, templateHtml, assets };
+                const publish = window.vaultBillDesktop
+                  ? window.vaultBillDesktop.saveBuilderPackage(builderPackage)
+                  : capabilities.isLanBrowser
+                    ? requestHostedApi('/builder/package', 'POST', builderPackage)
+                    : Promise.resolve().then(() => {
+                        window.localStorage.setItem(storageKey, JSON.stringify(config));
+                        window.localStorage.setItem(htmlStorageKey, templateHtml);
+                      });
+                void publish
+                  .then(() => {
+                    setMessage('Format, print template, and assets published.');
+                  })
+                  .catch((reason: unknown) => {
+                    setMessage(reason instanceof Error ? reason.message : 'Publish failed.');
+                  });
               }}
               type="button"
             >
@@ -519,10 +632,11 @@ export const BuilderPage: FC = () => {
 
 const FieldEditor: FC<{
   readonly fields: readonly FieldConfig[];
+  readonly referencedFieldIds: ReadonlySet<string>;
   readonly onAdd: () => void;
   readonly onChange: (fields: readonly FieldConfig[]) => void;
   readonly onEdit: (index: number) => void;
-}> = ({ fields, onAdd, onChange, onEdit }) => (
+}> = ({ fields, referencedFieldIds, onAdd, onChange, onEdit }) => (
   <div className="builder-fields">
     <div className="section-heading">
       <div>
@@ -582,9 +696,15 @@ const FieldEditor: FC<{
         </button>
         <button
           aria-label={`Delete ${field.Label}`}
+          disabled={referencedFieldIds.has(field.FieldId)}
           onClick={() => {
             onChange(fields.filter((_, fieldIndex) => fieldIndex !== index));
           }}
+          title={
+            referencedFieldIds.has(field.FieldId)
+              ? 'Remove formula references before deleting this field.'
+              : undefined
+          }
           type="button"
         >
           <Trash2 aria-hidden="true" size={17} />
@@ -631,6 +751,64 @@ const FieldDrawer: FC<{
         value={field.Placeholder ?? ''}
         onChange={(event) => {
           onChange({ ...field, Placeholder: event.currentTarget.value });
+        }}
+      />
+    </label>
+    <label>
+      <span>Default value</span>
+      <input
+        value={typeof field.DefaultValue === 'string' ? field.DefaultValue : ''}
+        onChange={(event) => {
+          onChange({ ...field, DefaultValue: event.currentTarget.value });
+        }}
+      />
+    </label>
+    <label>
+      <span>Sample value</span>
+      <input
+        value={typeof field.SampleValue === 'string' ? field.SampleValue : ''}
+        onChange={(event) => {
+          onChange({ ...field, SampleValue: event.currentTarget.value });
+        }}
+      />
+    </label>
+    <label>
+      <span>Prefix</span>
+      <input
+        value={field.Prefix ?? ''}
+        onChange={(event) => {
+          onChange({ ...field, Prefix: event.currentTarget.value });
+        }}
+      />
+    </label>
+    <label>
+      <span>Suffix</span>
+      <input
+        value={field.Suffix ?? ''}
+        onChange={(event) => {
+          onChange({ ...field, Suffix: event.currentTarget.value });
+        }}
+      />
+    </label>
+    <label>
+      <span>Maximum length</span>
+      <input
+        min="1"
+        type="number"
+        value={field.MaxLength ?? ''}
+        onChange={(event) => {
+          onChange(updateOptionalNumber(field, 'MaxLength', event.currentTarget.valueAsNumber));
+        }}
+      />
+    </label>
+    <label>
+      <span>Decimal precision</span>
+      <input
+        min="0"
+        type="number"
+        value={field.Precision ?? ''}
+        onChange={(event) => {
+          onChange(updateOptionalNumber(field, 'Precision', event.currentTarget.valueAsNumber));
         }}
       />
     </label>
@@ -712,3 +890,229 @@ const helperFor = (step: BuilderStep): string =>
 
 const formatBytes = (size: number): string =>
   size < 1024 * 1024 ? `${(size / 1024).toFixed(1)} KB` : `${(size / (1024 * 1024)).toFixed(1)} MB`;
+
+const bytesToBase64 = (bytes: Uint8Array): string => {
+  let binary = '';
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return window.btoa(binary);
+};
+
+const base64ByteLength = (base64: string): number =>
+  Math.floor((base64.length * 3) / 4) - (base64.endsWith('==') ? 2 : base64.endsWith('=') ? 1 : 0);
+
+const mimeTypeFromName = (name: string): string =>
+  name.toLocaleLowerCase().endsWith('.woff2')
+    ? 'font/woff2'
+    : name.toLocaleLowerCase().endsWith('.woff')
+      ? 'font/woff'
+      : name.toLocaleLowerCase().endsWith('.svg')
+        ? 'image/svg+xml'
+        : 'application/octet-stream';
+
+const confirmLargeFile = (name: string, size: number): boolean =>
+  window.confirm(
+    `${name} is ${formatBytes(size)}, which is unusually large. Continue loading it into Builder?`,
+  );
+
+const formulaReferences = (formula: string): readonly string[] =>
+  [...formula.matchAll(/[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)?/gu)]
+    .map((match) => match[0])
+    .filter((token) => !['SUM', 'COUNT', 'ITEMS'].includes(token.toLocaleUpperCase()))
+    .map((token) => (token.startsWith('Items.') ? token.slice('Items.'.length) : token));
+
+const collectReferencedFieldIds = (fields: readonly FieldConfig[]): ReadonlySet<string> =>
+  new Set(fields.flatMap((field) => (field.Formula ? formulaReferences(field.Formula) : [])));
+
+const numericFieldTypes = new Set(['Number', 'Decimal', 'Money', 'Quantity', 'Rate']);
+
+const validateCalculationGraph = (fields: readonly FieldConfig[]): readonly string[] => {
+  const byId = new Map(fields.map((field) => [field.FieldId, field]));
+  const issues: string[] = [];
+  const calculated = fields.filter((field) => field.Calculated && field.Formula);
+  for (const field of calculated) {
+    const references = formulaReferences(field.Formula ?? '');
+    for (const reference of references) {
+      const target = byId.get(reference);
+      if (!target) issues.push(`${field.Label} references unknown field ${reference}.`);
+      else if (!numericFieldTypes.has(target.Type)) {
+        issues.push(`${field.Label} cannot calculate with non-numeric field ${target.Label}.`);
+      }
+    }
+    if (/\/\s*0(?:\.0+)?(?:\D|$)/u.test(field.Formula ?? '')) {
+      issues.push(`${field.Label} divides by zero.`);
+    }
+  }
+
+  const visiting = new Set<string>();
+  const visited = new Set<string>();
+  const visit = (fieldId: string): boolean => {
+    if (visiting.has(fieldId)) return true;
+    if (visited.has(fieldId)) return false;
+    visiting.add(fieldId);
+    const field = byId.get(fieldId);
+    const cycle = formulaReferences(field?.Formula ?? '').some((reference) => {
+      const target = byId.get(reference);
+      return Boolean(target?.Calculated) && visit(reference);
+    });
+    visiting.delete(fieldId);
+    visited.add(fieldId);
+    return cycle;
+  };
+  if (calculated.some((field) => visit(field.FieldId))) {
+    issues.push('Calculated fields contain a dependency cycle.');
+  }
+  return [...new Set(issues)];
+};
+
+const sampleFormula = (
+  field: FieldConfig,
+  fields: readonly FieldConfig[],
+  policy: DocumentFormatConfig['CalculationPolicy'],
+): string => {
+  const formula = field.Formula?.trim();
+  if (!formula) return 'Add a formula to see a sample result.';
+  if (/\b(?:SUM|COUNT)\s*\(/iu.test(formula)) {
+    return 'Sample result uses line-item rows in the final preview.';
+  }
+  const variables = Object.fromEntries(
+    fields.map((candidate) => [
+      candidate.FieldId,
+      typeof candidate.SampleValue === 'string' || typeof candidate.SampleValue === 'number'
+        ? candidate.SampleValue
+        : typeof candidate.DefaultValue === 'string' || typeof candidate.DefaultValue === 'number'
+          ? candidate.DefaultValue
+          : '1',
+    ]),
+  );
+  try {
+    const result = evaluateFormula(
+      formula,
+      variables,
+      policy,
+      field.Precision ?? policy.MoneyPrecision,
+    );
+    return `Sample: ${field.Prefix ?? ''}${result.formatted}${field.Suffix ?? ''}`;
+  } catch (reason) {
+    return reason instanceof Error ? `Check formula: ${reason.message}` : 'Check formula syntax.';
+  }
+};
+
+const applyCalculationOrder = (config: DocumentFormatConfig): DocumentFormatConfig => {
+  const fields = [
+    ...config.Fields,
+    ...config.LineItemSections.flatMap((section) => section.Fields),
+  ];
+  const calculatedIds = new Set(
+    fields.filter((field) => field.Calculated && field.Formula).map((field) => field.FieldId),
+  );
+  const ordered: string[] = [];
+  const visited = new Set<string>();
+  const visit = (fieldId: string) => {
+    if (visited.has(fieldId)) return;
+    visited.add(fieldId);
+    const field = fields.find((candidate) => candidate.FieldId === fieldId);
+    for (const reference of formulaReferences(field?.Formula ?? '')) {
+      if (calculatedIds.has(reference)) visit(reference);
+    }
+    ordered.push(fieldId);
+  };
+  for (const fieldId of calculatedIds) visit(fieldId);
+  const orderById = new Map(ordered.map((fieldId, index) => [fieldId, index + 1]));
+  const apply = (field: FieldConfig): FieldConfig => {
+    const order = orderById.get(field.FieldId);
+    return order ? { ...field, CalculationOrder: order } : field;
+  };
+  return {
+    ...config,
+    Fields: config.Fields.map(apply),
+    LineItemSections: config.LineItemSections.map((section) => ({
+      ...section,
+      Fields: section.Fields.map(apply),
+    })),
+  };
+};
+
+const renderBuilderPreview = (
+  templateHtml: string,
+  config: DocumentFormatConfig,
+  assets: readonly AssetSummary[],
+): string => {
+  if (!templateHtml) {
+    return '<main style="font-family:sans-serif;padding:2rem"><h1>Upload an HTML template</h1><p>Your resolved final preview will appear here.</p></main>';
+  }
+  const values: Record<string, string> = {
+    'Company.Name': 'Sample Business',
+    'Company.Address': '12 Market Road, Bengaluru',
+    'Record.Number': 'GST-000001',
+    'Record.Status': 'Finalized',
+    'Record.IsCancelled': 'false',
+    'Record.CancellationReason': '',
+  };
+  for (const field of [
+    ...config.Fields,
+    ...config.LineItemSections.flatMap((item) => item.Fields),
+  ]) {
+    const sample = field.SampleValue ?? field.DefaultValue ?? field.Label;
+    values[`Record.${field.FieldId}`] = previewValue(sample);
+  }
+  for (const asset of assets) {
+    values[`Asset.${asset.name}`] = `data:${asset.type};base64,${asset.dataBase64}`;
+  }
+  return templateHtml.replace(/\{\{\s*([^}]+?)\s*\}\}/gu, (_match, key: string) =>
+    escapePreviewHtml(values[key.trim()] ?? '—'),
+  );
+};
+
+const escapePreviewHtml = (value: string): string =>
+  value
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+
+const downloadBase64Asset = (asset: AssetSummary) => {
+  const anchor = document.createElement('a');
+  anchor.href = `data:${asset.type};base64,${asset.dataBase64}`;
+  anchor.download = `${asset.name}.${extensionForMimeType(asset.type)}`;
+  anchor.click();
+};
+
+const extensionForMimeType = (mimeType: string): string =>
+  (
+    ({
+      'image/png': 'png',
+      'image/jpeg': 'jpg',
+      'image/webp': 'webp',
+      'image/svg+xml': 'svg',
+      'font/woff': 'woff',
+      'font/woff2': 'woff2',
+    }) as Readonly<Record<string, string>>
+  )[mimeType] ?? 'bin';
+
+const updateOptionalNumber = (
+  field: FieldConfig,
+  key: 'MaxLength' | 'Precision',
+  value: number,
+): FieldConfig => {
+  const next = { ...field };
+  if (Number.isFinite(value)) next[key] = value;
+  else
+    return Object.fromEntries(
+      Object.entries(next).filter(([property]) => property !== key),
+    ) as FieldConfig;
+  return next;
+};
+
+const previewValue = (value: unknown): string => {
+  if (
+    typeof value === 'string' ||
+    typeof value === 'number' ||
+    typeof value === 'boolean' ||
+    typeof value === 'bigint'
+  ) {
+    return String(value);
+  }
+  if (value === null || value === undefined) return '';
+  return JSON.stringify(value);
+};

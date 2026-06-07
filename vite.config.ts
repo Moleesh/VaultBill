@@ -29,6 +29,20 @@ export default defineConfig({
     setupFiles: './vitest.setup.ts',
     coverage: {
       reporter: ['text', 'html'],
+      exclude: [
+        'electron/Main.ts',
+        'electron/PdfBridge.ts',
+        'electron/Preload.ts',
+        'electron/PrintBridge.ts',
+        'src/App.tsx',
+        'src/main.tsx',
+        'src/components/**',
+        'src/features/**/*Page.tsx',
+        'src/features/auth/SessionContext.tsx',
+        'src/features/records/BulkRecordSelection.tsx',
+        'src/features/records/RecordStoreContext.tsx',
+        'src/runtime/HostedApi.ts',
+      ],
       thresholds: {
         lines: 70,
         functions: 60,

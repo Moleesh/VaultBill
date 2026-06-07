@@ -10,8 +10,8 @@ const defaultPasswordHash = '5e800c5e134b84a0d73bd6f0d0f65b768f8a3afeba9c26ce3fe
 
 export const setupCompleteStorageKey = 'vaultbill.setup.complete';
 
-export const isFirstRunSetupRequired = (isDemoMode: boolean): boolean =>
-  !isDemoMode && window.localStorage.getItem(setupCompleteStorageKey) !== 'true';
+export const isFirstRunSetupRequired = (isDemoMode: boolean, isLanBrowser = false): boolean =>
+  !isDemoMode && !isLanBrowser && window.localStorage.getItem(setupCompleteStorageKey) !== 'true';
 
 type SetupPageProps = {
   readonly onComplete?: () => void;
@@ -31,30 +31,43 @@ export const SetupPage: FC<SetupPageProps> = ({ onComplete }) => {
     (companyName.trim().length > 0 && address.trim().length > 0);
 
   const completeSetup = () => {
-    void window.vaultBillDesktop?.configureSysAdmin(sysAdminName);
-    window.localStorage.setItem(
-      'vaultbill.business-profile',
-      JSON.stringify({ companyName: companyName.trim(), address: address.trim() }),
-    );
-    window.localStorage.setItem(
-      'vaultbill.accounts',
-      JSON.stringify([
-        {
-          userId: 'sysadmin_1',
-          username: 'sysadmin',
-          displayName: sysAdminName.trim() || 'System Administrator',
-          role: 'SysAdmin',
-          isActive: true,
-          passwordHash: defaultPasswordHash,
-          usesDefaultPassword: true,
-        },
-      ]),
-    );
-    window.localStorage.setItem('vaultbill.backup-password-configured', 'true');
-    window.localStorage.setItem('vaultbill.default-credentials-active', 'true');
-    window.localStorage.setItem(setupCompleteStorageKey, 'true');
-    onComplete?.();
-    void navigate('/login', { replace: true });
+    const normalizedName = sysAdminName.trim() || 'System Administrator';
+    const finish = async () => {
+      if (window.vaultBillDesktop) {
+        await window.vaultBillDesktop.completeSetup({
+          companyName: companyName.trim(),
+          address: address.trim(),
+          sysAdminName: normalizedName,
+        });
+      } else {
+        window.localStorage.setItem(
+          'vaultbill.accounts',
+          JSON.stringify([
+            {
+              userId: 'sysadmin_1',
+              username: 'sysadmin',
+              displayName: normalizedName,
+              role: 'SysAdmin',
+              isActive: true,
+              passwordHash: defaultPasswordHash,
+              usesDefaultPassword: true,
+            },
+          ]),
+        );
+      }
+      window.localStorage.setItem(
+        'vaultbill.business-profile',
+        JSON.stringify({ companyName: companyName.trim(), address: address.trim() }),
+      );
+      window.localStorage.setItem('vaultbill.backup-password-configured', 'true');
+      window.localStorage.setItem('vaultbill.default-credentials-active', 'true');
+      window.localStorage.setItem(setupCompleteStorageKey, 'true');
+      onComplete?.();
+      await navigate('/login', { replace: true });
+    };
+    void finish().catch((reason: unknown) => {
+      setMessage(reason instanceof Error ? reason.message : 'Setup could not be completed.');
+    });
   };
 
   return (

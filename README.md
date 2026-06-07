@@ -32,10 +32,10 @@ All demo routes use `/VaultBill/`, including refresh recovery.
 The desktop app owns:
 
 - SQLite business records and configuration
-- document formats, calculations, HTML templates, and shared assets
-- printing, PDF output, backup/restore seams, trial state, and activation
+- document formats, custom record fields, calculations, HTML templates, and shared assets
+- printing, PDF output, verified backup/restore/reset, trial state, and activation
 - a localhost web workspace that remains available while minimized to tray
-- optional LAN hosting, disabled by default
+- optional LAN hosting, disabled by default and persisted in SQLite
 
 Windows NSIS and Linux AppImage are current targets. macOS and native Android
 remain future scope; an Android browser may use the hosted web workspace.
@@ -93,6 +93,9 @@ COUNT(Items)
 Reports support customer, partial invoice number, dates, status, common date
 presets, and Last 100. Results load progressively in batches of 50.
 
+- **Sales Register:** document-level status and value history
+- **Tax Summary:** finalized taxable value and tax grouped by rate
+- **Customer Ledger:** documents, cancellations, and finalized revenue by customer
 - **Export:** all matching rows
 - **Print Report:** one formatted report
 - **Print Records:** each record through its document template
@@ -180,10 +183,13 @@ status.
 - Demo mode is not production hosting.
 - LAN hosting is off by default.
 - Electron uses context isolation, sandboxing, a restrictive CSP, and typed IPC.
+- Hosted web uses HttpOnly SameSite sessions, CSRF checks, expiry, login
+  throttling, origin checks, request validation, and server-side role enforcement.
 - HTML templates reject scripts, event handlers, frames, forms, remote URLs,
   local file URLs, imports, and unsafe SVG patterns.
-- Backups can contain sensitive business data; encrypted output is strongly
-  preferred.
+- Backups are checksummed ZIP packages. Restore validates identity, checksums,
+  encryption metadata, and SQLite integrity before replacement. Encrypted output
+  is strongly preferred because accounting data is not known for being shy. 🔐
 - Unsigned desktop artifacts are testing builds, not a trust signal.
 - Known hardening work is tracked honestly in `docs/UnresolvedIssues.md`.
 
@@ -204,6 +210,8 @@ status.
 - **Installer smoke fails:** run `npm run build:desktop`, package again, then
   `npm run smoke:installer:required`.
 - **Demo data looks odd:** use the confirmed Reset demo action.
+- **Hosted browser cannot reconnect:** open VaultBill Desktop on the host and
+  confirm the hosted-web/LAN status in Settings or the tray menu.
 - **SQLite startup fails:** run `npm run smoke:first-run-db:ci` and inspect the
   startup patch test.
 

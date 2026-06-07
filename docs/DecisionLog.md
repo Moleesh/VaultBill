@@ -289,9 +289,16 @@
 - Changed Release App to run on every `main` push, package Windows/Linux
   separately, publish only for tags/manual runs, and replace same-version
   releases intentionally.
-- Recorded hosted-session, scrypt/safeStorage, native print queue, and streaming
-  backup work as explicit unresolved security/desktop items rather than claiming
-  completion.
+- Implemented hosted HttpOnly/CSRF sessions, SQLite operator persistence,
+  scrypt/safeStorage credentials, cancellable native output jobs, checksummed
+  encrypted ZIP backup/restore/reset, and session invalidation on data reset.
+- Connected published Builder formats to record entry and printing, including
+  custom values, configured calculations, HTML assets, cancellation values, and
+  deterministic ten-record batches.
+- Persisted business, integration, and hosted-web settings in SQLite and exposed
+  live LAN state through the tray and fixed application shell.
 - Set the v24 unit-coverage floor to 70% statements/lines, 60% functions, and
-  50% branches because route-level UI orchestration is additionally exercised
-  through the mobile/tablet/desktop/wide Playwright matrix.
+  50% branches for domain logic, SQLite stores, API security, engines, and
+  reusable workflows. React page composition and Electron entry/bridge glue are
+  instead exercised through the mobile/tablet/desktop/wide Playwright matrix
+  and desktop package smoke gates.

@@ -1,4 +1,6 @@
-import { useState } from 'react';
+/* eslint-disable max-lines */
+import { KeyRound } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import type { FC } from 'react';
 
@@ -12,12 +14,15 @@ import { useSession } from './SessionContext';
 
 export const LoginPage: FC = () => {
   const capabilities = useCapabilities();
-  const { accounts, login, operatorContext } = useSession();
+  const { accounts, hostedConnectionState, login, operatorContext } = useSession();
   const navigate = useNavigate();
   const [selectedAccountId, setSelectedAccountId] = useState(accounts[0]?.userId ?? '');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isHelpOpen, setIsHelpOpen] = useState(false);
+  const [isActivationOpen, setIsActivationOpen] = useState(false);
+  const [licenseKey, setLicenseKey] = useState('');
+  const [activationMessage, setActivationMessage] = useState('');
   const accountOptions = accounts.map((account) => ({
     value: account.userId,
     label: account.displayName,
@@ -25,6 +30,10 @@ export const LoginPage: FC = () => {
     keywords: [account.username, account.role],
   }));
   const selectedAccount = accounts.find((account) => account.userId === selectedAccountId);
+
+  useEffect(() => {
+    if (!selectedAccountId && accounts[0]) setSelectedAccountId(accounts[0].userId);
+  }, [accounts, selectedAccountId]);
 
   if (operatorContext) {
     return <Navigate replace to="/app/dashboard" />;
@@ -43,6 +52,30 @@ export const LoginPage: FC = () => {
           ) : null}
         </div>
         <div className="login-card__form">
+          {capabilities.isLanBrowser && hostedConnectionState !== 'connected' ? (
+            <div className="host-reconnect" role="status">
+              <strong>
+                {hostedConnectionState === 'connecting'
+                  ? 'Connecting to VaultBill Desktop'
+                  : 'VaultBill Desktop is unavailable'}
+              </strong>
+              <p>
+                {hostedConnectionState === 'connecting'
+                  ? 'Checking the secure local session.'
+                  : 'Open VaultBill Desktop on the host computer, then reconnect.'}
+              </p>
+              {hostedConnectionState === 'unavailable' ? (
+                <button
+                  onClick={() => {
+                    window.location.reload();
+                  }}
+                  type="button"
+                >
+                  Reconnect
+                </button>
+              ) : null}
+            </div>
+          ) : null}
           {capabilities.isDemoMode ? (
             <div className="demo-login-summary">
               <strong>Demo User</strong>
@@ -76,7 +109,7 @@ export const LoginPage: FC = () => {
           </p>
           <button
             className="button-primary"
-            disabled={!selectedAccountId}
+            disabled={!selectedAccountId || hostedConnectionState !== 'connected'}
             onClick={() => {
               void login(selectedAccountId, password)
                 .then(() => {
@@ -104,6 +137,17 @@ export const LoginPage: FC = () => {
           >
             Login help
           </button>
+          {capabilities.isDesktop ? (
+            <button
+              className="login-help-link"
+              onClick={() => {
+                setIsActivationOpen(true);
+              }}
+              type="button"
+            >
+              <KeyRound aria-hidden="true" size={16} /> Enter license key
+            </button>
+          ) : null}
         </div>
         <footer>
           <span>Version {VENDOR.version}</span>
@@ -121,6 +165,48 @@ export const LoginPage: FC = () => {
           Choose the operator account that belongs to you. Enter a PIN or password only when one is
           configured, then select Log in.
         </p>
+      </AppModal>
+      <AppModal
+        isOpen={isActivationOpen}
+        onClose={() => {
+          setIsActivationOpen(false);
+        }}
+        title="Activate VaultBill"
+      >
+        <label>
+          <span>License key</span>
+          <input
+            value={licenseKey}
+            onChange={(event) => {
+              setLicenseKey(event.currentTarget.value);
+            }}
+          />
+        </label>
+        {activationMessage ? (
+          <p className="feedback-info" role="status">
+            {activationMessage}
+          </p>
+        ) : null}
+        <button
+          className="button-primary"
+          disabled={!licenseKey.trim()}
+          onClick={() => {
+            void window.vaultBillDesktop
+              ?.activateLicense(licenseKey)
+              .then(() => {
+                setLicenseKey('');
+                setActivationMessage('VaultBill is activated. You can now log in.');
+              })
+              .catch((reason: unknown) => {
+                setActivationMessage(
+                  reason instanceof Error ? reason.message : 'Activation failed.',
+                );
+              });
+          }}
+          type="button"
+        >
+          Activate full version
+        </button>
       </AppModal>
     </main>
   );

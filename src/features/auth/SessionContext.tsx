@@ -1,13 +1,16 @@
+/* eslint-disable max-lines */
 import { createContext, useContext, useEffect, useState } from 'react';
 import type { FC, PropsWithChildren } from 'react';
 
 import { useCapabilities } from '../../capability/CapabilityContext';
+import { requestHostedApi, setHostedCsrfToken } from '../../runtime/HostedApi';
 import { bootstrapOperatorAccounts, createOperatorContext } from './AccountBootstrap';
 import type { OperatorAccount, OperatorContext } from './AccountTypes';
 
 type SessionContextValue = {
   readonly accounts: readonly OperatorAccount[];
   readonly operatorContext: OperatorContext | undefined;
+  readonly hostedConnectionState: 'connecting' | 'connected' | 'unavailable';
   readonly login: (userId: string, password?: string) => Promise<void>;
   readonly logout: () => void;
   readonly saveAccount: (account: OperatorAccount) => Promise<void>;
@@ -27,6 +30,10 @@ const demoAccount: OperatorAccount = {
   role: 'Admin',
   isActive: true,
 };
+type HostedSessionPayload = {
+  readonly account: OperatorAccount;
+  readonly csrfToken: string;
+};
 
 const readStoredAccounts = (): readonly OperatorAccount[] => {
   const rawAccounts = window.localStorage.getItem(accountStorageKey);
@@ -45,13 +52,18 @@ const readStoredAccounts = (): readonly OperatorAccount[] => {
 
 export const SessionProvider: FC<PropsWithChildren> = ({ children }) => {
   const capabilities = useCapabilities();
+  const [hostedConnectionState, setHostedConnectionState] = useState<
+    SessionContextValue['hostedConnectionState']
+  >(capabilities.isLanBrowser ? 'connecting' : 'connected');
   const [accounts, setAccounts] = useState<readonly OperatorAccount[]>(() =>
-    capabilities.isDemoMode ? [demoAccount] : readStoredAccounts(),
+    capabilities.isDemoMode ? [demoAccount] : capabilities.isLanBrowser ? [] : readStoredAccounts(),
   );
   const findAccount = (userId: string | null): OperatorAccount | undefined =>
     accounts.find((candidate) => candidate.userId === userId && candidate.isActive);
   const [account, setAccount] = useState<OperatorAccount | undefined>(() =>
-    findAccount(window.localStorage.getItem(sessionStorageKey)),
+    capabilities.isLanBrowser
+      ? undefined
+      : findAccount(window.localStorage.getItem(sessionStorageKey)),
   );
 
   useEffect(() => {
@@ -66,8 +78,28 @@ export const SessionProvider: FC<PropsWithChildren> = ({ children }) => {
     });
   }, [capabilities.isDemoMode]);
 
+  useEffect(() => {
+    if (!capabilities.isLanBrowser) return;
+    void Promise.all([
+      requestHostedApi<readonly OperatorAccount[]>('/auth/accounts'),
+      requestHostedApi<HostedSessionPayload | undefined>('/auth/session'),
+    ])
+      .then(([hostedAccounts, hostedSession]) => {
+        setAccounts(hostedAccounts);
+        setAccount(hostedSession?.account);
+        setHostedCsrfToken(hostedSession?.csrfToken);
+        setHostedConnectionState('connected');
+      })
+      .catch(() => {
+        setAccounts([]);
+        setAccount(undefined);
+        setHostedCsrfToken(undefined);
+        setHostedConnectionState('unavailable');
+      });
+  }, [capabilities.isLanBrowser]);
+
   const persistAccounts = (nextAccounts: readonly OperatorAccount[]) => {
-    if (!capabilities.isDemoMode && !window.vaultBillDesktop)
+    if (!capabilities.isDemoMode && !capabilities.isLanBrowser && !window.vaultBillDesktop)
       window.localStorage.setItem(accountStorageKey, JSON.stringify(nextAccounts));
     setAccounts(nextAccounts);
   };
@@ -80,6 +112,13 @@ export const SessionProvider: FC<PropsWithChildren> = ({ children }) => {
     }
     if (window.vaultBillDesktop && !capabilities.isDemoMode) {
       selectedAccount = await window.vaultBillDesktop.loginAccount(userId, password);
+    } else if (capabilities.isLanBrowser) {
+      const hostedSession = await requestHostedApi<HostedSessionPayload>('/auth/login', 'POST', {
+        userId,
+        password,
+      });
+      selectedAccount = hostedSession.account;
+      setHostedCsrfToken(hostedSession.csrfToken);
     } else if (selectedAccount.passwordHash) {
       const suppliedHash = await hashPassword(password);
       if (suppliedHash !== selectedAccount.passwordHash) {
@@ -92,6 +131,11 @@ export const SessionProvider: FC<PropsWithChildren> = ({ children }) => {
   };
 
   const logout = () => {
+    if (capabilities.isLanBrowser) {
+      void requestHostedApi('/auth/logout', 'POST').finally(() => {
+        setHostedCsrfToken(undefined);
+      });
+    }
     window.localStorage.removeItem(sessionStorageKey);
     setAccount(undefined);
   };
@@ -112,6 +156,13 @@ export const SessionProvider: FC<PropsWithChildren> = ({ children }) => {
       );
       return;
     }
+    if (capabilities.isLanBrowser) {
+      const saved = await requestHostedApi<OperatorAccount>('/accounts/save', 'POST', nextAccount);
+      persistAccounts(
+        nextAccounts.map((candidate) => (candidate.userId === saved.userId ? saved : candidate)),
+      );
+      return;
+    }
     persistAccounts(nextAccounts);
   };
 
@@ -119,6 +170,8 @@ export const SessionProvider: FC<PropsWithChildren> = ({ children }) => {
     if (userId === 'sysadmin_1') throw new Error('The System Administrator cannot be removed.');
     if (window.vaultBillDesktop && !capabilities.isDemoMode) {
       await window.vaultBillDesktop.archiveAccount(userId);
+    } else if (capabilities.isLanBrowser) {
+      await requestHostedApi('/accounts/archive', 'POST', { userId });
     }
     persistAccounts(
       accounts.map((candidate) =>
@@ -134,6 +187,17 @@ export const SessionProvider: FC<PropsWithChildren> = ({ children }) => {
       persistAccounts(
         accounts.map((candidate) => (candidate.userId === saved.userId ? saved : candidate)),
       );
+      return;
+    }
+    if (capabilities.isLanBrowser) {
+      const saved = await requestHostedApi<OperatorAccount>('/accounts/reset-password', 'POST', {
+        userId,
+        password,
+      });
+      persistAccounts(
+        accounts.map((candidate) => (candidate.userId === saved.userId ? saved : candidate)),
+      );
+      if (account?.userId === saved.userId) setAccount(saved);
       return;
     }
     const passwordHash = await hashPassword(password);
@@ -155,6 +219,7 @@ export const SessionProvider: FC<PropsWithChildren> = ({ children }) => {
       value={{
         accounts,
         operatorContext: account ? createOperatorContext(account) : undefined,
+        hostedConnectionState,
         login,
         logout,
         saveAccount,

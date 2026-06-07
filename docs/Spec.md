@@ -155,9 +155,10 @@ reauthentication and confirmation.
 ## Backup And Reset
 
 Keep checksummed ZIP backups with encrypted and warned unencrypted modes.
-Streaming restore validates identity, manifest, checksums, encryption metadata,
-and database startup before replacement. Reset requires SysAdmin password and
-typed confirmation, clears all data plus trial/activation, and returns to setup.
+Restore stages the database and validates identity, manifest, checksums,
+encryption metadata, and SQLite integrity before replacement. Reset requires
+SysAdmin password and typed confirmation, clears all data plus trial/activation,
+and returns to setup. Chunked ZIP streaming remains an explicit hardening item.
 
 ## Automation
 

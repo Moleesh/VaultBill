@@ -32,7 +32,10 @@
   local file URLs, and unsafe SVG content.
 - The default Local API request ceiling is 100 MB.
 - Warn before unusually large HTML, JSON, image, or font imports.
-- Stream backups and restore files; available disk space is the practical limit.
+- Stage SQLite snapshots and restored databases on disk before replacement.
+- The current ZIP layer buffers compressed archives and is capped by the Local
+  API request ceiling for hosted transfers; true chunked ZIP streaming remains
+  tracked in `docs/UnresolvedIssues.md`.
 
 ## Releases
 
