@@ -8,7 +8,6 @@ import type { CredentialStore, DesktopOperatorAccount } from '../CredentialStore
 import type { BuilderStore } from '../BuilderStore.js';
 import { getBuildIdentity } from '../BuildIdentity.js';
 import type { DesktopRecordStore } from '../RecordStore.js';
-import { cancelOutputJob, printHtmlWithElectron } from '../PrintBridge.js';
 import {
   canUseLocalApiAction,
   getLocalApiHost,
@@ -97,6 +96,11 @@ export type LocalApiDataOperations = {
   readonly saveBusinessSettings: (input: unknown) => unknown;
   readonly getIntegrationSettings: () => unknown;
   readonly saveIntegrationSettings: (input: unknown) => unknown;
+  readonly printHtml?: (input: unknown) => Promise<{
+    readonly success: boolean;
+    readonly warning?: string;
+  }>;
+  readonly cancelPrint?: (jobId: string) => boolean;
 };
 
 export class LocalApiServer {
@@ -416,12 +420,16 @@ export class LocalApiServer {
         if (this.#recordStore.getTrialStatus().isExpired) {
           throw new ApiError(403, 'The trial is read-only. Enter a license key to print.');
         }
-        this.#send(response, 200, await printHtmlWithElectron(await this.#readBody(request)));
+        const printHtml = this.#dataOperations?.printHtml;
+        if (!printHtml) throw new ApiError(503, 'Host printing is unavailable.');
+        this.#send(response, 200, await printHtml(await this.#readBody(request)));
         return;
       }
       if (request.method === 'POST' && request.url === '/print/cancel') {
         const input = z.object({ jobId: z.string().min(1) }).parse(await this.#readBody(request));
-        this.#send(response, 200, { cancelled: cancelOutputJob(input.jobId) });
+        const cancelPrint = this.#dataOperations?.cancelPrint;
+        if (!cancelPrint) throw new ApiError(503, 'Host print cancellation is unavailable.');
+        this.#send(response, 200, { cancelled: cancelPrint(input.jobId) });
         return;
       }
       if (request.method === 'POST' && request.url === '/reports/query') {

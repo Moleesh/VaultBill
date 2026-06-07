@@ -493,6 +493,8 @@ void app
           if (!settingsStore) throw new Error('Settings are not ready.');
           return settingsStore.saveIntegrations(input);
         },
+        printHtml: (input) => printHtmlWithElectron(input),
+        cancelPrint: (jobId) => cancelOutputJob(jobId),
       },
     );
     await localApiServer.start();
