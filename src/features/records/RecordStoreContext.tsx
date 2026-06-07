@@ -73,8 +73,9 @@ type RecordStoreContextValue = {
   readonly resetDemoData: () => void;
 };
 
-const browserStorageKey = 'vaultbill.records.v23';
-const sequenceStorageKey = 'vaultbill.sequence.v23';
+const browserStorageKey = 'vaultbill.records.v24';
+const legacyBrowserStorageKey = 'vaultbill.records.v23';
+const sequenceStorageKey = 'vaultbill.sequence.v24';
 const recordStoreEventName = 'vaultbill-record-store-change';
 const RecordStoreContext = createContext<RecordStoreContextValue | undefined>(undefined);
 const requestedLocalApiBaseUrl = import.meta.env.VITE_LOCAL_API_URL?.trim();
@@ -118,7 +119,9 @@ const sortLatestFirst = (records: readonly AppRecord[]): readonly AppRecord[] =>
   [...records].sort((left, right) => right.updatedAt.localeCompare(left.updatedAt));
 
 const readBrowserRecords = (seedDemo: boolean): readonly AppRecord[] => {
-  const rawRecords = window.localStorage.getItem(browserStorageKey);
+  const rawRecords =
+    window.localStorage.getItem(browserStorageKey) ??
+    window.localStorage.getItem(legacyBrowserStorageKey);
 
   if (!rawRecords) {
     const initialRecords = seedDemo ? demoSeedRecords : [];
@@ -365,7 +368,8 @@ const requestLocalApi = async (
     },
     ...(body === undefined ? {} : { body: JSON.stringify(body) }),
   });
-  const payload = (await response.json()) as unknown;
+  const responseBody = await response.text();
+  const payload = responseBody.length > 0 ? (JSON.parse(responseBody) as unknown) : undefined;
   if (!response.ok) {
     throw new Error(
       typeof payload === 'object' &&

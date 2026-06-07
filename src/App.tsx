@@ -64,10 +64,7 @@ const AppRoutes: FC = () => {
               )
             }
           >
-            <Route
-              index
-              element={<Navigate replace to={capabilities.isDemoMode ? 'records' : 'dashboard'} />}
-            />
+            <Route index element={<Navigate replace to="dashboard" />} />
             <Route
               path="dashboard"
               element={
@@ -76,10 +73,38 @@ const AppRoutes: FC = () => {
                 </ProtectedRoute>
               }
             />
-            <Route path="records" element={<RecordsPage />} />
-            <Route path="records/new" element={<RecordsPage />} />
-            <Route path="records/:recordId" element={<RecordsPage />} />
-            <Route path="reports" element={<ReportsPage />} />
+            <Route
+              path="records"
+              element={
+                <ProtectedRoute roles={['Admin', 'User']}>
+                  <RecordsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="records/new"
+              element={
+                <ProtectedRoute roles={['Admin', 'User']}>
+                  <RecordsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="records/:recordId"
+              element={
+                <ProtectedRoute roles={['Admin', 'User']}>
+                  <RecordsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="reports"
+              element={
+                <ProtectedRoute roles={['Admin', 'User']}>
+                  <ReportsPage />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="builder"
               element={

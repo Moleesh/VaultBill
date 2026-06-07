@@ -42,7 +42,7 @@ const renderPage = (children: ReactNode, capabilities = webCapabilities) =>
     </MemoryRouter>,
   );
 
-describe('v23 product UI', () => {
+describe('v24 product UI', () => {
   beforeEach(() => {
     document.body.innerHTML = '<div id="portal-root"></div>';
     window.localStorage.clear();
@@ -74,7 +74,9 @@ describe('v23 product UI', () => {
     expect(await screen.findByText('Aster Works')).toBeVisible();
     fireEvent.click(screen.getByRole('button', { name: /5 Print/u }));
     expect(screen.getByRole('heading', { name: 'Print' })).toBeVisible();
-    expect(screen.getByText(/Remote assets and scripts are blocked/u)).toBeVisible();
+    expect(
+      screen.getByText(/Unsafe scripts, frames, forms, and remote URLs are removed/u),
+    ).toBeVisible();
   });
 
   it('shows capability-aware settings and help', () => {
@@ -112,9 +114,9 @@ describe('v23 product UI', () => {
       fullWebCapabilities,
     );
 
-    fireEvent.click(screen.getByRole('button', { name: 'Backup' }));
-    expect(screen.getByText(/Backup creation is available in the desktop app/u)).toBeVisible();
-    expect(screen.queryByRole('button', { name: 'Branding' })).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Accounts and access' })).toBeVisible();
+    expect(screen.queryByRole('button', { name: 'Create backup' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Business' })).not.toBeInTheDocument();
     fireEvent.change(screen.getByPlaceholderText('Search actions and topics'), {
       target: { value: 'PDF' },
     });

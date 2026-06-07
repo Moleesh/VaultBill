@@ -1,102 +1,114 @@
 /* eslint-disable max-lines */
+import { KeyRound, Plus, ShieldCheck, Trash2, UserRoundCog } from 'lucide-react';
 import { useState } from 'react';
 import type { FC, SyntheticEvent } from 'react';
 
 import { useCapabilities } from '../../capability/CapabilityContext';
-import { HorizontalProgress } from '../../components/HorizontalProgress/HorizontalProgress';
 import { SearchableDropdown } from '../../components/SearchableDropdown/SearchableDropdown';
 import { themeOptions } from '../../constants/PhaseOneSeed';
+import type { Role } from '../../types/AppTypes';
 import { useSession } from '../auth/SessionContext';
 
-type SettingsSection =
-  | 'Business Profile'
-  | 'Branding'
-  | 'Operators'
-  | 'Printer & PDF'
-  | 'Backup'
-  | 'Security'
-  | 'Network'
-  | 'Themes'
-  | 'Help';
-
-const sectionsByRole: Record<'Admin' | 'SysAdmin', readonly SettingsSection[]> = {
-  Admin: [
-    'Business Profile',
-    'Operators',
-    'Printer & PDF',
-    'Backup',
-    'Security',
-    'Network',
-    'Themes',
-    'Help',
-  ],
-  SysAdmin: ['Business Profile', 'Branding', 'Security', 'Themes', 'Help'],
+const readProfile = () => {
+  try {
+    return JSON.parse(window.localStorage.getItem('vaultbill.business-profile') ?? '{}') as {
+      companyName?: string;
+      address?: string;
+    };
+  } catch {
+    return {};
+  }
 };
-
-const readText = (key: string, fallback = ''): string =>
-  window.localStorage.getItem(key) ?? fallback;
 
 export const SettingsPage: FC = () => {
   const capabilities = useCapabilities();
-  const { accounts, operatorContext } = useSession();
-  const role = operatorContext?.role === 'SysAdmin' ? 'SysAdmin' : 'Admin';
-  const visibleSections = sectionsByRole[role];
-  const [activeSection, setActiveSection] = useState<SettingsSection>(visibleSections[0] ?? 'Help');
-  const [companyName, setCompanyName] = useState(() =>
-    readText('vaultbill.company-name', 'My Business'),
+  const { accounts, archiveAccount, operatorContext, resetPassword, saveAccount } = useSession();
+  const isSysAdmin = operatorContext?.role === 'SysAdmin';
+  const profile = readProfile();
+  const [companyName, setCompanyName] = useState(profile.companyName ?? '');
+  const [address, setAddress] = useState(profile.address ?? '');
+  const [gstin, setGstin] = useState(
+    () => window.localStorage.getItem('vaultbill.company-gstin') ?? '',
   );
-  const [tagline, setTagline] = useState(() => readText('vaultbill.brand-tagline'));
-  const [accent, setAccent] = useState(() => readText('vaultbill.brand-accent', '#087f6f'));
-  const [outputTarget, setOutputTarget] = useState(() =>
-    readText('vaultbill.output-target', 'PreviewOnly'),
+  const [theme, setTheme] = useState(
+    () => window.localStorage.getItem('vaultbill.theme') ?? 'teal-flow',
   );
-  const [theme, setTheme] = useState(() => readText('vaultbill.theme', 'teal-flow'));
-  const [backupEncrypted, setBackupEncrypted] = useState(
-    () => readText('vaultbill.backup.encrypted', 'true') === 'true',
+  const [outputTarget, setOutputTarget] = useState(
+    () => window.localStorage.getItem('vaultbill.output-target') ?? 'PreviewOnly',
   );
   const [lanEnabled, setLanEnabled] = useState(
-    () => readText('vaultbill.lan.enabled', 'false') === 'true',
+    () => window.localStorage.getItem('vaultbill.lan.enabled') === 'true',
   );
-  const [lanPasswordRequired, setLanPasswordRequired] = useState(
-    () => readText('vaultbill.lan.password-required', 'true') === 'true',
-  );
-  const [sysAdminPassword, setSysAdminPassword] = useState('');
-  const [deleteConfirmation, setDeleteConfirmation] = useState('');
   const [message, setMessage] = useState('');
+  const [newUsername, setNewUsername] = useState('');
+  const [newDisplayName, setNewDisplayName] = useState('');
+  const [newRole, setNewRole] = useState<Role>('User');
+  const [passwordUserId, setPasswordUserId] = useState(operatorContext?.account.userId ?? '');
+  const [newPassword, setNewPassword] = useState('');
 
-  const saveSection = (event: SyntheticEvent<HTMLFormElement>) => {
+  if (!operatorContext) return null;
+
+  const manageableAccounts = accounts.filter((account) =>
+    isSysAdmin ? account.role !== 'SysAdmin' : account.role === 'User',
+  );
+
+  const saveBusiness = (event: SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (activeSection === 'Business Profile') {
-      if (!companyName.trim()) {
-        setMessage('Business name is required.');
-        return;
-      }
-      window.localStorage.setItem('vaultbill.company-name', companyName.trim());
+    if (!companyName.trim() || !address.trim()) {
+      setMessage('Business name and address are required.');
+      return;
     }
-    if (activeSection === 'Branding') {
-      window.localStorage.setItem('vaultbill.brand-tagline', tagline.trim());
-      window.localStorage.setItem('vaultbill.brand-accent', accent);
+    window.localStorage.setItem(
+      'vaultbill.business-profile',
+      JSON.stringify({ companyName: companyName.trim(), address: address.trim() }),
+    );
+    window.localStorage.setItem('vaultbill.company-gstin', gstin.trim());
+    window.localStorage.setItem('vaultbill.theme', theme);
+    window.localStorage.setItem('vaultbill.output-target', outputTarget);
+    document.documentElement.dataset.theme = theme;
+    setMessage('Business settings saved.');
+  };
+
+  const createOperator = async () => {
+    const username = newUsername.trim().toLocaleLowerCase();
+    const displayName = newDisplayName.trim();
+    if (!username || !displayName) {
+      setMessage('Username and display name are required.');
+      return;
     }
-    if (activeSection === 'Printer & PDF') {
-      window.localStorage.setItem('vaultbill.output-target', outputTarget);
+    if (accounts.some((account) => account.username.toLocaleLowerCase() === username)) {
+      setMessage('That username is already in use.');
+      return;
     }
-    if (activeSection === 'Backup') {
-      window.localStorage.setItem('vaultbill.backup.encrypted', String(backupEncrypted));
-    }
-    if (activeSection === 'Network') {
-      window.localStorage.setItem('vaultbill.lan.enabled', String(lanEnabled));
-      window.localStorage.setItem('vaultbill.lan.password-required', String(lanPasswordRequired));
-      void window.vaultBillDesktop?.configureLocalApi({
-        lanEnabled,
-        passwordRequired: lanPasswordRequired,
-        port: 4317,
+    try {
+      await saveAccount({
+        userId: crypto.randomUUID(),
+        username,
+        displayName,
+        role: isSysAdmin ? newRole : 'User',
+        isActive: true,
       });
+      setNewUsername('');
+      setNewDisplayName('');
+      setNewRole('User');
+      setMessage('Operator created. Set a password before enabling LAN login.');
+    } catch (reason) {
+      setMessage(reason instanceof Error ? reason.message : 'Operator could not be created.');
     }
-    if (activeSection === 'Themes') {
-      window.localStorage.setItem('vaultbill.theme', theme);
-      document.documentElement.dataset.theme = theme;
-    }
-    setMessage(`${activeSection} settings saved.`);
+  };
+
+  const changePassword = () => {
+    void resetPassword(passwordUserId, newPassword)
+      .then(() => {
+        setNewPassword('');
+        setMessage('Password updated.');
+        if (passwordUserId === 'sysadmin_1') {
+          window.localStorage.setItem('vaultbill.default-credentials-active', 'false');
+        }
+      })
+      .catch((reason: unknown) => {
+        setMessage(reason instanceof Error ? reason.message : 'Password could not be updated.');
+      });
   };
 
   return (
@@ -104,104 +116,62 @@ export const SettingsPage: FC = () => {
       <div className="operational-header">
         <div>
           <p className="eyebrow">Settings</p>
-          <h1>Application settings</h1>
-          <p>Only controls available to the current role and platform are shown.</p>
+          <h1>{isSysAdmin ? 'Administration settings' : 'Operator settings'}</h1>
+          <p>
+            {isSysAdmin
+              ? 'Business, security, and integrations in one focused workspace.'
+              : 'Manage User accounts and your own password.'}
+          </p>
         </div>
       </div>
-      <HorizontalProgress className="page-tabs settings-tabs" label="Settings sections">
-        {visibleSections.map((section) => (
-          <button
-            aria-pressed={activeSection === section}
-            key={section}
-            onClick={() => {
-              setActiveSection(section);
-              setMessage('');
-            }}
-            type="button"
-          >
-            {section}
-          </button>
-        ))}
-      </HorizontalProgress>
-      <form className="settings-panel" onSubmit={saveSection}>
-        <header>
-          <p className="eyebrow">{activeSection}</p>
-          <h2>{activeSection}</h2>
-          <p className="field-note">Configure this area for the local VaultBill installation.</p>
-        </header>
+      <nav className="settings-jump-links" aria-label="Settings sections">
+        {isSysAdmin ? <a href="#business">Business</a> : null}
+        <a href="#security">Security</a>
+        {isSysAdmin ? <a href="#integrations">Integrations</a> : null}
+      </nav>
 
-        {activeSection === 'Business Profile' ? (
+      {isSysAdmin ? (
+        <form className="settings-section" id="business" onSubmit={saveBusiness}>
+          <header>
+            <p className="eyebrow">Business</p>
+            <h2>Business operations</h2>
+          </header>
           <div className="form-grid">
             <label>
               <span>Business name</span>
               <input
+                value={companyName}
                 onChange={(event) => {
                   setCompanyName(event.currentTarget.value);
                 }}
-                value={companyName}
               />
             </label>
             <label>
-              <span>Product</span>
-              <input readOnly value="VaultBill" />
-              <small>The product name is fixed and cannot be rebranded.</small>
-            </label>
-          </div>
-        ) : null}
-
-        {activeSection === 'Branding' ? (
-          <div className="form-grid">
-            <label>
-              <span>Business tagline</span>
+              <span>GSTIN</span>
               <input
+                value={gstin}
                 onChange={(event) => {
-                  setTagline(event.currentTarget.value);
+                  setGstin(event.currentTarget.value);
                 }}
-                value={tagline}
               />
             </label>
-            <label>
-              <span>Accent color</span>
-              <input
+            <label className="span-2">
+              <span>Business address</span>
+              <textarea
+                value={address}
                 onChange={(event) => {
-                  setAccent(event.currentTarget.value);
+                  setAddress(event.currentTarget.value);
                 }}
-                type="color"
-                value={accent}
               />
             </label>
-          </div>
-        ) : null}
-
-        {activeSection === 'Operators' ? (
-          <div className="product-table-wrap">
-            <table className="product-table">
-              <thead>
-                <tr>
-                  <th>Operator</th>
-                  <th>Username</th>
-                  <th>Role</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {accounts.map((account) => (
-                  <tr key={account.userId}>
-                    <td>{account.displayName}</td>
-                    <td>{account.username}</td>
-                    <td>{account.role}</td>
-                    <td>{account.isActive ? 'Active' : 'Inactive'}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : null}
-
-        {activeSection === 'Printer & PDF' ? (
-          <div className="form-grid">
             <SearchableDropdown
-              label="Output profile"
+              label="Theme"
+              onChange={setTheme}
+              options={themeOptions.map((option) => ({ value: option.id, label: option.label }))}
+              value={theme}
+            />
+            <SearchableDropdown
+              label="Printer / PDF default"
               onChange={setOutputTarget}
               options={[
                 { value: 'PreviewOnly', label: 'Preview, then print' },
@@ -212,147 +182,206 @@ export const SettingsPage: FC = () => {
               ]}
               value={outputTarget}
             />
-            {!capabilities.canSelectExactPrinter ? (
-              <div className="feedback-info">
-                Exact printer selection is available only in the desktop application.
-              </div>
-            ) : null}
+          </div>
+          <div className="settings-inline-actions">
+            <button type="button">Create backup</button>
+            <button type="button">Restore backup</button>
+            <button className="button-primary" type="submit">
+              Save business
+            </button>
+          </div>
+        </form>
+      ) : null}
+
+      <section className="settings-section" id="security">
+        <header>
+          <p className="eyebrow">Security</p>
+          <h2>Accounts and access</h2>
+        </header>
+        {window.localStorage.getItem('vaultbill.default-credentials-active') !== 'false' &&
+        isSysAdmin ? (
+          <div className="feedback-warning">
+            Default credentials are still active. Replace the System Administrator and backup
+            passwords.
           </div>
         ) : null}
-
-        {activeSection === 'Backup' ? (
-          <div className="form-grid">
-            <label className="checkbox-field">
-              <input
-                checked={backupEncrypted}
-                onChange={(event) => {
-                  setBackupEncrypted(event.currentTarget.checked);
-                }}
-                type="checkbox"
-              />
-              <span>Encrypt backups by default</span>
-            </label>
-            {!capabilities.canBackup ? (
-              <div className="feedback-info">Backup creation is available in the desktop app.</div>
-            ) : null}
-            {!backupEncrypted ? (
-              <div className="feedback-warning">
-                Unencrypted backups may contain business data and stored integration secrets.
-              </div>
-            ) : null}
+        <div className="settings-subsection">
+          <div className="section-heading">
+            <div>
+              <h3>Operators</h3>
+              <p>Create and maintain the accounts available at login.</p>
+            </div>
+            <UserRoundCog aria-hidden="true" />
           </div>
-        ) : null}
-
-        {activeSection === 'Security' ? (
-          <div className="form-grid">
+          <div className="operator-create">
             <label>
-              <span>SysAdmin password</span>
+              <span>Username</span>
               <input
-                autoComplete="current-password"
+                value={newUsername}
                 onChange={(event) => {
-                  setSysAdminPassword(event.currentTarget.value);
+                  setNewUsername(event.currentTarget.value);
                 }}
-                type="password"
-                value={sysAdminPassword}
               />
             </label>
             <label>
-              <span>Permanent delete confirmation</span>
+              <span>Display name</span>
               <input
+                value={newDisplayName}
                 onChange={(event) => {
-                  setDeleteConfirmation(event.currentTarget.value);
+                  setNewDisplayName(event.currentTarget.value);
                 }}
-                placeholder="Type DELETE"
-                value={deleteConfirmation}
               />
             </label>
+            {isSysAdmin ? (
+              <SearchableDropdown
+                label="Role"
+                onChange={(value) => {
+                  setNewRole(value as Role);
+                }}
+                options={[
+                  { value: 'Admin', label: 'Admin' },
+                  { value: 'User', label: 'User' },
+                ]}
+                value={newRole}
+              />
+            ) : null}
             <button
-              className="button-danger"
-              disabled={role !== 'SysAdmin' || !sysAdminPassword || deleteConfirmation !== 'DELETE'}
+              className="button-primary"
               onClick={() => {
-                setMessage('Permanent delete authorization verified. No item was selected.');
+                void createOperator();
               }}
               type="button"
             >
-              Authorize permanent delete
+              <Plus aria-hidden="true" size={18} /> Add operator
             </button>
           </div>
-        ) : null}
-
-        {activeSection === 'Network' ? (
-          <div className="form-grid">
+          <div className="operator-list">
+            {manageableAccounts.map((account) => (
+              <article key={account.userId}>
+                <div>
+                  <strong>{account.displayName}</strong>
+                  <small>
+                    {account.username} · {account.role}
+                  </small>
+                </div>
+                <label className="checkbox-field">
+                  <input
+                    checked={account.isActive}
+                    onChange={(event) => {
+                      void saveAccount({
+                        ...account,
+                        isActive: event.currentTarget.checked,
+                      });
+                    }}
+                    type="checkbox"
+                  />
+                  <span>Active</span>
+                </label>
+                <button
+                  aria-label={`Remove ${account.displayName}`}
+                  onClick={() => {
+                    void archiveAccount(account.userId);
+                  }}
+                  type="button"
+                >
+                  <Trash2 aria-hidden="true" size={18} />
+                </button>
+              </article>
+            ))}
+          </div>
+        </div>
+        <div className="settings-subsection">
+          <div className="section-heading">
+            <div>
+              <h3>Password</h3>
+              <p>Set a final password for an account you may manage.</p>
+            </div>
+            <KeyRound aria-hidden="true" />
+          </div>
+          <div className="operator-create">
+            <SearchableDropdown
+              label="Account"
+              onChange={setPasswordUserId}
+              options={[
+                {
+                  value: operatorContext.account.userId,
+                  label: `${operatorContext.account.displayName} (you)`,
+                },
+                ...manageableAccounts.map((account) => ({
+                  value: account.userId,
+                  label: account.displayName,
+                })),
+              ]}
+              value={passwordUserId}
+            />
+            <label>
+              <span>New password</span>
+              <input
+                type="password"
+                value={newPassword}
+                onChange={(event) => {
+                  setNewPassword(event.currentTarget.value);
+                }}
+              />
+            </label>
+            <button onClick={changePassword} type="button">
+              Update password
+            </button>
+          </div>
+        </div>
+        {isSysAdmin ? (
+          <div className="settings-subsection">
+            <div className="section-heading">
+              <div>
+                <h3>Hosted web access</h3>
+                <p>Serve the full role-authorized application from this desktop.</p>
+              </div>
+              <ShieldCheck aria-hidden="true" />
+            </div>
             <label className="checkbox-field">
               <input
                 checked={lanEnabled}
                 disabled={!capabilities.canLanServer}
                 onChange={(event) => {
-                  setLanEnabled(event.currentTarget.checked);
+                  const enabled = event.currentTarget.checked;
+                  setLanEnabled(enabled);
+                  window.localStorage.setItem('vaultbill.lan.enabled', String(enabled));
+                  void window.vaultBillDesktop?.configureLocalApi({
+                    lanEnabled: enabled,
+                    passwordRequired: true,
+                    port: 4317,
+                  });
                 }}
                 type="checkbox"
               />
-              <span>Enable LAN browser access</span>
+              <span>Allow authenticated devices on this network</span>
             </label>
-            <label className="checkbox-field">
-              <input
-                checked={lanPasswordRequired}
-                onChange={(event) => {
-                  setLanPasswordRequired(event.currentTarget.checked);
-                }}
-                type="checkbox"
-              />
-              <span>Require operator password</span>
-            </label>
-            {!capabilities.canLanServer ? (
-              <div className="feedback-info">LAN hosting is managed by the desktop app.</div>
-            ) : null}
-            {lanEnabled && !lanPasswordRequired ? (
-              <div className="feedback-warning">
-                Passwordless LAN is enabled. Anyone on the configured network may reach the login
-                screen.
-              </div>
-            ) : null}
           </div>
         ) : null}
+      </section>
 
-        {activeSection === 'Themes' ? (
-          <SearchableDropdown
-            label="Theme"
-            onChange={setTheme}
-            options={themeOptions.map((option) => ({ value: option.id, label: option.label }))}
-            value={theme}
-          />
-        ) : null}
-
-        {activeSection === 'Help' ? (
-          <div className="help-sections">
-            <section>
-              <h3>Records</h3>
-              <p>Create drafts, finalize documents, and find reprints.</p>
-            </section>
-            <section>
-              <h3>Safety</h3>
-              <p>LAN is off by default. Encrypt backups before sharing them.</p>
-            </section>
-            <a href="https://github.com/" rel="noreferrer" target="_blank">
-              Open project help
-            </a>
+      {isSysAdmin ? (
+        <section className="settings-section" id="integrations">
+          <header>
+            <p className="eyebrow">Integrations</p>
+            <h2>Connected services</h2>
+          </header>
+          <div className="integration-grid">
+            {['GST and GSP', 'SMS provider', 'Signature capture'].map((name) => (
+              <article key={name}>
+                <h3>{name}</h3>
+                <p>Disabled until provider settings are configured.</p>
+                <button type="button">Configure</button>
+              </article>
+            ))}
           </div>
-        ) : null}
-
-        {message ? (
-          <p className="feedback-info" role="status">
-            {message}
-          </p>
-        ) : null}
-        <footer className="settings-actions">
-          <a href="/help#settings">Help</a>
-          {activeSection !== 'Help' && activeSection !== 'Operators' ? (
-            <button className="button-primary" type="submit">
-              Save {activeSection}
-            </button>
-          ) : null}
-        </footer>
-      </form>
+        </section>
+      ) : null}
+      {message ? (
+        <p className="feedback-info" role="status">
+          {message}
+        </p>
+      ) : null}
     </div>
   );
 };

@@ -273,16 +273,18 @@ export const RecordsPage: FC = () => {
             </button>
           ) : null}
           <div className="record-workspace__form" onKeyDown={handleEntryNavigation} ref={formRef}>
-            <div className="record-status-row">
-              <span className="status-pill">
-                {actionState === 'New' || actionState === 'DraftDirty'
-                  ? 'Unsaved'
-                  : (selectedStoredRecord?.status ?? actionState)}
-              </span>
-              {selectedStoredRecord?.documentNumber ? (
-                <strong>{selectedStoredRecord.documentNumber}</strong>
-              ) : null}
-            </div>
+            {actionState !== 'New' && actionState !== 'DraftDirty' ? (
+              <div className="record-status-row">
+                <span className="status-pill">
+                  {actionState === 'DraftSaved'
+                    ? 'Draft'
+                    : (selectedStoredRecord?.status ?? actionState)}
+                </span>
+                {selectedStoredRecord?.documentNumber ? (
+                  <strong>{selectedStoredRecord.documentNumber}</strong>
+                ) : null}
+              </div>
+            ) : null}
             <div className="form-grid">
               <AppDatePicker
                 disabled={isReadOnly}
@@ -445,6 +447,7 @@ export const RecordsPage: FC = () => {
             showShortcuts={showShortcuts}
             state={activeTab === 'reprint' ? 'Reprint' : actionState}
           />
+          <p className="sr-only" id="record-action-status" role="status" />
         </section>
       )}
 

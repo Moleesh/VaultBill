@@ -7,20 +7,8 @@ export const bootstrapOperatorAccounts: readonly OperatorAccount[] = [
     displayName: 'System Administrator',
     role: 'SysAdmin',
     isActive: true,
-  },
-  {
-    userId: 'admin_1',
-    username: 'admin',
-    displayName: 'Operations Admin',
-    role: 'Admin',
-    isActive: true,
-  },
-  {
-    userId: 'user_1',
-    username: 'operator',
-    displayName: 'Counter Operator',
-    role: 'User',
-    isActive: true,
+    passwordHash: '5e800c5e134b84a0d73bd6f0d0f65b768f8a3afeba9c26ce3fe9b8d58fd027f1',
+    usesDefaultPassword: true,
   },
 ];
 
@@ -39,7 +27,6 @@ export const validateAccountLimits = (
   const activeAccounts = accounts.filter((account) => account.isActive);
   const activeSysAdmins = activeAccounts.filter((account) => account.role === 'SysAdmin');
   const activeAdmins = activeAccounts.filter((account) => account.role === 'Admin');
-  const activeUsers = activeAccounts.filter((account) => account.role === 'User');
   const messages: string[] = [];
 
   if (activeSysAdmins.length > 1) {
@@ -48,10 +35,6 @@ export const validateAccountLimits = (
 
   if (activeAdmins.length > 1) {
     messages.push('Only one active Admin account is allowed.');
-  }
-
-  if (activeUsers.length > 5) {
-    messages.push('Only five active User accounts are allowed.');
   }
 
   return {

@@ -52,14 +52,33 @@ jobs:
       - name: Demo-safe tests
         run: npm run test:ci
 
+      - name: Dependency audit
+        run: npm run audit:security
+
       - name: Secret scan
         run: npm run scan:secrets
+
+      - name: Security tests
+        run: npm run test:security
+
+      - name: Security configuration
+        run: npm run security:check
 
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
 
       - name: Browser flows
         run: npm run test:e2e
+
+      - name: Upload browser failure evidence
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: demo-playwright-failure-${{ github.run_id }}
+          path: |
+            playwright-report/**
+            test-results/**
+          if-no-files-found: ignore
 
       - name: Build web
         run: npm run build:web

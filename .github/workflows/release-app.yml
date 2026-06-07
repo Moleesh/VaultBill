@@ -1,10 +1,18 @@
 name: Release App
 
 on:
-  workflow_dispatch:
   push:
+    branches: [main]
     tags:
       - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-app-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   verify:
@@ -25,6 +33,16 @@ jobs:
       - name: Install
         run: npm ci
 
+      - name: Verify tag matches package version
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: bash
+        run: |
+          package_tag="v$(node -p "require('./package.json').version")"
+          test "${GITHUB_REF_NAME}" = "${package_tag}" || {
+            echo "Tag ${GITHUB_REF_NAME} does not match package version ${package_tag}."
+            exit 1
+          }
+
       - name: Format check
         run: npm run format:check
 
@@ -36,6 +54,9 @@ jobs:
 
       - name: Unit tests
         run: npm run test:ci
+
+      - name: Coverage
+        run: npm run coverage:ci
 
       - name: Dependency audit
         run: npm run audit:security
@@ -49,35 +70,34 @@ jobs:
       - name: Security configuration
         run: npm run security:check
 
+      - name: First-run database smoke
+        run: npm run smoke:first-run-db:ci
+
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
 
       - name: Browser flows
         run: npm run test:e2e
 
-      - name: Build web
-        run: npm run build:web
-
-      - name: Rebuild Electron native modules
-        run: npm run rebuild:native
-
-      - name: Build desktop shell
+      - name: Build web and Electron
         run: npm run build:desktop
 
-      - name: Package desktop directory
-        run: npm run package:desktop
+      - name: Upload browser failure evidence
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-failure-${{ github.run_id }}
+          path: |
+            playwright-report/**
+            test-results/**
+          if-no-files-found: ignore
 
-      - name: Installer smoke test
-        run: npm run smoke:installer
-
-  package:
+  package-windows:
     runs-on: windows-latest
     needs: verify
-    permissions:
-      contents: write
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
-      GH_TOKEN: ${{ github.token }}
+      VAULTBILL_LICENSE_KEY: ${{ secrets.VAULTBILL_LICENSE_KEY }}
 
     steps:
       - name: Checkout
@@ -92,71 +112,116 @@ jobs:
       - name: Install
         run: npm ci
 
-      - name: Build web
-        run: npm run build:web
+      - name: Build desktop
+        run: npm run build:desktop
 
       - name: Rebuild Electron native modules
         run: npm run rebuild:native
 
-      - name: Build Electron shell
-        run: npm run build:electron
+      - name: Package Windows installer
+        run: npx electron-builder --config electron-builder.config.cjs --win nsis --x64 --publish never
 
-      - name: Package desktop installer
-        run: npm run package:desktop:installer
-
-      - name: Installer smoke test
+      - name: Installer smoke
         run: npm run smoke:installer:required
 
-      - name: First-run DB startup patch smoke
-        run: npm run smoke:first-run-db:ci
-
-      - name: Generate release notes
-        run: npm run release:notes
-
-      - name: Generate SHA-256 checksums
-        run: npm run release:checksums
-
-      - name: Record signing status
-        shell: pwsh
-        run: |
-          if ($env:CSC_LINK) {
-            "Signing credentials configured." | Add-Content artifacts\release-notes.md
-          } else {
-            "Unsigned/internal Windows build. Not a public production release." | Add-Content artifacts\release-notes.md
-          }
-
-      - name: Upload desktop artifacts
+      - name: Upload Windows artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: vaultbill-desktop-release
+          name: vaultbill-windows-${{ github.sha }}
           path: |
-            release/**
-            artifacts/release-notes.md
+            release/*.exe
+            release/*.blockmap
+            release/latest*.yml
+          if-no-files-found: error
 
-      - name: Publish GitHub Release
-        shell: pwsh
+  package-linux:
+    runs-on: ubuntu-latest
+    needs: verify
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+      VAULTBILL_LICENSE_KEY: ${{ secrets.VAULTBILL_LICENSE_KEY }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Build desktop
+        run: npm run build:desktop
+
+      - name: Rebuild Electron native modules
+        run: npm run rebuild:native
+
+      - name: Package Linux AppImage
+        run: npx electron-builder --config electron-builder.config.cjs --linux AppImage --x64 --publish never
+
+      - name: Package smoke
+        run: npm run smoke:installer:required
+
+      - name: Upload Linux artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: vaultbill-linux-${{ github.sha }}
+          path: |
+            release/*.AppImage
+            release/latest*.yml
+          if-no-files-found: error
+
+  publish:
+    if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    needs: [package-windows, package-linux]
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Download release artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: vaultbill-*-${{ github.sha }}
+          path: release
+          merge-multiple: true
+
+      - name: Generate release notes and checksums
         run: |
-          $package = Get-Content package.json -Raw | ConvertFrom-Json
-          $releaseTag = "v$($package.version)"
-          $releaseTitle = "VaultBill $releaseTag"
-          $releaseNotesPath = Join-Path $PWD 'artifacts\release-notes.md'
-          $releaseFiles = @(
-            Get-ChildItem -Path release -File |
-              Sort-Object Name |
-              Select-Object -ExpandProperty FullName
-          )
+          npm run release:notes
+          npm run release:checksums
+          printf '\n## Signing status\n\n- Windows and Linux artifacts are unsigned unless signing credentials were configured by the repository owner.\n' >> artifacts/release-notes.md
 
-          if ($releaseFiles.Count -eq 0) {
-            throw 'No release files were found in release/.'
-          }
-
-          gh release view $releaseTag *> $null
-
-          if ($LASTEXITCODE -eq 0) {
-            Write-Host "Deleting existing GitHub release and tag for $releaseTag."
-            gh release delete $releaseTag -y --cleanup-tag
-          } else {
-            Write-Host "No existing GitHub release found for $releaseTag."
-          }
-
-          gh release create $releaseTag @releaseFiles --title $releaseTitle --notes-file $releaseNotesPath --target $env:GITHUB_SHA
+      - name: Replace same-version release
+        shell: bash
+        run: |
+          release_tag="v$(node -p "require('./package.json').version")"
+          if [[ "${GITHUB_REF_TYPE}" == "tag" && "${GITHUB_REF_NAME}" != "${release_tag}" ]]; then
+            echo "Tag ${GITHUB_REF_NAME} does not match ${release_tag}."
+            exit 1
+          fi
+          if gh release view "${release_tag}" >/dev/null 2>&1; then
+            gh release delete "${release_tag}" --yes --cleanup-tag
+          elif git ls-remote --exit-code --tags origin "refs/tags/${release_tag}" >/dev/null 2>&1; then
+            git push origin ":refs/tags/${release_tag}"
+          fi
+          mapfile -t release_files < <(find release -maxdepth 1 -type f -print | sort)
+          test "${#release_files[@]}" -gt 0
+          gh release create "${release_tag}" "${release_files[@]}" \
+            --title "VaultBill ${release_tag}" \
+            --notes-file artifacts/release-notes.md \
+            --target "${GITHUB_SHA}"

@@ -15,6 +15,8 @@ export const LoginPage: FC = () => {
   const { accounts, login, operatorContext } = useSession();
   const navigate = useNavigate();
   const [selectedAccountId, setSelectedAccountId] = useState(accounts[0]?.userId ?? '');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const accountOptions = accounts.map((account) => ({
     value: account.userId,
@@ -22,9 +24,10 @@ export const LoginPage: FC = () => {
     description: account.role,
     keywords: [account.username, account.role],
   }));
+  const selectedAccount = accounts.find((account) => account.userId === selectedAccountId);
 
   if (operatorContext) {
-    return <Navigate replace to={capabilities.isDemoMode ? '/app/records' : '/app/dashboard'} />;
+    return <Navigate replace to="/app/dashboard" />;
   }
 
   return (
@@ -53,6 +56,21 @@ export const LoginPage: FC = () => {
               value={selectedAccountId}
             />
           )}
+          {!capabilities.isDemoMode &&
+          (selectedAccount?.passwordHash || selectedAccount?.passwordConfigured) ? (
+            <label className="login-password">
+              <span>Password</span>
+              <input
+                autoComplete="current-password"
+                onChange={(event) => {
+                  setPassword(event.currentTarget.value);
+                  setError('');
+                }}
+                type="password"
+                value={password}
+              />
+            </label>
+          ) : null}
           <p className="field-note">
             A PIN or password appears here only when your administrator enables it.
           </p>
@@ -60,14 +78,25 @@ export const LoginPage: FC = () => {
             className="button-primary"
             disabled={!selectedAccountId}
             onClick={() => {
-              login(selectedAccountId);
-              void navigate(capabilities.isDemoMode ? '/app/records' : '/app/dashboard');
+              void login(selectedAccountId, password)
+                .then(() => {
+                  void navigate('/app/dashboard');
+                })
+                .catch((reason: unknown) => {
+                  setError(reason instanceof Error ? reason.message : 'Login failed.');
+                });
             }}
             type="button"
           >
             {capabilities.isDemoMode ? 'Start demo' : 'Log in'}
           </button>
+          {error ? (
+            <p className="feedback-error" role="alert">
+              {error}
+            </p>
+          ) : null}
           <button
+            className="login-help-link"
             onClick={() => {
               setIsHelpOpen(true);
             }}

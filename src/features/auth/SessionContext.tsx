@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import type { FC, PropsWithChildren } from 'react';
 
 import { useCapabilities } from '../../capability/CapabilityContext';
@@ -8,19 +8,23 @@ import type { OperatorAccount, OperatorContext } from './AccountTypes';
 type SessionContextValue = {
   readonly accounts: readonly OperatorAccount[];
   readonly operatorContext: OperatorContext | undefined;
-  readonly login: (userId: string) => void;
+  readonly login: (userId: string, password?: string) => Promise<void>;
   readonly logout: () => void;
+  readonly saveAccount: (account: OperatorAccount) => Promise<void>;
+  readonly archiveAccount: (userId: string) => Promise<void>;
+  readonly resetPassword: (userId: string, password: string) => Promise<void>;
 };
 
 const sessionStorageKey = 'vaultbill.operator';
 const accountStorageKey = 'vaultbill.accounts';
 const SessionContext = createContext<SessionContextValue | undefined>(undefined);
+const defaultPasswordHash = '5e800c5e134b84a0d73bd6f0d0f65b768f8a3afeba9c26ce3fe9b8d58fd027f1';
 
 const demoAccount: OperatorAccount = {
   userId: 'demo_user',
   username: 'demo',
   displayName: 'Demo User',
-  role: 'User',
+  role: 'Admin',
   isActive: true,
 };
 
@@ -41,18 +45,46 @@ const readStoredAccounts = (): readonly OperatorAccount[] => {
 
 export const SessionProvider: FC<PropsWithChildren> = ({ children }) => {
   const capabilities = useCapabilities();
-  const accounts = capabilities.isDemoMode ? [demoAccount] : readStoredAccounts();
+  const [accounts, setAccounts] = useState<readonly OperatorAccount[]>(() =>
+    capabilities.isDemoMode ? [demoAccount] : readStoredAccounts(),
+  );
   const findAccount = (userId: string | null): OperatorAccount | undefined =>
     accounts.find((candidate) => candidate.userId === userId && candidate.isActive);
   const [account, setAccount] = useState<OperatorAccount | undefined>(() =>
     findAccount(window.localStorage.getItem(sessionStorageKey)),
   );
 
-  const login = (userId: string) => {
-    const selectedAccount = findAccount(userId);
+  useEffect(() => {
+    const bridge = window.vaultBillDesktop;
+    if (!bridge || capabilities.isDemoMode) return;
+    void bridge.listAccounts().then((desktopAccounts) => {
+      setAccounts(desktopAccounts);
+      const currentId = window.localStorage.getItem(sessionStorageKey);
+      setAccount(
+        desktopAccounts.find((candidate) => candidate.userId === currentId && candidate.isActive),
+      );
+    });
+  }, [capabilities.isDemoMode]);
+
+  const persistAccounts = (nextAccounts: readonly OperatorAccount[]) => {
+    if (!capabilities.isDemoMode && !window.vaultBillDesktop)
+      window.localStorage.setItem(accountStorageKey, JSON.stringify(nextAccounts));
+    setAccounts(nextAccounts);
+  };
+
+  const login = async (userId: string, password = '') => {
+    let selectedAccount = findAccount(userId);
 
     if (!selectedAccount) {
       throw new Error('The selected operator account is unavailable.');
+    }
+    if (window.vaultBillDesktop && !capabilities.isDemoMode) {
+      selectedAccount = await window.vaultBillDesktop.loginAccount(userId, password);
+    } else if (selectedAccount.passwordHash) {
+      const suppliedHash = await hashPassword(password);
+      if (suppliedHash !== selectedAccount.passwordHash) {
+        throw new Error('The password is incorrect.');
+      }
     }
 
     window.localStorage.setItem(sessionStorageKey, selectedAccount.userId);
@@ -64,6 +96,60 @@ export const SessionProvider: FC<PropsWithChildren> = ({ children }) => {
     setAccount(undefined);
   };
 
+  const saveAccount = async (nextAccount: OperatorAccount) => {
+    const existing = accounts.find((candidate) => candidate.userId === nextAccount.userId);
+    const nextAccounts = existing
+      ? accounts.map((candidate) =>
+          candidate.userId === nextAccount.userId ? nextAccount : candidate,
+        )
+      : [...accounts, nextAccount];
+    const validation = validateManagedAccounts(nextAccounts);
+    if (validation) throw new Error(validation);
+    if (window.vaultBillDesktop && !capabilities.isDemoMode) {
+      const saved = await window.vaultBillDesktop.saveAccount(nextAccount);
+      persistAccounts(
+        nextAccounts.map((candidate) => (candidate.userId === saved.userId ? saved : candidate)),
+      );
+      return;
+    }
+    persistAccounts(nextAccounts);
+  };
+
+  const archiveAccount = async (userId: string) => {
+    if (userId === 'sysadmin_1') throw new Error('The System Administrator cannot be removed.');
+    if (window.vaultBillDesktop && !capabilities.isDemoMode) {
+      await window.vaultBillDesktop.archiveAccount(userId);
+    }
+    persistAccounts(
+      accounts.map((candidate) =>
+        candidate.userId === userId ? { ...candidate, isActive: false } : candidate,
+      ),
+    );
+  };
+
+  const resetPassword = async (userId: string, password: string) => {
+    if (password.length < 8) throw new Error('Passwords must contain at least 8 characters.');
+    if (window.vaultBillDesktop && !capabilities.isDemoMode) {
+      const saved = await window.vaultBillDesktop.resetPassword(userId, password);
+      persistAccounts(
+        accounts.map((candidate) => (candidate.userId === saved.userId ? saved : candidate)),
+      );
+      return;
+    }
+    const passwordHash = await hashPassword(password);
+    persistAccounts(
+      accounts.map((candidate) =>
+        candidate.userId === userId
+          ? {
+              ...candidate,
+              passwordHash,
+              usesDefaultPassword: passwordHash === defaultPasswordHash,
+            }
+          : candidate,
+      ),
+    );
+  };
+
   return (
     <SessionContext.Provider
       value={{
@@ -71,11 +157,34 @@ export const SessionProvider: FC<PropsWithChildren> = ({ children }) => {
         operatorContext: account ? createOperatorContext(account) : undefined,
         login,
         logout,
+        saveAccount,
+        archiveAccount,
+        resetPassword,
       }}
     >
       {children}
     </SessionContext.Provider>
   );
+};
+
+const hashPassword = async (password: string): Promise<string> => {
+  const bytes = new TextEncoder().encode(password);
+  const digest = await crypto.subtle.digest('SHA-256', bytes);
+  return [...new Uint8Array(digest)].map((value) => value.toString(16).padStart(2, '0')).join('');
+};
+
+const validateManagedAccounts = (accounts: readonly OperatorAccount[]): string => {
+  const active = accounts.filter((account) => account.isActive);
+  if (active.filter((account) => account.role === 'SysAdmin').length !== 1) {
+    return 'VaultBill requires exactly one active System Administrator.';
+  }
+  if (active.filter((account) => account.role === 'Admin').length > 1) {
+    return 'VaultBill allows one active Administrator.';
+  }
+  if (active.filter((account) => account.role === 'User').length > 5) {
+    return 'VaultBill allows up to five active Users.';
+  }
+  return '';
 };
 
 export const useSession = (): SessionContextValue => {

@@ -1,4 +1,6 @@
 import { DatabaseSync } from 'node:sqlite';
+/* eslint-disable max-lines */
+import { createHash, timingSafeEqual } from 'node:crypto';
 import { z } from 'zod';
 
 const LineItemSchema = z.object({
@@ -63,12 +65,21 @@ const StoredRecordSchema = EditableRecordSchema.extend({
 export type StoredRecord = z.infer<typeof StoredRecordSchema>;
 export type RecordWriteRequest = z.infer<typeof RecordWriteRequestSchema>;
 export type RecordCancelRequest = z.infer<typeof RecordCancelRequestSchema>;
+export type TrialStatus = {
+  readonly isFullVersion: boolean;
+  readonly isExpired: boolean;
+  readonly accumulatedSeconds: number;
+  readonly remainingSeconds: number;
+};
 
 export class DesktopRecordStore {
   readonly #database: DatabaseSync;
+  readonly #licenseVerifier: string;
+  #lastTrialCheckpoint = Date.now();
 
-  public constructor(databasePath: string) {
+  public constructor(databasePath: string, licenseVerifier = '') {
     this.#database = new DatabaseSync(databasePath);
+    this.#licenseVerifier = licenseVerifier;
     this.#database.exec(`
       PRAGMA foreign_keys = ON;
       PRAGMA journal_mode = WAL;
@@ -84,8 +95,51 @@ export class DesktopRecordStore {
         next_value INTEGER NOT NULL CHECK (next_value > 0)
       );
       INSERT OR IGNORE INTO app_sequences (sequence_id, next_value) VALUES ('GST', 1);
+      CREATE TABLE IF NOT EXISTS app_runtime (
+        runtime_key TEXT PRIMARY KEY,
+        runtime_value TEXT NOT NULL
+      );
+      INSERT OR IGNORE INTO app_runtime (runtime_key, runtime_value) VALUES ('trial_seconds', '0');
+      INSERT OR IGNORE INTO app_runtime (runtime_key, runtime_value) VALUES ('activated', 'false');
     `);
   }
+
+  public checkpointTrial = (): TrialStatus => {
+    const now = Date.now();
+    const elapsedSeconds = Math.max(0, Math.floor((now - this.#lastTrialCheckpoint) / 1000));
+    this.#lastTrialCheckpoint = now;
+    if (!this.#isActivated() && elapsedSeconds > 0) {
+      const accumulated = this.#trialSeconds() + elapsedSeconds;
+      this.#writeRuntime('trial_seconds', String(accumulated));
+    }
+    return this.getTrialStatus();
+  };
+
+  public getTrialStatus = (): TrialStatus => {
+    const accumulatedSeconds = this.#trialSeconds();
+    const trialSeconds = 24 * 60 * 60;
+    const isFullVersion = this.#isActivated();
+    return {
+      isFullVersion,
+      isExpired: !isFullVersion && accumulatedSeconds >= trialSeconds,
+      accumulatedSeconds,
+      remainingSeconds: isFullVersion
+        ? trialSeconds
+        : Math.max(0, trialSeconds - accumulatedSeconds),
+    };
+  };
+
+  public activateLicense = (licenseKey: string): TrialStatus => {
+    if (!this.#licenseVerifier) throw new Error('This build does not contain a license verifier.');
+    const supplied = createHash('sha256').update(licenseKey.trim()).digest('hex');
+    const expected = Buffer.from(this.#licenseVerifier, 'hex');
+    const actual = Buffer.from(supplied, 'hex');
+    if (expected.length !== actual.length || !timingSafeEqual(expected, actual)) {
+      throw new Error('The license key is not valid for this build.');
+    }
+    this.#writeRuntime('activated', 'true');
+    return this.getTrialStatus();
+  };
 
   public list = (): readonly StoredRecord[] =>
     this.#database
@@ -151,7 +205,30 @@ export class DesktopRecordStore {
   };
 
   public close = () => {
+    this.checkpointTrial();
     this.#database.close();
+  };
+
+  #trialSeconds = (): number => {
+    const row = this.#database
+      .prepare("SELECT runtime_value FROM app_runtime WHERE runtime_key = 'trial_seconds';")
+      .get();
+    return Number.parseInt(String(row?.runtime_value ?? '0'), 10) || 0;
+  };
+
+  #isActivated = (): boolean => {
+    const row = this.#database
+      .prepare("SELECT runtime_value FROM app_runtime WHERE runtime_key = 'activated';")
+      .get();
+    return String(row?.runtime_value ?? 'false') === 'true';
+  };
+
+  #writeRuntime = (key: string, value: string) => {
+    this.#database
+      .prepare(
+        'INSERT INTO app_runtime (runtime_key, runtime_value) VALUES (?, ?) ON CONFLICT(runtime_key) DO UPDATE SET runtime_value = excluded.runtime_value;',
+      )
+      .run(key, value);
   };
 
   #find = (recordId: string): StoredRecord | undefined => {

@@ -268,3 +268,30 @@
   `prettier-plugin-scss` package does not exist.
 - Added strict ESLint rules, Husky/lint-staged/commitlint hooks, coverage
   thresholds, and Playwright role, help, routing, and responsive overflow gates.
+
+## 2026-06-07 Specification v24
+
+- Replaced fragmented v20-v23 plans with `docs/Spec.md` as the canonical v24
+  baseline.
+- Limited current desktop releases to Windows and Linux; macOS and native
+  Android moved to future scope.
+- Reduced first-run setup to Welcome, required Business Profile, and SysAdmin
+  security. Admin/User creation moved to authorized Settings.
+- Defined role-specific navigation and account limits: one Admin and five Users.
+- Added accumulated-use desktop trial state and package-time license verifier.
+- Replaced the rigid shell with fixed navigation, Lucide icons, a scroll progress
+  rail, compact theme palette, role-aware footer, and mobile bottom navigation.
+- Reworked Builder into six focused steps and separated JSON document
+  configuration from HTML templates and shared assets.
+- Defined deterministic ten-record print batches and progress for all output.
+- Consolidated Settings into one jump-linked page and expanded reports with
+  combined filters, progressive loading, export, report print, and record print.
+- Changed Release App to run on every `main` push, package Windows/Linux
+  separately, publish only for tags/manual runs, and replace same-version
+  releases intentionally.
+- Recorded hosted-session, scrypt/safeStorage, native print queue, and streaming
+  backup work as explicit unresolved security/desktop items rather than claiming
+  completion.
+- Set the v24 unit-coverage floor to 70% statements/lines, 60% functions, and
+  50% branches because route-level UI orchestration is additionally exercised
+  through the mobile/tablet/desktop/wide Playwright matrix.

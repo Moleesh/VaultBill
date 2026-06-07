@@ -35,7 +35,23 @@ export const sampleLineItems = () => ({
 });
 
 export const getSampleAccount = (index: number): OperatorAccount => {
-  const account = bootstrapOperatorAccounts[index];
+  const account = [
+    bootstrapOperatorAccounts[0],
+    {
+      userId: 'admin_1',
+      username: 'admin',
+      displayName: 'Operations Admin',
+      role: 'Admin',
+      isActive: true,
+    },
+    {
+      userId: 'user_1',
+      username: 'operator',
+      displayName: 'Counter Operator',
+      role: 'User',
+      isActive: true,
+    },
+  ][index] as OperatorAccount | undefined;
 
   if (!account) {
     throw new Error('Expected sample account.');

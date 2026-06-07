@@ -83,7 +83,14 @@ const request = async <T>(
     },
     ...(body === undefined ? {} : { body: JSON.stringify(body) }),
   });
-  const payload = await response.json();
+  let payload: unknown;
+  if (response.status !== 204) {
+    try {
+      payload = await response.json();
+    } catch (reason) {
+      if (!response.ok) throw reason;
+    }
+  }
 
   if (!response.ok) {
     throw new Error(getErrorMessage(payload, response.status));

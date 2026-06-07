@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import type { Page } from '@playwright/test';
 
 const viewports = [
   { name: 'mobile', width: 390, height: 844 },
@@ -36,8 +37,16 @@ test.beforeEach(async ({ page }) => {
   await page.goto('login');
 });
 
-test('operator can log in, create records, and open contextual help', async ({ page }) => {
+const loginAsAdmin = async (page: Page) => {
+  if (process.env.VITE_DEMO_MODE !== 'true') {
+    await page.getByRole('button', { name: /Operator account/u }).click();
+    await page.getByRole('option', { name: /Operations Admin/u }).click();
+  }
   await page.getByRole('button', { name: /Log in|Start demo/u }).click();
+};
+
+test('operator can log in, create records, and open contextual help', async ({ page }) => {
+  await loginAsAdmin(page);
   await page.getByRole('link', { name: /Records/u }).click();
   await expect(page.getByRole('heading', { name: /Create GST Invoice/u })).toBeVisible();
   await page.getByRole('banner').getByRole('button', { name: 'Help' }).click();
@@ -56,12 +65,9 @@ test('Admin direct Builder URL is redirected to Records', async ({ page }) => {
 
 test('mobile help opens as a full-screen sheet', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.getByRole('button', { name: /Log in|Start demo/u }).click();
+  await loginAsAdmin(page);
   await page.getByRole('link', { name: /Records/u }).click();
-  await page
-    .getByRole('navigation', { name: 'Mobile primary' })
-    .getByRole('button', { name: 'Help' })
-    .click();
+  await page.getByRole('banner').getByRole('button', { name: 'Help' }).click();
 
   const helpDialog = page.getByRole('dialog', { name: 'records help' });
   await expect(helpDialog).toBeVisible();
@@ -73,19 +79,20 @@ test('demo web saves and reloads a draft in browser storage', async ({ page }) =
 
   const customerName = `Playwright ${Date.now().toString()}`;
   await page.getByRole('button', { name: 'Start demo' }).click();
+  await page.getByRole('link', { name: /Records/u }).click();
   await page.getByPlaceholder('Business or customer name').fill(customerName);
   await page.getByRole('button', { name: /^Draft Control\+S$/u }).click();
   await expect(page.getByText(/Draft saved/u)).toBeVisible();
 
   const storedRecordsJson = await page.evaluate<string>(
-    () => window.localStorage.getItem('vaultbill.records.v23') ?? '[]',
+    () => window.localStorage.getItem('vaultbill.records.v24') ?? '[]',
   );
   expect(storedRecordsJson).toContain(customerName);
   expect(storedRecordsJson).toContain('"status":"Draft"');
 
   await page.reload();
   const reloadedRecordsJson = await page.evaluate<string>(
-    () => window.localStorage.getItem('vaultbill.records.v23') ?? '[]',
+    () => window.localStorage.getItem('vaultbill.records.v24') ?? '[]',
   );
   expect(reloadedRecordsJson).toContain(customerName);
 });
@@ -93,7 +100,7 @@ test('demo web saves and reloads a draft in browser storage', async ({ page }) =
 for (const viewport of viewports) {
   test(`${viewport.name} layout has no page overflow`, async ({ page }) => {
     await page.setViewportSize(viewport);
-    await page.getByRole('button', { name: /Log in|Start demo/u }).click();
+    await loginAsAdmin(page);
     await page.getByRole('link', { name: /Records/u }).click();
     const hasOverflow = await page.evaluate(
       () => document.documentElement.scrollWidth > document.documentElement.clientWidth,

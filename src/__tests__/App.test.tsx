@@ -13,7 +13,7 @@ describe('App', () => {
     document.body.append(portalRoot);
   });
 
-  it('starts at login and enters the configured workspace', () => {
+  it('starts at login and enters the configured workspace', async () => {
     render(
       <MemoryRouter initialEntries={['/login']}>
         <App />
@@ -26,13 +26,18 @@ describe('App', () => {
       expect(screen.getByText('Demo User')).toBeVisible();
       fireEvent.click(screen.getByRole('button', { name: 'Start demo' }));
 
-      expect(screen.getByRole('heading', { name: 'Create GST Invoice' })).toBeVisible();
+      expect(
+        await screen.findByRole('heading', { name: /Welcome back, Demo User/u }),
+      ).toBeVisible();
     } else {
       expect(screen.getByText(/Operator account/u)).toBeVisible();
+      fireEvent.change(screen.getByLabelText('Password'), {
+        target: { value: '147085aA' },
+      });
       fireEvent.click(screen.getByRole('button', { name: 'Log in' }));
 
       expect(
-        screen.getByRole('heading', { name: /Welcome back, System Administrator/u }),
+        await screen.findByRole('heading', { name: /Configuration control centre/u }),
       ).toBeVisible();
     }
 

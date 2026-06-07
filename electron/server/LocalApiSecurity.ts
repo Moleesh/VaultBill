@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const MAX_LOCAL_API_BODY_BYTES = 2 * 1024 * 1024;
+export const MAX_LOCAL_API_BODY_BYTES = 100 * 1024 * 1024;
 
 export const LocalApiConfigurationSchema = z.object({
   lanEnabled: z.boolean().default(false),

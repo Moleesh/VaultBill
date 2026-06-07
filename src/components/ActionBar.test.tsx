@@ -17,7 +17,11 @@ describe('ActionBar accessibility', () => {
     render(<ActionBar onAction={() => undefined} state="DraftSaved" />);
 
     expect(screen.getByRole('button', { name: /Finalize/i })).toBeEnabled();
-    expect(screen.getByRole('button', { name: /^Draft Control\+S$/i })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /^Draft Control\+S$/i })).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
+    expect(screen.getByRole('button', { name: /^Draft Control\+S$/i })).not.toBeDisabled();
     expect(screen.getByRole('button', { name: /Draft Print/i })).toBeEnabled();
   });
 });

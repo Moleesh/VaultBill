@@ -1,43 +1,43 @@
-# Release Pipeline
+# Release Pipeline v24
 
-VaultBill has exactly two public automation flows.
+VaultBill maintains exactly two GitHub Actions workflows.
 
 ## Demo Pages
 
-`.github/workflows/demo-pages.yml` runs automatically for pushes to `main`.
-It installs from the lockfile, runs formatting, lint, typecheck, demo-safe tests,
-secret scanning, Playwright smoke tests, and builds with:
+Triggers on every `main` push and manual dispatch.
+
+It runs formatting, lint, typecheck, unit tests, dependency/security checks,
+secret scanning, Playwright, and the web build with:
 
 ```env
 VITE_DEMO_MODE=true
 VITE_BASE_PATH=/VaultBill/
 ```
 
-The resulting secret-free bundle deploys to the `VaultBill` Pages environment.
+The secret-free bundle deploys to the `VaultBill` environment. Playwright traces
+and screenshots upload when browser checks fail.
 
 ## Release App
 
-`.github/workflows/release-app.yml` runs for `v*` tags or manual dispatch. Its
-verification job runs the strict quality and security gates, Playwright flows,
-native-module rebuild, desktop build, and package smoke checks.
+Triggers on:
 
-The mandatory Windows job builds the installer in CI, runs first-run SQLite
-smoke tests, generates release notes and SHA-256 checksums, records whether
-signing credentials were available, and uploads all artifacts.
+- every `main` push
+- `v*` tags
+- manual dispatch
 
-The GitHub Release tag is `v${package.json version}`. If that release already
-exists, the workflow deletes the old release and tag before publishing the new
-assets and notes for the same version.
+The shared verification job runs the complete quality/security/browser gate
+once. Separate Windows and Linux jobs then build:
 
-## Local Gates
+- Windows x64 NSIS installer
+- Linux x64 AppImage
 
-- `npm run format:check`
-- `npm run lint`
-- `npm run typecheck`
-- `npm run test:ci`
-- `npm run test:e2e`
-- `npm run audit:security`
-- `npm run scan:secrets`
-- `npm run test:security`
-- `npm run security:check`
-- `npm run build:desktop`
+Ordinary `main` pushes upload workflow artifacts only. Tag/manual runs download
+both platform artifacts, generate release notes and SHA-256 checksums, report
+signing status, and publish a GitHub Release.
+
+For tags, `v${package.json.version}` must equal the pushed tag. Before
+publication, an existing release and tag for the same package version are
+deleted so a corrected build can be republished intentionally.
+
+`VAULTBILL_LICENSE_KEY` is optional packaging input from GitHub Secrets. The
+package embeds only its verifier.

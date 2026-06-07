@@ -1,3 +1,9 @@
+const { createHash } = require('node:crypto');
+
+const licenseVerifier = process.env.VAULTBILL_LICENSE_KEY
+  ? createHash('sha256').update(process.env.VAULTBILL_LICENSE_KEY).digest('hex')
+  : '';
+
 module.exports = {
   appId: 'com.vaultbill.app',
   productName: 'VaultBill',
@@ -6,9 +12,10 @@ module.exports = {
   directories: {
     output: 'release',
   },
-  files: ['dist/**/*', 'dist-electron/**/*', 'package.json'],
+  files: ['dist/**/*', 'dist-electron/**/*', 'build/icon.png', 'package.json'],
   extraMetadata: {
     main: 'dist-electron/Main.js',
+    vaultBillLicenseVerifier: licenseVerifier,
   },
   win: {
     icon: 'build/icon.png',
@@ -25,10 +32,6 @@ module.exports = {
     perMachine: false,
     allowElevation: true,
     allowToChangeInstallationDirectory: true,
-  },
-  mac: {
-    icon: 'build/icon.png',
-    target: ['dmg'],
   },
   linux: {
     icon: 'build/icon.png',

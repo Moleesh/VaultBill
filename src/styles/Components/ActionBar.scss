@@ -15,8 +15,10 @@
 }
 
 .action-bar button {
-  display: grid;
+  display: flex;
+  flex-wrap: wrap;
   gap: var(--space-1);
+  justify-content: center;
   place-items: center;
   min-height: 44px;
   border: var(--line-width) solid var(--color-border-strong);
@@ -24,6 +26,20 @@
   background: var(--color-surface-raised);
   color: var(--color-text);
   font-weight: 800;
+}
+
+.action-bar .action-bar__unavailable {
+  border-style: dashed;
+  border-color: var(--color-border);
+  background: var(--color-surface-muted);
+  color: var(--color-text-disabled);
+  box-shadow: none;
+  cursor: help;
+}
+
+.action-bar .action-bar__unavailable:hover {
+  border-color: var(--color-border);
+  transform: none;
 }
 
 .action-bar kbd {

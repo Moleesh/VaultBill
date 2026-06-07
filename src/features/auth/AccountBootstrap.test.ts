@@ -29,11 +29,13 @@ afterEach(() => {
 
 describe('AccountBootstrap', () => {
   it('creates operator metadata from the selected account identity', () => {
-    const operatorAccount = bootstrapOperatorAccounts[2];
-
-    if (!operatorAccount) {
-      throw new Error('Expected a sample operator account.');
-    }
+    const operatorAccount: OperatorAccount = {
+      userId: 'user_1',
+      username: 'operator',
+      displayName: 'Counter Operator',
+      role: 'User',
+      isActive: true,
+    };
 
     expect(createOperatorContext(operatorAccount)).toEqual({
       account: operatorAccount,
@@ -70,7 +72,7 @@ describe('AccountBootstrap', () => {
     });
   });
 
-  it('seeds SysAdmin and Admin rows on a clean database', () => {
+  it('seeds only the protected SysAdmin row on a clean database', () => {
     const db = openMemoryConnection();
     runDatabaseStartupChecks(db, { nowIso: fixedNow });
 
@@ -78,8 +80,8 @@ describe('AccountBootstrap', () => {
 
     expect(result).toEqual({
       seeded: true,
-      createdAccountIds: ['sysadmin_1', 'admin_1'],
+      createdAccountIds: ['sysadmin_1'],
     });
-    expect(db.get('SELECT COUNT(*) AS count FROM users;')).toEqual({ count: 2 });
+    expect(db.get('SELECT COUNT(*) AS count FROM users;')).toEqual({ count: 1 });
   });
 });

@@ -6,6 +6,9 @@ export type OperatorAccount = {
   readonly displayName: string;
   readonly role: Role;
   readonly isActive: boolean;
+  readonly passwordHash?: string;
+  readonly passwordConfigured?: boolean;
+  readonly usesDefaultPassword?: boolean;
 };
 
 export type OperatorContext = {

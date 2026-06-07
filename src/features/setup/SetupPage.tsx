@@ -4,18 +4,9 @@ import type { FC } from 'react';
 
 import { AppBrandIcon } from '../../components/AppBrandIcon/AppBrandIcon';
 import { HorizontalProgress } from '../../components/HorizontalProgress/HorizontalProgress';
-import { SearchableDropdown } from '../../components/SearchableDropdown/SearchableDropdown';
-import { themeOptions } from '../../constants/PhaseOneSeed';
-import type { ThemeId } from '../../types/AppTypes';
 
-const steps = [
-  'Welcome',
-  'Business Profile',
-  'Create SysAdmin',
-  'Create Admin',
-  'Choose Theme',
-  'Backup Password',
-] as const;
+const steps = ['Welcome', 'Business Profile', 'System Administrator'] as const;
+const defaultPasswordHash = '5e800c5e134b84a0d73bd6f0d0f65b768f8a3afeba9c26ce3fe9b8d58fd027f1';
 
 export const setupCompleteStorageKey = 'vaultbill.setup.complete';
 
@@ -30,16 +21,20 @@ export const SetupPage: FC<SetupPageProps> = ({ onComplete }) => {
   const navigate = useNavigate();
   const [stepIndex, setStepIndex] = useState(0);
   const [companyName, setCompanyName] = useState('');
+  const [address, setAddress] = useState('');
   const [sysAdminName, setSysAdminName] = useState('System Administrator');
-  const [adminName, setAdminName] = useState('Operations Admin');
-  const [themeId, setThemeId] = useState<ThemeId>('teal-flow');
-  const [backupPassword, setBackupPassword] = useState('');
+  const [message, setMessage] = useState('');
   const activeStep = steps[stepIndex] ?? 'Welcome';
 
+  const canContinue =
+    activeStep !== 'Business Profile' ||
+    (companyName.trim().length > 0 && address.trim().length > 0);
+
   const completeSetup = () => {
+    void window.vaultBillDesktop?.configureSysAdmin(sysAdminName);
     window.localStorage.setItem(
       'vaultbill.business-profile',
-      JSON.stringify({ companyName: companyName.trim() }),
+      JSON.stringify({ companyName: companyName.trim(), address: address.trim() }),
     );
     window.localStorage.setItem(
       'vaultbill.accounts',
@@ -50,21 +45,13 @@ export const SetupPage: FC<SetupPageProps> = ({ onComplete }) => {
           displayName: sysAdminName.trim() || 'System Administrator',
           role: 'SysAdmin',
           isActive: true,
-        },
-        {
-          userId: 'admin_1',
-          username: 'admin',
-          displayName: adminName.trim() || 'Operations Admin',
-          role: 'Admin',
-          isActive: true,
+          passwordHash: defaultPasswordHash,
+          usesDefaultPassword: true,
         },
       ]),
     );
-    window.localStorage.setItem('vaultbill.theme', themeId);
-    window.localStorage.setItem(
-      'vaultbill.backup-password-configured',
-      String(Boolean(backupPassword)),
-    );
+    window.localStorage.setItem('vaultbill.backup-password-configured', 'true');
+    window.localStorage.setItem('vaultbill.default-credentials-active', 'true');
     window.localStorage.setItem(setupCompleteStorageKey, 'true');
     onComplete?.();
     void navigate('/login', { replace: true });
@@ -88,6 +75,7 @@ export const SetupPage: FC<SetupPageProps> = ({ onComplete }) => {
               key={step}
               onClick={() => {
                 setStepIndex(index);
+                setMessage('');
               }}
               type="button"
             >
@@ -104,73 +92,61 @@ export const SetupPage: FC<SetupPageProps> = ({ onComplete }) => {
             <h2 id="setup-step-title">{activeStep}</h2>
           </div>
           {activeStep === 'Welcome' ? (
-            <p>
-              This short setup creates the business profile and operator accounts used by the full
-              application. The product name remains VaultBill.
-            </p>
+            <div className="setup-intro">
+              <p>Three short steps prepare your local billing workspace.</p>
+              <ul>
+                <li>Add the business identity shown on documents.</li>
+                <li>Create the protected System Administrator.</li>
+                <li>Manage operators, themes, backups, and integrations later in Settings.</li>
+              </ul>
+            </div>
           ) : null}
           {activeStep === 'Business Profile' ? (
-            <label>
-              <span>Business name</span>
-              <input
-                autoFocus
-                onChange={(event) => {
-                  setCompanyName(event.currentTarget.value);
-                }}
-                placeholder="Your registered business name"
-                value={companyName}
-              />
-            </label>
+            <div className="form-grid">
+              <label>
+                <span>Business name</span>
+                <input
+                  autoFocus
+                  onChange={(event) => {
+                    setCompanyName(event.currentTarget.value);
+                  }}
+                  placeholder="Registered business name"
+                  required
+                  value={companyName}
+                />
+              </label>
+              <label className="span-2">
+                <span>Business address</span>
+                <textarea
+                  onChange={(event) => {
+                    setAddress(event.currentTarget.value);
+                  }}
+                  placeholder="Address shown on invoices and reports"
+                  required
+                  value={address}
+                />
+              </label>
+            </div>
           ) : null}
-          {activeStep === 'Create SysAdmin' ? (
-            <label>
-              <span>SysAdmin display name</span>
-              <input
-                autoFocus
-                onChange={(event) => {
-                  setSysAdminName(event.currentTarget.value);
-                }}
-                value={sysAdminName}
-              />
-            </label>
+          {activeStep === 'System Administrator' ? (
+            <div className="form-grid">
+              <label>
+                <span>Administrator display name</span>
+                <input
+                  autoFocus
+                  onChange={(event) => {
+                    setSysAdminName(event.currentTarget.value);
+                  }}
+                  value={sysAdminName}
+                />
+              </label>
+              <div className="feedback-warning span-2">
+                VaultBill initializes the administrator and backup passwords securely. Change both
+                from Security after your first login.
+              </div>
+            </div>
           ) : null}
-          {activeStep === 'Create Admin' ? (
-            <label>
-              <span>Admin display name</span>
-              <input
-                autoFocus
-                onChange={(event) => {
-                  setAdminName(event.currentTarget.value);
-                }}
-                value={adminName}
-              />
-            </label>
-          ) : null}
-          {activeStep === 'Choose Theme' ? (
-            <SearchableDropdown
-              label="Application theme"
-              onChange={(value) => {
-                setThemeId(value as ThemeId);
-              }}
-              options={themeOptions.map((theme) => ({ label: theme.label, value: theme.id }))}
-              value={themeId}
-            />
-          ) : null}
-          {activeStep === 'Backup Password' ? (
-            <label>
-              <span>Optional backup password</span>
-              <input
-                autoFocus
-                onChange={(event) => {
-                  setBackupPassword(event.currentTarget.value);
-                }}
-                placeholder="Recommended for encrypted backups"
-                type="password"
-                value={backupPassword}
-              />
-              <small>VaultBill records only whether a password was configured in this UI.</small>
-            </label>
-          ) : null}
+          {message ? <p className="feedback-error">{message}</p> : null}
         </section>
         <footer className="setup-card__actions">
           <button
@@ -186,11 +162,16 @@ export const SetupPage: FC<SetupPageProps> = ({ onComplete }) => {
             <button
               className="button-primary"
               onClick={() => {
+                if (!canContinue) {
+                  setMessage('Business name and address are required.');
+                  return;
+                }
+                setMessage('');
                 setStepIndex((current) => Math.min(steps.length - 1, current + 1));
               }}
               type="button"
             >
-              Next
+              Continue
             </button>
           ) : (
             <button className="button-primary" onClick={completeSetup} type="button">

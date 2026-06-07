@@ -17,7 +17,12 @@ export const ProtectedRoute: FC<ProtectedRouteProps> = ({ children, roles }) => 
   }
 
   if (roles && !roles.includes(operatorContext.role)) {
-    return <Navigate replace to="/app/records" />;
+    return (
+      <Navigate
+        replace
+        to={operatorContext.role === 'SysAdmin' ? '/app/dashboard' : '/app/records'}
+      />
+    );
   }
 
   return children;

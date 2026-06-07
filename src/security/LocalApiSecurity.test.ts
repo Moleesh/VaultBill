@@ -24,6 +24,6 @@ describe('Local API security', () => {
   it('enforces privileged actions and a bounded request size', () => {
     expect(canUseLocalApiAction('User', 'cancel')).toBe(false);
     expect(canUseLocalApiAction('Admin', 'cancel')).toBe(true);
-    expect(MAX_LOCAL_API_BODY_BYTES).toBe(2 * 1024 * 1024);
+    expect(MAX_LOCAL_API_BODY_BYTES).toBe(100 * 1024 * 1024);
   });
 });
