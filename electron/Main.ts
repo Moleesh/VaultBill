@@ -15,6 +15,7 @@ import { LocalApiConfigurationSchema } from './server/LocalApiSecurity.js';
 const currentFile = fileURLToPath(import.meta.url);
 const currentDirectory = path.dirname(currentFile);
 const identity = getBuildIdentity();
+const hostedAppUrl = 'http://127.0.0.1:4317';
 let recordStore: DesktopRecordStore | undefined;
 let credentialStore: CredentialStore | undefined;
 let localApiServer: LocalApiServer | undefined;
@@ -66,11 +67,11 @@ const createWindow = async () => {
   mainWindow.webContents.on('will-navigate', (event, url) => {
     const allowedOrigin = process.env.VITE_DEV_SERVER_URL
       ? new URL(process.env.VITE_DEV_SERVER_URL).origin
-      : 'file://';
+      : new URL(hostedAppUrl).origin;
     if (!url.startsWith(allowedOrigin)) event.preventDefault();
   });
   if (process.env.VITE_DEV_SERVER_URL) await mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL);
-  else await mainWindow.loadFile(path.join(currentDirectory, '../dist/index.html'));
+  else await mainWindow.loadURL(hostedAppUrl);
 };
 
 const createTray = () => {
@@ -86,7 +87,7 @@ const createTray = () => {
           mainWindow?.focus();
         },
       },
-      { label: 'Hosted web: http://127.0.0.1:4317', enabled: false },
+      { label: `Hosted web: ${hostedAppUrl}`, enabled: false },
       { type: 'separator' },
       {
         label: 'Quit VaultBill',

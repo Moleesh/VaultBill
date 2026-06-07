@@ -7,6 +7,7 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const requireInstaller = process.argv.includes('--require-installer');
 const packageJson = JSON.parse(await readFile(join(root, 'package.json'), 'utf8'));
 const mainPath = join(root, packageJson.main);
+const webIndexPath = join(root, 'dist/index.html');
 const requiredPaths = [
   'dist/index.html',
   'dist-electron/Main.js',
@@ -47,6 +48,20 @@ if (requireInstaller && !hasInstallerArtifact) {
 
 if (!existsSync(mainPath)) {
   throw new Error(`Package main entry does not exist: ${packageJson.main}`);
+}
+
+const [mainSource, webIndex] = await Promise.all([
+  readFile(mainPath, 'utf8'),
+  readFile(webIndexPath, 'utf8'),
+]);
+if (!mainSource.includes('http://127.0.0.1:4317')) {
+  throw new Error('Desktop main process does not load the hosted VaultBill web application.');
+}
+if (mainSource.includes('.loadFile(')) {
+  throw new Error('Desktop main process must not load the renderer through file://.');
+}
+if (webIndex.includes('/VaultBill/')) {
+  throw new Error('Desktop web assets were built with the GitHub Pages base path.');
 }
 
 console.log(

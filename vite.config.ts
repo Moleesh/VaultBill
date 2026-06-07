@@ -3,17 +3,12 @@
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 
-const githubRepositoryName = process.env.GITHUB_REPOSITORY?.split('/').pop()?.trim();
 const requestedBasePath = process.env.VITE_BASE_PATH?.trim();
-const githubPagesBasePath =
-  requestedBasePath === undefined || requestedBasePath.length === 0
-    ? githubRepositoryName
-      ? `/${githubRepositoryName}/`
-      : '/'
-    : requestedBasePath;
+const applicationBasePath =
+  requestedBasePath === undefined || requestedBasePath.length === 0 ? '/' : requestedBasePath;
 
 export default defineConfig({
-  base: githubPagesBasePath,
+  base: applicationBasePath,
   plugins: [react()],
   define: {
     __APP_NAME__: JSON.stringify('VaultBill'),
