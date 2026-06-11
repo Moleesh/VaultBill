@@ -4,6 +4,8 @@
  * @format
  */
 
+/** @format */
+
 /** Local API server that exposes authenticated desktop-hosted capabilities to the web app. */
 
 import { createServer } from 'node:http';

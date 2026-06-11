@@ -4,6 +4,8 @@
  * @format
  */
 
+/** @format */
+
 /** Electron main process that launches the app shell, tray lifecycle, and host servers. */
 
 import {

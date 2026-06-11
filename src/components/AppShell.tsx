@@ -4,6 +4,8 @@
  * @format
  */
 
+/** @format */
+
 /** Persistent application shell that keeps navigation, chrome, and footer actions consistent. */
 
 import {

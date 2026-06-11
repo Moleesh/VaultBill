@@ -4,6 +4,8 @@
  * @format
  */
 
+/** @format */
+
 import type { DocumentFormatConfig } from '../../db/startup/ConfigSchemas';
 import { requestHostedApi } from '../../runtime/HostedApi';
 import type { AppRecord, EditableRecord } from './RecordStoreContext';

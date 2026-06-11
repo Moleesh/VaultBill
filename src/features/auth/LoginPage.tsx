@@ -4,6 +4,8 @@
  * @format
  */
 
+/** @format */
+
 /** Login experience that selects the operator account, handles credentials, and opens help. */
 
 import { KeyRound } from 'lucide-react';

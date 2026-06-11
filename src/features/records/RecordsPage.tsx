@@ -4,6 +4,8 @@
  * @format
  */
 
+/** @format */
+
 /** Records workspace for creating, finalizing, printing, and reprinting documents. */
 
 import { useEffect, useMemo, useRef, useState } from 'react';

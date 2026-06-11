@@ -4,6 +4,8 @@
  * @format
  */
 
+/** @format */
+
 /** Backup service that packages, encrypts, validates, and restores application state. */
 
 import { createCipheriv, createDecipheriv, createHash, pbkdf2Sync, randomBytes } from 'node:crypto';

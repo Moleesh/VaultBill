@@ -4,6 +4,8 @@
  * @format
  */
 
+/** @format */
+
 /** Credential store that hashes login passwords and protects backup credentials. */
 
 import { randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';

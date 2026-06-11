@@ -4,6 +4,8 @@
  * @format
  */
 
+/** @format */
+
 /** Role-aware dashboard that summarizes business activity, inventory, and configuration status. */
 
 import { format, parseISO } from 'date-fns';
