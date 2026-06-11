@@ -82,7 +82,11 @@ describe('login UI', () => {
             code: 'Enter',
             charCode: 13,
         });
-        fireEvent.submit(passwordInput.closest('form') as HTMLFormElement);
+        const loginForm = passwordInput.closest('form');
+        if (!loginForm) {
+            throw new Error('Login form was not found.');
+        }
+        fireEvent.submit(loginForm);
 
         expect(await screen.findByRole('heading', { name: 'Dashboard' })).toBeVisible();
     });

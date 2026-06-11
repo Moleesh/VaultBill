@@ -183,7 +183,9 @@ The repository intentionally has exactly two workflows:
   to the `VaultBill` environment.
 - **Release App:** every `main` push, `v*` tag, and manual dispatch. It verifies
   once, builds Windows and Linux in separate jobs, and uploads workflow
-  artifacts. Tags/manual runs additionally publish a GitHub Release.
+  artifacts. The publish job also updates the GitHub Release for `main` pushes,
+  while tags/manual runs verify the version match and follow the same publish
+  path.
 
 When a release for the package version already exists, Release App removes the
 old release/tag and republishes fresh assets, checksums, notes, and signing

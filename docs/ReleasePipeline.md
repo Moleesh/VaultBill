@@ -33,9 +33,10 @@ once. Separate Windows and Linux jobs then build:
 - Windows x64 NSIS installer
 - Linux x64 AppImage
 
-Ordinary `main` pushes upload workflow artifacts only. Tag/manual runs download
-both platform artifacts, generate release notes and SHA-256 checksums, report
-signing status, and publish a GitHub Release.
+Ordinary `main` pushes also download both platform artifacts, generate release
+notes and SHA-256 checksums, report signing status, and publish the current
+GitHub Release. Tag/manual runs follow the same publish path after verifying
+the tag/version agreement.
 
 For tags, `v${package.json.version}` must equal the pushed tag. Before
 publication, an existing release and tag for the same package version are
