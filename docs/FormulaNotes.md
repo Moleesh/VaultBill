@@ -1,3 +1,5 @@
+<!-- @format -->
+
 # Formula Notes
 
 The formula engine starts in Phase 7. Phase 1 only records the non-negotiable

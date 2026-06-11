@@ -1,3 +1,5 @@
+<!-- @format -->
+
 Record drafting is saved as JSON in SQLite without allocating a final document
 number. Finalization allocates the format sequence inside the same SQLite
 transaction that marks the record `Finalized`, keeping printing separate from

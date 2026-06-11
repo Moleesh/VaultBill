@@ -1,3 +1,5 @@
+/** @format */
+
 export const buildTimeAppName = __APP_NAME__;
 export const buildTimeAppSlug = __APP_SLUG__;
 

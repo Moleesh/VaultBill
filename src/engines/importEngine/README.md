@@ -1,3 +1,5 @@
+<!-- @format -->
+
 The import engine owns source parsing, header detection, proposed/manual
 mapping, field classification, row validation, optional derived calculation,
 preview summaries, and template-column generation.

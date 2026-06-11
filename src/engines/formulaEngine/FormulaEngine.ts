@@ -1,3 +1,5 @@
+/** @format */
+
 import type { LineItemSectionConfigSchema } from '../../db/startup/ConfigSchemas';
 import type { LineItemRow } from '../schemaEngine/LineItemTypes';
 import type { FieldConfig } from '../schemaEngine/SchemaEngineTypes';
@@ -10,80 +12,80 @@ import type { z } from 'zod';
 export type LineItemSectionConfig = z.infer<typeof LineItemSectionConfigSchema>;
 
 export const evaluateFormula = (
-  formula: string,
-  variables: FormulaVariableMap,
-  policy: CalculationPolicy,
-  precision: number,
+    formula: string,
+    variables: FormulaVariableMap,
+    policy: CalculationPolicy,
+    precision: number,
 ): FormulaEvaluation => {
-  const value = evaluateFormulaToDecimal(formula, variables, policy);
+    const value = evaluateFormulaToDecimal(formula, variables, policy);
 
-  return {
-    value,
-    formatted: formatDecimal(value, precision, toRoundingMode(policy.RoundingMode)),
-  };
+    return {
+        value,
+        formatted: formatDecimal(value, precision, toRoundingMode(policy.RoundingMode)),
+    };
 };
 
 export const calculateLineItemRows = (
-  section: LineItemSectionConfig,
-  rows: readonly LineItemRow[],
-  policy: CalculationPolicy,
+    section: LineItemSectionConfig,
+    rows: readonly LineItemRow[],
+    policy: CalculationPolicy,
 ): readonly LineItemRow[] => rows.map((row) => calculateLineItemRow(section, row, policy));
 
 const calculateLineItemRow = (
-  section: LineItemSectionConfig,
-  row: LineItemRow,
-  policy: CalculationPolicy,
+    section: LineItemSectionConfig,
+    row: LineItemRow,
+    policy: CalculationPolicy,
 ): LineItemRow => {
-  const calculatedFields = section.Fields.filter((field) => field.Calculated && field.Formula).sort(
-    (left, right) => (left.CalculationOrder ?? 0) - (right.CalculationOrder ?? 0),
-  );
-  const nextValues: Record<string, unknown> = { ...row.Values };
+    const calculatedFields = section.Fields.filter(
+        (field) => field.Calculated && field.Formula,
+    ).sort((left, right) => (left.CalculationOrder ?? 0) - (right.CalculationOrder ?? 0));
+    const nextValues: Record<string, unknown> = { ...row.Values };
 
-  for (const field of calculatedFields) {
-    const formula = field.Formula;
+    for (const field of calculatedFields) {
+        const formula = field.Formula;
 
-    if (!formula) {
-      continue;
+        if (!formula) {
+            continue;
+        }
+
+        nextValues[field.FieldId] = evaluateFormula(
+            formula,
+            toFormulaVariables(nextValues),
+            policy,
+            getFieldPrecision(field, policy),
+        ).formatted;
     }
 
-    nextValues[field.FieldId] = evaluateFormula(
-      formula,
-      toFormulaVariables(nextValues),
-      policy,
-      getFieldPrecision(field, policy),
-    ).formatted;
-  }
-
-  return {
-    ...row,
-    Values: nextValues,
-  };
+    return {
+        ...row,
+        Values: nextValues,
+    };
 };
 
 const toFormulaVariables = (values: Readonly<Record<string, unknown>>): FormulaVariableMap => {
-  const variables: Record<string, string | number> = {};
+    const variables: Record<string, string | number> = {};
 
-  for (const [key, value] of Object.entries(values)) {
-    if (typeof value === 'string' || (typeof value === 'number' && Number.isInteger(value))) {
-      variables[key] = value;
+    for (const [key, value] of Object.entries(values)) {
+        if (typeof value === 'string' || (typeof value === 'number' && Number.isInteger(value))) {
+            variables[key] = value;
+        }
     }
-  }
 
-  return variables;
+    return variables;
 };
 
 const getFieldPrecision = (field: FieldConfig, policy: CalculationPolicy): number => {
-  if (field.Precision !== undefined) {
-    return field.Precision;
-  }
+    if (field.Precision !== undefined) {
+        return field.Precision;
+    }
 
-  if (field.Type === 'Quantity') {
-    return policy.QuantityPrecision;
-  }
+    if (field.Type === 'Quantity') {
+        return policy.QuantityPrecision;
+    }
 
-  if (field.Type === 'Rate') {
-    return policy.RatePrecision;
-  }
+    if (field.Type === 'Rate') {
+        return policy.RatePrecision;
+    }
 
-  return policy.MoneyPrecision;
+    return policy.MoneyPrecision;
 };

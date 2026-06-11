@@ -1,67 +1,69 @@
+/** @format */
+
 *,
 *::before,
 *::after {
-  box-sizing: border-box;
+    box-sizing: border-box;
 }
 
 html {
-  min-width: 320px;
-  overflow-x: hidden;
+    min-width: 320px;
+    overflow-x: hidden;
 }
 
 body {
-  margin: 0;
-  min-width: 320px;
-  min-height: 100vh;
-  overflow-x: hidden;
-  background: var(--color-page);
-  color: var(--color-text);
+    margin: 0;
+    min-width: 320px;
+    min-height: 100vh;
+    overflow-x: hidden;
+    background: var(--color-page);
+    color: var(--color-text);
 }
 
 button,
 input,
 select,
 textarea {
-  font: inherit;
+    font: inherit;
 }
 
 button,
 select {
-  cursor: pointer;
+    cursor: pointer;
 }
 
 button:disabled {
-  cursor: not-allowed;
+    cursor: not-allowed;
 }
 
 .sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  clip-path: inset(50%);
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    clip-path: inset(50%);
 }
 
 img,
 svg {
-  display: block;
-  max-width: 100%;
+    display: block;
+    max-width: 100%;
 }
 
 :focus-visible {
-  outline: var(--focus-ring);
-  outline-offset: var(--focus-offset);
+    outline: var(--focus-ring);
+    outline-offset: var(--focus-offset);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    scroll-behavior: auto !important;
-    transition-duration: 0.01ms !important;
-  }
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+    }
 }

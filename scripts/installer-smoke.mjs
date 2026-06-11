@@ -1,3 +1,5 @@
+/** @format */
+
 import { existsSync } from 'node:fs';
 import { readdir, readFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
@@ -9,71 +11,71 @@ const packageJson = JSON.parse(await readFile(join(root, 'package.json'), 'utf8'
 const mainPath = join(root, packageJson.main);
 const webIndexPath = join(root, 'dist/index.html');
 const requiredPaths = [
-  'dist/index.html',
-  'dist-electron/Main.js',
-  'dist-electron/Preload.js',
-  packageJson.main,
+    'dist/index.html',
+    'dist-electron/Main.js',
+    'dist-electron/Preload.js',
+    packageJson.main,
 ];
 
 const missingPaths = requiredPaths.filter((path) => !existsSync(join(root, path)));
 
 if (missingPaths.length > 0) {
-  throw new Error(`Missing build outputs: ${missingPaths.join(', ')}`);
+    throw new Error(`Missing build outputs: ${missingPaths.join(', ')}`);
 }
 
 const { getBuildIdentity } = await import(
-  pathToFileURL(join(root, 'dist-electron/BuildIdentity.js'))
+    pathToFileURL(join(root, 'dist-electron/BuildIdentity.js'))
 );
 const identity = getBuildIdentity();
 const releaseEntries = existsSync(join(root, 'release'))
-  ? await readdir(join(root, 'release'), { withFileTypes: true })
-  : [];
+    ? await readdir(join(root, 'release'), { withFileTypes: true })
+    : [];
 const hasUnpackedPackage = releaseEntries.some(
-  (entry) => entry.isDirectory() && entry.name.endsWith('-unpacked'),
+    (entry) => entry.isDirectory() && entry.name.endsWith('-unpacked'),
 );
 const hasInstallerArtifact = releaseEntries.some(
-  (entry) =>
-    entry.isFile() &&
-    /\.(exe|dmg|AppImage|deb|rpm)$/u.test(entry.name) &&
-    entry.name.toLowerCase().includes(identity.appSlug),
+    (entry) =>
+        entry.isFile() &&
+        /\.(exe|dmg|AppImage|deb|rpm)$/u.test(entry.name) &&
+        entry.name.toLowerCase().includes(identity.appSlug),
 );
 
 if (!hasUnpackedPackage) {
-  throw new Error('No unpacked desktop package found in release/.');
+    throw new Error('No unpacked desktop package found in release/.');
 }
 
 if (requireInstaller && !hasInstallerArtifact) {
-  throw new Error('No installer artifact found in release/.');
+    throw new Error('No installer artifact found in release/.');
 }
 
 if (!existsSync(mainPath)) {
-  throw new Error(`Package main entry does not exist: ${packageJson.main}`);
+    throw new Error(`Package main entry does not exist: ${packageJson.main}`);
 }
 
 const [mainSource, webIndex] = await Promise.all([
-  readFile(mainPath, 'utf8'),
-  readFile(webIndexPath, 'utf8'),
+    readFile(mainPath, 'utf8'),
+    readFile(webIndexPath, 'utf8'),
 ]);
 if (!mainSource.includes('http://127.0.0.1:4317')) {
-  throw new Error('Desktop main process does not load the hosted VaultBill web application.');
+    throw new Error('Desktop main process does not load the hosted VaultBill web application.');
 }
 if (mainSource.includes('.loadFile(')) {
-  throw new Error('Desktop main process must not load the renderer through file://.');
+    throw new Error('Desktop main process must not load the renderer through file://.');
 }
 if (webIndex.includes('/VaultBill/')) {
-  throw new Error('Desktop web assets were built with the GitHub Pages base path.');
+    throw new Error('Desktop web assets were built with the GitHub Pages base path.');
 }
 
 console.log(
-  JSON.stringify(
-    {
-      appName: identity.appName,
-      appSlug: identity.appSlug,
-      installerRequired: requireInstaller,
-      installerFound: hasInstallerArtifact,
-      packageMain: packageJson.main,
-    },
-    null,
-    2,
-  ),
+    JSON.stringify(
+        {
+            appName: identity.appName,
+            appSlug: identity.appSlug,
+            installerRequired: requireInstaller,
+            installerFound: hasInstallerArtifact,
+            packageMain: packageJson.main,
+        },
+        null,
+        2,
+    ),
 );

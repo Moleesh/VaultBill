@@ -1,6 +1,9 @@
+<!-- @format -->
+
 # Print Template
 
-Phase 9 implements the template security and compilation baseline.
+This is a supporting reference for template storage, sanitization, and output
+planning.
 
 ## Storage
 
@@ -14,23 +17,23 @@ Templates are stored in SQLite, not in a template folder:
 
 ```json
 {
-  "TemplateId": "TaxInvoiceA4",
-  "TemplateName": "Tax Invoice A4",
-  "Scope": "Record",
-  "Mappings": {
-    "Record.CustomerName": {
-      "SourceField": "CustomerName",
-      "SampleValue": "Sample Customer"
-    },
-    "Record.GrandTotal": {
-      "SourceField": "GrandTotal",
-      "SampleValue": "1180.00"
-    },
-    "Items": {
-      "SourceField": "LineItemSections.Items",
-      "SampleValue": []
+    "TemplateId": "TaxInvoiceA4",
+    "TemplateName": "Tax Invoice A4",
+    "Scope": "Record",
+    "Mappings": {
+        "Record.CustomerName": {
+            "SourceField": "CustomerName",
+            "SampleValue": "Sample Customer"
+        },
+        "Record.GrandTotal": {
+            "SourceField": "GrandTotal",
+            "SampleValue": "1180.00"
+        },
+        "Items": {
+            "SourceField": "LineItemSections.Items",
+            "SampleValue": []
+        }
     }
-  }
 }
 ```
 

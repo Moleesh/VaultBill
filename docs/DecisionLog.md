@@ -1,3 +1,5 @@
+<!-- @format -->
+
 # Decision Log
 
 ## 2026-06-04
@@ -302,3 +304,13 @@
   reusable workflows. React page composition and Electron entry/bridge glue are
   instead exercised through the mobile/tablet/desktop/wide Playwright matrix
   and desktop package smoke gates.
+
+## 2026-06-11 UI cleanup and docs simplification
+
+- Reworked the desktop shell, login, settings, builder, help copy, and version
+  footer behavior to match the latest UI cleanup decisions.
+- Kept the close icon, tray-close behavior, fixed blurred shell, hidden shell
+  scrollbar, compact dropdowns, and pinned `1.0.0` version as the current UI
+  baseline.
+- Removed the central spec file and rewrote the README/docs copy so the
+  practical documentation stands on its own.

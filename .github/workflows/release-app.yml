@@ -1,230 +1,232 @@
+# @format
+
 name: Release App
 
 on:
-  push:
-    branches: [main]
-    tags:
-      - 'v*'
-  workflow_dispatch:
+    push:
+        branches: [main]
+        tags:
+            - 'v*'
+    workflow_dispatch:
 
 permissions:
-  contents: read
+    contents: read
 
 concurrency:
-  group: release-app-${{ github.ref }}
-  cancel-in-progress: true
+    group: release-app-${{ github.ref }}
+    cancel-in-progress: true
 
 jobs:
-  verify:
-    runs-on: ubuntu-latest
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
-      VITE_BASE_PATH: '/'
+    verify:
+        runs-on: ubuntu-latest
+        env:
+            FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+            VITE_BASE_PATH: '/'
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: npm
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 24
+                  cache: npm
 
-      - name: Install
-        run: npm ci
+            - name: Install
+              run: npm ci
 
-      - name: Verify tag matches package version
-        if: startsWith(github.ref, 'refs/tags/')
-        shell: bash
-        run: |
-          package_tag="v$(node -p "require('./package.json').version")"
-          test "${GITHUB_REF_NAME}" = "${package_tag}" || {
-            echo "Tag ${GITHUB_REF_NAME} does not match package version ${package_tag}."
-            exit 1
-          }
+            - name: Verify tag matches package version
+              if: startsWith(github.ref, 'refs/tags/')
+              shell: bash
+              run: |
+                  package_tag="v$(node -p "require('./package.json').version")"
+                  test "${GITHUB_REF_NAME}" = "${package_tag}" || {
+                    echo "Tag ${GITHUB_REF_NAME} does not match package version ${package_tag}."
+                    exit 1
+                  }
 
-      - name: Format check
-        run: npm run format:check
+            - name: Format check
+              run: npm run format:check
 
-      - name: Lint
-        run: npm run lint
+            - name: Lint
+              run: npm run lint
 
-      - name: Typecheck
-        run: npm run typecheck
+            - name: Typecheck
+              run: npm run typecheck
 
-      - name: Unit tests
-        run: npm run test:ci
+            - name: Unit tests
+              run: npm run test:ci
 
-      - name: Coverage
-        run: npm run coverage:ci
+            - name: Coverage
+              run: npm run coverage:ci
 
-      - name: Dependency audit
-        run: npm run audit:security
+            - name: Dependency audit
+              run: npm run audit:security
 
-      - name: Secret scan
-        run: npm run scan:secrets
+            - name: Secret scan
+              run: npm run scan:secrets
 
-      - name: Security tests
-        run: npm run test:security
+            - name: Security tests
+              run: npm run test:security
 
-      - name: Security configuration
-        run: npm run security:check
+            - name: Security configuration
+              run: npm run security:check
 
-      - name: First-run database smoke
-        run: npm run smoke:first-run-db:ci
+            - name: First-run database smoke
+              run: npm run smoke:first-run-db:ci
 
-      - name: Install Playwright Chromium
-        run: npx playwright install --with-deps chromium
+            - name: Install Playwright Chromium
+              run: npx playwright install --with-deps chromium
 
-      - name: Browser flows
-        run: npm run test:e2e
+            - name: Browser flows
+              run: npm run test:e2e
 
-      - name: Build web and Electron
-        run: npm run build:desktop
+            - name: Build web and Electron
+              run: npm run build:desktop
 
-      - name: Upload browser failure evidence
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-failure-${{ github.run_id }}
-          path: |
-            playwright-report/**
-            test-results/**
-          if-no-files-found: ignore
+            - name: Upload browser failure evidence
+              if: failure()
+              uses: actions/upload-artifact@v4
+              with:
+                  name: playwright-failure-${{ github.run_id }}
+                  path: |
+                      playwright-report/**
+                      test-results/**
+                  if-no-files-found: ignore
 
-  package-windows:
-    runs-on: windows-latest
-    needs: verify
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
-      VAULTBILL_LICENSE_KEY: ${{ secrets.VAULTBILL_LICENSE_KEY }}
-      VITE_BASE_PATH: '/'
+    package-windows:
+        runs-on: windows-latest
+        needs: verify
+        env:
+            FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+            VAULTBILL_LICENSE_KEY: ${{ secrets.VAULTBILL_LICENSE_KEY }}
+            VITE_BASE_PATH: '/'
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: npm
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 24
+                  cache: npm
 
-      - name: Install
-        run: npm ci
+            - name: Install
+              run: npm ci
 
-      - name: Build desktop
-        run: npm run build:desktop
+            - name: Build desktop
+              run: npm run build:desktop
 
-      - name: Rebuild Electron native modules
-        run: npm run rebuild:native
+            - name: Rebuild Electron native modules
+              run: npm run rebuild:native
 
-      - name: Package Windows installer
-        run: npx electron-builder --config electron-builder.config.cjs --win nsis --x64 --publish never
+            - name: Package Windows installer
+              run: npx electron-builder --config electron-builder.config.cjs --win nsis --x64 --publish never
 
-      - name: Installer smoke
-        run: npm run smoke:installer:required
+            - name: Installer smoke
+              run: npm run smoke:installer:required
 
-      - name: Upload Windows artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: vaultbill-windows-${{ github.sha }}
-          path: |
-            release/*.exe
-            release/*.blockmap
-            release/latest*.yml
-          if-no-files-found: error
+            - name: Upload Windows artifacts
+              uses: actions/upload-artifact@v4
+              with:
+                  name: vaultbill-windows-${{ github.sha }}
+                  path: |
+                      release/*.exe
+                      release/*.blockmap
+                      release/latest*.yml
+                  if-no-files-found: error
 
-  package-linux:
-    runs-on: ubuntu-latest
-    needs: verify
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
-      VAULTBILL_LICENSE_KEY: ${{ secrets.VAULTBILL_LICENSE_KEY }}
-      VITE_BASE_PATH: '/'
+    package-linux:
+        runs-on: ubuntu-latest
+        needs: verify
+        env:
+            FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+            VAULTBILL_LICENSE_KEY: ${{ secrets.VAULTBILL_LICENSE_KEY }}
+            VITE_BASE_PATH: '/'
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: npm
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 24
+                  cache: npm
 
-      - name: Install
-        run: npm ci
+            - name: Install
+              run: npm ci
 
-      - name: Build desktop
-        run: npm run build:desktop
+            - name: Build desktop
+              run: npm run build:desktop
 
-      - name: Rebuild Electron native modules
-        run: npm run rebuild:native
+            - name: Rebuild Electron native modules
+              run: npm run rebuild:native
 
-      - name: Package Linux AppImage
-        run: npx electron-builder --config electron-builder.config.cjs --linux AppImage --x64 --publish never
+            - name: Package Linux AppImage
+              run: npx electron-builder --config electron-builder.config.cjs --linux AppImage --x64 --publish never
 
-      - name: Package smoke
-        run: npm run smoke:installer:required
+            - name: Package smoke
+              run: npm run smoke:installer:required
 
-      - name: Upload Linux artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: vaultbill-linux-${{ github.sha }}
-          path: |
-            release/*.AppImage
-            release/latest*.yml
-          if-no-files-found: error
+            - name: Upload Linux artifacts
+              uses: actions/upload-artifact@v4
+              with:
+                  name: vaultbill-linux-${{ github.sha }}
+                  path: |
+                      release/*.AppImage
+                      release/latest*.yml
+                  if-no-files-found: error
 
-  publish:
-    if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
-    needs: [package-windows, package-linux]
-    permissions:
-      contents: write
-    env:
-      GH_TOKEN: ${{ github.token }}
+    publish:
+        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
+        runs-on: ubuntu-latest
+        needs: [package-windows, package-linux]
+        permissions:
+            contents: write
+        env:
+            GH_TOKEN: ${{ github.token }}
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 24
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 24
 
-      - name: Download release artifacts
-        uses: actions/download-artifact@v4
-        with:
-          pattern: vaultbill-*-${{ github.sha }}
-          path: release
-          merge-multiple: true
+            - name: Download release artifacts
+              uses: actions/download-artifact@v4
+              with:
+                  pattern: vaultbill-*-${{ github.sha }}
+                  path: release
+                  merge-multiple: true
 
-      - name: Generate release notes and checksums
-        run: |
-          npm run release:notes
-          npm run release:checksums
-          printf '\n## Signing status\n\n- Windows and Linux artifacts are unsigned unless signing credentials were configured by the repository owner.\n' >> artifacts/release-notes.md
+            - name: Generate release notes and checksums
+              run: |
+                  npm run release:notes
+                  npm run release:checksums
+                  printf '\n## Signing status\n\n- Windows and Linux artifacts are unsigned unless signing credentials were configured by the repository owner.\n' >> artifacts/release-notes.md
 
-      - name: Replace same-version release
-        shell: bash
-        run: |
-          release_tag="v$(node -p "require('./package.json').version")"
-          if [[ "${GITHUB_REF_TYPE}" == "tag" && "${GITHUB_REF_NAME}" != "${release_tag}" ]]; then
-            echo "Tag ${GITHUB_REF_NAME} does not match ${release_tag}."
-            exit 1
-          fi
-          if gh release view "${release_tag}" >/dev/null 2>&1; then
-            gh release delete "${release_tag}" --yes --cleanup-tag
-          elif git ls-remote --exit-code --tags origin "refs/tags/${release_tag}" >/dev/null 2>&1; then
-            git push origin ":refs/tags/${release_tag}"
-          fi
-          mapfile -t release_files < <(find release -maxdepth 1 -type f -print | sort)
-          test "${#release_files[@]}" -gt 0
-          gh release create "${release_tag}" "${release_files[@]}" \
-            --title "VaultBill ${release_tag}" \
-            --notes-file artifacts/release-notes.md \
-            --target "${GITHUB_SHA}"
+            - name: Replace same-version release
+              shell: bash
+              run: |
+                  release_tag="v$(node -p "require('./package.json').version")"
+                  if [[ "${GITHUB_REF_TYPE}" == "tag" && "${GITHUB_REF_NAME}" != "${release_tag}" ]]; then
+                    echo "Tag ${GITHUB_REF_NAME} does not match ${release_tag}."
+                    exit 1
+                  fi
+                  if gh release view "${release_tag}" >/dev/null 2>&1; then
+                    gh release delete "${release_tag}" --yes --cleanup-tag
+                  elif git ls-remote --exit-code --tags origin "refs/tags/${release_tag}" >/dev/null 2>&1; then
+                    git push origin ":refs/tags/${release_tag}"
+                  fi
+                  mapfile -t release_files < <(find release -maxdepth 1 -type f -print | sort)
+                  test "${#release_files[@]}" -gt 0
+                  gh release create "${release_tag}" "${release_files[@]}" \
+                    --title "VaultBill ${release_tag}" \
+                    --notes-file artifacts/release-notes.md \
+                    --target "${GITHUB_SHA}"

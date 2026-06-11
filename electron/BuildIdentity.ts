@@ -1,11 +1,13 @@
+/** @format */
+
 export type BuildIdentity = {
-  readonly appName: string;
-  readonly appSlug: string;
+    readonly appName: string;
+    readonly appSlug: string;
 };
 
 export const getBuildIdentity = (): BuildIdentity => {
-  return {
-    appName: 'VaultBill',
-    appSlug: 'vaultbill',
-  };
+    return {
+        appName: 'VaultBill',
+        appSlug: 'vaultbill',
+    };
 };

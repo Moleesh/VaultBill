@@ -1,3 +1,5 @@
+<!-- @format -->
+
 # VaultBill ✨
 
 VaultBill is an offline-first billing, reporting, PDF, and print workspace with
@@ -6,6 +8,10 @@ two deliberately different personalities:
 - 🌐 **GitHub Pages demo:** browser-only, seeded, secret-free, and safe to reset.
 - 🖥️ **Full desktop app:** Electron + SQLite for Windows and Linux, with a hosted
   local web workspace while VaultBill is running.
+
+The README and the docs under `docs/` describe the current product behavior
+directly, so you can browse the app, the workflows, and the supporting notes
+without jumping through a central spec document. Nice and tidy. 🙂
 
 [![Demo Pages](https://img.shields.io/github/actions/workflow/status/Moleesh/VaultBill/demo-pages.yml?branch=main&label=demo%20pages)](https://github.com/Moleesh/VaultBill/actions/workflows/demo-pages.yml)
 [![Release App](https://img.shields.io/github/actions/workflow/status/Moleesh/VaultBill/release-app.yml?branch=main&label=release%20app)](https://github.com/Moleesh/VaultBill/actions/workflows/release-app.yml)

@@ -1,51 +1,53 @@
+/** @format */
+
 body {
-  font-family: var(--font-body);
-  font-size: clamp(0.95rem, 0.9rem + 0.25vw, 1.05rem);
-  line-height: 1.6;
+    font-family: var(--font-body);
+    font-size: clamp(0.95rem, 0.9rem + 0.25vw, 1.05rem);
+    line-height: 1.6;
 }
 
 h1,
 h2,
 h3,
 p {
-  margin: 0;
+    margin: 0;
 }
 
 h1,
 h2,
 h3 {
-  color: var(--color-heading);
-  font-family: var(--font-display);
-  line-height: 1.05;
+    color: var(--color-heading);
+    font-family: var(--font-display);
+    line-height: 1.05;
 }
 
 h1 {
-  max-width: 24ch;
-  font-size: clamp(1.8rem, 3vw, 2.5rem);
-  letter-spacing: -0.03em;
+    max-width: 24ch;
+    font-size: clamp(1.8rem, 3vw, 2.5rem);
+    letter-spacing: -0.03em;
 }
 
 h2 {
-  font-size: clamp(1.35rem, 2vw, 2rem);
-  letter-spacing: -0.025em;
+    font-size: clamp(1.35rem, 2vw, 2rem);
+    letter-spacing: -0.025em;
 }
 
 small {
-  color: var(--color-text-muted);
-  font-size: 0.84rem;
+    color: var(--color-text-muted);
+    font-size: 0.84rem;
 }
 
 .eyebrow {
-  color: var(--color-primary);
-  font-family: var(--font-mono);
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+    color: var(--color-primary);
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
 }
 
 .login-card__brand h1 {
-  max-width: 12ch;
-  font-size: var(--font-size-hero);
-  letter-spacing: -0.05em;
+    max-width: 12ch;
+    font-size: var(--font-size-hero);
+    letter-spacing: -0.05em;
 }

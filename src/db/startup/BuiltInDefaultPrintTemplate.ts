@@ -1,3 +1,5 @@
+/** @format */
+
 export const builtInDefaultPrintTemplateHtml = `<!doctype html>
 <html lang="en">
   <head>
@@ -138,13 +140,13 @@ export const builtInDefaultPrintTemplateHtml = `<!doctype html>
 </html>`;
 
 export const builtInDefaultPrintTemplateJson = {
-  FormatId: 'TaxInvoice',
+    FormatId: 'TaxInvoice',
 };
 
 export const builtInDefaultPrintAsset = {
-  name: 'CompanyLogo',
-  type: 'image/svg+xml',
-  svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-label="VaultBill sample logo">
+    name: 'CompanyLogo',
+    type: 'image/svg+xml',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-label="VaultBill sample logo">
   <defs>
     <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
       <stop offset="0%" stop-color="#0f7f75" />

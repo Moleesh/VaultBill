@@ -1,3 +1,5 @@
+<!-- @format -->
+
 Print templates are stored in SQLite through `print_templates` and
 `print_template_assets`. The print workflow prepares Draft Print, Final Print,
 Reprint, Test Print, Preview, Download as PDF, and printer-output jobs from the

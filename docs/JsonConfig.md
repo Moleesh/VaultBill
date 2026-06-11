@@ -1,18 +1,20 @@
+<!-- @format -->
+
 # JSON Config
 
-This document summarizes the persisted JSON contracts validated by the current
-schema, print, report, settings, and integration engines.
+This document summarizes supporting JSON contracts used by the current schema,
+print, report, settings, and integration engines.
 
 ## Runtime Branding
 
 ```json
 {
-  "ApplicationName": "VaultBill",
-  "CompanyName": "",
-  "Tagline": "Configure once. Bill, print, and report anywhere.",
-  "ApplicationLogoAssetId": "",
-  "PrintLogoAssetId": "",
-  "FaviconAssetId": ""
+    "ApplicationName": "VaultBill",
+    "CompanyName": "",
+    "Tagline": "Configure once. Bill, print, and report anywhere.",
+    "ApplicationLogoAssetId": "",
+    "PrintLogoAssetId": "",
+    "FaviconAssetId": ""
 }
 ```
 
@@ -23,10 +25,10 @@ validates complete document format JSON before persistence.
 
 ```json
 {
-  "FormatId": "TaxInvoice",
-  "FormatName": "GST Invoice",
-  "Description": "Default seeded format placeholder",
-  "IsDefault": true
+    "FormatId": "TaxInvoice",
+    "FormatName": "GST Invoice",
+    "Description": "Default seeded format placeholder",
+    "IsDefault": true
 }
 ```
 
@@ -36,16 +38,16 @@ Clean SQLite databases seed one default document format:
 
 ```json
 {
-  "FormatId": "TaxInvoice",
-  "FormatName": "GST Invoice",
-  "LineItemSections": ["Items"],
-  "CalculationPolicy": {
-    "Currency": "INR",
-    "MoneyPrecision": 2,
-    "QuantityPrecision": 3,
-    "RatePrecision": 4,
-    "RoundingMode": "HALF_UP"
-  }
+    "FormatId": "TaxInvoice",
+    "FormatName": "GST Invoice",
+    "LineItemSections": ["Items"],
+    "CalculationPolicy": {
+        "Currency": "INR",
+        "MoneyPrecision": 2,
+        "QuantityPrecision": 3,
+        "RatePrecision": 4,
+        "RoundingMode": "HALF_UP"
+    }
 }
 ```
 
@@ -66,22 +68,22 @@ The built-in theme IDs are:
 
 ```json
 {
-  "TemplateId": "TaxInvoiceA4",
-  "TemplateName": "Tax Invoice A4",
-  "Scope": "Record",
-  "Mappings": {
-    "Record.CustomerName": {
-      "SourceField": "CustomerName",
-      "SampleValue": "Sample Customer"
-    },
-    "Record.InvoiceNumber": {
-      "SourceField": "DocumentNumber"
-    },
-    "Items": {
-      "SourceField": "LineItemSections.Items",
-      "SampleValue": []
+    "TemplateId": "TaxInvoiceA4",
+    "TemplateName": "Tax Invoice A4",
+    "Scope": "Record",
+    "Mappings": {
+        "Record.CustomerName": {
+            "SourceField": "CustomerName",
+            "SampleValue": "Sample Customer"
+        },
+        "Record.InvoiceNumber": {
+            "SourceField": "DocumentNumber"
+        },
+        "Items": {
+            "SourceField": "LineItemSections.Items",
+            "SampleValue": []
+        }
     }
-  }
 }
 ```
 
@@ -92,23 +94,23 @@ is sanitized before saving and again before compilation.
 
 ```json
 {
-  "ProfileId": "OfficeA4",
-  "ProfileName": "Office A4 Printer",
-  "OutputTarget": "SelectedPrinter",
-  "PrinterName": "HP LaserJet Pro",
-  "PaperSize": "A4",
-  "Orientation": "Portrait",
-  "Margins": {
-    "Top": 10,
-    "Right": 10,
-    "Bottom": 10,
-    "Left": 10
-  },
-  "Scale": 1,
-  "ShowPreviewBeforePrint": true,
-  "AskCopiesBeforePrint": false,
-  "DefaultCopies": 1,
-  "FirstPageOnly": true
+    "ProfileId": "OfficeA4",
+    "ProfileName": "Office A4 Printer",
+    "OutputTarget": "SelectedPrinter",
+    "PrinterName": "HP LaserJet Pro",
+    "PaperSize": "A4",
+    "Orientation": "Portrait",
+    "Margins": {
+        "Top": 10,
+        "Right": 10,
+        "Bottom": 10,
+        "Left": 10
+    },
+    "Scale": 1,
+    "ShowPreviewBeforePrint": true,
+    "AskCopiesBeforePrint": false,
+    "DefaultCopies": 1,
+    "FirstPageOnly": true
 }
 ```
 
@@ -123,12 +125,12 @@ Generated upload templates expose column metadata instead of saving records:
 
 ```json
 {
-  "label": "Item Name",
-  "fieldId": "ItemName",
-  "required": "Required",
-  "dataType": "Text",
-  "example": "Sample Item",
-  "calculated": "No"
+    "label": "Item Name",
+    "fieldId": "ItemName",
+    "required": "Required",
+    "dataType": "Text",
+    "example": "Sample Item",
+    "calculated": "No"
 }
 ```
 
@@ -140,25 +142,25 @@ spreadsheet formula-injection protection when they begin with `=`, `+`, `-`, or
 
 ```json
 {
-  "ReportId": "SalesSummary",
-  "ReportName": "Sales Summary",
-  "Source": "Records",
-  "FormatIds": ["TaxInvoice"],
-  "Filters": [
-    {
-      "FieldId": "InvoiceDate",
-      "Type": "DateRange",
-      "Label": "Invoice Date"
-    }
-  ],
-  "Columns": [
-    {
-      "ColumnId": "CustomerName",
-      "Label": "Customer",
-      "SourceField": "CustomerName"
-    }
-  ],
-  "PrintTemplates": [{ "TemplateId": "SalesSummaryA4", "IsDefault": true }]
+    "ReportId": "SalesSummary",
+    "ReportName": "Sales Summary",
+    "Source": "Records",
+    "FormatIds": ["TaxInvoice"],
+    "Filters": [
+        {
+            "FieldId": "InvoiceDate",
+            "Type": "DateRange",
+            "Label": "Invoice Date"
+        }
+    ],
+    "Columns": [
+        {
+            "ColumnId": "CustomerName",
+            "Label": "Customer",
+            "SourceField": "CustomerName"
+        }
+    ],
+    "PrintTemplates": [{ "TemplateId": "SalesSummaryA4", "IsDefault": true }]
 }
 ```
 
@@ -169,16 +171,16 @@ matching rows, not only the visible page.
 
 ```json
 {
-  "CompanyName": "Sample Traders",
-  "LegalName": "Sample Traders Pvt Ltd",
-  "Gstin": "",
-  "Address": "",
-  "Phone": "",
-  "Email": "",
-  "State": "",
-  "BankName": "",
-  "BankAccountNumber": "",
-  "Ifsc": ""
+    "CompanyName": "Sample Traders",
+    "LegalName": "Sample Traders Pvt Ltd",
+    "Gstin": "",
+    "Address": "",
+    "Phone": "",
+    "Email": "",
+    "State": "",
+    "BankName": "",
+    "BankAccountNumber": "",
+    "Ifsc": ""
 }
 ```
 
@@ -198,10 +200,10 @@ settings screens can share the same contract:
 
 ```json
 {
-  "ActionId": "save-draft",
-  "Label": "Save draft",
-  "Keys": ["Control", "S"],
-  "AriaKeyShortcut": "Control+S"
+    "ActionId": "save-draft",
+    "Label": "Save draft",
+    "Keys": ["Control", "S"],
+    "AriaKeyShortcut": "Control+S"
 }
 ```
 
@@ -218,10 +220,10 @@ The required responsive test matrix is tracked in code and docs:
 
 ```json
 {
-  "Name": "Standard mobile",
-  "Width": 390,
-  "Height": 844,
-  "ExpectedColumns": "Single"
+    "Name": "Standard mobile",
+    "Width": 390,
+    "Height": 844,
+    "ExpectedColumns": "Single"
 }
 ```
 
@@ -232,11 +234,11 @@ double-column layout, and wider screens may use the three-column desktop layout.
 
 ```json
 {
-  "SignaturePad": {
-    "Enabled": true,
-    "Mode": "Screen",
-    "TestedUsbDevices": []
-  }
+    "SignaturePad": {
+        "Enabled": true,
+        "Mode": "Screen",
+        "TestedUsbDevices": []
+    }
 }
 ```
 
@@ -248,15 +250,15 @@ path data strings.
 
 ```json
 {
-  "Enabled": true,
-  "ProviderId": "generic-sms",
-  "EndpointUrl": "https://sms.example/send",
-  "SenderId": "VAULT",
-  "UseServerSideProxy": true,
-  "Secrets": {
-    "ApiKey": "stored-in-settings",
-    "ApiSecret": "stored-in-settings"
-  }
+    "Enabled": true,
+    "ProviderId": "generic-sms",
+    "EndpointUrl": "https://sms.example/send",
+    "SenderId": "VAULT",
+    "UseServerSideProxy": true,
+    "Secrets": {
+        "ApiKey": "stored-in-settings",
+        "ApiSecret": "stored-in-settings"
+    }
 }
 ```
 
@@ -267,15 +269,15 @@ must use a server-side provider flow.
 
 ```json
 {
-  "Enabled": true,
-  "DefaultSellerStateCode": "29",
-  "HsnSacCatalog": [
-    {
-      "Code": "9983",
-      "Description": "Professional services",
-      "TaxRatePercent": "18"
-    }
-  ]
+    "Enabled": true,
+    "DefaultSellerStateCode": "29",
+    "HsnSacCatalog": [
+        {
+            "Code": "9983",
+            "Description": "Professional services",
+            "TaxRatePercent": "18"
+        }
+    ]
 }
 ```
 
@@ -286,16 +288,16 @@ same-state CGST/SGST, calculate interstate IGST, and escape GSTR export cells.
 
 ```json
 {
-  "Enabled": true,
-  "ProviderId": "generic-gsp",
-  "BaseUrl": "https://gsp.example/api",
-  "Sandbox": true,
-  "ClientId": "client",
-  "ClientSecret": "secret",
-  "Endpoints": {
-    "EInvoice": "/einvoice",
-    "Gstr": "/gstr"
-  }
+    "Enabled": true,
+    "ProviderId": "generic-gsp",
+    "BaseUrl": "https://gsp.example/api",
+    "Sandbox": true,
+    "ClientId": "client",
+    "ClientSecret": "secret",
+    "Endpoints": {
+        "EInvoice": "/einvoice",
+        "Gstr": "/gstr"
+    }
 }
 ```
 

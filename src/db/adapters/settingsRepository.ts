@@ -1,177 +1,179 @@
+/** @format */
+
 import type { z } from 'zod';
 
 import {
-  CompanyProfileSchema,
-  GspIntegrationSettingsSchema,
-  GstIntegrationSettingsSchema,
-  RuntimeBrandingSchema,
-  SignaturePadSettingsSchema,
-  SmsProviderSettingsSchema,
-  type CompanyProfileConfig,
-  type GspIntegrationSettings,
-  type GstIntegrationSettings,
-  type RuntimeBrandingConfig,
-  type SignaturePadSettings,
-  type SmsProviderSettings,
+    CompanyProfileSchema,
+    GspIntegrationSettingsSchema,
+    GstIntegrationSettingsSchema,
+    RuntimeBrandingSchema,
+    SignaturePadSettingsSchema,
+    SmsProviderSettingsSchema,
+    type CompanyProfileConfig,
+    type GspIntegrationSettings,
+    type GstIntegrationSettings,
+    type RuntimeBrandingConfig,
+    type SignaturePadSettings,
+    type SmsProviderSettings,
 } from '../startup/ConfigSchemas';
 import { parseJsonWithSchema, stringifyValidatedJson } from '../startup/JsonParsing';
 import {
-  companyProfileSettingKey,
-  gspIntegrationSettingKey,
-  gstIntegrationSettingKey,
-  runtimeBrandingSettingKey,
-  signaturePadSettingKey,
-  smsProviderSettingKey,
+    companyProfileSettingKey,
+    gspIntegrationSettingKey,
+    gstIntegrationSettingKey,
+    runtimeBrandingSettingKey,
+    signaturePadSettingKey,
+    smsProviderSettingKey,
 } from '../startup/StartupSettingKeys';
 import type { SqliteConnection } from '../sqlite/SqliteConnection';
 
 export const saveRuntimeBranding = (
-  connection: SqliteConnection,
-  branding: RuntimeBrandingConfig,
-  updatedAt: string,
+    connection: SqliteConnection,
+    branding: RuntimeBrandingConfig,
+    updatedAt: string,
 ) => {
-  upsertSetting(
-    connection,
-    runtimeBrandingSettingKey,
-    stringifyValidatedJson(branding, RuntimeBrandingSchema),
-    updatedAt,
-  );
+    upsertSetting(
+        connection,
+        runtimeBrandingSettingKey,
+        stringifyValidatedJson(branding, RuntimeBrandingSchema),
+        updatedAt,
+    );
 };
 
 export const loadRuntimeBranding = (
-  connection: SqliteConnection,
+    connection: SqliteConnection,
 ): RuntimeBrandingConfig | undefined =>
-  loadSetting(connection, runtimeBrandingSettingKey, RuntimeBrandingSchema);
+    loadSetting(connection, runtimeBrandingSettingKey, RuntimeBrandingSchema);
 
 export const saveCompanyProfile = (
-  connection: SqliteConnection,
-  companyProfile: CompanyProfileConfig,
-  updatedAt: string,
+    connection: SqliteConnection,
+    companyProfile: CompanyProfileConfig,
+    updatedAt: string,
 ) => {
-  upsertSetting(
-    connection,
-    companyProfileSettingKey,
-    stringifyValidatedJson(companyProfile, CompanyProfileSchema),
-    updatedAt,
-  );
+    upsertSetting(
+        connection,
+        companyProfileSettingKey,
+        stringifyValidatedJson(companyProfile, CompanyProfileSchema),
+        updatedAt,
+    );
 };
 
 export const loadCompanyProfile = (
-  connection: SqliteConnection,
+    connection: SqliteConnection,
 ): CompanyProfileConfig | undefined =>
-  loadSetting(connection, companyProfileSettingKey, CompanyProfileSchema);
+    loadSetting(connection, companyProfileSettingKey, CompanyProfileSchema);
 
 export const saveSignaturePadSettings = (
-  connection: SqliteConnection,
-  settings: SignaturePadSettings,
-  updatedAt: string,
+    connection: SqliteConnection,
+    settings: SignaturePadSettings,
+    updatedAt: string,
 ) => {
-  upsertSetting(
-    connection,
-    signaturePadSettingKey,
-    stringifyValidatedJson(settings, SignaturePadSettingsSchema),
-    updatedAt,
-  );
+    upsertSetting(
+        connection,
+        signaturePadSettingKey,
+        stringifyValidatedJson(settings, SignaturePadSettingsSchema),
+        updatedAt,
+    );
 };
 
 export const loadSignaturePadSettings = (
-  connection: SqliteConnection,
+    connection: SqliteConnection,
 ): SignaturePadSettings | undefined =>
-  loadSetting(connection, signaturePadSettingKey, SignaturePadSettingsSchema);
+    loadSetting(connection, signaturePadSettingKey, SignaturePadSettingsSchema);
 
 export const saveSmsProviderSettings = (
-  connection: SqliteConnection,
-  settings: SmsProviderSettings,
-  updatedAt: string,
+    connection: SqliteConnection,
+    settings: SmsProviderSettings,
+    updatedAt: string,
 ) => {
-  upsertSetting(
-    connection,
-    smsProviderSettingKey,
-    stringifyValidatedJson(settings, SmsProviderSettingsSchema),
-    updatedAt,
-  );
+    upsertSetting(
+        connection,
+        smsProviderSettingKey,
+        stringifyValidatedJson(settings, SmsProviderSettingsSchema),
+        updatedAt,
+    );
 };
 
 export const loadSmsProviderSettings = (
-  connection: SqliteConnection,
+    connection: SqliteConnection,
 ): SmsProviderSettings | undefined =>
-  loadSetting(connection, smsProviderSettingKey, SmsProviderSettingsSchema);
+    loadSetting(connection, smsProviderSettingKey, SmsProviderSettingsSchema);
 
 export const saveGstIntegrationSettings = (
-  connection: SqliteConnection,
-  settings: GstIntegrationSettings,
-  updatedAt: string,
+    connection: SqliteConnection,
+    settings: GstIntegrationSettings,
+    updatedAt: string,
 ) => {
-  upsertSetting(
-    connection,
-    gstIntegrationSettingKey,
-    stringifyValidatedJson(settings, GstIntegrationSettingsSchema),
-    updatedAt,
-  );
+    upsertSetting(
+        connection,
+        gstIntegrationSettingKey,
+        stringifyValidatedJson(settings, GstIntegrationSettingsSchema),
+        updatedAt,
+    );
 };
 
 export const loadGstIntegrationSettings = (
-  connection: SqliteConnection,
+    connection: SqliteConnection,
 ): GstIntegrationSettings | undefined =>
-  loadSetting(connection, gstIntegrationSettingKey, GstIntegrationSettingsSchema);
+    loadSetting(connection, gstIntegrationSettingKey, GstIntegrationSettingsSchema);
 
 export const saveGspIntegrationSettings = (
-  connection: SqliteConnection,
-  settings: GspIntegrationSettings,
-  updatedAt: string,
+    connection: SqliteConnection,
+    settings: GspIntegrationSettings,
+    updatedAt: string,
 ) => {
-  upsertSetting(
-    connection,
-    gspIntegrationSettingKey,
-    stringifyValidatedJson(settings, GspIntegrationSettingsSchema),
-    updatedAt,
-  );
+    upsertSetting(
+        connection,
+        gspIntegrationSettingKey,
+        stringifyValidatedJson(settings, GspIntegrationSettingsSchema),
+        updatedAt,
+    );
 };
 
 export const loadGspIntegrationSettings = (
-  connection: SqliteConnection,
+    connection: SqliteConnection,
 ): GspIntegrationSettings | undefined =>
-  loadSetting(connection, gspIntegrationSettingKey, GspIntegrationSettingsSchema);
+    loadSetting(connection, gspIntegrationSettingKey, GspIntegrationSettingsSchema);
 
 const upsertSetting = (
-  connection: SqliteConnection,
-  settingKey: string,
-  settingJson: string,
-  updatedAt: string,
+    connection: SqliteConnection,
+    settingKey: string,
+    settingJson: string,
+    updatedAt: string,
 ) => {
-  const existing = connection.get('SELECT setting_key FROM settings WHERE setting_key = ?;', [
-    settingKey,
-  ]);
+    const existing = connection.get('SELECT setting_key FROM settings WHERE setting_key = ?;', [
+        settingKey,
+    ]);
 
-  if (existing) {
-    connection.run(
-      `UPDATE settings
+    if (existing) {
+        connection.run(
+            `UPDATE settings
         SET setting_json = ?, updated_at = ?
         WHERE setting_key = ?;`,
-      [settingJson, updatedAt, settingKey],
-    );
-    return;
-  }
+            [settingJson, updatedAt, settingKey],
+        );
+        return;
+    }
 
-  connection.run(
-    `INSERT INTO settings (setting_key, setting_json, updated_at)
+    connection.run(
+        `INSERT INTO settings (setting_key, setting_json, updated_at)
       VALUES (?, ?, ?);`,
-    [settingKey, settingJson, updatedAt],
-  );
+        [settingKey, settingJson, updatedAt],
+    );
 };
 
 const loadSetting = <T>(
-  connection: SqliteConnection,
-  settingKey: string,
-  schema: z.ZodType<T>,
+    connection: SqliteConnection,
+    settingKey: string,
+    schema: z.ZodType<T>,
 ): T | undefined => {
-  const row = connection.get('SELECT setting_json FROM settings WHERE setting_key = ?;', [
-    settingKey,
-  ]);
+    const row = connection.get('SELECT setting_json FROM settings WHERE setting_key = ?;', [
+        settingKey,
+    ]);
 
-  if (!row || typeof row.setting_json !== 'string') {
-    return undefined;
-  }
+    if (!row || typeof row.setting_json !== 'string') {
+        return undefined;
+    }
 
-  return parseJsonWithSchema(row.setting_json, schema);
+    return parseJsonWithSchema(row.setting_json, schema);
 };

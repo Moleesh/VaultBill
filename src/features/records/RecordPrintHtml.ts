@@ -1,51 +1,56 @@
-/* eslint-disable max-lines */
+/**
+ * eslint-disable max-lines
+ *
+ * @format
+ */
+
 import type { DocumentFormatConfig } from '../../db/startup/ConfigSchemas';
 import { requestHostedApi } from '../../runtime/HostedApi';
 import type { AppRecord, EditableRecord } from './RecordStoreContext';
 import { calculateRecordTotals } from './RecordTotals';
 
 export type RecordPrintPackage = {
-  readonly config: DocumentFormatConfig;
-  readonly templateHtml: string;
-  readonly assets: readonly {
-    readonly name: string;
-    readonly type: string;
-    readonly dataBase64: string;
-  }[];
+    readonly config: DocumentFormatConfig;
+    readonly templateHtml: string;
+    readonly assets: readonly {
+        readonly name: string;
+        readonly type: string;
+        readonly dataBase64: string;
+    }[];
 };
 
 export const loadRecordPrintPackage = async (
-  formatId: string,
-  isLanBrowser: boolean,
+    formatId: string,
+    isLanBrowser: boolean,
 ): Promise<RecordPrintPackage | undefined> => {
-  if (window.vaultBillDesktop) {
-    return (await window.vaultBillDesktop.loadBuilderPackage(formatId)) as
-      | RecordPrintPackage
-      | undefined;
-  }
-  if (isLanBrowser) {
-    return requestHostedApi<RecordPrintPackage | undefined>(
-      `/print/template?formatId=${encodeURIComponent(formatId)}`,
-    );
-  }
-  return undefined;
+    if (window.vaultBillDesktop) {
+        return (await window.vaultBillDesktop.loadBuilderPackage(formatId)) as
+            | RecordPrintPackage
+            | undefined;
+    }
+    if (isLanBrowser) {
+        return requestHostedApi<RecordPrintPackage | undefined>(
+            `/print/template?formatId=${encodeURIComponent(formatId)}`,
+        );
+    }
+    return undefined;
 };
 
 export const renderRecordHtml = (
-  record: EditableRecord,
-  stored: AppRecord | undefined,
-  printPackage?: RecordPrintPackage,
+    record: EditableRecord,
+    stored: AppRecord | undefined,
+    printPackage?: RecordPrintPackage,
 ): string =>
-  printPackage
-    ? renderConfiguredRecordHtml(record, stored, printPackage)
-    : renderFallbackRecordHtml(record, stored);
+    printPackage
+        ? renderConfiguredRecordHtml(record, stored, printPackage)
+        : renderFallbackRecordHtml(record, stored);
 
 const renderFallbackRecordHtml = (
-  record: EditableRecord,
-  stored: AppRecord | undefined,
+    record: EditableRecord,
+    stored: AppRecord | undefined,
 ): string => {
-  const totals = calculateRecordTotals(record);
-  return `
+    const totals = calculateRecordTotals(record);
+    return `
 <!doctype html>
 <html>
   <head>
@@ -86,11 +91,11 @@ const renderFallbackRecordHtml = (
       <thead><tr><th>Item</th><th>Qty</th><th>Rate</th><th>Tax</th><th>Amount</th></tr></thead>
       <tbody>
         ${record.lineItems
-          .map(
-            (item) =>
-              `<tr><td>${escapePrintHtml(item.itemName)}</td><td>${escapePrintHtml(item.quantity)}</td><td>${escapePrintHtml(item.rate)}</td><td>${escapePrintHtml(item.taxPercent)}%</td><td>${escapePrintHtml(item.amount)}</td></tr>`,
-          )
-          .join('')}
+            .map(
+                (item) =>
+                    `<tr><td>${escapePrintHtml(item.itemName)}</td><td>${escapePrintHtml(item.quantity)}</td><td>${escapePrintHtml(item.rate)}</td><td>${escapePrintHtml(item.taxPercent)}%</td><td>${escapePrintHtml(item.amount)}</td></tr>`,
+            )
+            .join('')}
       </tbody>
     </table>
     <div class="summary">
@@ -104,8 +109,8 @@ const renderFallbackRecordHtml = (
 };
 
 export const combineRecordHtml = (
-  records: readonly AppRecord[],
-  packages: ReadonlyMap<string, RecordPrintPackage> = new Map(),
+    records: readonly AppRecord[],
+    packages: ReadonlyMap<string, RecordPrintPackage> = new Map(),
 ): string => `<!doctype html>
 <html>
   <head>
@@ -118,135 +123,140 @@ export const combineRecordHtml = (
   </head>
   <body>
     ${records
-      .map((record) => {
-        const document = renderRecordHtml(record, record, packages.get(record.formatId));
-        return `<section class="vaultbill-print-page">${extractDocumentFragment(document)}</section>`;
-      })
-      .join('')}
+        .map((record) => {
+            const document = renderRecordHtml(record, record, packages.get(record.formatId));
+            return `<section class="vaultbill-print-page">${extractDocumentFragment(document)}</section>`;
+        })
+        .join('')}
   </body>
 </html>`;
 
 export const escapePrintHtml = (value: string): string =>
-  value
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#39;');
+    value
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
 
 const renderConfiguredRecordHtml = (
-  record: EditableRecord,
-  stored: AppRecord | undefined,
-  printPackage: RecordPrintPackage,
+    record: EditableRecord,
+    stored: AppRecord | undefined,
+    printPackage: RecordPrintPackage,
 ): string => {
-  const business = readBusinessProfile();
-  const totals = calculateRecordTotals(record);
-  const itemRows = record.lineItems
-    .map(
-      (item) =>
-        `<tr><td>${escapePrintHtml(item.itemName)}</td><td>${escapePrintHtml(item.hsnSac)}</td><td>${escapePrintHtml(item.quantity)}</td><td>${escapePrintHtml(item.rate)}</td><td>${escapePrintHtml(item.taxPercent)}</td><td>${escapePrintHtml(item.amount)}</td></tr>`,
-    )
-    .join('');
-  const itemTable = `<table><thead><tr><th>Item</th><th>HSN/SAC</th><th>Quantity</th><th>Rate</th><th>Tax %</th><th>Amount</th></tr></thead><tbody>${itemRows}</tbody></table>`;
-  const values: Record<string, string> = {
-    'Company.Name': business.companyName,
-    'Company.Address': business.address,
-    'Company.Gstin': business.gstin,
-    'Record.Number': stored?.documentNumber ?? 'Draft copy',
-    'Record.Status': stored?.status ?? 'Draft',
-    'Record.IsCancelled': String(stored?.status === 'Cancelled'),
-    'Record.CancellationReason': stored?.cancellationReason ?? '',
-    'Record.InvoiceDate': record.invoiceDate,
-    'Record.CustomerName': record.customerName,
-    'Record.CustomerGstin': record.gstin,
-    'Record.Gstin': record.gstin,
-    'Record.State': record.state,
-    'Record.BillingAddress': record.billingAddress,
-    'Record.Subtotal': totals.subtotal,
-    'Record.TaxTotal': totals.taxTotal,
-    'Record.RoundOff': totals.roundOff,
-    'Record.GrandTotal': totals.grandTotal,
-    'Record.FormatName': record.formatName,
-    Items: itemTable,
-    'Items.Table': itemTable,
-    'Items.Rows': itemRows,
-  };
-  for (const field of [
-    ...printPackage.config.Fields,
-    ...printPackage.config.LineItemSections.flatMap((section) => section.Fields),
-  ]) {
-    values[`Record.${field.FieldId}`] = recordFieldValue(field.FieldId, record);
-  }
-  for (const asset of printPackage.assets) {
-    values[`Asset.${asset.name}`] = `data:${asset.type};base64,${asset.dataBase64}`;
-  }
-  return printPackage.templateHtml.replace(/\{\{\s*([^}]+?)\s*\}\}/gu, (_match, rawKey: string) => {
-    const key = rawKey.trim();
-    const value = values[key] ?? '';
-    return key.startsWith('Asset.') || key.startsWith('Items') ? value : escapePrintHtml(value);
-  });
+    const business = readBusinessProfile();
+    const totals = calculateRecordTotals(record);
+    const itemRows = record.lineItems
+        .map(
+            (item) =>
+                `<tr><td>${escapePrintHtml(item.itemName)}</td><td>${escapePrintHtml(item.hsnSac)}</td><td>${escapePrintHtml(item.quantity)}</td><td>${escapePrintHtml(item.rate)}</td><td>${escapePrintHtml(item.taxPercent)}</td><td>${escapePrintHtml(item.amount)}</td></tr>`,
+        )
+        .join('');
+    const itemTable = `<table><thead><tr><th>Item</th><th>HSN/SAC</th><th>Quantity</th><th>Rate</th><th>Tax %</th><th>Amount</th></tr></thead><tbody>${itemRows}</tbody></table>`;
+    const values: Record<string, string> = {
+        'Company.Name': business.companyName,
+        'Company.Address': business.address,
+        'Company.Gstin': business.gstin,
+        'Record.Number': stored?.documentNumber ?? 'Draft copy',
+        'Record.Status': stored?.status ?? 'Draft',
+        'Record.IsCancelled': String(stored?.status === 'Cancelled'),
+        'Record.CancellationReason': stored?.cancellationReason ?? '',
+        'Record.InvoiceDate': record.invoiceDate,
+        'Record.CustomerName': record.customerName,
+        'Record.CustomerGstin': record.gstin,
+        'Record.Gstin': record.gstin,
+        'Record.State': record.state,
+        'Record.BillingAddress': record.billingAddress,
+        'Record.Subtotal': totals.subtotal,
+        'Record.TaxTotal': totals.taxTotal,
+        'Record.RoundOff': totals.roundOff,
+        'Record.GrandTotal': totals.grandTotal,
+        'Record.FormatName': record.formatName,
+        Items: itemTable,
+        'Items.Table': itemTable,
+        'Items.Rows': itemRows,
+    };
+    for (const field of [
+        ...printPackage.config.Fields,
+        ...printPackage.config.LineItemSections.flatMap((section) => section.Fields),
+    ]) {
+        values[`Record.${field.FieldId}`] = recordFieldValue(field.FieldId, record);
+    }
+    for (const asset of printPackage.assets) {
+        values[`Asset.${asset.name}`] = `data:${asset.type};base64,${asset.dataBase64}`;
+    }
+    return printPackage.templateHtml.replace(
+        /\{\{\s*([^}]+?)\s*\}\}/gu,
+        (_match, rawKey: string) => {
+            const key = rawKey.trim();
+            const value = values[key] ?? '';
+            return key.startsWith('Asset.') || key.startsWith('Items')
+                ? value
+                : escapePrintHtml(value);
+        },
+    );
 };
 
 const recordFieldValue = (fieldId: string, record: EditableRecord): string => {
-  const normalized = fieldId.toLocaleLowerCase();
-  const totals = calculateRecordTotals(record);
-  const directValues: Readonly<Record<string, string>> = {
-    invoicedate: record.invoiceDate,
-    customername: record.customerName,
-    customergstin: record.gstin,
-    gstin: record.gstin,
-    state: record.state,
-    billingaddress: record.billingAddress,
-    subtotal: totals.subtotal,
-    taxtotal: totals.taxTotal,
-    roundoff: totals.roundOff,
-    grandtotal: totals.grandTotal,
-  };
-  if (directValues[normalized] !== undefined) return directValues[normalized];
-  const customValue = record.fieldValues?.[fieldId];
-  if (customValue !== undefined) return customValue;
-  const lineItemValues: Readonly<Record<string, string>> = {
-    itemname: record.lineItems.map((item) => item.itemName).join(', '),
-    hsnsac: record.lineItems.map((item) => item.hsnSac).join(', '),
-    quantity: record.lineItems.map((item) => item.quantity).join(', '),
-    rate: record.lineItems.map((item) => item.rate).join(', '),
-    taxpercent: record.lineItems.map((item) => item.taxPercent).join(', '),
-    amount: record.lineItems.map((item) => item.amount).join(', '),
-  };
-  return (
-    lineItemValues[normalized] ??
-    record.lineItems
-      .map((item) => item.values?.[fieldId] ?? '')
-      .filter(Boolean)
-      .join(', ')
-  );
+    const normalized = fieldId.toLocaleLowerCase();
+    const totals = calculateRecordTotals(record);
+    const directValues: Readonly<Record<string, string>> = {
+        invoicedate: record.invoiceDate,
+        customername: record.customerName,
+        customergstin: record.gstin,
+        gstin: record.gstin,
+        state: record.state,
+        billingaddress: record.billingAddress,
+        subtotal: totals.subtotal,
+        taxtotal: totals.taxTotal,
+        roundoff: totals.roundOff,
+        grandtotal: totals.grandTotal,
+    };
+    if (directValues[normalized] !== undefined) return directValues[normalized];
+    const customValue = record.fieldValues?.[fieldId];
+    if (customValue !== undefined) return customValue;
+    const lineItemValues: Readonly<Record<string, string>> = {
+        itemname: record.lineItems.map((item) => item.itemName).join(', '),
+        hsnsac: record.lineItems.map((item) => item.hsnSac).join(', '),
+        quantity: record.lineItems.map((item) => item.quantity).join(', '),
+        rate: record.lineItems.map((item) => item.rate).join(', '),
+        taxpercent: record.lineItems.map((item) => item.taxPercent).join(', '),
+        amount: record.lineItems.map((item) => item.amount).join(', '),
+    };
+    return (
+        lineItemValues[normalized] ??
+        record.lineItems
+            .map((item) => item.values?.[fieldId] ?? '')
+            .filter(Boolean)
+            .join(', ')
+    );
 };
 
 const readBusinessProfile = (): {
-  readonly companyName: string;
-  readonly address: string;
-  readonly gstin: string;
+    readonly companyName: string;
+    readonly address: string;
+    readonly gstin: string;
 } => {
-  try {
-    const profile = JSON.parse(
-      window.localStorage.getItem('vaultbill.business-profile') ?? '{}',
-    ) as { companyName?: unknown; address?: unknown };
-    return {
-      companyName: typeof profile.companyName === 'string' ? profile.companyName : '',
-      address: typeof profile.address === 'string' ? profile.address : '',
-      gstin: window.localStorage.getItem('vaultbill.company-gstin') ?? '',
-    };
-  } catch {
-    return { companyName: '', address: '', gstin: '' };
-  }
+    try {
+        const profile = JSON.parse(
+            window.localStorage.getItem('vaultbill.business-profile') ?? '{}',
+        ) as { companyName?: unknown; address?: unknown };
+        return {
+            companyName: typeof profile.companyName === 'string' ? profile.companyName : '',
+            address: typeof profile.address === 'string' ? profile.address : '',
+            gstin: window.localStorage.getItem('vaultbill.company-gstin') ?? '',
+        };
+    } catch {
+        return { companyName: '', address: '', gstin: '' };
+    }
 };
 
 const extractDocumentFragment = (document: string): string => {
-  const styles = [...document.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/giu)]
-    .map((match) => `<style>${match[1] ?? ''}</style>`)
-    .join('');
-  const body = /<body\b[^>]*>([\s\S]*?)<\/body>/iu.exec(document)?.[1] ?? document;
-  return `${styles}${body
-    .replace(/<!doctype[^>]*>/giu, '')
-    .replace(/<\/?(?:html|head|body)\b[^>]*>/giu, '')}`;
+    const styles = [...document.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/giu)]
+        .map((match) => `<style>${match[1] ?? ''}</style>`)
+        .join('');
+    const body = /<body\b[^>]*>([\s\S]*?)<\/body>/iu.exec(document)?.[1] ?? document;
+    return `${styles}${body
+        .replace(/<!doctype[^>]*>/giu, '')
+        .replace(/<\/?(?:html|head|body)\b[^>]*>/giu, '')}`;
 };

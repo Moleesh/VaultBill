@@ -1,3 +1,5 @@
+/** @format */
+
 import { rebuild } from '@electron/rebuild';
 import { createRequire } from 'node:module';
 import { dirname, resolve } from 'node:path';
@@ -10,10 +12,10 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 console.log(`Rebuilding production native modules for Electron ${electronPackage.version}.`);
 
 await rebuild({
-  buildPath: root,
-  electronVersion: electronPackage.version,
-  force: true,
-  types: ['prod', 'optional'],
+    buildPath: root,
+    electronVersion: electronPackage.version,
+    force: true,
+    types: ['prod', 'optional'],
 });
 
 console.log('Native module rebuild completed.');

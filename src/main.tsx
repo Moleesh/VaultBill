@@ -1,3 +1,5 @@
+/** @format */
+
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
@@ -14,7 +16,7 @@ import './styles/Themes/MidnightInk.scss';
 import './styles/Themes/SlatePro.scss';
 import './styles/Themes/SandstoneLedger.scss';
 import './styles/Themes/IndigoMint.scss';
-import './styles/Components/AppShell.scss';
+
 import './styles/Components/ActionBar.scss';
 import './styles/Components/FeedbackStates.scss';
 import './styles/Components/FormPreview.scss';
@@ -26,13 +28,13 @@ restoreGithubPagesRoute();
 const rootElement = document.getElementById('root');
 
 if (!rootElement) {
-  throw new Error('VaultBill root element was not found.');
+    throw new Error('VaultBill root element was not found.');
 }
 
 createRoot(rootElement).render(
-  <StrictMode>
-    <BrowserRouter basename={getRouterBaseName()}>
-      <App />
-    </BrowserRouter>
-  </StrictMode>,
+    <StrictMode>
+        <BrowserRouter basename={getRouterBaseName()}>
+            <App />
+        </BrowserRouter>
+    </StrictMode>,
 );

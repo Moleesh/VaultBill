@@ -1,3 +1,5 @@
+<!-- @format -->
+
 Printer profiles are stored as JSON in `printer_profiles` and can be marked as
 the default profile. Saving a new default clears the previous default in the
 repository.
@@ -13,8 +15,8 @@ encryption, password recovery, and recovery-key restore semantics. The desktop
 file picker/write adapter is kept outside the pure backup engine.
 
 Accessibility settings expose shared keyboard shortcut metadata and the
-responsive viewport matrix so buttons, tooltips, and visual tests use one
-source of truth.
+responsive viewport matrix so buttons, tooltips, and visual tests all use the
+same shared contract.
 
 Optional integration settings include signature pad, SMS provider, GST helper,
 and GSP hook contracts. These settings store configuration only; provider

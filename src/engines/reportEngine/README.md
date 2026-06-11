@@ -1,3 +1,5 @@
+<!-- @format -->
+
 The report engine evaluates JSON report definitions against saved
 `DocumentRecord` values, excludes drafts, filters by configured formats/date
 ranges, sorts latest-created-first, and exposes paged rows for infinite scroll.

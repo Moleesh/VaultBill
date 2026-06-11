@@ -1,41 +1,43 @@
+/** @format */
+
 import type { PrinterProfileConfig, PrinterSummary } from './PrinterProfileTypes';
 import { resolvePrinterProfile } from './PrinterProfileResolver';
 import { preparePrintJob } from './PrintWorkflow';
 import type { PreparedPrintJob, PreparePrintJobInput } from './PrintWorkflowTypes';
 
 export type PrepareProfilePrintJobInput = Omit<
-  PreparePrintJobInput,
-  'outputTarget' | 'requestedCopies' | 'printerName'
+    PreparePrintJobInput,
+    'outputTarget' | 'requestedCopies' | 'printerName'
 > & {
-  readonly printerProfile: PrinterProfileConfig;
-  readonly availablePrinters: readonly PrinterSummary[];
+    readonly printerProfile: PrinterProfileConfig;
+    readonly availablePrinters: readonly PrinterSummary[];
 };
 
 export const preparePrintJobFromProfile = (
-  input: PrepareProfilePrintJobInput,
+    input: PrepareProfilePrintJobInput,
 ): PreparedPrintJob => {
-  const profileResolution = resolvePrinterProfile(
-    input.printerProfile,
-    input.platform,
-    input.availablePrinters,
-  );
+    const profileResolution = resolvePrinterProfile(
+        input.printerProfile,
+        input.platform,
+        input.availablePrinters,
+    );
 
-  if (!profileResolution.isEnabled) {
-    throw new Error(profileResolution.tooltip ?? 'Printer profile is disabled.');
-  }
+    if (!profileResolution.isEnabled) {
+        throw new Error(profileResolution.tooltip ?? 'Printer profile is disabled.');
+    }
 
-  return preparePrintJob(
-    profileResolution.printerName
-      ? {
-          ...input,
-          outputTarget: profileResolution.workflowTarget,
-          requestedCopies: profileResolution.copyCount,
-          printerName: profileResolution.printerName,
-        }
-      : {
-          ...input,
-          outputTarget: profileResolution.workflowTarget,
-          requestedCopies: profileResolution.copyCount,
-        },
-  );
+    return preparePrintJob(
+        profileResolution.printerName
+            ? {
+                  ...input,
+                  outputTarget: profileResolution.workflowTarget,
+                  requestedCopies: profileResolution.copyCount,
+                  printerName: profileResolution.printerName,
+              }
+            : {
+                  ...input,
+                  outputTarget: profileResolution.workflowTarget,
+                  requestedCopies: profileResolution.copyCount,
+              },
+    );
 };

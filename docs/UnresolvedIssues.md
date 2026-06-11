@@ -1,6 +1,9 @@
-# Unresolved v24 Issues
+<!-- @format -->
 
-These are real remaining hardening items, not hidden release claims.
+# Unresolved Issues
+
+These items remain open under the current spec and are not hidden release
+claims.
 
 - Backup ZIP creation and hosted restore upload currently buffer the compressed
   archive in memory. SQLite snapshots and restore replacement are staged on

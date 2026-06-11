@@ -1,3 +1,5 @@
+/** @format */
+
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -10,26 +12,26 @@ const releaseNotesPath = join(root, 'artifacts', 'release-notes.md');
 await mkdir(join(root, 'artifacts'), { recursive: true });
 
 await writeFile(
-  releaseNotesPath,
-  [
-    `# VaultBill ${packageJson.version}`,
-    '',
-    `Generated: ${releaseDate}`,
-    '',
-    '## Verification',
-    '',
-    '- Web build completed.',
-    '- Electron native modules rebuilt for the target Electron runtime.',
-    '- Desktop package produced.',
-    '- Installer/package smoke test completed.',
-    '- First-run database startup patch tests completed.',
-    '- Security gates, secret scan, dependency audit, and artifact checksums completed.',
-    '',
-    '## Notes',
-    '',
-    '- VaultBill uses a fixed package identity so upgrades target the same installation.',
-    '- Signing status is reported by the release workflow.',
-  ].join('\n'),
+    releaseNotesPath,
+    [
+        `# VaultBill ${packageJson.version}`,
+        '',
+        `Generated: ${releaseDate}`,
+        '',
+        '## Verification',
+        '',
+        '- Web build completed.',
+        '- Electron native modules rebuilt for the target Electron runtime.',
+        '- Desktop package produced.',
+        '- Installer/package smoke test completed.',
+        '- First-run database startup patch tests completed.',
+        '- Security gates, secret scan, dependency audit, and artifact checksums completed.',
+        '',
+        '## Notes',
+        '',
+        '- VaultBill uses a fixed package identity so upgrades target the same installation.',
+        '- Signing status is reported by the release workflow.',
+    ].join('\n'),
 );
 
 console.log(`Release notes generated at ${releaseNotesPath}.`);

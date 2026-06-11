@@ -1,3 +1,5 @@
+<!-- @format -->
+
 The print engine sanitizes DB-stored HTML before saving or rendering, rejects
 runtime script surfaces, resolves DB asset placeholders to data URLs, escapes
 record values by default, and returns non-blocking warnings for missing

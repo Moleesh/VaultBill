@@ -1,3 +1,5 @@
+<!-- @format -->
+
 # Release Pipeline v24
 
 VaultBill maintains exactly two GitHub Actions workflows.

@@ -1,8 +1,11 @@
+<!-- @format -->
+
 # Optional Integrations
 
-Phase 20 adds optional integration contracts only. VaultBill does not guarantee
-GST, SMS provider, signature hardware, e-invoice, or GSP compliance. Provider
-or validation failures must be shown as clear user-facing messages.
+This is a supporting reference for the current integration split and provider
+configuration. VaultBill does not guarantee GST, SMS provider, signature
+hardware, e-invoice, or GSP compliance. Provider or validation failures must be
+shown as clear user-facing messages.
 
 ## SMS
 
@@ -10,15 +13,15 @@ SMS uses a provider adapter pattern:
 
 ```json
 {
-  "Enabled": true,
-  "ProviderId": "generic-sms",
-  "EndpointUrl": "https://sms.example/send",
-  "SenderId": "VAULT",
-  "UseServerSideProxy": true,
-  "Secrets": {
-    "ApiKey": "stored-in-settings",
-    "ApiSecret": "stored-in-settings"
-  }
+    "Enabled": true,
+    "ProviderId": "generic-sms",
+    "EndpointUrl": "https://sms.example/send",
+    "SenderId": "VAULT",
+    "UseServerSideProxy": true,
+    "Secrets": {
+        "ApiKey": "stored-in-settings",
+        "ApiSecret": "stored-in-settings"
+    }
 }
 ```
 
@@ -29,11 +32,11 @@ mode blocks direct secrets unless `UseServerSideProxy` is enabled.
 
 ```json
 {
-  "SignaturePad": {
-    "Enabled": true,
-    "Mode": "Screen",
-    "TestedUsbDevices": []
-  }
+    "SignaturePad": {
+        "Enabled": true,
+        "Mode": "Screen",
+        "TestedUsbDevices": []
+    }
 }
 ```
 
@@ -51,16 +54,16 @@ cell escaping.
 
 ```json
 {
-  "Enabled": true,
-  "ProviderId": "generic-gsp",
-  "BaseUrl": "https://gsp.example/api",
-  "Sandbox": true,
-  "ClientId": "client",
-  "ClientSecret": "secret",
-  "Endpoints": {
-    "EInvoice": "/einvoice",
-    "Gstr": "/gstr"
-  }
+    "Enabled": true,
+    "ProviderId": "generic-gsp",
+    "BaseUrl": "https://gsp.example/api",
+    "Sandbox": true,
+    "ClientId": "client",
+    "ClientSecret": "secret",
+    "Endpoints": {
+        "EInvoice": "/einvoice",
+        "Gstr": "/gstr"
+    }
 }
 ```
 
