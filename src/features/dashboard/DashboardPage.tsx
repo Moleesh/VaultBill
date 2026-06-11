@@ -1,6 +1,6 @@
 /* eslint-disable max-lines */
 import { format, parseISO } from 'date-fns';
-import { AlertTriangle, FileCheck2, FileCog, Printer } from 'lucide-react';
+import { FileCheck2, FileCog, Printer, ShieldCheck } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { FC } from 'react';
@@ -175,7 +175,7 @@ const SysAdminDashboard: FC = () => {
     });
   }, [capabilities.isLanBrowser]);
 
-  const warningCount = inventory.filter((item) => !item.isValid || !item.templateName).length;
+  const attentionCount = inventory.filter((item) => !item.isValid || !item.templateName).length;
   return (
     <div className="page-stack">
       <section className="page-hero page-hero--compact">
@@ -198,12 +198,12 @@ const SysAdminDashboard: FC = () => {
           label="Print templates"
           value={String(inventory.filter((item) => item.templateName).length)}
         />
-        <Metric label="Configuration warnings" value={String(warningCount)} />
+        <Metric label="Incomplete formats" value={String(attentionCount)} />
       </section>
       <section className="configuration-grid">
         {inventory.map((item) => (
           <article
-            className={`data-panel configuration-card${item.isValid ? '' : ' is-warning'}`}
+            className="data-panel configuration-card"
             key={item.formatId}
           >
             <header>
@@ -247,9 +247,9 @@ const SysAdminDashboard: FC = () => {
           </article>
         ))}
         {inventory.length === 0 ? (
-          <article className="data-panel configuration-card is-warning">
+          <article className="data-panel configuration-card">
             <header>
-              <AlertTriangle aria-hidden="true" />
+              <FileCog aria-hidden="true" />
               <div>
                 <p className="eyebrow">Builder</p>
                 <h2>No published document format</h2>
@@ -259,11 +259,11 @@ const SysAdminDashboard: FC = () => {
             <Link to="/app/builder">Open Builder</Link>
           </article>
         ) : null}
-        <article className="data-panel configuration-card is-warning">
+        <article className="data-panel configuration-card">
           <header>
-            <AlertTriangle aria-hidden="true" />
+            <ShieldCheck aria-hidden="true" />
             <div>
-              <p className="eyebrow">Attention</p>
+              <p className="eyebrow">Security</p>
               <h2>Backup readiness</h2>
             </div>
           </header>

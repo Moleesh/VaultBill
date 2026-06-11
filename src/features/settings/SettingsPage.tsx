@@ -578,7 +578,7 @@ export const SettingsPage: FC = () => {
           <h2>Accounts and access</h2>
         </header>
         {defaultCredentialsActive && isSysAdmin ? (
-          <div className="feedback-warning">
+          <div className="feedback-info">
             Default credentials are still active. Replace the System Administrator and backup
             passwords.
           </div>
@@ -827,9 +827,9 @@ export const SettingsPage: FC = () => {
               </button>
             ) : null}
             {!encryptBackup && capabilities.canBackup ? (
-              <p className="feedback-warning">
-                Unencrypted backups expose business data and stored settings to anyone who opens
-                the file.
+              <p className="field-note">
+                Unencrypted backups are available when you need them, but VaultBill recommends
+                encrypted backups for normal use.
               </p>
             ) : null}
           </div>
@@ -1026,7 +1026,7 @@ export const SettingsPage: FC = () => {
         }}
         title="Reset application data"
       >
-        <p className="feedback-warning">
+        <p className="feedback-info">
           This permanently removes records, formats, operators, settings, trial time, and activation
           from this installation.
         </p>

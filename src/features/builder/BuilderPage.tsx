@@ -571,8 +571,8 @@ export const BuilderPage: FC = () => {
               />
             </section>
             {validation.length > 0 ? (
-              <div className="feedback-warning span-2">
-                <strong>Resolve before publishing</strong>
+              <div className="feedback-info span-2">
+                <strong>Check before publishing</strong>
                 <ul>
                   {validation.map((error) => (
                     <li key={error}>{error}</li>
@@ -583,7 +583,7 @@ export const BuilderPage: FC = () => {
           </div>
         ) : null}
         {importWarnings.map((warning) => (
-          <p className="feedback-warning" key={warning}>
+          <p className="feedback-info" key={warning}>
             {warning}
           </p>
         ))}
