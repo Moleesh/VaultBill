@@ -202,10 +202,7 @@ const SysAdminDashboard: FC = () => {
       </section>
       <section className="configuration-grid">
         {inventory.map((item) => (
-          <article
-            className="data-panel configuration-card"
-            key={item.formatId}
-          >
+          <article className="data-panel configuration-card" key={item.formatId}>
             <header>
               <FileCog aria-hidden="true" />
               <div>

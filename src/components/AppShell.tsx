@@ -240,34 +240,34 @@ export const AppShell: FC = () => {
               >
                 <LogOut aria-hidden="true" size={19} />
               </button>
-          </div>
-          {capabilities.isDesktop ? (
-            <div className="app-shell__window-controls">
-              <button
-                className="icon-button"
-                aria-label="Minimize window"
-                onClick={() => {
-                  void window.vaultBillDesktop?.minimizeWindow();
-                }}
-                type="button"
-              >
-                <Minimize2 aria-hidden="true" size={18} />
-              </button>
-              <button
-                className="icon-button"
-                aria-label="Close window"
-                onClick={() => {
-                  void window.vaultBillDesktop?.closeWindow();
-                }}
-                type="button"
-              >
-                <X aria-hidden="true" size={18} />
-              </button>
             </div>
-          ) : null}
-          {!capabilities.isDemoMode && trialStatus && !trialStatus.isFullVersion ? (
-            <button
-              className={trialStatus.isExpired ? 'button-danger' : ''}
+            {capabilities.isDesktop ? (
+              <div className="app-shell__window-controls">
+                <button
+                  className="icon-button"
+                  aria-label="Minimize window"
+                  onClick={() => {
+                    void window.vaultBillDesktop?.minimizeWindow();
+                  }}
+                  type="button"
+                >
+                  <Minimize2 aria-hidden="true" size={18} />
+                </button>
+                <button
+                  className="icon-button"
+                  aria-label="Close window"
+                  onClick={() => {
+                    void window.vaultBillDesktop?.closeWindow();
+                  }}
+                  type="button"
+                >
+                  <X aria-hidden="true" size={18} />
+                </button>
+              </div>
+            ) : null}
+            {!capabilities.isDemoMode && trialStatus && !trialStatus.isFullVersion ? (
+              <button
+                className={trialStatus.isExpired ? 'button-danger' : ''}
                 onClick={() => {
                   setIsActivationOpen(true);
                 }}

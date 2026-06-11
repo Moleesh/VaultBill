@@ -86,7 +86,9 @@ test('operator can submit the login form by pressing Enter in the password field
   await page.getByRole('option', { name: /Operations Admin/u }).click();
   await page.getByLabel('Password').fill('147085aA');
   await page.getByLabel('Password').press('Enter');
-  await expect(page.getByRole('heading', { name: /Welcome back, Operations Admin\./u })).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: /Welcome back, Operations Admin\./u }),
+  ).toBeVisible();
 });
 
 test('Admin direct Builder URL is redirected to Records', async ({ page }) => {

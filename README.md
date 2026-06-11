@@ -159,13 +159,13 @@ npm run build:desktop
 
 Useful packaging commands:
 
-| Command                             | Purpose                                   |
-| ----------------------------------- | ----------------------------------------- |
-| `npm run build:web`                 | Build the browser bundle                  |
-| `npm run build:electron`            | Compile Electron TypeScript               |
-| `npm run package:desktop`           | Build an unpacked desktop directory       |
-| `npm run package:desktop:installer` | Build the current platform installer      |
-| `npm run smoke:first-run-db:ci`     | Verify SQLite first-run startup           |
+| Command                             | Purpose                                  |
+| ----------------------------------- | ---------------------------------------- |
+| `npm run build:web`                 | Build the browser bundle                 |
+| `npm run build:electron`            | Compile Electron TypeScript              |
+| `npm run package:desktop`           | Build an unpacked desktop directory      |
+| `npm run package:desktop:installer` | Build the current platform installer     |
+| `npm run smoke:first-run-db:ci`     | Verify SQLite first-run startup          |
 | `npm run smoke:installer:required`  | Require and verify an installer artifact |
 
 ## Automation 🤖

@@ -44,9 +44,11 @@ describe('runDatabaseStartupChecks', () => {
     expect(db.get('SELECT COUNT(*) AS count FROM document_formats WHERE is_default = 1;')).toEqual({
       count: 1,
     });
-    expect(db.get('SELECT COUNT(*) AS count FROM print_templates WHERE template_id = ?;', [
-      'TaxInvoice',
-    ])).toEqual({ count: 1 });
+    expect(
+      db.get('SELECT COUNT(*) AS count FROM print_templates WHERE template_id = ?;', [
+        'TaxInvoice',
+      ]),
+    ).toEqual({ count: 1 });
     expect(
       db.get('SELECT COUNT(*) AS count FROM print_template_assets WHERE template_id = ?;', [
         'TaxInvoice',

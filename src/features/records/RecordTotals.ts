@@ -14,8 +14,7 @@ const decimal = (value: string | undefined): number => {
   return Number.isFinite(parsed) ? parsed : 0;
 };
 
-const lineSubtotal = (item: RecordLineItem): number =>
-  decimal(item.quantity) * decimal(item.rate);
+const lineSubtotal = (item: RecordLineItem): number => decimal(item.quantity) * decimal(item.rate);
 
 const lineTax = (item: RecordLineItem): number => {
   const subtotal = lineSubtotal(item);

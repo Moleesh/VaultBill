@@ -82,7 +82,15 @@ const pageSections: Readonly<Record<string, readonly HelpSection[]>> = {
     {
       title: 'Manage VaultBill',
       body: 'Business, security, backup, and integrations use jump links on one page. Availability follows your role and platform, with desktop-only tools staying on the host machine.',
-      keywords: ['branding', 'themes', 'operators', 'printers', 'backup', 'security', 'integrations'],
+      keywords: [
+        'branding',
+        'themes',
+        'operators',
+        'printers',
+        'backup',
+        'security',
+        'integrations',
+      ],
     },
   ],
 };
