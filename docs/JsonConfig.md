@@ -1,4 +1,4 @@
-# JSON Config Spec
+# JSON Config
 
 This document summarizes the persisted JSON contracts validated by the current
 schema, print, report, settings, and integration engines.

@@ -303,7 +303,7 @@ button:hover:not(:disabled) {
 }
 
 .record-status-row,
-.record-total,
+.record-summary,
 .report-toolbar,
 .background-task > div,
 .wizard-actions,
@@ -315,17 +315,38 @@ button:hover:not(:disabled) {
   gap: var(--space-3);
 }
 
-.record-total {
+.record-summary {
+  display: grid;
   justify-content: flex-end;
   margin-top: var(--space-5);
   padding-top: var(--space-4);
   border-top: var(--line-width) solid var(--color-border);
+  gap: var(--space-2);
   font-size: var(--font-size-lg);
 }
 
-.record-total strong {
-  font-size: var(--font-size-xl);
+.record-summary > div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  align-items: center;
+  min-width: min(100%, 22rem);
+}
+
+.record-summary__grand {
+  margin-top: var(--space-2);
+  padding-top: var(--space-2);
+  border-top: var(--line-width) solid var(--color-border);
+  font-size: var(--font-size-lg);
+}
+
+.record-summary strong {
   font-variant-numeric: tabular-nums;
+}
+
+.record-summary__grand strong {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
 }
 
 .report-filters {
@@ -498,7 +519,7 @@ textarea::placeholder {
 
 .searchable-dropdown {
   display: grid;
-  min-width: 12rem;
+  min-width: 11rem;
   gap: var(--space-1);
 }
 
@@ -514,8 +535,23 @@ textarea::placeholder {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-4);
+  gap: var(--space-2);
+  padding-inline: var(--space-4);
   background: var(--color-surface-raised);
+  text-align: left;
+}
+
+.searchable-dropdown__trigger span:first-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.searchable-dropdown__caret {
+  flex: none;
+  color: var(--color-text-muted);
+  margin-left: 0;
 }
 
 .searchable-dropdown__menu {
@@ -533,6 +569,12 @@ textarea::placeholder {
   background: var(--color-surface-raised);
   padding: var(--space-2);
   box-shadow: var(--shadow-popover);
+}
+
+.searchable-dropdown__menu input {
+  min-width: 0;
+  min-height: 2.5rem;
+  padding-block: var(--space-2);
 }
 
 .searchable-dropdown__menu [role='listbox'] {
@@ -769,6 +811,11 @@ textarea::placeholder {
   align-content: center;
   gap: var(--space-4);
   padding: clamp(var(--space-6), 5vw, var(--space-10));
+}
+
+.login-card__auth {
+  display: grid;
+  gap: var(--space-4);
 }
 
 .login-card footer {

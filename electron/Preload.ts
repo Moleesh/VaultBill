@@ -17,6 +17,8 @@ import type {
 
 export type VaultBillDesktopBridge = {
   readonly getAppIdentity: () => Promise<BuildIdentity>;
+  readonly minimizeWindow: () => Promise<void>;
+  readonly closeWindow: () => Promise<void>;
   readonly listAccounts: () => Promise<readonly DesktopOperatorAccount[]>;
   readonly loginAccount: (userId: string, password: string) => Promise<DesktopOperatorAccount>;
   readonly saveAccount: (account: unknown) => Promise<DesktopOperatorAccount>;
@@ -77,6 +79,12 @@ export type VaultBillDesktopBridge = {
 const desktopBridge: VaultBillDesktopBridge = {
   getAppIdentity: async () =>
     ipcRenderer.invoke('vaultbill:get-app-identity') as Promise<BuildIdentity>,
+  minimizeWindow: async () => {
+    await ipcRenderer.invoke('vaultbill:window:minimize');
+  },
+  closeWindow: async () => {
+    await ipcRenderer.invoke('vaultbill:window:close');
+  },
   listAccounts: async () =>
     ipcRenderer.invoke('vaultbill:accounts:list') as Promise<readonly DesktopOperatorAccount[]>,
   loginAccount: async (userId, password) =>

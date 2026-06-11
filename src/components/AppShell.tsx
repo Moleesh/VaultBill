@@ -7,10 +7,12 @@ import {
   FileText,
   KeyRound,
   LogOut,
+  Minimize2,
   Server,
   RotateCcw,
   Settings,
   SlidersHorizontal,
+  X,
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
@@ -238,10 +240,34 @@ export const AppShell: FC = () => {
               >
                 <LogOut aria-hidden="true" size={19} />
               </button>
-            </div>
-            {!capabilities.isDemoMode && trialStatus && !trialStatus.isFullVersion ? (
+          </div>
+          {capabilities.isDesktop ? (
+            <div className="app-shell__window-controls">
               <button
-                className={trialStatus.isExpired ? 'button-danger' : ''}
+                className="icon-button"
+                aria-label="Minimize window"
+                onClick={() => {
+                  void window.vaultBillDesktop?.minimizeWindow();
+                }}
+                type="button"
+              >
+                <Minimize2 aria-hidden="true" size={18} />
+              </button>
+              <button
+                className="icon-button"
+                aria-label="Close window"
+                onClick={() => {
+                  void window.vaultBillDesktop?.closeWindow();
+                }}
+                type="button"
+              >
+                <X aria-hidden="true" size={18} />
+              </button>
+            </div>
+          ) : null}
+          {!capabilities.isDemoMode && trialStatus && !trialStatus.isFullVersion ? (
+            <button
+              className={trialStatus.isExpired ? 'button-danger' : ''}
                 onClick={() => {
                   setIsActivationOpen(true);
                 }}

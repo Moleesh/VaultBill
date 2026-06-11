@@ -6,7 +6,7 @@ These are real remaining hardening items, not hidden release claims.
   archive in memory. SQLite snapshots and restore replacement are staged on
   disk, integrity checked, and restart-safe, but true chunked archive
   compression/decompression remains a large-database hardening item.
-- Specialized Builder field types such as attachment, signature, multi-select,
+- Advanced Builder field types such as attachment, signature, multi-select,
   QR code, and rich dropdown option editors still need dedicated Records
   widgets. Text, textarea, checkbox, date, numeric, custom values, row formulas,
   `SUM(Items.Field)`, and `COUNT(Items)` are connected today.

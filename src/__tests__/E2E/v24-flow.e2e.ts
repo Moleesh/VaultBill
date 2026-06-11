@@ -54,6 +54,41 @@ test('operator can log in, create records, and open contextual help', async ({ p
   await expect(page.getByText(/Save Draft or Finalize/u)).toBeVisible();
 });
 
+test('operator can submit the login form by pressing Enter in the password field', async ({
+  page,
+}) => {
+  await page.evaluate(() => {
+    window.localStorage.setItem(
+      'vaultbill.accounts',
+      JSON.stringify([
+        {
+          userId: 'sysadmin_1',
+          username: 'sysadmin',
+          displayName: 'System Administrator',
+          role: 'SysAdmin',
+          isActive: true,
+          passwordHash: '5e800c5e134b84a0d73bd6f0d0f65b768f8a3afeba9c26ce3fe9b8d58fd027f1',
+        },
+        {
+          userId: 'admin_1',
+          username: 'admin',
+          displayName: 'Operations Admin',
+          role: 'Admin',
+          isActive: true,
+          passwordHash: '5e800c5e134b84a0d73bd6f0d0f65b768f8a3afeba9c26ce3fe9b8d58fd027f1',
+        },
+      ]),
+    );
+  });
+  await page.reload();
+  await page.goto('login');
+  await page.getByRole('button', { name: /Operator account/u }).click();
+  await page.getByRole('option', { name: /Operations Admin/u }).click();
+  await page.getByLabel('Password').fill('147085aA');
+  await page.getByLabel('Password').press('Enter');
+  await expect(page.getByRole('heading', { name: /Welcome back, Operations Admin\./u })).toBeVisible();
+});
+
 test('Admin direct Builder URL is redirected to Records', async ({ page }) => {
   test.skip(process.env.VITE_DEMO_MODE === 'true', 'Demo has one fixed User account.');
   await page.getByRole('button', { name: /Operator account/u }).click();

@@ -1,4 +1,8 @@
-import { seedBuiltInDefaultFormatIfNeeded, seedRuntimeBrandingIfNeeded } from './StartupSeeds';
+import {
+  seedBuiltInDefaultFormatIfNeeded,
+  seedBuiltInDefaultPrintTemplateIfNeeded,
+  seedRuntimeBrandingIfNeeded,
+} from './StartupSeeds';
 import { createRequiredIndexes, createRequiredTables, patchMissingColumns } from './StartupSchema';
 import { startupHealthSettingKey } from './StartupSettingKeys';
 import { enableAndVerifyForeignKeys } from './StartupPragmas';
@@ -21,6 +25,7 @@ export const runDatabaseStartupChecks = (
     patchMissingColumns(connection, appliedPatches);
     createRequiredIndexes(connection, appliedPatches);
     seedBuiltInDefaultFormatIfNeeded(connection, nowIso(), appliedPatches);
+    seedBuiltInDefaultPrintTemplateIfNeeded(connection, nowIso(), appliedPatches);
     seedRuntimeBrandingIfNeeded(connection, nowIso(), appliedPatches);
     const defaultFormatId = ensureSingleValidDefaultFormat(connection);
     validateSettingsReadWrite(connection, nowIso(), appliedPatches);

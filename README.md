@@ -13,9 +13,6 @@ two deliberately different personalities:
 [![Platforms](https://img.shields.io/badge/platforms-Windows%20%7C%20Linux-167d73)](https://github.com/Moleesh/VaultBill/actions/workflows/release-app.yml)
 [![Tests](https://img.shields.io/badge/tests-Vitest%20%2B%20Playwright-f0a202)](https://github.com/Moleesh/VaultBill/actions)
 
-> `docs/Spec.md` is the canonical v24 baseline. Older downloaded v23 plans are
-> superseded wherever they conflict with v24.
-
 ## Try The Demo 🚀
 
 Open [moleesh.github.io/VaultBill](https://moleesh.github.io/VaultBill/).
@@ -80,6 +77,11 @@ Document configuration imports/exports as versioned JSON. Print templates stay
 separate: one sanitized HTML file plus shared PNG, JPEG, WebP, SVG, WOFF, and
 WOFF2 assets. Templates reference assets with `{{Asset.Name}}`.
 
+Starter builder examples live in `samples/first-application/` so the sample
+document JSON, matching HTML template, and shared asset stay together.
+Fresh desktop databases also seed the same starter print template and asset so
+the Builder opens with a ready-made format instead of a blank promise. 🙂
+
 Formula examples:
 
 ```text
@@ -130,6 +132,9 @@ npm run dev
 
 Open `http://127.0.0.1:5173/`.
 
+If you want local environment defaults, copy `.env.example` to `.env` and
+adjust the values for your machine.
+
 Run the Electron shell:
 
 ```powershell
@@ -161,7 +166,7 @@ Useful packaging commands:
 | `npm run package:desktop`           | Build an unpacked desktop directory       |
 | `npm run package:desktop:installer` | Build the current platform installer      |
 | `npm run smoke:first-run-db:ci`     | Verify SQLite first-run startup           |
-| `npm run smoke:installer:required`  | Require and inspect an installer artifact |
+| `npm run smoke:installer:required`  | Require and verify an installer artifact |
 
 ## Automation 🤖
 
@@ -195,24 +200,23 @@ status.
 
 ## Documentation 📚
 
-- [Canonical specification](docs/Spec.md)
 - [Decision log](docs/DecisionLog.md)
 - [Release pipeline](docs/ReleasePipeline.md)
 - [Security guidance](docs/Security.md)
-- [JSON configuration](docs/JsonConfigSpec.md)
-- [Print templates](docs/PrintTemplateSpec.md)
+- [JSON configuration](docs/JsonConfig.md)
+- [Print templates](docs/PrintTemplate.md)
 - [Known gaps](docs/UnresolvedIssues.md)
 
 ## Troubleshooting 🧯
 
 - **Blank Pages refresh:** confirm the URL begins with `/VaultBill/`.
-- **No desktop artifact:** inspect both Windows and Linux jobs in Release App.
+- **No desktop artifact:** review both Windows and Linux jobs in Release App.
 - **Installer smoke fails:** run `npm run build:desktop`, package again, then
   `npm run smoke:installer:required`.
 - **Demo data looks odd:** use the confirmed Reset demo action.
 - **Hosted browser cannot reconnect:** open VaultBill Desktop on the host and
   confirm the hosted-web/LAN status in Settings or the tray menu.
-- **SQLite startup fails:** run `npm run smoke:first-run-db:ci` and inspect the
+- **SQLite startup fails:** run `npm run smoke:first-run-db:ci` and review the
   startup patch test.
 
 VaultBill aims to be the pleasant kind of serious software: careful with data,

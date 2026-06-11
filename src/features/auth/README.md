@@ -1,3 +1,4 @@
 Phase 3 adds operator account context, bootstrap helpers, and active-account
-limit validation. Password/PIN behavior remains disabled by default until the
-security settings work is implemented.
+limit validation. Desktop and hosted login now show a password field only when
+an account has one configured, while local demo accounts stay browser-only and
+passwordless until you set credentials in Settings.

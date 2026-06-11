@@ -15,6 +15,8 @@ type DesktopOperatorAccount = {
 
 type VaultBillDesktopBridge = {
   readonly getAppIdentity: () => Promise<DesktopBuildIdentity>;
+  readonly minimizeWindow: () => Promise<void>;
+  readonly closeWindow: () => Promise<void>;
   readonly listAccounts: () => Promise<readonly DesktopOperatorAccount[]>;
   readonly loginAccount: (userId: string, password: string) => Promise<DesktopOperatorAccount>;
   readonly saveAccount: (account: unknown) => Promise<DesktopOperatorAccount>;
@@ -38,6 +40,13 @@ type VaultBillDesktopBridge = {
     readonly sysAdminUsesDefaultPassword: boolean;
     readonly backupUsesDefaultPassword: boolean;
   }>;
+  readonly listPrinters: () => Promise<
+    readonly {
+      readonly id: string;
+      readonly name: string;
+      readonly isDefault: boolean;
+    }[]
+  >;
   readonly downloadPdf: (request: {
     readonly html: string;
     readonly fileName: string;
