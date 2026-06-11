@@ -1,5 +1,7 @@
 /** @format */
 
+/** Root application entry that wires the router, shell, and mode-specific page stack. */
+
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { useState } from 'react';
 import type { FC } from 'react';

@@ -1,5 +1,7 @@
 /** @format */
 
+/** Focus-trapped confirmation dialog for destructive and irreversible actions. */
+
 import type { FC } from 'react';
 
 import { PopupBase } from '../PopupBase';

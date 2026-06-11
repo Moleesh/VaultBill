@@ -1,5 +1,7 @@
 /** @format */
 
+/** Searchable option picker used for compact form selection across the app. */
+
 import { ChevronDown } from 'lucide-react';
 import { useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';

@@ -1,5 +1,7 @@
 /** @format */
 
+/** Shared helper card and text patterns for inline guidance across the app. */
+
 import { useEffect, useState } from 'react';
 import type { FC } from 'react';
 

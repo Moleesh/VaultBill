@@ -1,5 +1,7 @@
 /** @format */
 
+/** Horizontal progress rail that mirrors task and workflow completion state. */
+
 import { useEffect, useRef, useState } from 'react';
 import type { FC, PropsWithChildren, UIEvent, WheelEvent } from 'react';
 

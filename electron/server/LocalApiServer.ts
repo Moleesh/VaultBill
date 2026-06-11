@@ -4,6 +4,8 @@
  * @format
  */
 
+/** Local API server that exposes authenticated desktop-hosted capabilities to the web app. */
+
 import { createServer } from 'node:http';
 import { randomBytes, timingSafeEqual } from 'node:crypto';
 import type { IncomingMessage, Server, ServerResponse } from 'node:http';

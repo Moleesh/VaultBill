@@ -4,6 +4,8 @@
  * @format
  */
 
+/** Record-store context that shares record data, actions, and persisted UI state. */
+
 import { createContext, useContext, useEffect, useEffectEvent, useState } from 'react';
 import { z } from 'zod';
 import type { FC, PropsWithChildren } from 'react';

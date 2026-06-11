@@ -4,6 +4,8 @@
  * @format
  */
 
+/** Settings workspace that groups business, security, backup, and integration controls. */
+
 import {
     ArchiveRestore,
     HardDriveDownload,

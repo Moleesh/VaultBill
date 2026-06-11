@@ -1,5 +1,7 @@
 /** @format */
 
+/** Shared capability and security policy definitions for hosted and desktop execution. */
+
 import type { Role } from '../types/AppTypes';
 
 export const shouldEncryptBackupByDefault = (backupPassword: string | undefined): boolean =>

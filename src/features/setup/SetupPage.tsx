@@ -1,5 +1,7 @@
 /** @format */
 
+/** First-run setup flow for business identity, initial security, and starter configuration. */
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { FC } from 'react';

@@ -4,6 +4,8 @@
  * @format
  */
 
+/** Credential store that hashes login passwords and protects backup credentials. */
+
 import { randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
 import { DatabaseSync } from 'node:sqlite';
 import { z } from 'zod';

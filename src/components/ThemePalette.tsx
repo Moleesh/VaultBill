@@ -1,5 +1,7 @@
 /** @format */
 
+/** Theme palette selector that previews and applies application color schemes. */
+
 import { Check, Palette } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { FC } from 'react';

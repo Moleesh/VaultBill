@@ -26,9 +26,13 @@ export default defineConfig({
         sourcemap: true,
     },
     test: {
+        include: [
+            'src/**/*.{spec,test}.{ts,tsx,js,jsx}',
+            'electron/**/*.{spec,test}.{ts,tsx,js,jsx}',
+        ],
         environment: 'jsdom',
         globals: true,
-        exclude: ['node_modules/**', 'src/__tests__/E2E/**'],
+        exclude: ['node_modules/**', 'dist/**', 'src/__tests__/E2E/**'],
         setupFiles: './vitest.setup.ts',
         coverage: {
             reporter: ['text', 'html'],

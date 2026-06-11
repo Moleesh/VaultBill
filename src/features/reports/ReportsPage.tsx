@@ -4,6 +4,8 @@
  * @format
  */
 
+/** Reporting workspace for filtered, printable, and exportable business summaries. */
+
 import { Printer, RotateCcw, Search, Sheet } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { FC } from 'react';

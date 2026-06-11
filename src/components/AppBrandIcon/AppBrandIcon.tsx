@@ -1,5 +1,7 @@
 /** @format */
 
+/** Small brand mark used in login, setup, and shell chrome. */
+
 import type { FC } from 'react';
 
 type AppBrandIconProps = {

@@ -1,5 +1,7 @@
 /** @format */
 
+/** Accessible calendar-backed date picker used across records, reports, and settings. */
+
 import { addMonths, format, getDay, getDaysInMonth, parseISO, startOfMonth } from 'date-fns';
 import { useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';

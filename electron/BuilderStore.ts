@@ -4,6 +4,8 @@
  * @format
  */
 
+/** Builder store that persists document formats, templates, and sample assets. */
+
 import { DatabaseSync } from 'node:sqlite';
 import { z } from 'zod';
 

@@ -1,5 +1,7 @@
 /** @format */
 
+/** Visual status chips, warnings, and muted states reused throughout the product. */
+
 import type { FC } from 'react';
 
 const states = [

@@ -1,5 +1,7 @@
 /** @format */
 
+/** Preview surface for record data, printable output, and resolved field values. */
+
 import type { FC } from 'react';
 
 import type { OperatorContext } from '../features/auth/AccountTypes';

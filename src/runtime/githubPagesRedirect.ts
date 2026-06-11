@@ -1,5 +1,7 @@
 /** @format */
 
+/** GitHub Pages redirect helper that keeps /VaultBill routes working after refresh. */
+
 const ensureTrailingSlash = (value: string): string => {
     const trimmedValue = value.trim();
 

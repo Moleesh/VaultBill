@@ -1,5 +1,7 @@
 /** @format */
 
+/** Fetch helper that routes browser-hosted calls to the desktop Local API when available. */
+
 const requestedLocalApiBaseUrl = import.meta.env.VITE_LOCAL_API_URL?.trim();
 const localApiBaseUrl =
     requestedLocalApiBaseUrl === undefined || requestedLocalApiBaseUrl.length === 0

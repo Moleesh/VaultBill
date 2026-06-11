@@ -1,5 +1,7 @@
 /** @format */
 
+/** Settings store that persists business profile, security, and integration preferences. */
+
 import { DatabaseSync } from 'node:sqlite';
 import { z } from 'zod';
 

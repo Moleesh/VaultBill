@@ -4,6 +4,8 @@
  * @format
  */
 
+/** Role-aware dashboard that summarizes business activity, inventory, and configuration status. */
+
 import { format, parseISO } from 'date-fns';
 import { FileCheck2, FileCog, Printer, ShieldCheck } from 'lucide-react';
 import { useEffect, useState } from 'react';

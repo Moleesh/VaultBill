@@ -1,5 +1,7 @@
 /** @format */
 
+/** Record store that persists invoices, status history, and printable record data. */
+
 import { DatabaseSync } from 'node:sqlite';
 /* eslint-disable max-lines */
 import { createHash, timingSafeEqual } from 'node:crypto';

@@ -1,5 +1,7 @@
 /** @format */
 
+/** Generic modal wrapper used for confirmations, help, previews, and compact overlays. */
+
 import type { FC, PropsWithChildren } from 'react';
 
 import { PopupBase } from '../PopupBase';

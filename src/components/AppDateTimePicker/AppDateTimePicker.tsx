@@ -1,5 +1,7 @@
 /** @format */
 
+/** Combined date and time picker for hosted operations and scheduled flows. */
+
 import type { FC } from 'react';
 
 import { AppDatePicker } from '../AppDatePicker/AppDatePicker';

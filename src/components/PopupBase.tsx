@@ -1,5 +1,7 @@
 /** @format */
 
+/** Shared positioning and dismissal behavior for floating overlays. */
+
 import { useRef } from 'react';
 import { createPortal } from 'react-dom';
 import type { FC, PropsWithChildren } from 'react';

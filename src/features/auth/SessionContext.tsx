@@ -4,6 +4,8 @@
  * @format
  */
 
+/** Session provider that tracks the active operator, role permissions, and auth lifecycle. */
+
 import { createContext, useContext, useEffect, useState } from 'react';
 import type { FC, PropsWithChildren } from 'react';
 

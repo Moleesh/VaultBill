@@ -1,5 +1,7 @@
 /** @format */
 
+/** Shared record-action bar that exposes enabled, disabled, and recommended actions consistently. */
+
 import type { FC } from 'react';
 import { LockKeyhole } from 'lucide-react';
 

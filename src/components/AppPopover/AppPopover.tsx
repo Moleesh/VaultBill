@@ -1,5 +1,7 @@
 /** @format */
 
+/** Lightweight popover shell for menus, help bubbles, and inline contextual content. */
+
 import type { FC, PropsWithChildren } from 'react';
 
 import { PopupBase } from '../PopupBase';

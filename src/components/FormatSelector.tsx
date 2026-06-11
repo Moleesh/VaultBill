@@ -1,5 +1,7 @@
 /** @format */
 
+/** Compact document-format selector that highlights the active record template. */
+
 import type { FC } from 'react';
 
 import type { DocumentFormatSummary } from '../types/AppTypes';

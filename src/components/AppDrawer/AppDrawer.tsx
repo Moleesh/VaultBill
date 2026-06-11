@@ -1,5 +1,7 @@
 /** @format */
 
+/** Sliding drawer that edits focused record, field, and configuration details. */
+
 import type { FC, PropsWithChildren } from 'react';
 
 import { PopupBase } from '../PopupBase';

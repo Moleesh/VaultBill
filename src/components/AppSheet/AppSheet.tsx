@@ -1,5 +1,7 @@
 /** @format */
 
+/** Bottom-sheet style panel used on narrow screens and compact overlays. */
+
 import type { FC, PropsWithChildren } from 'react';
 
 import { PopupBase } from '../PopupBase';

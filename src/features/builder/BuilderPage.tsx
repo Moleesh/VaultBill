@@ -4,6 +4,8 @@
  * @format
  */
 
+/** Builder workspace for document names, fields, calculations, print templates, and preview. */
+
 import {
     ArrowDown,
     ArrowUp,
