@@ -544,7 +544,7 @@ export const ReportsPage: FC = () => {
           </div>
         </div>
         {trialExpired ? (
-          <p className="feedback-warning">
+          <p className="feedback-info">
             The trial is read-only. Reports remain viewable, but export and printing require
             activation.
           </p>

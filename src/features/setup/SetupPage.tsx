@@ -153,7 +153,7 @@ export const SetupPage: FC<SetupPageProps> = ({ onComplete }) => {
                   value={sysAdminName}
                 />
               </label>
-              <div className="feedback-warning span-2">
+              <div className="feedback-info span-2">
                 VaultBill initializes the administrator and backup passwords securely. Change both
                 from Security after your first login.
               </div>

@@ -295,7 +295,7 @@
 
 .operator-create > label {
   display: grid;
-  gap: var(--space-2);
+  gap: var(--space-1);
   color: var(--color-label);
   font-weight: var(--font-weight-semibold);
 }
@@ -391,11 +391,25 @@
 
 .builder-fields__main {
   display: grid;
-  grid-template-columns: minmax(8rem, 1.4fr) minmax(7rem, 1fr) minmax(5rem, 0.6fr) auto;
-  gap: var(--space-3);
+  grid-template-columns: minmax(9rem, 1.4fr) minmax(7rem, 1fr) minmax(5rem, 0.65fr) auto;
+  gap: var(--space-2);
   align-items: center;
   border-color: transparent;
   text-align: left;
+}
+
+.builder-fields__main strong,
+.builder-fields__main code,
+.builder-fields__main span,
+.builder-fields__main small {
+  min-width: 0;
+}
+
+.builder-fields__main strong,
+.builder-fields__main span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .builder-fields > article > button:not(.builder-fields__main) {
@@ -470,7 +484,7 @@
 
 .builder-preview-grid label {
   display: grid;
-  gap: var(--space-2);
+  gap: var(--space-1);
   color: var(--color-text-muted);
   font-weight: var(--font-weight-semibold);
 }
@@ -501,6 +515,8 @@
 }
 
 .builder-preview-table__row span {
+  display: flex;
+  align-items: center;
   padding: var(--space-3);
   border-right: var(--line-width) solid var(--color-border);
   white-space: nowrap;

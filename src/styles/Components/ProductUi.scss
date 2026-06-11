@@ -271,7 +271,7 @@ button:hover:not(:disabled) {
 .report-filters label,
 .help-search {
   display: grid;
-  gap: var(--space-2);
+  gap: var(--space-1);
   color: var(--color-label);
   font-weight: var(--font-weight-semibold);
 }
@@ -297,7 +297,7 @@ button:hover:not(:disabled) {
 .setup-card label,
 .app-date-picker {
   display: grid;
-  gap: var(--space-2);
+  gap: var(--space-1);
   color: var(--color-label);
   font-weight: var(--font-weight-semibold);
 }
@@ -532,11 +532,12 @@ textarea::placeholder {
 }
 
 .searchable-dropdown__trigger {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
   gap: var(--space-2);
-  padding-inline: var(--space-4);
+  min-height: 2.8rem;
+  padding-inline: var(--space-3);
   background: var(--color-surface-raised);
   text-align: left;
 }
@@ -551,6 +552,7 @@ textarea::placeholder {
 .searchable-dropdown__caret {
   flex: none;
   color: var(--color-text-muted);
+  justify-self: end;
   margin-left: 0;
 }
 
@@ -574,6 +576,7 @@ textarea::placeholder {
 .searchable-dropdown__menu input {
   min-width: 0;
   min-height: 2.5rem;
+  border-color: var(--color-border);
   padding-block: var(--space-2);
 }
 
@@ -588,6 +591,12 @@ textarea::placeholder {
   gap: var(--space-1);
   border-color: transparent;
   text-align: left;
+}
+
+.searchable-dropdown__menu [role='option'] strong {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
 }
 
 .searchable-dropdown__menu [role='option'].is-active,

@@ -22,12 +22,12 @@ h3 {
 h1 {
   max-width: 24ch;
   font-size: clamp(1.8rem, 3vw, 2.5rem);
-  letter-spacing: -0.045em;
+  letter-spacing: -0.03em;
 }
 
 h2 {
   font-size: clamp(1.35rem, 2vw, 2rem);
-  letter-spacing: -0.035em;
+  letter-spacing: -0.025em;
 }
 
 small {
@@ -47,5 +47,5 @@ small {
 .login-card__brand h1 {
   max-width: 12ch;
   font-size: var(--font-size-hero);
-  letter-spacing: -0.07em;
+  letter-spacing: -0.05em;
 }
