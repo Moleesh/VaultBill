@@ -40,22 +40,22 @@ const platformHelp = (capabilities: CapabilityRegistry): readonly HelpSection[] 
 const pageSections: Readonly<Record<string, readonly HelpSection[]>> = {
   login: [
     {
-      title: 'Choose an operator',
-      body: 'Select your account, enter a PIN or password only when your administrator has enabled one, then choose Log in.',
-      keywords: ['operator', 'account', 'pin', 'password', 'login'],
+      title: 'Choose your account',
+      body: 'Select your operator account, then choose Log in. If a password is configured, the field appears automatically.',
+      keywords: ['operator', 'account', 'password', 'login'],
     },
   ],
   dashboard: [
     {
       title: 'Start your work',
-      body: 'Records creates and finds documents. Reports summarizes business data. Builder configures formats. Settings manages the application.',
+      body: 'Records creates and finds documents, Reports summarizes business data, Builder configures formats, and Settings manages the application.',
       keywords: ['records', 'reports', 'builder', 'settings', 'modules'],
     },
   ],
   records: [
     {
       title: 'Create and finish a document',
-      body: 'Choose a format, enter values, then Save Draft or Finalize. Draft Print does not allocate a document number. Reprint is available for completed records.',
+      body: 'Choose a format, enter values, then Save Draft or Finalize. Draft Print does not allocate a document number, and Reprint is available for completed records.',
       keywords: ['format', 'save draft', 'draft print', 'finalize', 'reprint'],
     },
     {
@@ -74,15 +74,15 @@ const pageSections: Readonly<Record<string, readonly HelpSection[]>> = {
   builder: [
     {
       title: 'Configure document formats',
-      body: 'Work through formats, fields, line items, calculations, print templates, placeholders, and sample values. Changes are validated before saving.',
-      keywords: ['fields', 'line items', 'placeholders', 'templates', 'sample values'],
+      body: 'Work through formats, fields, line items, calculations, print templates, and preview. Builder JSON stays separate from HTML print templates and shared assets.',
+      keywords: ['fields', 'line items', 'templates', 'preview', 'assets'],
     },
   ],
   settings: [
     {
       title: 'Manage VaultBill',
-      body: 'Branding, themes, operators, printers, backup, security, network, and help are separated into focused tabs. Availability follows your role and platform.',
-      keywords: ['branding', 'themes', 'operators', 'printers', 'backup', 'security'],
+      body: 'Business, security, and integrations use jump links on one page. Availability follows your role and platform, with desktop-only tools staying on the host machine.',
+      keywords: ['branding', 'themes', 'operators', 'printers', 'backup', 'security', 'integrations'],
     },
   ],
 };

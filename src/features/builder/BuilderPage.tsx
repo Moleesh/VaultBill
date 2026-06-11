@@ -296,7 +296,7 @@ export const BuilderPage: FC = () => {
         {activeStep === 'Format' ? (
           <div className="form-grid">
             <label>
-              <span>Format name</span>
+              <span>Document name</span>
               <input
                 value={config.FormatName}
                 onChange={(event) => {
@@ -304,15 +304,9 @@ export const BuilderPage: FC = () => {
                 }}
               />
             </label>
-            <label>
-              <span>Format ID</span>
-              <input
-                value={config.FormatId}
-                onChange={(event) => {
-                  setConfig({ ...config, FormatId: event.currentTarget.value.replace(/\W/gu, '') });
-                }}
-              />
-            </label>
+            <div className="helper-card span-2">
+              This name is what operators see. VaultBill manages the internal document ID for you.
+            </div>
           </div>
         ) : null}
         {activeStep === 'Fields' ? (
@@ -506,10 +500,10 @@ export const BuilderPage: FC = () => {
         ) : null}
         {activeStep === 'Preview & Save' ? (
           <div className="builder-final-preview">
-            <div>
-              <p className="eyebrow">Configuration</p>
-              <h3>{config.FormatName}</h3>
-              <dl>
+            <section className="builder-preview-card" aria-labelledby="builder-field-preview-title">
+              <h3 id="builder-field-preview-title">Field preview</h3>
+              <p>{config.FormatName} entry form</p>
+              <dl className="builder-preview-summary">
                 <div>
                   <dt>Document fields</dt>
                   <dd>{config.Fields.length}</dd>
@@ -527,12 +521,55 @@ export const BuilderPage: FC = () => {
                   <dd>{config.CalculationPolicy.Currency}</dd>
                 </div>
               </dl>
-            </div>
-            <iframe
-              sandbox=""
-              srcDoc={renderBuilderPreview(templateHtml, config, assets)}
-              title="Print template preview"
-            />
+              <div className="builder-preview-surface" aria-label="Document field preview">
+                <div className="builder-preview-grid">
+                  {config.Fields.map((field) => (
+                    <label key={field.FieldId}>
+                      <span>{field.Label}</span>
+                      <input
+                        readOnly
+                        value={previewValue(field.SampleValue ?? field.DefaultValue ?? field.Label)}
+                      />
+                    </label>
+                  ))}
+                </div>
+                {lineSection ? (
+                  <div className="builder-preview-table" aria-label="Line item preview">
+                    <div
+                      className="builder-preview-table__row builder-preview-table__row--header"
+                      style={{
+                        gridTemplateColumns: `repeat(${String(lineSection.Fields.length || 1)}, minmax(8rem, 1fr))`,
+                      }}
+                    >
+                      {lineSection.Fields.map((field) => (
+                        <span key={field.FieldId}>{field.Label}</span>
+                      ))}
+                    </div>
+                    <div
+                      className="builder-preview-table__row builder-preview-table__row--body"
+                      style={{
+                        gridTemplateColumns: `repeat(${String(lineSection.Fields.length || 1)}, minmax(8rem, 1fr))`,
+                      }}
+                    >
+                      {lineSection.Fields.map((field) => (
+                        <span key={field.FieldId}>
+                          {previewValue(field.SampleValue ?? field.DefaultValue ?? 'Sample')}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+            </section>
+            <section className="builder-preview-card" aria-labelledby="builder-print-preview-title">
+              <h3 id="builder-print-preview-title">Print preview</h3>
+              <p>{config.FormatName} template</p>
+              <iframe
+                sandbox=""
+                srcDoc={renderBuilderPreview(templateHtml, config, assets)}
+                title="Print template preview"
+              />
+            </section>
             {validation.length > 0 ? (
               <div className="feedback-warning span-2">
                 <strong>Resolve before publishing</strong>
@@ -656,7 +693,7 @@ const FieldEditor: FC<{
           }}
           type="button"
         >
-          <strong>{field.Label}</strong>
+          <strong>{`Edit ${field.Label}`}</strong>
           <code>{field.FieldId}</code>
           <span>{field.Type}</span>
           {field.Calculated ? <small>Calculated</small> : null}
@@ -760,15 +797,6 @@ const FieldDrawer: FC<{
         value={typeof field.DefaultValue === 'string' ? field.DefaultValue : ''}
         onChange={(event) => {
           onChange({ ...field, DefaultValue: event.currentTarget.value });
-        }}
-      />
-    </label>
-    <label>
-      <span>Sample value</span>
-      <input
-        value={typeof field.SampleValue === 'string' ? field.SampleValue : ''}
-        onChange={(event) => {
-          onChange({ ...field, SampleValue: event.currentTarget.value });
         }}
       />
     </label>

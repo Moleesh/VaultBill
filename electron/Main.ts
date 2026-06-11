@@ -175,6 +175,12 @@ const scheduleRuntimeMutation = (mutation: () => Promise<void> | void) => {
 };
 
 ipcMain.handle('vaultbill:get-app-identity', () => identity);
+ipcMain.handle('vaultbill:window:minimize', () => {
+  mainWindow?.minimize();
+});
+ipcMain.handle('vaultbill:window:close', () => {
+  mainWindow?.close();
+});
 ipcMain.handle('vaultbill:accounts:list', () => credentialStore?.listAccounts() ?? []);
 ipcMain.handle('vaultbill:accounts:login', (_event, userId: unknown, password: unknown) => {
   if (!credentialStore || typeof userId !== 'string' || typeof password !== 'string') {

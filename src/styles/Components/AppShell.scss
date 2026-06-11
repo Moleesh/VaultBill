@@ -179,6 +179,12 @@
   gap: var(--space-3);
 }
 
+.app-shell__window-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
 .app-shell__mobile-account-actions {
   display: none;
   align-items: center;
@@ -189,7 +195,12 @@
   width: 100%;
   overflow: auto;
   overscroll-behavior: contain;
+  scrollbar-width: none;
   padding: clamp(var(--space-5), 4vw, var(--space-10));
+}
+
+.app-shell__content::-webkit-scrollbar {
+  display: none;
 }
 
 .app-shell__content > * {

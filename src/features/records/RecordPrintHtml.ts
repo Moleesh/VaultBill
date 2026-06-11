@@ -2,6 +2,7 @@
 import type { DocumentFormatConfig } from '../../db/startup/ConfigSchemas';
 import { requestHostedApi } from '../../runtime/HostedApi';
 import type { AppRecord, EditableRecord } from './RecordStoreContext';
+import { calculateRecordTotals } from './RecordTotals';
 
 export type RecordPrintPackage = {
   readonly config: DocumentFormatConfig;
@@ -42,7 +43,9 @@ export const renderRecordHtml = (
 const renderFallbackRecordHtml = (
   record: EditableRecord,
   stored: AppRecord | undefined,
-): string => `
+): string => {
+  const totals = calculateRecordTotals(record);
+  return `
 <!doctype html>
 <html>
   <head>
@@ -52,7 +55,24 @@ const renderFallbackRecordHtml = (
       body { font-family: sans-serif; margin: 32px; color: #102f2b; }
       table { width: 100%; border-collapse: collapse; margin-top: 24px; }
       th, td { border-bottom: 1px solid #c7d9d5; padding: 10px; text-align: left; }
-      .total { margin-top: 24px; text-align: right; font-size: 1.25rem; font-weight: 700; }
+      .summary {
+        margin-top: 24px;
+        display: grid;
+        gap: 12px;
+        justify-content: end;
+      }
+      .summary div {
+        display: flex;
+        justify-content: space-between;
+        min-width: 240px;
+        gap: 24px;
+        padding-top: 8px;
+        border-top: 1px solid #c7d9d5;
+      }
+      .summary div:last-child {
+        font-size: 1.15rem;
+        font-weight: 700;
+      }
       .cancelled { color: #9b2c2c; font-size: 2rem; font-weight: 800; text-align: center; }
     </style>
   </head>
@@ -73,9 +93,15 @@ const renderFallbackRecordHtml = (
           .join('')}
       </tbody>
     </table>
-    <div class="total">Total: ${escapePrintHtml(record.grandTotal)}</div>
+    <div class="summary">
+      <div><span>Subtotal</span><strong>₹${escapePrintHtml(totals.subtotal)}</strong></div>
+      <div><span>GST / tax</span><strong>₹${escapePrintHtml(totals.taxTotal)}</strong></div>
+      <div><span>Round off</span><strong>₹${escapePrintHtml(totals.roundOff)}</strong></div>
+      <div><span>Total</span><strong>₹${escapePrintHtml(totals.grandTotal)}</strong></div>
+    </div>
   </body>
 </html>`;
+};
 
 export const combineRecordHtml = (
   records: readonly AppRecord[],
@@ -114,6 +140,7 @@ const renderConfiguredRecordHtml = (
   printPackage: RecordPrintPackage,
 ): string => {
   const business = readBusinessProfile();
+  const totals = calculateRecordTotals(record);
   const itemRows = record.lineItems
     .map(
       (item) =>
@@ -135,7 +162,10 @@ const renderConfiguredRecordHtml = (
     'Record.Gstin': record.gstin,
     'Record.State': record.state,
     'Record.BillingAddress': record.billingAddress,
-    'Record.GrandTotal': record.grandTotal,
+    'Record.Subtotal': totals.subtotal,
+    'Record.TaxTotal': totals.taxTotal,
+    'Record.RoundOff': totals.roundOff,
+    'Record.GrandTotal': totals.grandTotal,
     'Record.FormatName': record.formatName,
     Items: itemTable,
     'Items.Table': itemTable,
@@ -159,6 +189,7 @@ const renderConfiguredRecordHtml = (
 
 const recordFieldValue = (fieldId: string, record: EditableRecord): string => {
   const normalized = fieldId.toLocaleLowerCase();
+  const totals = calculateRecordTotals(record);
   const directValues: Readonly<Record<string, string>> = {
     invoicedate: record.invoiceDate,
     customername: record.customerName,
@@ -166,7 +197,10 @@ const recordFieldValue = (fieldId: string, record: EditableRecord): string => {
     gstin: record.gstin,
     state: record.state,
     billingaddress: record.billingAddress,
-    grandtotal: record.grandTotal,
+    subtotal: totals.subtotal,
+    taxtotal: totals.taxTotal,
+    roundoff: totals.roundOff,
+    grandtotal: totals.grandTotal,
   };
   if (directValues[normalized] !== undefined) return directValues[normalized];
   const customValue = record.fieldValues?.[fieldId];

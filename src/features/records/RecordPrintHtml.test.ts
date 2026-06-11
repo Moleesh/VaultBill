@@ -15,8 +15,19 @@ const record: AppRecord = {
   gstin: '',
   state: '',
   billingAddress: 'Main Road',
-  lineItems: [],
-  grandTotal: '100.00',
+  lineItems: [
+    {
+      rowId: 'row-1',
+      itemName: 'Sample service',
+      hsnSac: '9983',
+      quantity: '1',
+      rate: '100.00',
+      taxPercent: '18',
+      amount: '118.00',
+      values: {},
+    },
+  ],
+  grandTotal: '118.00',
   createdAt: '2026-06-07T00:00:00.000Z',
   updatedAt: '2026-06-07T00:00:00.000Z',
   createdBy: 'admin_1',
@@ -31,6 +42,8 @@ describe('record print HTML', () => {
     expect(html).toContain('CANCELLED');
     expect(html).toContain('&lt;Unsafe Customer&gt;');
     expect(html).not.toContain('<Unsafe Customer>');
+    expect(html).toContain('Subtotal');
+    expect(html).toContain('Round off');
   });
 
   it('keeps bulk records in the supplied deterministic order', () => {
@@ -44,7 +57,7 @@ describe('record print HTML', () => {
     const html = renderRecordHtml(record, record, {
       config: builtInDefaultFormat,
       templateHtml:
-        '<main><img src="{{Asset.Logo}}"><h1>{{Record.Number}}</h1><p>{{Record.CustomerName}}</p><strong>{{Record.CancellationReason}}</strong>{{Items.Table}}</main>',
+        '<main><img src="{{Asset.Logo}}"><h1>{{Record.Number}}</h1><p>{{Record.CustomerName}}</p><strong>{{Record.CancellationReason}}</strong><span>{{Record.Subtotal}}</span><span>{{Record.TaxTotal}}</span><span>{{Record.RoundOff}}</span>{{Items.Table}}</main>',
       assets: [{ name: 'Logo', type: 'image/png', dataBase64: 'cG5n' }],
     });
 
@@ -53,5 +66,7 @@ describe('record print HTML', () => {
     expect(html).toContain('&lt;Unsafe Customer&gt;');
     expect(html).toContain('Duplicate');
     expect(html).toContain('<table>');
+    expect(html).toContain('100.00');
+    expect(html).toContain('18.00');
   });
 });

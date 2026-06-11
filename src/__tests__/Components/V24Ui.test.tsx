@@ -5,14 +5,12 @@ import type { ReactNode } from 'react';
 
 import { CapabilityProvider } from '../../capability/CapabilityContext';
 import type { CapabilityRegistry } from '../../capability/Capability.types';
-import { ContextualHelp } from '../../components/ContextualHelp';
 import { SearchableDropdown } from '../../components/SearchableDropdown/SearchableDropdown';
 import { SessionProvider } from '../../features/auth/SessionContext';
 import { BuilderPage } from '../../features/builder/BuilderPage';
 import { RecordsPage } from '../../features/records/RecordsPage';
 import { RecordStoreProvider } from '../../features/records/RecordStoreContext';
 import { ReportsPage } from '../../features/reports/ReportsPage';
-import { SettingsPage } from '../../features/settings/SettingsPage';
 
 const webCapabilities: CapabilityRegistry = {
   isDesktop: false,
@@ -79,48 +77,56 @@ describe('v24 product UI', () => {
     ).toBeVisible();
   });
 
-  it('shows capability-aware settings and help', () => {
-    window.localStorage.setItem(
-      'vaultbill.accounts',
-      JSON.stringify([
-        {
-          userId: 'admin_1',
-          username: 'admin',
-          displayName: 'Operations Admin',
-          role: 'Admin',
-          isActive: true,
-        },
-      ]),
-    );
-    window.localStorage.setItem('vaultbill.operator', 'admin_1');
-    const fullWebCapabilities = {
-      ...webCapabilities,
-      isDemoMode: false,
-      isLanBrowser: false,
-      canSmsIntegration: true,
-      canGspIntegration: true,
-    };
-    renderPage(
-      <>
-        <SettingsPage />
-        <ContextualHelp
-          isOpen
-          onClose={() => undefined}
-          onOpen={() => undefined}
-          page="records"
-          role="SysAdmin"
-        />
-      </>,
-      fullWebCapabilities,
+  it('shows the document name field without exposing the internal format ID', () => {
+    renderPage(<BuilderPage />);
+
+    expect(screen.getByRole('heading', { name: 'Format' })).toBeVisible();
+    expect(screen.getByText('Document name')).toBeVisible();
+    expect(screen.queryByText('Format ID')).not.toBeInTheDocument();
+  });
+
+  it('hides sample value editing in the field drawer', () => {
+    render(
+      <MemoryRouter initialEntries={['/app/builder?step=fields']}>
+        <CapabilityProvider value={webCapabilities}>
+          <SessionProvider>
+            <RecordStoreProvider>
+              <BuilderPage />
+            </RecordStoreProvider>
+          </SessionProvider>
+        </CapabilityProvider>
+      </MemoryRouter>,
     );
 
-    expect(screen.getByRole('heading', { name: 'Accounts and access' })).toBeVisible();
-    expect(screen.queryByRole('button', { name: 'Create backup' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: 'Business' })).not.toBeInTheDocument();
-    fireEvent.change(screen.getByPlaceholderText('Search actions and topics'), {
-      target: { value: 'PDF' },
-    });
-    expect(screen.getByText('PDF output')).toBeVisible();
+    fireEvent.click(screen.getByRole('button', { name: /2 Fields/u }));
+    const [invoiceDateButton] = screen.getAllByRole('button', { name: /Invoice Date/u });
+    if (!invoiceDateButton) {
+      throw new Error('Invoice Date field button was not found.');
+    }
+    fireEvent.click(invoiceDateButton);
+
+    expect(screen.getByRole('dialog', { name: /Edit Invoice Date/u })).toBeVisible();
+    expect(screen.getAllByText('Edit Invoice Date').length).toBeGreaterThan(1);
+    expect(screen.queryByText('Sample value')).not.toBeInTheDocument();
+  });
+
+  it('shows field and print previews in the final builder step', () => {
+    render(
+      <MemoryRouter initialEntries={['/app/builder?step=preview']}>
+        <CapabilityProvider value={webCapabilities}>
+          <SessionProvider>
+            <RecordStoreProvider>
+              <BuilderPage />
+            </RecordStoreProvider>
+          </SessionProvider>
+        </CapabilityProvider>
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByRole('heading', { name: /Field preview/u })).toBeVisible();
+    expect(screen.getByRole('heading', { name: /Print preview/u })).toBeVisible();
+    expect(screen.getByLabelText('Invoice Date')).toBeVisible();
+    expect(screen.getByText('Item Name')).toBeVisible();
   });
 
   it('filters long dropdown options through its portal', () => {

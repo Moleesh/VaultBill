@@ -3,12 +3,12 @@
 ## 2026-06-04
 
 - Started with Phase 1 because the workspace was an empty git repository and
-  the handoff spec requires phase-order implementation.
+  the handoff baseline requires phase-order implementation.
 - Used Vite + React + TypeScript + SCSS with strict compiler settings.
 - Added Electron main/preload files now, but left printing, PDF, printer
   listing, Local API, database, and engines as typed placeholders for their
   required future phases.
-- Implemented `APP_NAME` derivation in both Vite and Electron with the spec's
+- Implemented `APP_NAME` derivation in both Vite and Electron with the
   fallback of `VaultBill`.
 - Kept runtime branding separate from build-time identity.
 - Added five built-in themes through CSS variables rather than hardcoded
@@ -55,7 +55,7 @@
 
 ## 2026-06-04 Phase 5
 
-- Added field catalog metadata for every field type listed in the spec.
+- Added field catalog metadata for every field type listed in the baseline.
 - Added schema-engine parsing for document format JSON through Zod.
 - Added top-level document value validation for required fields, integers,
   decimal strings, dates, string arrays, booleans, and character max length.
@@ -91,7 +91,7 @@
 - Kept draft saves numberless; final document numbers are allocated only during
   finalization inside one immediate SQLite transaction.
 - Stored cancellation audit metadata in indexed DB columns while preserving the
-  single saved-record JSON shape from the spec.
+  single saved-record JSON shape from the baseline.
 - Enforced read-only finalized/cancelled records and Admin-only cancellation.
 
 ## 2026-06-04 Phase 9
@@ -254,7 +254,7 @@
   delete any existing release and tag for the same version before recreating
   the release assets.
 
-## 2026-06-05 Specification v20
+## 2026-06-05 Baseline v20
 
 - Replaced the phase-status scaffold with a login-first routed product shell
   for dashboard, records, reports, builder, and settings.
@@ -269,15 +269,15 @@
 - Added strict ESLint rules, Husky/lint-staged/commitlint hooks, coverage
   thresholds, and Playwright role, help, routing, and responsive overflow gates.
 
-## 2026-06-07 Specification v24
+## 2026-06-07 Consolidated baseline v24
 
-- Replaced fragmented v20-v23 plans with `docs/Spec.md` as the canonical v24
-  baseline.
+- Replaced fragmented v20-v23 plans with the live v24 implementation baseline
+  and synchronized the repo docs to match it.
 - Limited current desktop releases to Windows and Linux; macOS and native
   Android moved to future scope.
 - Reduced first-run setup to Welcome, required Business Profile, and SysAdmin
   security. Admin/User creation moved to authorized Settings.
-- Defined role-specific navigation and account limits: one Admin and five Users.
+- Defined role-based navigation and account limits: one Admin and five Users.
 - Added accumulated-use desktop trial state and package-time license verifier.
 - Replaced the rigid shell with fixed navigation, Lucide icons, a scroll progress
   rail, compact theme palette, role-aware footer, and mobile bottom navigation.

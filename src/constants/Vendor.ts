@@ -5,5 +5,5 @@ export const VENDOR = {
   email: 'support@vaultbill.app',
   phone: '+91-XXXXXXXXXX',
   website: 'https://github.com/',
-  version: '0.1.0',
+  version: '1.0.0',
 } as const;

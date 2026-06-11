@@ -1,3 +1,4 @@
+import { ChevronDown } from 'lucide-react';
 import { useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { FC, KeyboardEvent } from 'react';
@@ -132,7 +133,7 @@ export const SearchableDropdown: FC<SearchableDropdownProps> = ({
         type="button"
       >
         <span id={`${id}-value`}>{loading ? 'Loading…' : (selectedOption?.label ?? 'Choose')}</span>
-        <span aria-hidden="true">⌄</span>
+        <ChevronDown aria-hidden="true" className="searchable-dropdown__caret" size={16} />
       </button>
       {isOpen && portalRoot
         ? createPortal(

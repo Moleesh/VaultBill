@@ -38,11 +38,20 @@ describe('runDatabaseStartupChecks', () => {
 
     expect(result.defaultFormatId).toBe('TaxInvoice');
     expect(result.appliedPatches).toContain('seed:builtInDefaultFormat');
+    expect(result.appliedPatches).toContain('seed:builtInDefaultPrintTemplate');
     expect(result.appliedPatches).toContain('settings:startupHealth');
     expect(db.get('PRAGMA foreign_keys;')).toEqual({ foreign_keys: 1 });
     expect(db.get('SELECT COUNT(*) AS count FROM document_formats WHERE is_default = 1;')).toEqual({
       count: 1,
     });
+    expect(db.get('SELECT COUNT(*) AS count FROM print_templates WHERE template_id = ?;', [
+      'TaxInvoice',
+    ])).toEqual({ count: 1 });
+    expect(
+      db.get('SELECT COUNT(*) AS count FROM print_template_assets WHERE template_id = ?;', [
+        'TaxInvoice',
+      ]),
+    ).toEqual({ count: 1 });
     expect(
       db.get('SELECT setting_json FROM settings WHERE setting_key = ?;', [
         'settings.startupHealth',

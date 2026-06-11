@@ -30,6 +30,7 @@ export const LoginPage: FC = () => {
     keywords: [account.username, account.role],
   }));
   const selectedAccount = accounts.find((account) => account.userId === selectedAccountId);
+  const isLoginDisabled = !selectedAccountId || hostedConnectionState !== 'connected';
 
   useEffect(() => {
     if (!selectedAccountId && accounts[0]) setSelectedAccountId(accounts[0].userId);
@@ -76,41 +77,11 @@ export const LoginPage: FC = () => {
               ) : null}
             </div>
           ) : null}
-          {capabilities.isDemoMode ? (
-            <div className="demo-login-summary">
-              <strong>Demo User</strong>
-              <p>Create GST invoices, finalize records, reprint, and explore reports.</p>
-            </div>
-          ) : (
-            <SearchableDropdown
-              label="Operator account"
-              onChange={setSelectedAccountId}
-              options={accountOptions}
-              value={selectedAccountId}
-            />
-          )}
-          {!capabilities.isDemoMode &&
-          (selectedAccount?.passwordHash || selectedAccount?.passwordConfigured) ? (
-            <label className="login-password">
-              <span>Password</span>
-              <input
-                autoComplete="current-password"
-                onChange={(event) => {
-                  setPassword(event.currentTarget.value);
-                  setError('');
-                }}
-                type="password"
-                value={password}
-              />
-            </label>
-          ) : null}
-          <p className="field-note">
-            A PIN or password appears here only when your administrator enables it.
-          </p>
-          <button
-            className="button-primary"
-            disabled={!selectedAccountId || hostedConnectionState !== 'connected'}
-            onClick={() => {
+          <form
+            className="login-card__auth"
+            onSubmit={(event) => {
+              event.preventDefault();
+              if (isLoginDisabled) return;
               void login(selectedAccountId, password)
                 .then(() => {
                   void navigate('/app/dashboard');
@@ -119,10 +90,39 @@ export const LoginPage: FC = () => {
                   setError(reason instanceof Error ? reason.message : 'Login failed.');
                 });
             }}
-            type="button"
           >
-            {capabilities.isDemoMode ? 'Start demo' : 'Log in'}
-          </button>
+            {capabilities.isDemoMode ? (
+              <div className="demo-login-summary">
+                <strong>Demo User</strong>
+                <p>Create GST invoices, finalize records, reprint, and explore reports.</p>
+              </div>
+            ) : (
+              <SearchableDropdown
+                label="Operator account"
+                onChange={setSelectedAccountId}
+                options={accountOptions}
+                value={selectedAccountId}
+              />
+            )}
+            {!capabilities.isDemoMode &&
+            (selectedAccount?.passwordHash || selectedAccount?.passwordConfigured) ? (
+              <label className="login-password">
+                <span>Password</span>
+                <input
+                  autoComplete="current-password"
+                  onChange={(event) => {
+                    setPassword(event.currentTarget.value);
+                    setError('');
+                  }}
+                  type="password"
+                  value={password}
+                />
+              </label>
+            ) : null}
+            <button className="button-primary" disabled={isLoginDisabled} type="submit">
+              {capabilities.isDemoMode ? 'Start demo' : 'Log in'}
+            </button>
+          </form>
           {error ? (
             <p className="feedback-error" role="alert">
               {error}
@@ -161,10 +161,7 @@ export const LoginPage: FC = () => {
         }}
         title="Login help"
       >
-        <p>
-          Choose the operator account that belongs to you. Enter a PIN or password only when one is
-          configured, then select Log in.
-        </p>
+        <p>Choose your operator account, then log in.</p>
       </AppModal>
       <AppModal
         isOpen={isActivationOpen}

@@ -56,6 +56,12 @@ export const SettingsPage: FC = () => {
   const [outputTarget, setOutputTarget] = useState(
     () => window.localStorage.getItem('vaultbill.output-target') ?? 'PreviewOnly',
   );
+  const [preferredPrinterName, setPreferredPrinterName] = useState(
+    () => window.localStorage.getItem('vaultbill.preferred-printer') ?? '',
+  );
+  const [availablePrinters, setAvailablePrinters] = useState<
+    readonly { readonly id: string; readonly name: string; readonly isDefault: boolean }[]
+  >([]);
   const [lanEnabled, setLanEnabled] = useState(
     () => window.localStorage.getItem('vaultbill.lan.enabled') === 'true',
   );
@@ -142,6 +148,26 @@ export const SettingsPage: FC = () => {
       if (typeof settings.signatureEnabled === 'boolean')
         setSignatureEnabled(settings.signatureEnabled);
     });
+    if (window.vaultBillDesktop?.listPrinters) {
+      void window.vaultBillDesktop.listPrinters().then((printers) => {
+        setAvailablePrinters(printers);
+        const savedPrinter = window.localStorage.getItem('vaultbill.preferred-printer') ?? '';
+        if (savedPrinter && !printers.some((printer) => printer.name === savedPrinter)) {
+          window.localStorage.removeItem('vaultbill.preferred-printer');
+          setPreferredPrinterName('');
+          return;
+        }
+        if (!savedPrinter) {
+          const defaultPrinter = printers.find((printer) => printer.isDefault)?.name ?? '';
+          if (defaultPrinter) {
+            setPreferredPrinterName(defaultPrinter);
+            window.localStorage.setItem('vaultbill.preferred-printer', defaultPrinter);
+          }
+        }
+      });
+    } else {
+      setAvailablePrinters([]);
+    }
     if (window.vaultBillDesktop) {
       void window.vaultBillDesktop.getTrialStatus().then(setTrialStatus);
       void window.vaultBillDesktop.getHostedWebSettings().then((settings) => {
@@ -172,6 +198,11 @@ export const SettingsPage: FC = () => {
     window.localStorage.setItem('vaultbill.company-gstin', gstin.trim());
     window.localStorage.setItem('vaultbill.theme', theme);
     window.localStorage.setItem('vaultbill.output-target', outputTarget);
+    if (preferredPrinterName.trim()) {
+      window.localStorage.setItem('vaultbill.preferred-printer', preferredPrinterName.trim());
+    } else {
+      window.localStorage.removeItem('vaultbill.preferred-printer');
+    }
     document.documentElement.dataset.theme = theme;
     const settings = {
       companyName: companyName.trim(),
@@ -437,6 +468,7 @@ export const SettingsPage: FC = () => {
       <nav className="settings-jump-links" aria-label="Settings sections">
         {isSysAdmin ? <a href="#business">Business</a> : null}
         <a href="#security">Security</a>
+        {isSysAdmin ? <a href="#backup">Backup</a> : null}
         {isSysAdmin ? <a href="#integrations">Integrations</a> : null}
       </nav>
 
@@ -453,15 +485,6 @@ export const SettingsPage: FC = () => {
                 value={companyName}
                 onChange={(event) => {
                   setCompanyName(event.currentTarget.value);
-                }}
-              />
-            </label>
-            <label>
-              <span>GSTIN</span>
-              <input
-                value={gstin}
-                onChange={(event) => {
-                  setGstin(event.currentTarget.value);
                 }}
               />
             </label>
@@ -502,7 +525,30 @@ export const SettingsPage: FC = () => {
               </div>
             </fieldset>
             <SearchableDropdown
-              label="Printer / PDF default"
+              label="Preferred printer"
+              loading={capabilities.isDesktop && availablePrinters.length === 0}
+              onChange={setPreferredPrinterName}
+              options={
+                availablePrinters.length > 0
+                  ? availablePrinters.map((printer) => ({
+                      value: printer.name,
+                      label: printer.name,
+                      ...(printer.isDefault ? { description: 'Default printer' } : {}),
+                    }))
+                  : [
+                      {
+                        value: '',
+                        label: capabilities.isDesktop
+                          ? 'No desktop printers found'
+                          : 'Available in VaultBill Desktop',
+                        disabled: true,
+                      },
+                    ]
+              }
+              value={preferredPrinterName}
+            />
+            <SearchableDropdown
+              label="Print mode"
               onChange={setOutputTarget}
               options={[
                 { value: 'PreviewOnly', label: 'Preview, then print' },
@@ -513,59 +559,16 @@ export const SettingsPage: FC = () => {
               ]}
               value={outputTarget}
             />
+            <p className="field-note span-2">
+              Choose a printer when VaultBill Desktop is available. Print mode still controls
+              whether VaultBill previews, downloads a PDF, or sends directly to a printer.
+            </p>
           </div>
           <div className="settings-inline-actions">
-            {capabilities.canBackup ? (
-              <>
-                <label className="checkbox-field">
-                  <input
-                    checked={encryptBackup}
-                    onChange={(event) => {
-                      setEncryptBackup(event.currentTarget.checked);
-                    }}
-                    type="checkbox"
-                  />
-                  <span>Encrypt backup</span>
-                </label>
-                <button disabled={Boolean(busyAction)} onClick={createBackup} type="button">
-                  <HardDriveDownload aria-hidden="true" size={18} /> Create backup
-                </button>
-              </>
-            ) : null}
-            {capabilities.canRestore ? (
-              <button
-                disabled={Boolean(busyAction)}
-                onClick={() => {
-                  setRestoreOpen(true);
-                }}
-                type="button"
-              >
-                <ArchiveRestore aria-hidden="true" size={18} /> Restore backup
-              </button>
-            ) : null}
             <button className="button-primary" type="submit">
               Save business
             </button>
           </div>
-          {capabilities.isLanBrowser && (capabilities.canBackup || capabilities.canRestore) ? (
-            <label>
-              <span>System Administrator password for host operations</span>
-              <input
-                autoComplete="current-password"
-                type="password"
-                value={remoteAuthorizationPassword}
-                onChange={(event) => {
-                  setRemoteAuthorizationPassword(event.currentTarget.value);
-                }}
-              />
-            </label>
-          ) : null}
-          {!encryptBackup && capabilities.canBackup ? (
-            <p className="feedback-warning">
-              Unencrypted backups expose business data and stored settings to anyone who opens the
-              file.
-            </p>
-          ) : null}
         </form>
       ) : null}
 
@@ -704,33 +707,6 @@ export const SettingsPage: FC = () => {
             </button>
           </div>
         </div>
-        {isSysAdmin && (capabilities.isDesktop || capabilities.isLanBrowser) ? (
-          <div className="settings-subsection">
-            <div className="section-heading">
-              <div>
-                <h3>Backup password</h3>
-                <p>Encrypt new backups with a password protected by the desktop secure store.</p>
-              </div>
-              <ShieldCheck aria-hidden="true" />
-            </div>
-            <div className="operator-create">
-              <label>
-                <span>New backup password</span>
-                <input
-                  autoComplete="new-password"
-                  type="password"
-                  value={backupPassword}
-                  onChange={(event) => {
-                    setBackupPassword(event.currentTarget.value);
-                  }}
-                />
-              </label>
-              <button disabled={Boolean(busyAction)} onClick={changeBackupPassword} type="button">
-                Update backup password
-              </button>
-            </div>
-          </div>
-        ) : null}
         {isSysAdmin && !capabilities.isDemoMode ? (
           <div className="settings-subsection">
             <div className="section-heading">
@@ -793,7 +769,95 @@ export const SettingsPage: FC = () => {
             </label>
           </div>
         ) : null}
-        {isSysAdmin && (capabilities.isDesktop || capabilities.isLanBrowser) ? (
+      </section>
+
+      {isSysAdmin && (capabilities.isDesktop || capabilities.isLanBrowser) ? (
+        <section className="settings-section" id="backup">
+          <header>
+            <p className="eyebrow">Backup</p>
+            <h2>Backup workspace</h2>
+          </header>
+          <div className="settings-subsection">
+            <div className="section-heading">
+              <div>
+                <h3>Backup and restore</h3>
+                <p>Create a verified backup or restore one from a checked VaultBill archive.</p>
+              </div>
+              <ArchiveRestore aria-hidden="true" />
+            </div>
+            {capabilities.canBackup ? (
+              <div className="operator-create">
+                <label className="checkbox-field">
+                  <input
+                    checked={encryptBackup}
+                    onChange={(event) => {
+                      setEncryptBackup(event.currentTarget.checked);
+                    }}
+                    type="checkbox"
+                  />
+                  <span>Encrypt backup</span>
+                </label>
+                <button disabled={Boolean(busyAction)} onClick={createBackup} type="button">
+                  <HardDriveDownload aria-hidden="true" size={18} /> Create backup
+                </button>
+              </div>
+            ) : null}
+            {capabilities.isLanBrowser && (capabilities.canBackup || capabilities.canRestore) ? (
+              <label>
+                <span>System Administrator password for host operations</span>
+                <input
+                  autoComplete="current-password"
+                  type="password"
+                  value={remoteAuthorizationPassword}
+                  onChange={(event) => {
+                    setRemoteAuthorizationPassword(event.currentTarget.value);
+                  }}
+                />
+              </label>
+            ) : null}
+            {capabilities.canRestore ? (
+              <button
+                disabled={Boolean(busyAction)}
+                onClick={() => {
+                  setRestoreOpen(true);
+                }}
+                type="button"
+              >
+                <ArchiveRestore aria-hidden="true" size={18} /> Restore backup
+              </button>
+            ) : null}
+            {!encryptBackup && capabilities.canBackup ? (
+              <p className="feedback-warning">
+                Unencrypted backups expose business data and stored settings to anyone who opens
+                the file.
+              </p>
+            ) : null}
+          </div>
+          <div className="settings-subsection">
+            <div className="section-heading">
+              <div>
+                <h3>Backup password</h3>
+                <p>Encrypt new backups with a password protected by the desktop secure store.</p>
+              </div>
+              <ShieldCheck aria-hidden="true" />
+            </div>
+            <div className="operator-create">
+              <label>
+                <span>New backup password</span>
+                <input
+                  autoComplete="new-password"
+                  type="password"
+                  value={backupPassword}
+                  onChange={(event) => {
+                    setBackupPassword(event.currentTarget.value);
+                  }}
+                />
+              </label>
+              <button disabled={Boolean(busyAction)} onClick={changeBackupPassword} type="button">
+                Update backup password
+              </button>
+            </div>
+          </div>
           <div className="settings-subsection danger-zone">
             <div className="section-heading">
               <div>
@@ -812,8 +876,8 @@ export const SettingsPage: FC = () => {
               Reset application data
             </button>
           </div>
-        ) : null}
-      </section>
+        </section>
+      ) : null}
 
       {isSysAdmin ? (
         <section className="settings-section" id="integrations">

@@ -28,6 +28,7 @@ import {
   type RecordLineItem,
   useRecordStore,
 } from './RecordStoreContext';
+import { calculateRecordTotals } from './RecordTotals';
 
 const emptyLineItem = (): RecordLineItem => ({
   rowId: crypto.randomUUID(),
@@ -117,6 +118,7 @@ export const RecordsPage: FC = () => {
     label: format.formatName,
   }));
   const activeConfig = activePrintPackage?.config ?? builtInDefaultFormat;
+  const recordTotals = useMemo(() => calculateRecordTotals(record), [record]);
   const configuredDocumentFields = useMemo(
     () =>
       activeConfig.Fields.filter((field) => !knownDocumentFields.has(normalizeId(field.FieldId))),
@@ -140,6 +142,7 @@ export const RecordsPage: FC = () => {
     );
   });
   const outputTarget = window.localStorage.getItem('vaultbill.output-target') ?? 'PreviewOnly';
+  const preferredPrinterName = window.localStorage.getItem('vaultbill.preferred-printer') ?? '';
   const printLabel = outputTarget === 'DownloadPdf' ? 'Print / PDF' : 'Print';
   const showShortcuts =
     !window.matchMedia('(pointer: coarse)').matches &&
@@ -232,7 +235,11 @@ export const RecordsPage: FC = () => {
         return;
       }
       if (window.vaultBillDesktop) {
-        const result = await window.vaultBillDesktop.printHtml({ html, jobId });
+        const result = await window.vaultBillDesktop.printHtml({
+          html,
+          jobId,
+          ...(preferredPrinterName ? { printerName: preferredPrinterName } : {}),
+        });
         if (!result.success) throw new Error(result.warning ?? 'Printing failed.');
         return;
       }
@@ -607,9 +614,23 @@ export const RecordsPage: FC = () => {
                 Add line item
               </button>
             ) : null}
-            <div className="record-total">
-              <span>Grand total</span>
-              <strong>₹{record.grandTotal}</strong>
+            <div className="record-summary" aria-label="Record totals">
+              <div>
+                <span>Subtotal</span>
+                <strong>₹{recordTotals.subtotal}</strong>
+              </div>
+              <div>
+                <span>GST / tax</span>
+                <strong>₹{recordTotals.taxTotal}</strong>
+              </div>
+              <div>
+                <span>Round off</span>
+                <strong>₹{recordTotals.roundOff}</strong>
+              </div>
+              <div className="record-summary__grand">
+                <span>Grand total</span>
+                <strong>₹{recordTotals.grandTotal}</strong>
+              </div>
             </div>
           </div>
           {operationError ? <p className="feedback-error">{operationError}</p> : null}
