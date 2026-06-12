@@ -10,9 +10,11 @@ const requireInstaller = process.argv.includes('--require-installer');
 const packageJson = JSON.parse(await readFile(join(root, 'package.json'), 'utf8'));
 const mainPath = join(root, packageJson.main);
 const webIndexPath = join(root, 'dist/index.html');
+const runtimePath = join(root, 'dist-electron/MainRuntime.js');
 const requiredPaths = [
     'dist/index.html',
     'dist-electron/Main.js',
+    'dist-electron/MainRuntime.js',
     'dist-electron/Preload.js',
     packageJson.main,
 ];
@@ -56,8 +58,13 @@ const [mainSource, webIndex] = await Promise.all([
     readFile(mainPath, 'utf8'),
     readFile(webIndexPath, 'utf8'),
 ]);
-if (!mainSource.includes('http://127.0.0.1:4317')) {
-    throw new Error('Desktop main process does not load the hosted VaultBill web application.');
+const runtimeSource = await readFile(runtimePath, 'utf8');
+if (
+    !mainSource.includes('loadURL') &&
+    !runtimeSource.includes('loadURL(hostedAppUrl)') &&
+    !runtimeSource.includes("loadURL('http://127.0.0.1:4317')")
+) {
+    throw new Error('Desktop runtime does not load the hosted VaultBill web application.');
 }
 if (mainSource.includes('.loadFile(')) {
     throw new Error('Desktop main process must not load the renderer through file://.');
