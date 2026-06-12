@@ -528,7 +528,7 @@ textarea::placeholder {
 .searchable-dropdown {
     display: grid;
     min-width: 0;
-    gap: 0.2rem;
+    gap: 0.15rem;
 }
 
 .searchable-dropdown__label {
@@ -543,11 +543,12 @@ textarea::placeholder {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
-    gap: 0.25rem;
-    min-height: 2.8rem;
-    padding-inline: var(--space-2);
+    gap: 0.35rem;
+    min-height: 2.7rem;
+    padding-inline: var(--space-3);
     background: var(--color-surface-raised);
     text-align: left;
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-border) 40%, transparent);
 }
 
 .searchable-dropdown__trigger span:first-child {
@@ -562,7 +563,7 @@ textarea::placeholder {
     color: var(--color-text-muted);
     justify-self: end;
     margin-left: 0;
-    margin-right: -0.1rem;
+    margin-right: -0.15rem;
 }
 
 .searchable-dropdown__menu {
@@ -580,6 +581,10 @@ textarea::placeholder {
     background: var(--color-surface-raised);
     padding: var(--space-2);
     box-shadow: var(--shadow-popover);
+}
+
+.searchable-dropdown__menu[data-open-direction='above'] {
+    max-height: min(28rem, calc(var(--dropdown-top) - 1rem));
 }
 
 .searchable-dropdown__menu input {

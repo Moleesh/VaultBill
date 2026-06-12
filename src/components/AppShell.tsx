@@ -22,7 +22,7 @@ import { AppShellMobileNav } from './AppShellMobileNav';
 import { AppShellSidebar } from './AppShellSidebar';
 import { AppShellTopbar } from './AppShellTopbar';
 import type { AppRouteId } from '../types/AppTypes';
-import './AppShell.scss';
+import '../styles/Components/AppShell.scss';
 
 /** Renders the authenticated desktop application frame and its modal actions. */
 export const AppShell: FC = () => {
@@ -126,11 +126,8 @@ export const AppShell: FC = () => {
             <div className="app-shell__body">
                 <AppShellTopbar
                     isDemoMode={capabilities.isDemoMode}
-                    isDesktop={capabilities.isDesktop}
-                    onClose={shellActions.closeWindow}
                     onChangePassword={shellActions.openPasswordDialog}
                     onLogout={shellActions.logOut}
-                    onMinimize={shellActions.minimizeWindow}
                     onOpenActivation={shellActions.openActivationDialog}
                     onResetDemo={shellActions.openResetDialog}
                     pageId={pageId}

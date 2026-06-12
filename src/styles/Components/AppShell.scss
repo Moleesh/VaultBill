@@ -1,6 +1,6 @@
 /** @format */
 
-@use '../styles/Breakpoints' as *;
+@use '../Breakpoints' as *;
 
 #root {
     min-height: 100vh;
@@ -12,6 +12,7 @@
     height: 100vh;
     overflow: hidden;
     background: var(--gradient-page);
+    background-attachment: fixed;
 }
 
 .app-shell.is-sidebar-expanded {
@@ -186,21 +187,15 @@
     min-height: 5rem;
     padding: var(--space-3) clamp(var(--space-4), 4vw, var(--space-8));
     border-bottom: var(--line-width) solid var(--color-border);
-    background: color-mix(in srgb, var(--color-bg) 76%, transparent);
-    backdrop-filter: blur(34px) saturate(140%);
-    box-shadow: 0 0.2rem 1.4rem color-mix(in srgb, var(--color-panel-shadow) 18%, transparent);
+    background: color-mix(in srgb, var(--color-surface) 88%, transparent);
+    backdrop-filter: blur(46px) saturate(160%);
+    box-shadow: 0 0.35rem 1.75rem color-mix(in srgb, var(--color-panel-shadow) 22%, transparent);
 }
 
 .app-shell__topbar-actions {
     display: flex;
     align-items: end;
     gap: var(--space-3);
-}
-
-.app-shell__window-controls {
-    display: flex;
-    align-items: center;
-    gap: var(--space-1);
 }
 
 .app-shell__mobile-account-actions {
@@ -215,6 +210,11 @@
     overscroll-behavior: contain;
     scrollbar-width: none;
     scrollbar-color: transparent transparent;
+    background: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--color-surface) 12%, transparent),
+        transparent 12rem
+    );
     padding: clamp(var(--space-5), 4vw, var(--space-10));
 }
 

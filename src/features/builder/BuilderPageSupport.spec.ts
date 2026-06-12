@@ -34,6 +34,7 @@ describe('BuilderPageSupport', () => {
         expect(steps).toEqual([
             'Format',
             'Fields',
+            'Layout',
             'Line Items',
             'Calculations',
             'Print',

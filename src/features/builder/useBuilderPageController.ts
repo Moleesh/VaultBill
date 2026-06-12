@@ -14,6 +14,7 @@ import {
     htmlStorageKey,
     readConfig,
     steps,
+    type BuilderLayoutConfig,
     type AssetSummary,
     type BuilderStep,
     type StoredBuilderPackage,
@@ -22,7 +23,9 @@ import { validateCalculationGraph } from './BuilderPageCalculationSupport';
 import { useBuilderPageActions } from './useBuilderPageActions';
 
 type EditingState = { readonly kind: 'document' | 'line'; readonly index: number } | undefined;
-type DocumentFormatConfig = z.infer<typeof DocumentFormatConfigSchema>;
+type DocumentFormatConfig = z.infer<typeof DocumentFormatConfigSchema> & {
+    readonly Layout?: BuilderLayoutConfig;
+};
 type FieldConfig = DocumentFormatConfig['Fields'][number];
 
 /** Keeps the builder state, loading, and rendering actions in a compact hook. */

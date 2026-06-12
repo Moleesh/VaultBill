@@ -4,11 +4,11 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { CapabilityRegistry } from '../capability/Capability.types';
-import { CapabilityProvider } from '../capability/CapabilityContext';
-import { AppShell } from './AppShell';
-import { RecordStoreProvider } from '../features/records/RecordStoreContext';
-import { SessionProvider } from '../features/auth/SessionContext';
+import type { CapabilityRegistry } from '../../capability/Capability.types';
+import { CapabilityProvider } from '../../capability/CapabilityContext';
+import { AppShell } from '../AppShell';
+import { RecordStoreProvider } from '../../features/records/RecordStoreContext';
+import { SessionProvider } from '../../features/auth/SessionContext';
 
 const desktopCapabilities: CapabilityRegistry = {
     isDesktop: true,
@@ -89,7 +89,7 @@ describe('app shell', () => {
         delete (window as Partial<Window> & { vaultBillDesktop?: unknown }).vaultBillDesktop;
     });
 
-    it('shows the icon-only close control for the desktop shell', async () => {
+    it('keeps window controls out of the in-page shell', () => {
         render(
             <MemoryRouter initialEntries={['/app/dashboard']}>
                 <CapabilityProvider value={desktopCapabilities}>
@@ -106,7 +106,8 @@ describe('app shell', () => {
             </MemoryRouter>,
         );
 
-        expect(await screen.findByRole('button', { name: 'Close window' })).toBeVisible();
-        await screen.findByRole('button', { name: 'Minimize window' });
+        expect(screen.getByRole('navigation', { name: 'Primary' })).toBeVisible();
+        expect(screen.queryByRole('button', { name: 'Close window' })).toBeNull();
+        expect(screen.queryByRole('button', { name: 'Minimize window' })).toBeNull();
     });
 });

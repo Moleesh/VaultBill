@@ -42,6 +42,11 @@ export const createWindow = async () => {
         frame: false,
         fullscreen: true,
         autoHideMenuBar: true,
+        titleBarOverlay: {
+            color: '#edf8f5',
+            symbolColor: '#18302c',
+            height: 48,
+        },
         backgroundColor: '#edf8f5',
         webPreferences: {
             contextIsolation: true,

@@ -41,9 +41,7 @@ describe('builder page', () => {
             </MemoryRouter>,
         );
 
-        expect(
-            await screen.findByRole('heading', { name: 'Document format builder' }),
-        ).toBeVisible();
+        expect(await screen.findByRole('heading', { name: 'Document builder' })).toBeVisible();
         expect(screen.getByText('Preview & Save')).toBeVisible();
     });
 });

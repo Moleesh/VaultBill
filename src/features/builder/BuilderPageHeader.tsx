@@ -24,10 +24,8 @@ export const BuilderPageHeader: FC<BuilderPageHeaderProps> = ({
         <div className="operational-header">
             <div>
                 <p className="eyebrow">Builder</p>
-                <h1>Document format builder</h1>
-                <p>
-                    Build fields and calculations first. Preview the finished document at the end.
-                </p>
+                <h1>Document builder</h1>
+                <p>Build the document structure, preview it, and publish when it is ready.</p>
             </div>
             <div className="builder-header-actions">
                 <label className="button-file">
@@ -49,7 +47,7 @@ export const BuilderPageHeader: FC<BuilderPageHeaderProps> = ({
                     }}
                     type="button"
                 >
-                    <small>{index + 1}</small>
+                    <small aria-hidden="true">{index < activeStepIndex ? '✓' : '›'}</small>
                     {step}
                 </button>
             ))}

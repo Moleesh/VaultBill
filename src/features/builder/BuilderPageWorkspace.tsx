@@ -4,12 +4,13 @@ import { BuilderPageDrawer } from './BuilderPageDrawer';
 import { BuilderCalculationsStep } from './BuilderCalculationsStep';
 import { BuilderFieldsStep } from './BuilderFieldsStep';
 import { BuilderFormatStep } from './BuilderFormatStep';
+import { BuilderLayoutStep } from './BuilderLayoutStep';
 import { BuilderLineItemsStep } from './BuilderLineItemsStep';
 import { BuilderPageFooter } from './BuilderPageFooter';
 import { BuilderPageHeader } from './BuilderPageHeader';
 import { BuilderPreviewStep } from './BuilderPreviewStep';
 import { BuilderPrintStep } from './BuilderPrintStep';
-import { helperFor, newField, steps } from './BuilderPageSupport';
+import { helperFor, newField, steps, type BuilderLayoutConfig } from './BuilderPageSupport';
 import type { FC } from 'react';
 import type { BuilderPageController } from './useBuilderPageController';
 
@@ -17,6 +18,7 @@ export const BuilderPageWorkspace: FC<{ readonly controller: BuilderPageControll
     controller,
 }) => {
     const { lineSection, referencedFieldIds } = controller;
+    const layout = controller.config.Layout ?? { Rows: 1, Columns: 2 };
 
     return (
         <div className="page-stack builder-page">
@@ -33,9 +35,7 @@ export const BuilderPageWorkspace: FC<{ readonly controller: BuilderPageControll
             <section className="builder-workspace builder-workspace--single">
                 <header className="builder-step-header">
                     <div>
-                        <p className="eyebrow">
-                            Step {controller.stepIndex + 1} of {steps.length}
-                        </p>
+                        <p className="eyebrow">{controller.activeStep}</p>
                         <h2>{controller.activeStep}</h2>
                     </div>
                     <p>{helperFor(controller.activeStep)}</p>
@@ -66,6 +66,17 @@ export const BuilderPageWorkspace: FC<{ readonly controller: BuilderPageControll
                             controller.setEditing({ kind: 'document', index });
                         }}
                         referencedFieldIds={referencedFieldIds}
+                    />
+                ) : null}
+                {controller.activeStep === 'Layout' ? (
+                    <BuilderLayoutStep
+                        layout={layout}
+                        onLayoutChange={(nextLayout: BuilderLayoutConfig) => {
+                            controller.setConfig({
+                                ...controller.config,
+                                Layout: nextLayout,
+                            });
+                        }}
                     />
                 ) : null}
                 {controller.activeStep === 'Line Items' && lineSection ? (

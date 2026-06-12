@@ -72,7 +72,7 @@ describe('product UI', () => {
         );
 
         expect((await screen.findAllByText('Aster Works')).length).toBeGreaterThan(0);
-        fireEvent.click(screen.getByRole('button', { name: /5 Print/u }));
+        fireEvent.click(screen.getByRole('button', { name: /^Print$/u }));
         expect(screen.getByRole('heading', { name: 'Print' })).toBeVisible();
         expect(
             screen.getByText(/Unsafe scripts, frames, forms, and remote URLs are removed/u),
@@ -101,12 +101,8 @@ describe('product UI', () => {
             </MemoryRouter>,
         );
 
-        fireEvent.click(screen.getByRole('button', { name: /2 Fields/u }));
-        const [invoiceDateButton] = screen.getAllByRole('button', { name: /Invoice Date/u });
-        if (!invoiceDateButton) {
-            throw new Error('Invoice Date field button was not found.');
-        }
-        fireEvent.click(invoiceDateButton);
+        fireEvent.click(screen.getByRole('button', { name: /^Fields$/u }));
+        fireEvent.click(screen.getByRole('button', { name: /^Edit Invoice Date$/u }));
 
         expect(screen.getByRole('dialog', { name: /Edit Invoice Date/u })).toBeVisible();
         expect(screen.getAllByText('Edit Invoice Date').length).toBeGreaterThan(1);

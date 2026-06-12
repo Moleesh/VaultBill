@@ -5,7 +5,13 @@
 import { ChevronDown } from 'lucide-react';
 import { useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import type { FC, KeyboardEvent } from 'react';
+import type { FC } from 'react';
+
+import {
+    createSearchableDropdownKeyDownHandler,
+    getDropdownMenuPlacement,
+    normalizeDropdownSearch,
+} from './SearchableDropdownSupport';
 
 export type DropdownOption = {
     readonly value: string;
@@ -23,8 +29,6 @@ type SearchableDropdownProps = {
     readonly loading?: boolean;
 };
 
-const normalize = (value: string): string => value.trim().toLocaleLowerCase().replace(/\s+/gu, ' ');
-
 export const SearchableDropdown: FC<SearchableDropdownProps> = ({
     label,
     loading = false,
@@ -39,31 +43,31 @@ export const SearchableDropdown: FC<SearchableDropdownProps> = ({
     const [query, setQuery] = useState('');
     const [activeIndex, setActiveIndex] = useState(-1);
     const selectedOption = options.find((option) => option.value === value);
-    const normalizedQuery = normalize(query);
+    const normalizedQuery = normalizeDropdownSearch(query);
     const filteredOptions = options.filter((option) => {
         const searchText = [option.label, option.value, ...(option.keywords ?? [])].join(' ');
-        return normalize(searchText).includes(normalizedQuery);
+        return normalizeDropdownSearch(searchText).includes(normalizedQuery);
     });
+
+    const syncMenuPosition = () => {
+        const rect = triggerRef.current?.getBoundingClientRect();
+        const menu = menuRef.current;
+
+        if (!rect || !menu) return;
+
+        const placement = getDropdownMenuPlacement(rect, window.innerHeight);
+        menu.style.setProperty('--dropdown-left', placement.left);
+        menu.style.setProperty('--dropdown-width', placement.width);
+        menu.style.setProperty('--dropdown-top', placement.top);
+        menu.dataset.openDirection = placement.openDirection;
+    };
 
     useEffect(() => {
         if (!isOpen) {
             return undefined;
         }
 
-        const rect = triggerRef.current?.getBoundingClientRect();
-        const menu = menuRef.current;
-
-        if (rect && menu) {
-            menu.style.setProperty('--dropdown-left', `${String(rect.left)}px`);
-            const expectedHeight = Math.min(448, window.innerHeight - 32);
-            const opensAbove =
-                window.innerHeight - rect.bottom < expectedHeight && rect.top > expectedHeight;
-            menu.style.setProperty(
-                '--dropdown-top',
-                `${String(opensAbove ? Math.max(16, rect.top - expectedHeight - 8) : rect.bottom + 8)}px`,
-            );
-            menu.style.setProperty('--dropdown-width', `${String(Math.max(rect.width, 280))}px`);
-        }
+        syncMenuPosition();
 
         const handleOutsideClick = (event: MouseEvent) => {
             const { target } = event;
@@ -75,10 +79,20 @@ export const SearchableDropdown: FC<SearchableDropdownProps> = ({
                 setIsOpen(false);
             }
         };
+        const handleScroll = () => {
+            setIsOpen(false);
+        };
+        const handleResize = () => {
+            syncMenuPosition();
+        };
 
         document.addEventListener('mousedown', handleOutsideClick);
+        window.addEventListener('scroll', handleScroll, true);
+        window.addEventListener('resize', handleResize);
         return () => {
             document.removeEventListener('mousedown', handleOutsideClick);
+            window.removeEventListener('scroll', handleScroll, true);
+            window.removeEventListener('resize', handleResize);
         };
     }, [isOpen]);
 
@@ -91,31 +105,6 @@ export const SearchableDropdown: FC<SearchableDropdownProps> = ({
         setIsOpen(false);
         setQuery('');
         triggerRef.current?.focus();
-    };
-
-    const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-        const lastIndex = Math.max(filteredOptions.length - 1, 0);
-
-        if (event.key === 'ArrowDown') {
-            event.preventDefault();
-            setActiveIndex((index) => Math.min(index < 0 ? 0 : index + 1, lastIndex));
-        }
-        if (event.key === 'ArrowUp') {
-            event.preventDefault();
-            setActiveIndex((index) => Math.max(index < 0 ? lastIndex : index - 1, 0));
-        }
-        if (event.key === 'Home') setActiveIndex(0);
-        if (event.key === 'End') setActiveIndex(lastIndex);
-        if (event.key === 'Escape') {
-            setIsOpen(false);
-            triggerRef.current?.focus();
-        }
-        if (event.key === 'Enter') {
-            const option =
-                filteredOptions[activeIndex] ??
-                filteredOptions.find((candidate) => !candidate.disabled);
-            if (option) chooseOption(option);
-        }
     };
 
     const portalRoot = document.getElementById('portal-root');
@@ -132,13 +121,18 @@ export const SearchableDropdown: FC<SearchableDropdownProps> = ({
                 className="searchable-dropdown__trigger"
                 disabled={loading}
                 onClick={() => {
-                    setIsOpen((current) => !current);
-                    setActiveIndex(
-                        Math.max(
-                            filteredOptions.findIndex((option) => option.value === value),
-                            filteredOptions.findIndex((option) => !option.disabled),
-                        ),
-                    );
+                    setIsOpen((current) => {
+                        const next = !current;
+                        if (next) {
+                            setActiveIndex(
+                                Math.max(
+                                    filteredOptions.findIndex((option) => option.value === value),
+                                    filteredOptions.findIndex((option) => !option.disabled),
+                                ),
+                            );
+                        }
+                        return next;
+                    });
                 }}
                 ref={triggerRef}
                 type="button"
@@ -152,7 +146,16 @@ export const SearchableDropdown: FC<SearchableDropdownProps> = ({
                 ? createPortal(
                       <div
                           className="searchable-dropdown__menu"
-                          onKeyDown={handleKeyDown}
+                          onKeyDown={createSearchableDropdownKeyDownHandler({
+                              activeIndex,
+                              filteredOptions,
+                              onChoose: chooseOption,
+                              onClose: () => {
+                                  setIsOpen(false);
+                              },
+                              setActiveIndex,
+                              triggerRef,
+                          })}
                           ref={menuRef}
                       >
                           {options.length > 7 ? (
@@ -176,6 +179,9 @@ export const SearchableDropdown: FC<SearchableDropdownProps> = ({
                                           aria-selected={option.value === value}
                                           className={index === activeIndex ? 'is-active' : ''}
                                           disabled={option.disabled}
+                                          onMouseEnter={() => {
+                                              setActiveIndex(index);
+                                          }}
                                           key={option.value}
                                           onClick={() => {
                                               chooseOption(option);

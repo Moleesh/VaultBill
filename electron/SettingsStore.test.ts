@@ -19,7 +19,7 @@ afterEach(() => {
 });
 
 describe('SettingsStore', () => {
-    it('persists setup business identity and integration configuration', () => {
+    it('persists setup business identity and connected service configuration', () => {
         directory = mkdtempSync(path.join(tmpdir(), 'vaultbill-settings-'));
         const databasePath = path.join(directory, 'vaultbill.sqlite');
         store = new SettingsStore(databasePath);
@@ -33,11 +33,19 @@ describe('SettingsStore', () => {
             outputTarget: 'PreviewOnly',
         });
         store.saveIntegrations({
-            gstEnabled: true,
-            gspProvider: 'Example GSP',
-            smsEnabled: false,
-            smsProvider: '',
-            signatureEnabled: true,
+            gst: {
+                enabled: true,
+                provider: 'Example GSP',
+                fields: [
+                    { key: 'apiKey', value: 'gst-api-key' },
+                    { key: 'endpoint', value: 'https://gst.example' },
+                ],
+            },
+            sms: {
+                enabled: false,
+                provider: '',
+                fields: [{ key: 'apiKey', value: 'sms-api-key' }],
+            },
         });
         store.saveHostedWeb({ lanEnabled: true, passwordRequired: true, port: 4317 });
         store.close();
@@ -46,8 +54,8 @@ describe('SettingsStore', () => {
         expect(store.isSetupComplete()).toBe(true);
         expect(store.getBusiness()).toMatchObject({ companyName: 'Aster Works' });
         expect(store.getIntegrations()).toMatchObject({
-            gstEnabled: true,
-            signatureEnabled: true,
+            gst: { enabled: true, provider: 'Example GSP' },
+            sms: { fields: [{ key: 'apiKey', value: 'sms-api-key' }] },
         });
         expect(store.getHostedWeb()).toEqual({
             lanEnabled: true,

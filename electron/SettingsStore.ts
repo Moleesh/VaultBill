@@ -13,12 +13,20 @@ export const BusinessSettingsSchema = z.object({
     outputTarget: z.enum(['PreviewOnly', 'DownloadPdf', 'SystemPrinter']),
 });
 
+const IntegrationFieldSchema = z.object({
+    key: z.string().trim().min(1),
+    value: z.string(),
+});
+
+const IntegrationServiceSchema = z.object({
+    enabled: z.boolean(),
+    provider: z.string().trim(),
+    fields: z.array(IntegrationFieldSchema),
+});
+
 export const IntegrationSettingsSchema = z.object({
-    gstEnabled: z.boolean(),
-    gspProvider: z.string().trim(),
-    smsEnabled: z.boolean(),
-    smsProvider: z.string().trim(),
-    signatureEnabled: z.boolean(),
+    gst: IntegrationServiceSchema,
+    sms: IntegrationServiceSchema,
 });
 export const HostedWebSettingsSchema = z.object({
     lanEnabled: z.boolean(),
@@ -39,11 +47,16 @@ const defaultBusinessSettings: BusinessSettings = {
 };
 
 const defaultIntegrationSettings: IntegrationSettings = {
-    gstEnabled: false,
-    gspProvider: '',
-    smsEnabled: false,
-    smsProvider: '',
-    signatureEnabled: false,
+    gst: {
+        enabled: false,
+        provider: '',
+        fields: [],
+    },
+    sms: {
+        enabled: false,
+        provider: '',
+        fields: [],
+    },
 };
 const defaultHostedWebSettings: HostedWebSettings = {
     lanEnabled: false,
@@ -75,8 +88,7 @@ export class SettingsStore {
         return business;
     };
 
-    public getIntegrations = (): IntegrationSettings =>
-        this.#read('integrations', IntegrationSettingsSchema, defaultIntegrationSettings);
+    public getIntegrations = (): IntegrationSettings => this.#readIntegrations();
 
     public saveIntegrations = (input: unknown): IntegrationSettings => {
         const integrations = IntegrationSettingsSchema.parse(input);
@@ -108,6 +120,29 @@ export class SettingsStore {
             .get(key);
         if (!row) return fallback;
         return schema.parse(JSON.parse(String(row.setting_json)));
+    };
+
+    #readIntegrations = (): IntegrationSettings => {
+        const row = this.#database
+            .prepare('SELECT setting_json FROM app_settings WHERE setting_key = ?;')
+            .get('integrations');
+        if (!row) return defaultIntegrationSettings;
+        const parsed = JSON.parse(String(row.setting_json)) as Record<string, unknown>;
+        const normalized = IntegrationSettingsSchema.safeParse(parsed);
+        if (normalized.success) return normalized.data;
+        if (typeof parsed !== 'object') return defaultIntegrationSettings;
+        return IntegrationSettingsSchema.parse({
+            gst: {
+                enabled: typeof parsed.gstEnabled === 'boolean' ? parsed.gstEnabled : false,
+                provider: typeof parsed.gspProvider === 'string' ? parsed.gspProvider : '',
+                fields: [],
+            },
+            sms: {
+                enabled: typeof parsed.smsEnabled === 'boolean' ? parsed.smsEnabled : false,
+                provider: typeof parsed.smsProvider === 'string' ? parsed.smsProvider : '',
+                fields: [],
+            },
+        });
     };
 
     #write = (key: string, value: unknown) => {

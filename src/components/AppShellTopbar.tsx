@@ -1,6 +1,6 @@
 /** @format */
 
-import { KeyRound, LogOut, Minimize2, RotateCcw, X } from 'lucide-react';
+import { KeyRound, LogOut, RotateCcw } from 'lucide-react';
 import type { FC } from 'react';
 
 import { ThemePalette } from './ThemePalette';
@@ -9,7 +9,6 @@ import type { ThemeController } from '../types/AppTypes';
 type AppShellTopbarProps = {
     readonly pageId: string;
     readonly isDemoMode: boolean;
-    readonly isDesktop: boolean;
     readonly trialStatus:
         | Awaited<ReturnType<NonNullable<typeof window.vaultBillDesktop>['getTrialStatus']>>
         | undefined;
@@ -17,22 +16,17 @@ type AppShellTopbarProps = {
     readonly onChangePassword: () => void;
     readonly onResetDemo: () => void;
     readonly onLogout: () => void;
-    readonly onMinimize: () => void;
-    readonly onClose: () => void;
     readonly onOpenActivation: () => void;
 };
 
 export const AppShellTopbar: FC<AppShellTopbarProps> = ({
     pageId,
     isDemoMode,
-    isDesktop,
     trialStatus,
     themeController,
     onChangePassword,
     onResetDemo,
     onLogout,
-    onMinimize,
-    onClose,
     onOpenActivation,
 }) => (
     <header className="app-shell__topbar">
@@ -71,26 +65,6 @@ export const AppShellTopbar: FC<AppShellTopbarProps> = ({
                     <LogOut aria-hidden="true" size={19} />
                 </button>
             </div>
-            {isDesktop ? (
-                <div className="app-shell__window-controls">
-                    <button
-                        className="icon-button"
-                        aria-label="Minimize window"
-                        onClick={onMinimize}
-                        type="button"
-                    >
-                        <Minimize2 aria-hidden="true" size={18} />
-                    </button>
-                    <button
-                        className="icon-button"
-                        aria-label="Close window"
-                        onClick={onClose}
-                        type="button"
-                    >
-                        <X aria-hidden="true" size={18} />
-                    </button>
-                </div>
-            ) : null}
             {!isDemoMode && trialStatus && !trialStatus.isFullVersion ? (
                 <button
                     className={trialStatus.isExpired ? 'button-danger' : ''}

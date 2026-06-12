@@ -10,12 +10,17 @@ import {
 export const steps = [
     'Format',
     'Fields',
+    'Layout',
     'Line Items',
     'Calculations',
     'Print',
     'Preview & Save',
 ] as const;
 export type BuilderStep = (typeof steps)[number];
+export type BuilderLayoutConfig = {
+    readonly Rows: number;
+    readonly Columns: number;
+};
 export type FieldConfig = DocumentFormatConfig['Fields'][number];
 export type AssetSummary = {
     readonly name: string;
@@ -80,6 +85,7 @@ export const helperFor = (step: BuilderStep): string =>
     ({
         Format: 'Choose the document name operators see when creating a record.',
         Fields: 'Add the business fields shown above the line-item table.',
+        Layout: 'Set the document grid before you tune totals and print output.',
         'Line Items': 'Design repeatable product or service rows with totals.',
         Calculations: 'Connect numeric fields with formulas, GST, and round-off.',
         Print: 'Upload one HTML file and the images or fonts it references.',
