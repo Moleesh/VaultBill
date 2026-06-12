@@ -1,51 +1,24 @@
-/**
- * eslint-disable max-lines
- *
- * @format
- */
-
 /** @format */
-
-/** Credential store that hashes login passwords and protects backup credentials. */
 
 import { randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
 import { DatabaseSync } from 'node:sqlite';
-import { z } from 'zod';
-
-const defaultCredential = '147085aA';
-const scryptKeyLength = 64;
-
-const DesktopOperatorAccountSchema = z.object({
-    userId: z.string().min(1),
-    username: z.string().trim().min(1),
-    displayName: z.string().trim().min(1),
-    role: z.enum(['SysAdmin', 'Admin', 'User']),
-    isActive: z.boolean(),
-    passwordConfigured: z.boolean(),
-    usesDefaultPassword: z.boolean(),
-});
-
-export type DesktopOperatorAccount = z.infer<typeof DesktopOperatorAccountSchema>;
-
-export type SecureStringProtector = {
-    readonly encryptString: (value: string) => Buffer;
-    readonly decryptString: (value: Buffer) => string;
-};
-
-export type CredentialStatus = {
-    readonly sysAdminUsesDefaultPassword: boolean;
-    readonly backupUsesDefaultPassword: boolean;
-};
-
-type AccountRow = {
-    readonly user_id: unknown;
-    readonly username: unknown;
-    readonly display_name: unknown;
-    readonly role: unknown;
-    readonly is_active: unknown;
-    readonly password_hash: unknown;
-    readonly uses_default_password: unknown;
-};
+import {
+    bootstrapCredentialStore,
+    defaultCredential,
+    DesktopOperatorAccountSchema,
+    getBackupPassword,
+    getCredentialStatus,
+    loadCredentialAccount,
+    parseCredentialAccount,
+    scryptKeyLength,
+    toBuffer,
+    type AccountRow,
+    type CredentialStatus,
+    type DesktopOperatorAccount,
+    type SecureStringProtector,
+    setBackupPassword,
+    validateCredentialLimits,
+} from './CredentialStoreSupport';
 
 export class CredentialStore {
     readonly #database: DatabaseSync;
@@ -76,7 +49,9 @@ export class CredentialStore {
         updated_at TEXT NOT NULL
       );
     `);
-        this.#bootstrap();
+        bootstrapCredentialStore(this.#database, (password) =>
+            setBackupPassword(this.#database, this.#protector, password),
+        );
     }
 
     public listAccounts = (): readonly DesktopOperatorAccount[] =>
@@ -90,7 +65,7 @@ export class CredentialStore {
           display_name COLLATE NOCASE;`,
             )
             .all()
-            .map((row) => this.#parseAccount(row as AccountRow));
+            .map((row) => parseCredentialAccount(row as AccountRow));
 
     public authenticate = (
         userId: string,
@@ -118,7 +93,7 @@ export class CredentialStore {
         } else if (!allowPasswordless) {
             throw new Error('Set a password on this account before using hosted web access.');
         }
-        return this.#parseAccount(row);
+        return parseCredentialAccount(row);
     };
 
     public configureSysAdmin = (displayName: string) => {
@@ -165,9 +140,9 @@ export class CredentialStore {
                     now,
                     now,
                 );
-            this.#validateLimits();
+            validateCredentialLimits(this.#database);
             this.#database.exec('COMMIT;');
-            return this.#account(account.userId);
+            return loadCredentialAccount(this.#database, account.userId);
         } catch (error) {
             this.#database.exec('ROLLBACK;');
             throw error;
@@ -202,114 +177,18 @@ export class CredentialStore {
                 userId,
             );
         if (result.changes !== 1) throw new Error('The operator account was not found.');
-        return this.#account(userId);
+        return loadCredentialAccount(this.#database, userId);
     };
 
-    public getBackupPassword = (): string => {
-        const row = this.#database
-            .prepare(
-                "SELECT encrypted_value FROM app_secure_settings WHERE setting_key = 'backup_password';",
-            )
-            .get();
-        if (!row) throw new Error('The backup password is not configured.');
-        return this.#protector.decryptString(toBuffer(row.encrypted_value));
-    };
+    public getBackupPassword = (): string => getBackupPassword(this.#database, this.#protector);
 
-    public setBackupPassword = (password: string) => {
-        if (password.length < 8)
-            throw new Error('Backup passwords must contain at least 8 characters.');
-        const encrypted = this.#protector.encryptString(password);
-        this.#database
-            .prepare(
-                `INSERT INTO app_secure_settings (setting_key, encrypted_value, updated_at)
-        VALUES ('backup_password', ?, ?)
-        ON CONFLICT(setting_key) DO UPDATE SET
-          encrypted_value = excluded.encrypted_value,
-          updated_at = excluded.updated_at;`,
-            )
-            .run(encrypted, new Date().toISOString());
-    };
+    public setBackupPassword = (password: string) =>
+        setBackupPassword(this.#database, this.#protector, password);
 
-    public getCredentialStatus = (): CredentialStatus => ({
-        sysAdminUsesDefaultPassword:
-            this.listAccounts().find((account) => account.userId === 'sysadmin_1')
-                ?.usesDefaultPassword ?? true,
-        backupUsesDefaultPassword: this.getBackupPassword() === defaultCredential,
-    });
+    public getCredentialStatus = (): CredentialStatus =>
+        getCredentialStatus(this.#database, this.#protector);
 
     public close = () => {
         this.#database.close();
     };
-
-    #bootstrap = () => {
-        const count = Number(
-            this.#database.prepare('SELECT COUNT(*) AS count FROM app_users;').get()?.count ?? 0,
-        );
-        if (count === 0) {
-            const now = new Date().toISOString();
-            const salt = randomBytes(16);
-            const hash = scryptSync(defaultCredential, salt, scryptKeyLength);
-            this.#database
-                .prepare(
-                    `INSERT INTO app_users
-            (user_id, username, display_name, role, password_salt, password_hash,
-              uses_default_password, is_active, created_at, updated_at)
-          VALUES ('sysadmin_1', 'sysadmin', 'System Administrator', 'SysAdmin',
-            ?, ?, 1, 1, ?, ?);`,
-                )
-                .run(salt, hash, now, now);
-        }
-        const backup = this.#database
-            .prepare(
-                "SELECT setting_key FROM app_secure_settings WHERE setting_key = 'backup_password';",
-            )
-            .get();
-        if (!backup) this.setBackupPassword(defaultCredential);
-    };
-
-    #account = (userId: string): DesktopOperatorAccount => {
-        const row = this.#database
-            .prepare(
-                `SELECT user_id, username, display_name, role, is_active, password_hash,
-          uses_default_password
-        FROM app_users
-        WHERE user_id = ? AND archived_at IS NULL;`,
-            )
-            .get(userId) as AccountRow | undefined;
-        if (!row) throw new Error('The operator account was not found.');
-        return this.#parseAccount(row);
-    };
-
-    #parseAccount = (row: AccountRow): DesktopOperatorAccount =>
-        DesktopOperatorAccountSchema.parse({
-            userId: String(row.user_id),
-            username: String(row.username),
-            displayName: String(row.display_name),
-            role: row.role,
-            isActive: Number(row.is_active) === 1,
-            passwordConfigured: row.password_hash !== null && row.password_hash !== undefined,
-            usesDefaultPassword: Number(row.uses_default_password) === 1,
-        });
-
-    #validateLimits = () => {
-        const rows = this.#database
-            .prepare(
-                `SELECT role, COUNT(*) AS count
-        FROM app_users
-        WHERE is_active = 1 AND archived_at IS NULL
-        GROUP BY role;`,
-            )
-            .all();
-        const count = (role: string) =>
-            Number(rows.find((row) => String(row.role) === role)?.count ?? 0);
-        if (count('SysAdmin') !== 1) throw new Error('VaultBill requires one active SysAdmin.');
-        if (count('Admin') > 1) throw new Error('VaultBill allows one active Admin.');
-        if (count('User') > 5) throw new Error('VaultBill allows up to five active Users.');
-    };
 }
-
-const toBuffer = (value: unknown): Buffer => {
-    if (Buffer.isBuffer(value)) return value;
-    if (value instanceof Uint8Array) return Buffer.from(value);
-    throw new Error('Encrypted credential data is invalid.');
-};

@@ -1,0 +1,158 @@
+/** @format */
+
+/**
+ * Electron window, tray, and runtime lifecycle helpers.
+ */
+
+import {
+    app,
+    BrowserWindow,
+    Menu,
+    nativeImage,
+    shell,
+    Tray,
+    type OpenDialogOptions,
+    type SaveDialogOptions,
+} from 'electron';
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
+
+import { mainState, hostedAppUrl } from './MainState.js';
+
+export const readLicenseVerifier = (): string => {
+    try {
+        const packageJson = JSON.parse(readFileSync(path.join(app.getAppPath(), 'package.json'), 'utf8')) as {
+            vaultBillLicenseVerifier?: string;
+        };
+        return packageJson.vaultBillLicenseVerifier ?? '';
+    } catch {
+        return '';
+    }
+};
+
+export const createWindow = async () => {
+    mainState.mainWindow = new BrowserWindow({
+        width: 1440,
+        height: 900,
+        minWidth: 320,
+        minHeight: 568,
+        title: mainState.identity.appName,
+        frame: false,
+        fullscreen: true,
+        autoHideMenuBar: true,
+        backgroundColor: '#edf8f5',
+        webPreferences: {
+            contextIsolation: true,
+            nodeIntegration: false,
+            preload: path.join(mainState.currentDirectory, 'Preload.js'),
+            sandbox: true,
+        },
+    });
+    mainState.mainWindow.on('close', (event) => {
+        if (!mainState.isQuitting) {
+            event.preventDefault();
+            mainState.mainWindow?.hide();
+        }
+    });
+    mainState.mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+        if (url.startsWith('https://')) void shell.openExternal(url);
+        return { action: 'deny' };
+    });
+    mainState.mainWindow.webContents.on('will-navigate', (event, url) => {
+        const allowedOrigin = process.env.VITE_DEV_SERVER_URL
+            ? new URL(process.env.VITE_DEV_SERVER_URL).origin
+            : new URL(hostedAppUrl).origin;
+        if (!url.startsWith(allowedOrigin)) event.preventDefault();
+    });
+    if (process.env.VITE_DEV_SERVER_URL) await mainState.mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL);
+    else await mainState.mainWindow.loadURL(hostedAppUrl);
+};
+
+export const createTray = () => {
+    const icon = nativeImage.createFromPath(path.join(mainState.currentDirectory, '../build/icon.png'));
+    mainState.tray = new Tray(icon);
+    mainState.tray.setToolTip('VaultBill is hosting the local workspace');
+    mainState.tray.setContextMenu(
+        Menu.buildFromTemplate([
+            {
+                label: 'Open VaultBill',
+                click: () => {
+                    mainState.mainWindow?.show();
+                    mainState.mainWindow?.focus();
+                },
+            },
+            { label: `Hosted web: ${hostedAppUrl}`, enabled: false },
+            {
+                label: mainState.hostedWebSettings.lanEnabled
+                    ? `LAN access: enabled on port ${String(mainState.hostedWebSettings.port)}`
+                    : 'LAN access: disabled',
+                enabled: false,
+            },
+            { type: 'separator' },
+            {
+                label: 'Quit VaultBill',
+                click: () => {
+                    mainState.isQuitting = true;
+                    app.quit();
+                },
+            },
+        ]),
+    );
+    mainState.tray.on('double-click', () => mainState.mainWindow?.show());
+};
+
+export const refreshTray = () => {
+    mainState.tray?.destroy();
+    mainState.tray = undefined;
+    createTray();
+};
+
+export const closeRuntime = async () => {
+    if (mainState.runtimeClosePromise) return mainState.runtimeClosePromise;
+    mainState.runtimeClosePromise = (async () => {
+        if (mainState.trialTimer) clearInterval(mainState.trialTimer);
+        mainState.trialTimer = undefined;
+        const server = mainState.localApiServer;
+        mainState.localApiServer = undefined;
+        await server?.stop();
+        mainState.recordStore?.close();
+        mainState.recordStore = undefined;
+        mainState.credentialStore?.close();
+        mainState.credentialStore = undefined;
+        mainState.builderStore?.close();
+        mainState.builderStore = undefined;
+        mainState.settingsStore?.close();
+        mainState.settingsStore = undefined;
+    })();
+    return mainState.runtimeClosePromise;
+};
+
+export const restartApplication = () => {
+    setTimeout(() => {
+        app.relaunch();
+        app.exit(0);
+    }, 150);
+};
+
+export const scheduleRuntimeMutation = (mutation: () => Promise<void> | void) => {
+    setTimeout(() => {
+        void closeRuntime()
+            .then(async () => {
+                await mutation();
+                restartApplication();
+            })
+            .catch((error: unknown) => {
+                console.error('VaultBill could not complete the requested data operation.', error);
+            });
+    }, 250);
+};
+
+export const createDialogOptions = (defaultFileName: string): SaveDialogOptions => ({
+    defaultPath: defaultFileName,
+    filters: [{ name: 'VaultBill backup', extensions: ['zip'] }],
+});
+
+export const createRestoreOptions = (): OpenDialogOptions => ({
+    properties: ['openFile'],
+    filters: [{ name: 'VaultBill backup', extensions: ['zip'] }],
+});

@@ -4,9 +4,10 @@
  * @format
  */
 
-/** @format */
-
-/** Local API server that exposes authenticated desktop-hosted capabilities to the web app. */
+/**
+ * Local HTTP server that exposes authenticated desktop capabilities to the
+ * hosted web workspace and LAN clients.
+ */
 
 import { createServer } from 'node:http';
 import { randomBytes, timingSafeEqual } from 'node:crypto';
@@ -28,6 +29,7 @@ import {
 import type { LocalApiHealth } from './LocalApi.types.js';
 import { tryServeStaticApp } from './StaticAppServer.js';
 
+/** Returns the local API health payload shown to hosted-web clients. */
 export const getLocalApiHealth = (appName: string, passwordRequired = true): LocalApiHealth => ({
     appName,
     capabilities: [
@@ -74,6 +76,7 @@ type LoginAttempts = {
     blockedUntil: number;
 };
 
+/** Capability callbacks that bridge API requests into local desktop services. */
 export type LocalApiDataOperations = {
     readonly createBackup: (
         encrypted: boolean,
@@ -112,6 +115,7 @@ export type LocalApiDataOperations = {
     readonly cancelPrint?: (jobId: string) => boolean;
 };
 
+/** Hosts the authenticated local API and the static app bundle. */
 export class LocalApiServer {
     readonly #recordStore: DesktopRecordStore;
     readonly #credentialStore: CredentialStore;

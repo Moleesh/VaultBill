@@ -4,9 +4,10 @@
  * @format
  */
 
-/** @format */
-
-/** Settings workspace that groups business, security, backup, and integration controls. */
+/**
+ * Settings workspace for business profile, operators, backups, and runtime
+ * integrations.
+ */
 
 import {
     ArchiveRestore,
@@ -61,6 +62,7 @@ const smsProviderOptions = [
     { value: 'custom-sms', label: 'Custom API', description: 'Use your own endpoint' },
 ] as const;
 
+/** Renders the role-aware settings sessions for the current operator. */
 export const SettingsPage: FC = () => {
     const capabilities = useCapabilities();
     const { accounts, archiveAccount, operatorContext, resetPassword, saveAccount } = useSession();

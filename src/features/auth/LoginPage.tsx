@@ -1,12 +1,9 @@
-/**
- * eslint-disable max-lines
- *
- * @format
- */
-
 /** @format */
 
-/** Login experience that selects the operator account, handles credentials, and opens help. */
+/**
+ * Login surface for operator selection, password entry, and desktop license or
+ * help actions.
+ */
 
 import { KeyRound } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -14,13 +11,15 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import type { FC } from 'react';
 
 import { AppBrandIcon } from '../../components/AppBrandIcon/AppBrandIcon';
-import { AppModal } from '../../components/AppModal/AppModal';
 import { SearchableDropdown } from '../../components/SearchableDropdown/SearchableDropdown';
 import { useCapabilities } from '../../capability/CapabilityContext';
 import { defaultRuntimeBranding } from '../../constants/PhaseOneSeed';
 import { VENDOR } from '../../constants/Vendor';
+import { LoginActivationModal } from './LoginActivationModal';
+import { LoginHelpModal } from './LoginHelpModal';
 import { useSession } from './SessionContext';
 
+/** Renders the compact login experience for the current runtime mode. */
 export const LoginPage: FC = () => {
     const capabilities = useCapabilities();
     const { accounts, hostedConnectionState, login, operatorContext } = useSession();
@@ -167,60 +166,34 @@ export const LoginPage: FC = () => {
                     <span>Built for focused business work</span>
                 </footer>
             </section>
-            <AppModal
+            <LoginHelpModal
                 isOpen={isHelpOpen}
                 onClose={() => {
                     setIsHelpOpen(false);
                 }}
-                title="Login help"
-            >
-                <p>
-                    Choose your account, enter the password if one is set, then press Enter or Log
-                    in.
-                </p>
-            </AppModal>
-            <AppModal
+            />
+            <LoginActivationModal
+                activationMessage={activationMessage}
                 isOpen={isActivationOpen}
+                licenseKey={licenseKey}
+                onActivate={() => {
+                    void window.vaultBillDesktop
+                        ?.activateLicense(licenseKey)
+                        .then(() => {
+                            setLicenseKey('');
+                            setActivationMessage('VaultBill is activated. You can now log in.');
+                        })
+                        .catch((reason: unknown) => {
+                            setActivationMessage(
+                                reason instanceof Error ? reason.message : 'Activation failed.',
+                            );
+                        });
+                }}
                 onClose={() => {
                     setIsActivationOpen(false);
                 }}
-                title="Activate VaultBill"
-            >
-                <label>
-                    <span>License key</span>
-                    <input
-                        value={licenseKey}
-                        onChange={(event) => {
-                            setLicenseKey(event.currentTarget.value);
-                        }}
-                    />
-                </label>
-                {activationMessage ? (
-                    <p className="feedback-info" role="status">
-                        {activationMessage}
-                    </p>
-                ) : null}
-                <button
-                    className="button-primary"
-                    disabled={!licenseKey.trim()}
-                    onClick={() => {
-                        void window.vaultBillDesktop
-                            ?.activateLicense(licenseKey)
-                            .then(() => {
-                                setLicenseKey('');
-                                setActivationMessage('VaultBill is activated. You can now log in.');
-                            })
-                            .catch((reason: unknown) => {
-                                setActivationMessage(
-                                    reason instanceof Error ? reason.message : 'Activation failed.',
-                                );
-                            });
-                    }}
-                    type="button"
-                >
-                    Activate full version
-                </button>
-            </AppModal>
+                onLicenseKeyChange={setLicenseKey}
+            />
         </main>
     );
 };

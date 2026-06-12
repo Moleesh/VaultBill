@@ -21,7 +21,7 @@ import './styles/Components/ActionBar.scss';
 import './styles/Components/FeedbackStates.scss';
 import './styles/Components/FormPreview.scss';
 import './styles/Components/ProductUi.scss';
-import './styles/Components/V24Product.scss';
+import './styles/Components/ProductShell.scss';
 
 restoreGithubPagesRoute();
 

@@ -86,7 +86,7 @@ describe('login UI', () => {
         if (!loginForm) {
             throw new Error('Login form was not found.');
         }
-        fireEvent.submit(loginForm);
+        fireEvent.submit(loginForm as HTMLFormElement);
 
         expect(await screen.findByRole('heading', { name: 'Dashboard' })).toBeVisible();
     });

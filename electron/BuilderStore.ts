@@ -1,103 +1,23 @@
-/**
- * eslint-disable max-lines
- *
- * @format
- */
-
 /** @format */
 
-/** Builder store that persists document formats, templates, and sample assets. */
-
 import { DatabaseSync } from 'node:sqlite';
-import { z } from 'zod';
-
-const BuilderAssetSchema = z.object({
-    name: z.string().trim().min(1),
-    type: z.enum([
-        'image/png',
-        'image/jpeg',
-        'image/webp',
-        'image/svg+xml',
-        'font/woff',
-        'font/woff2',
-        'application/font-woff',
-    ]),
-    dataBase64: z.string(),
-});
-const BuilderPackageSchema = z.object({
-    config: z
-        .object({
-            FormatId: z.string().trim().min(1),
-            FormatName: z.string().trim().min(1),
-        })
-        .passthrough(),
-    templateHtml: z.string().min(1),
-    assets: z.array(BuilderAssetSchema),
-});
-
-export type BuilderAsset = z.infer<typeof BuilderAssetSchema>;
-export type BuilderPackage = z.infer<typeof BuilderPackageSchema>;
-export type BuilderInventoryItem = {
-    readonly formatId: string;
-    readonly formatName: string;
-    readonly isDefault: boolean;
-    readonly updatedAt: string;
-    readonly templateName?: string;
-    readonly assetCount: number;
-    readonly isValid: boolean;
-};
-
-type FormatRow = {
-    readonly format_json: unknown;
-};
-
-type TemplateRow = {
-    readonly template_html: unknown;
-};
-
-type AssetRow = {
-    readonly asset_name: unknown;
-    readonly mime_type: unknown;
-    readonly asset_blob: unknown;
-};
-
+import {
+    BuilderPackageSchema,
+    sanitizeSvg,
+    sanitizeTemplateHtml,
+    toBuffer,
+    type AssetRow,
+    type BuilderInventoryItem,
+    type BuilderPackage,
+    type FormatRow,
+    type TemplateRow,
+} from './BuilderStoreSupport';
+import { createBuilderStoreTables } from './BuilderStoreTables';
 export class BuilderStore {
     readonly #database: DatabaseSync;
-
     public constructor(databasePath: string) {
         this.#database = new DatabaseSync(databasePath);
-        this.#database.exec(`
-      PRAGMA foreign_keys = ON;
-      PRAGMA journal_mode = WAL;
-      CREATE TABLE IF NOT EXISTS document_formats (
-        format_id TEXT PRIMARY KEY,
-        format_name TEXT NOT NULL UNIQUE COLLATE NOCASE,
-        format_json TEXT NOT NULL CHECK (json_valid(format_json)),
-        is_default INTEGER NOT NULL DEFAULT 0 CHECK (is_default IN (0, 1)),
-        updated_at TEXT NOT NULL
-      );
-      CREATE UNIQUE INDEX IF NOT EXISTS ux_document_formats_single_default
-        ON document_formats(is_default) WHERE is_default = 1;
-      CREATE TABLE IF NOT EXISTS print_templates (
-        template_id TEXT PRIMARY KEY,
-        template_name TEXT NOT NULL UNIQUE COLLATE NOCASE,
-        template_html TEXT NOT NULL,
-        template_json TEXT NOT NULL CHECK (json_valid(template_json)),
-        template_scope TEXT NOT NULL CHECK (template_scope IN ('Record', 'Report')),
-        updated_at TEXT NOT NULL
-      );
-      CREATE TABLE IF NOT EXISTS print_template_assets (
-        asset_id TEXT PRIMARY KEY,
-        template_id TEXT NOT NULL,
-        asset_name TEXT NOT NULL,
-        mime_type TEXT NOT NULL,
-        asset_blob BLOB NOT NULL,
-        size_bytes INTEGER NOT NULL,
-        created_at TEXT NOT NULL,
-        UNIQUE(template_id, asset_name),
-        FOREIGN KEY (template_id) REFERENCES print_templates(template_id) ON DELETE CASCADE
-      );
-    `);
+        createBuilderStoreTables(this.#database);
     }
 
     public load = (formatId?: string): BuilderPackage | undefined => {
@@ -258,32 +178,3 @@ export class BuilderStore {
         this.#database.close();
     };
 }
-
-const sanitizeTemplateHtml = (html: string): string => {
-    if (/<\s*\/?\s*(script|iframe|object|embed|form|meta|link)\b/iu.test(html)) {
-        throw new Error('Print template HTML contains a blocked element.');
-    }
-    if (/\son[a-z]+\s*=/iu.test(html) || /(?:https?:\/\/|javascript:|file:)/iu.test(html)) {
-        throw new Error('Print template HTML contains blocked active or external content.');
-    }
-    if (/@import\s+/iu.test(html)) throw new Error('Print template CSS cannot import resources.');
-    return html;
-};
-
-const sanitizeSvg = (svg: string) => {
-    if (
-        /<\s*(script|foreignObject|iframe|object|embed|form)\b/iu.test(svg) ||
-        /\son[a-z]+\s*=/iu.test(svg) ||
-        /(?:https?:\/\/|javascript:|file:)/iu.test(svg)
-    ) {
-        throw new Error(
-            'SVG assets cannot contain scripts, active content, or external resources.',
-        );
-    }
-};
-
-const toBuffer = (value: unknown): Buffer => {
-    if (Buffer.isBuffer(value)) return value;
-    if (value instanceof Uint8Array) return Buffer.from(value);
-    throw new Error('Builder asset data is invalid.');
-};

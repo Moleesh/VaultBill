@@ -42,7 +42,7 @@ const renderPage = (children: ReactNode, capabilities = webCapabilities) =>
         </MemoryRouter>,
     );
 
-describe('v24 product UI', () => {
+describe('product UI', () => {
     beforeEach(() => {
         document.body.innerHTML = '<div id="portal-root"></div>';
         window.localStorage.clear();

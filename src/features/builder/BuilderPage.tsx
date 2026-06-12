@@ -4,9 +4,10 @@
  * @format
  */
 
-/** @format */
-
-/** Builder workspace for document names, fields, calculations, print templates, and preview. */
+/**
+ * Builder workspace for document formats, fields, calculations, print
+ * templates, and preview/save flows.
+ */
 
 import {
     ArrowDown,
@@ -49,7 +50,8 @@ const steps = [
     'Print',
     'Preview & Save',
 ] as const;
-const storageKey = 'vaultbill.builder.v24';
+const storageKey = 'vaultbill.builder';
+const legacyStorageKey = 'vaultbill.builder.v24';
 const htmlStorageKey = 'vaultbill.builder.template-html';
 type BuilderStep = (typeof steps)[number];
 type FieldConfig = DocumentFormatConfig['Fields'][number];
@@ -82,7 +84,11 @@ const builtInSampleAsset: AssetSummary = {
 const readConfig = (): DocumentFormatConfig => {
     try {
         return DocumentFormatConfigSchema.parse(
-            JSON.parse(window.localStorage.getItem(storageKey) ?? 'null') as unknown,
+            JSON.parse(
+                window.localStorage.getItem(storageKey) ??
+                    window.localStorage.getItem(legacyStorageKey) ??
+                    'null',
+            ) as unknown,
         );
     } catch {
         return cloneDefault();
@@ -97,6 +103,7 @@ const newField = (index: number): FieldConfig => ({
     Visible: true,
 });
 
+/** Renders the multi-step document-format builder experience. */
 export const BuilderPage: FC = () => {
     const capabilities = useCapabilities();
     const [searchParams] = useSearchParams();

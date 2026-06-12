@@ -1,0 +1,179 @@
+/** @format */
+
+import type { OperatorAccount } from './AccountTypes';
+import type { SessionContextValue } from './SessionTypes';
+import { requestHostedApi } from '../../runtime/HostedApi';
+import {
+    accountStorageKey,
+    defaultPasswordHash,
+    hashPassword,
+    sessionStorageKey,
+    type HostedSessionPayload,
+    validateManagedAccounts,
+} from './SessionSupport';
+
+type SessionActionDependencies = {
+    readonly accounts: () => readonly OperatorAccount[];
+    readonly account: () => OperatorAccount | undefined;
+    readonly isDemoMode: () => boolean;
+    readonly isLanBrowser: () => boolean;
+    readonly saveAccounts: (accounts: readonly OperatorAccount[]) => void;
+    readonly setAccount: (account: OperatorAccount | undefined) => void;
+    readonly setHostedCsrfToken: (token: string | undefined) => void;
+};
+
+/**
+ * Creates session actions that always read the latest state via callbacks.
+ */
+export const createSessionActions = (dependencies: SessionActionDependencies) => {
+    const persistAccounts = (nextAccounts: readonly OperatorAccount[]) => {
+        if (
+            !dependencies.isDemoMode() &&
+            !dependencies.isLanBrowser() &&
+            !window.vaultBillDesktop
+        ) {
+            window.localStorage.setItem(accountStorageKey, JSON.stringify(nextAccounts));
+        }
+        dependencies.saveAccounts(nextAccounts);
+    };
+
+    const findAccount = (userId: string | null): OperatorAccount | undefined =>
+        dependencies
+            .accounts()
+            .find((candidate) => candidate.userId === userId && candidate.isActive);
+
+    const login: SessionContextValue['login'] = async (userId, password = '') => {
+        let selectedAccount = findAccount(userId);
+
+        if (!selectedAccount) {
+            throw new Error('The selected operator account is unavailable.');
+        }
+        if (window.vaultBillDesktop && !dependencies.isDemoMode()) {
+            selectedAccount = await window.vaultBillDesktop.loginAccount(userId, password);
+        } else if (dependencies.isLanBrowser()) {
+            const hostedSession = await requestHostedApi<HostedSessionPayload>(
+                '/auth/login',
+                'POST',
+                {
+                    userId,
+                    password,
+                },
+            );
+            selectedAccount = hostedSession.account;
+            dependencies.setHostedCsrfToken(hostedSession.csrfToken);
+        } else if (selectedAccount.passwordHash) {
+            const suppliedHash = await hashPassword(password);
+            if (suppliedHash !== selectedAccount.passwordHash) {
+                throw new Error('The password is incorrect.');
+            }
+        }
+
+        window.localStorage.setItem(sessionStorageKey, selectedAccount.userId);
+        dependencies.setAccount(selectedAccount);
+    };
+
+    const logout: SessionContextValue['logout'] = () => {
+        if (dependencies.isLanBrowser()) {
+            void requestHostedApi('/auth/logout', 'POST').finally(() => {
+                dependencies.setHostedCsrfToken(undefined);
+            });
+        }
+        window.localStorage.removeItem(sessionStorageKey);
+        dependencies.setAccount(undefined);
+    };
+
+    const saveAccount: SessionContextValue['saveAccount'] = async (nextAccount) => {
+        const accounts = dependencies.accounts();
+        const existing = accounts.find((candidate) => candidate.userId === nextAccount.userId);
+        const nextAccounts = existing
+            ? accounts.map((candidate) =>
+                  candidate.userId === nextAccount.userId ? nextAccount : candidate,
+              )
+            : [...accounts, nextAccount];
+        const validation = validateManagedAccounts(nextAccounts);
+        if (validation) throw new Error(validation);
+        if (window.vaultBillDesktop && !dependencies.isDemoMode()) {
+            const saved = await window.vaultBillDesktop.saveAccount(nextAccount);
+            persistAccounts(
+                nextAccounts.map((candidate) =>
+                    candidate.userId === saved.userId ? saved : candidate,
+                ),
+            );
+            return;
+        }
+        if (dependencies.isLanBrowser()) {
+            const saved = await requestHostedApi<OperatorAccount>(
+                '/accounts/save',
+                'POST',
+                nextAccount,
+            );
+            persistAccounts(
+                nextAccounts.map((candidate) =>
+                    candidate.userId === saved.userId ? saved : candidate,
+                ),
+            );
+            return;
+        }
+        persistAccounts(nextAccounts);
+    };
+
+    const archiveAccount: SessionContextValue['archiveAccount'] = async (userId) => {
+        if (userId === 'sysadmin_1') throw new Error('The System Administrator cannot be removed.');
+        if (window.vaultBillDesktop && !dependencies.isDemoMode()) {
+            await window.vaultBillDesktop.archiveAccount(userId);
+        } else if (dependencies.isLanBrowser()) {
+            await requestHostedApi('/accounts/archive', 'POST', { userId });
+        }
+        persistAccounts(
+            dependencies
+                .accounts()
+                .map((candidate) =>
+                    candidate.userId === userId ? { ...candidate, isActive: false } : candidate,
+                ),
+        );
+    };
+
+    const resetPassword: SessionContextValue['resetPassword'] = async (userId, password) => {
+        if (password.length < 8) throw new Error('Passwords must contain at least 8 characters.');
+        if (window.vaultBillDesktop && !dependencies.isDemoMode()) {
+            const saved = await window.vaultBillDesktop.resetPassword(userId, password);
+            persistAccounts(
+                dependencies
+                    .accounts()
+                    .map((candidate) => (candidate.userId === saved.userId ? saved : candidate)),
+            );
+            return;
+        }
+        if (dependencies.isLanBrowser()) {
+            const saved = await requestHostedApi<OperatorAccount>(
+                '/accounts/reset-password',
+                'POST',
+                {
+                    userId,
+                    password,
+                },
+            );
+            persistAccounts(
+                dependencies
+                    .accounts()
+                    .map((candidate) => (candidate.userId === saved.userId ? saved : candidate)),
+            );
+            if (dependencies.account()?.userId === saved.userId) dependencies.setAccount(saved);
+            return;
+        }
+        const passwordHash = await hashPassword(password);
+        persistAccounts(
+            dependencies.accounts().map((candidate) =>
+                candidate.userId === userId
+                    ? {
+                          ...candidate,
+                          passwordHash,
+                          usesDefaultPassword: passwordHash === defaultPasswordHash,
+                      }
+                    : candidate,
+            ),
+        );
+    };
+
+    return { login, logout, saveAccount, archiveAccount, resetPassword };
+};

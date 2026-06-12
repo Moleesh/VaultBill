@@ -126,14 +126,14 @@ test('demo web saves and reloads a draft in browser storage', async ({ page }) =
     await expect(page.getByText(/Draft saved/u)).toBeVisible();
 
     const storedRecordsJson = await page.evaluate<string>(
-        () => window.localStorage.getItem('vaultbill.records.v24') ?? '[]',
+        () => window.localStorage.getItem('vaultbill.records') ?? '[]',
     );
     expect(storedRecordsJson).toContain(customerName);
     expect(storedRecordsJson).toContain('"status":"Draft"');
 
     await page.reload();
     const reloadedRecordsJson = await page.evaluate<string>(
-        () => window.localStorage.getItem('vaultbill.records.v24') ?? '[]',
+        () => window.localStorage.getItem('vaultbill.records') ?? '[]',
     );
     expect(reloadedRecordsJson).toContain(customerName);
 });

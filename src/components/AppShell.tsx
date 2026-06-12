@@ -4,9 +4,10 @@
  * @format
  */
 
-/** @format */
-
-/** Persistent application shell that keeps navigation, chrome, and footer actions consistent. */
+/**
+ * Desktop shell that keeps navigation, tray actions, theme controls, and scroll
+ * progress together while the workspace routes change underneath.
+ */
 
 import {
     BarChart3,
@@ -56,6 +57,7 @@ const getPageId = (pathname: string): AppRouteId => {
     ) as AppRouteId;
 };
 
+/** Renders the authenticated desktop application frame and its modal actions. */
 export const AppShell: FC = () => {
     const capabilities = useCapabilities();
     const { logout, operatorContext, resetPassword } = useSession();

@@ -4,9 +4,10 @@
  * @format
  */
 
-/** @format */
-
-/** Records workspace for creating, finalizing, printing, and reprinting documents. */
+/**
+ * Records workspace for draft entry, finalization, reprint, and cancellation
+ * flows.
+ */
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
@@ -94,6 +95,7 @@ type OutputTask = {
     readonly state: 'Running' | 'Complete' | 'Failed' | 'Cancelled';
 };
 
+/** Renders the record creation and reprint experience. */
 export const RecordsPage: FC = () => {
     const capabilities = useCapabilities();
     const { operatorContext } = useSession();

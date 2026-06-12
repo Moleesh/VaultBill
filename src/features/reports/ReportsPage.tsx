@@ -4,9 +4,10 @@
  * @format
  */
 
-/** @format */
-
-/** Reporting workspace for filtered, printable, and exportable business summaries. */
+/**
+ * Reports workspace for filtered queries, infinite loading, and print/export
+ * jobs.
+ */
 
 import { Printer, RotateCcw, Search, Sheet } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -50,6 +51,7 @@ type ReportPage = {
     readonly nextCursor?: string;
 };
 
+/** Renders report filters, result loading, and reporting actions. */
 export const ReportsPage: FC = () => {
     const capabilities = useCapabilities();
     const { error, isLoading, records } = useRecordStore();
