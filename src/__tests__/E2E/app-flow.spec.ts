@@ -11,9 +11,15 @@ const viewports = [
 ] as const;
 
 test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => {
+        if (!window.sessionStorage.getItem('__vaultbillInitCleared')) {
+            window.localStorage.clear();
+            window.sessionStorage.clear();
+            window.sessionStorage.setItem('__vaultbillInitCleared', 'true');
+        }
+    });
     await page.goto('login');
     await page.evaluate(() => {
-        window.localStorage.clear();
         window.localStorage.setItem('vaultbill.setup.complete', 'true');
         window.localStorage.setItem(
             'vaultbill.accounts',
