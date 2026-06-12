@@ -18,7 +18,9 @@ import {
     type SecureStringProtector,
     setBackupPassword,
     validateCredentialLimits,
-} from './CredentialStoreSupport';
+} from './CredentialStoreSupport.js';
+
+export type { CredentialStatus, DesktopOperatorAccount } from './CredentialStoreSupport.js';
 
 export class CredentialStore {
     readonly #database: DatabaseSync;
@@ -49,9 +51,9 @@ export class CredentialStore {
         updated_at TEXT NOT NULL
       );
     `);
-        bootstrapCredentialStore(this.#database, (password) =>
-            setBackupPassword(this.#database, this.#protector, password),
-        );
+        bootstrapCredentialStore(this.#database, (password: string) => {
+            setBackupPassword(this.#database, this.#protector, password);
+        });
     }
 
     public listAccounts = (): readonly DesktopOperatorAccount[] =>
@@ -182,11 +184,13 @@ export class CredentialStore {
 
     public getBackupPassword = (): string => getBackupPassword(this.#database, this.#protector);
 
-    public setBackupPassword = (password: string) =>
+    public setBackupPassword = (password: string) => {
         setBackupPassword(this.#database, this.#protector, password);
+    };
 
-    public getCredentialStatus = (): CredentialStatus =>
-        getCredentialStatus(this.#database, this.#protector);
+    public getCredentialStatus = (): CredentialStatus => {
+        return getCredentialStatus(this.#database, this.#protector);
+    };
 
     public close = () => {
         this.#database.close();

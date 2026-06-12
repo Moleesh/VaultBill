@@ -13,7 +13,7 @@ import {
     encryptDatabase,
     validateChecksums,
     validateDatabase,
-} from './BackupServiceSupport';
+} from './BackupServiceSupport.js';
 
 describe('backup service support', () => {
     const tempRoots: string[] = [];

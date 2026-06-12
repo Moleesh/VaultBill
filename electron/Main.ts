@@ -112,8 +112,8 @@ void app
         const databasePath = path.join(app.getPath('userData'), 'vaultbill.sqlite');
         mainState.recordStore = new DesktopRecordStore(databasePath, readLicenseVerifier());
         mainState.credentialStore = new CredentialStore(databasePath, {
-            encryptString: (value) => safeStorage.encryptString(value),
-            decryptString: (value) => safeStorage.decryptString(value),
+            encryptString: (value: string) => safeStorage.encryptString(value),
+            decryptString: (value: Buffer) => safeStorage.decryptString(value),
         });
         mainState.builderStore = new BuilderStore(databasePath);
         mainState.settingsStore = new SettingsStore(databasePath);

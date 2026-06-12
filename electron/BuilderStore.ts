@@ -11,8 +11,10 @@ import {
     type BuilderPackage,
     type FormatRow,
     type TemplateRow,
-} from './BuilderStoreSupport';
-import { createBuilderStoreTables } from './BuilderStoreTables';
+} from './BuilderStoreSupport.js';
+import { createBuilderStoreTables } from './BuilderStoreTables.js';
+
+export type { BuilderAsset, BuilderInventoryItem, BuilderPackage } from './BuilderStoreSupport.js';
 export class BuilderStore {
     readonly #database: DatabaseSync;
     public constructor(databasePath: string) {

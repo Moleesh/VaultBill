@@ -12,6 +12,7 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import { DatabaseSync } from 'node:sqlite';
 import { strFromU8, strToU8, unzipSync, zipSync } from 'fflate';
 import {
     ManifestSchema,
@@ -20,7 +21,7 @@ import {
     encryptDatabase,
     validateChecksums,
     validateDatabase,
-} from './BackupServiceSupport';
+} from './BackupServiceSupport.js';
 
 export type BackupCreationResult = {
     readonly cancelled: boolean;

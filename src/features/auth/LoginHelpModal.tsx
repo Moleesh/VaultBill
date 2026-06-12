@@ -2,7 +2,7 @@
 
 import type { FC } from 'react';
 
-import { AppModal } from '../../components/AppModal';
+import { AppModal } from '../../components/AppModal/AppModal';
 
 type LoginHelpModalProps = {
     readonly isOpen: boolean;

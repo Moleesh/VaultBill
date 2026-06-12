@@ -24,24 +24,33 @@ export type HostedWebSettings = {
 export type MainState = {
     currentDirectory: string;
     identity: MainIdentity;
-    recordStore?: DesktopRecordStore;
-    credentialStore?: CredentialStore;
-    builderStore?: BuilderStore;
-    settingsStore?: SettingsStore;
-    backupService?: BackupService;
-    localApiServer?: LocalApiServer;
-    mainWindow?: BrowserWindow;
-    tray?: Tray;
+    recordStore: DesktopRecordStore | undefined;
+    credentialStore: CredentialStore | undefined;
+    builderStore: BuilderStore | undefined;
+    settingsStore: SettingsStore | undefined;
+    backupService: BackupService | undefined;
+    localApiServer: LocalApiServer | undefined;
+    mainWindow: BrowserWindow | undefined;
+    tray: Tray | undefined;
     hostedWebSettings: HostedWebSettings;
     isQuitting: boolean;
-    trialTimer?: NodeJS.Timeout;
-    runtimeClosePromise?: Promise<void>;
+    trialTimer: NodeJS.Timeout | undefined;
+    runtimeClosePromise: Promise<void> | undefined;
 };
 
 export const mainState: MainState = {
     currentDirectory: '',
     identity: { appName: 'VaultBill' },
+    recordStore: undefined,
+    credentialStore: undefined,
+    builderStore: undefined,
+    settingsStore: undefined,
+    backupService: undefined,
+    localApiServer: undefined,
+    mainWindow: undefined,
+    tray: undefined,
     hostedWebSettings: { lanEnabled: false, passwordRequired: true, port: 4317 },
     isQuitting: false,
+    trialTimer: undefined,
+    runtimeClosePromise: undefined,
 };
-

@@ -1,7 +1,7 @@
 /** @format */
 
 import { randomBytes, scryptSync } from 'node:crypto';
-import { DatabaseSync } from 'node:sqlite';
+import type { DatabaseSync } from 'node:sqlite';
 import { z } from 'zod';
 
 /** Default credential used until the SysAdmin or backup password is changed. */

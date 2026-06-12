@@ -1,6 +1,6 @@
 /** @format */
 
-import { ipcMain, session } from 'electron';
+import { BrowserWindow, ipcMain, session } from 'electron';
 
 import { cancelOutputJob, printHtmlWithElectron } from './PrintBridge.js';
 import { renderHtmlToPdf } from './PdfBridge.js';
@@ -57,9 +57,9 @@ export const registerMainIpcHandlers = () => {
         if (!mainState.credentialStore || typeof displayName !== 'string') {
             throw new Error('A display name is required.');
         }
-        return mainState.credentialStore.ensureSystemAdministrator(displayName);
+        return mainState.credentialStore.configureSysAdmin(displayName);
     });
-    ipcMain.handle('vaultbill:setup:complete', (_event, request: unknown) => {
+    ipcMain.handle('vaultbill:setup:complete', () => {
         if (!mainState.credentialStore || !mainState.settingsStore) {
             throw new Error('Setup services are not ready.');
         }
@@ -86,7 +86,11 @@ export const registerMainIpcHandlers = () => {
         if (typeof jobId !== 'string') throw new Error('A job ID is required.');
         return cancelOutputJob(jobId);
     });
-    ipcMain.handle('vaultbill:list-printers', async (event) => listElectronPrinters(event));
+    ipcMain.handle('vaultbill:list-printers', async (event) => {
+        const browserWindow = BrowserWindow.fromWebContents(event.sender) ?? mainState.mainWindow;
+        if (!browserWindow) throw new Error('A host window is required.');
+        return listElectronPrinters(browserWindow);
+    });
 
     ipcMain.handle('vaultbill:records:list', () => mainState.recordStore?.list() ?? []);
     ipcMain.handle('vaultbill:reports:query', (_event, request: unknown) => {

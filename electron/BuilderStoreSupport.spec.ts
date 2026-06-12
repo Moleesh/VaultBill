@@ -8,7 +8,7 @@ import {
     sanitizeSvg,
     sanitizeTemplateHtml,
     toBuffer,
-} from './BuilderStoreSupport';
+} from './BuilderStoreSupport.js';
 
 describe('builder store support', () => {
     it('accepts valid package and asset payloads', () => {

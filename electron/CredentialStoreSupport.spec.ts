@@ -13,7 +13,7 @@ import {
     parseCredentialAccount,
     setBackupPassword,
     validateCredentialLimits,
-} from './CredentialStoreSupport';
+} from './CredentialStoreSupport.js';
 
 const createDatabase = () => {
     const database = new DatabaseSync(':memory:');

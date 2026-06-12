@@ -19,6 +19,7 @@ import {
     safeBufferEqual,
     RecordCancelRequestSchema,
     RecordWriteRequestSchema,
+    type ReportQueryResult,
     type StoredRecord,
     type TrialStatus,
     writeRuntime,
@@ -29,6 +30,7 @@ export type {
     RecordCancelRequest,
     ReportQuery,
     ReportQueryResult,
+    RecordWriteRequest,
     StoredRecord,
     TrialStatus,
 } from './RecordStoreSupport.js';
