@@ -1,75 +1,70 @@
 /** @format */
 
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+/**
+ * Verifies the record print template helpers that format placeholders for both
+ * browser printing and the desktop host.
+ */
 
+import { afterEach, describe, expect, it } from 'vitest';
+
+import { calculateRecordTotals } from './RecordTotals';
 import {
     extractDocumentFragment,
     readBusinessProfile,
     recordFieldValue,
 } from './RecordPrintHtmlSupport';
-import type { EditableRecord } from './RecordStoreContext';
 
-const record: EditableRecord = {
-    recordId: 'record-1',
-    formatId: 'TaxInvoice',
-    formatName: 'GST Invoice',
-    invoiceDate: '2026-06-11',
-    customerName: 'Acme Traders',
-    gstin: '29ABCDE1234F1Z5',
-    state: 'Tamil Nadu',
-    billingAddress: '12 Market Road',
-    lineItems: [
-        {
-            rowId: 'row-1',
-            itemName: 'Sample Service',
-            hsnSac: '9983',
-            quantity: '2',
-            rate: '100.00',
-            taxPercent: '18',
-            amount: '236.00',
-            values: { custom: 'value' },
-        },
-    ],
-    grandTotal: '236.00',
-    fieldValues: { custom: 'value' },
-};
+afterEach(() => {
+    window.localStorage.clear();
+});
 
-describe('record print html support', () => {
-    beforeEach(() => {
-        window.localStorage.clear();
-    });
-
-    afterEach(() => {
-        window.localStorage.clear();
-    });
-
-    it('resolves direct, computed, and line-item placeholders', () => {
-        expect(recordFieldValue('CustomerName', record)).toBe('Acme Traders');
-        expect(recordFieldValue('Subtotal', record)).toBe('200.00');
-        expect(recordFieldValue('custom', record)).toBe('value');
-        expect(recordFieldValue('ItemName', record)).toBe('Sample Service');
-    });
-
-    it('reads the business profile from browser storage', () => {
+describe('RecordPrintHtmlSupport', () => {
+    it('reads business profile data and resolves print placeholders', () => {
         window.localStorage.setItem(
             'vaultbill.business-profile',
-            JSON.stringify({ companyName: 'VaultBill Demo', address: 'HQ' }),
+            JSON.stringify({ companyName: 'VaultBill', address: 'Chennai' }),
         );
-        window.localStorage.setItem('vaultbill.company-gstin', '29ABCDE1234F1Z5');
+        window.localStorage.setItem('vaultbill.company-gstin', '33ABCDE1234F1Z5');
+
+        const record = {
+            recordId: 'record-1',
+            invoiceDate: '2026-06-01',
+            customerName: 'Acme',
+            gstin: 'GST-1',
+            state: 'TN',
+            billingAddress: 'Billing street',
+            lineItems: [
+                {
+                    rowId: 'row-1',
+                    itemName: 'Item',
+                    hsnSac: 'HSN1',
+                    quantity: '2',
+                    rate: '10',
+                    taxPercent: '18',
+                    amount: '20.00',
+                    values: { ExtraField: 'Extra value' },
+                },
+            ],
+            grandTotal: '20.00',
+            fieldValues: { CustomField: 'Custom value' },
+        } as never;
 
         expect(readBusinessProfile()).toEqual({
-            companyName: 'VaultBill Demo',
-            address: 'HQ',
-            gstin: '29ABCDE1234F1Z5',
+            companyName: 'VaultBill',
+            address: 'Chennai',
+            gstin: '33ABCDE1234F1Z5',
         });
+        expect(recordFieldValue('CustomerName', record)).toBe('Acme');
+        expect(recordFieldValue('Amount', record)).toBe('20.00');
+        expect(recordFieldValue('CustomField', record)).toBe('Custom value');
+        expect(recordFieldValue('ExtraField', record)).toBe('Extra value');
+        expect(calculateRecordTotals(record)).toMatchObject({ grandTotal: '20.00' });
     });
 
-    it('keeps inline styles while stripping document wrappers', () => {
-        const fragment = extractDocumentFragment(
-            '<html><head><style>.demo{color:red}</style></head><body><main>Hi</main></body></html>',
-        );
+    it('extracts the printable fragment from a document wrapper', () => {
+        const html = `<!doctype html><html><head><style>.a{color:red;}</style></head><body><main>Hello</main></body></html>`;
 
-        expect(fragment).toContain('<style>.demo{color:red}</style>');
-        expect(fragment).toContain('<main>Hi</main>');
+        expect(extractDocumentFragment(html)).toContain('<style>.a{color:red;}</style>');
+        expect(extractDocumentFragment(html)).toContain('<main>Hello</main>');
     });
 });

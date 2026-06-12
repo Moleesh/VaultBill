@@ -51,9 +51,11 @@ test('operator can log in, create records, and open contextual help', async ({ p
     await loginAsAdmin(page);
     await page.getByRole('link', { name: /Records/u }).click();
     await expect(page.getByRole('heading', { name: /Create GST Invoice/u })).toBeVisible();
-    await page.getByRole('banner').getByRole('button', { name: 'Help' }).click();
+    await page.keyboard.press('F1');
     await expect(page.getByRole('dialog', { name: 'records help' })).toBeVisible();
-    await expect(page.getByText(/Save Draft or Finalize/u)).toBeVisible();
+    await expect(
+        page.getByRole('heading', { name: /Create and finish a document/u }),
+    ).toBeVisible();
 });
 
 test('operator can submit the login form by pressing Enter in the password field', async ({
@@ -108,7 +110,7 @@ test('mobile help opens as a full-screen sheet', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await loginAsAdmin(page);
     await page.getByRole('link', { name: /Records/u }).click();
-    await page.getByRole('banner').getByRole('button', { name: 'Help' }).click();
+    await page.keyboard.press('F1');
 
     const helpDialog = page.getByRole('dialog', { name: 'records help' });
     await expect(helpDialog).toBeVisible();
