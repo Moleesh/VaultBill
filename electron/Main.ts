@@ -42,7 +42,11 @@ const createBackupHandlers = () => ({
             encrypted,
             encrypted ? mainState.credentialStore.getBackupPassword() : undefined,
         );
-        const timestamp = new Date().toISOString().slice(0, 16).replace('T', '-').replaceAll(':', '-');
+        const timestamp = new Date()
+            .toISOString()
+            .slice(0, 16)
+            .replace('T', '-')
+            .replaceAll(':', '-');
         return { ...archive, fileName: `vaultbill-backup-${timestamp}.zip` };
     },
     restoreBackup: (

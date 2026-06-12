@@ -51,7 +51,11 @@ export class DesktopRecordStore {
         const elapsedSeconds = Math.max(0, Math.floor((now - this.#lastTrialCheckpoint) / 1000));
         this.#lastTrialCheckpoint = now;
         if (!this.#isActivated() && elapsedSeconds > 0) {
-            writeRuntime(this.#database, 'trial_seconds', String(getTrialSeconds(this.#database) + elapsedSeconds));
+            writeRuntime(
+                this.#database,
+                'trial_seconds',
+                String(getTrialSeconds(this.#database) + elapsedSeconds),
+            );
         }
         return this.getTrialStatus();
     };
@@ -64,12 +68,15 @@ export class DesktopRecordStore {
             isFullVersion,
             isExpired: !isFullVersion && accumulatedSeconds >= trialSeconds,
             accumulatedSeconds,
-            remainingSeconds: isFullVersion ? trialSeconds : Math.max(0, trialSeconds - accumulatedSeconds),
+            remainingSeconds: isFullVersion
+                ? trialSeconds
+                : Math.max(0, trialSeconds - accumulatedSeconds),
         };
     };
 
     public activateLicense = (licenseKey: string): TrialStatus => {
-        if (!this.#licenseVerifier) throw new Error('This build does not contain a license verifier.');
+        if (!this.#licenseVerifier)
+            throw new Error('This build does not contain a license verifier.');
         const supplied = createHash('sha256').update(licenseKey.trim()).digest('hex');
         if (!safeBufferEqual(this.#licenseVerifier, supplied)) {
             throw new Error('The license key is not valid for this build.');
@@ -86,7 +93,9 @@ export class DesktopRecordStore {
         const invoiceNumber = query.invoiceNumber.trim().toLocaleLowerCase();
         let records = this.list()
             .filter((record) => query.status === 'All' || record.status === query.status)
-            .filter((record) => !customer || record.customerName.toLocaleLowerCase().includes(customer))
+            .filter(
+                (record) => !customer || record.customerName.toLocaleLowerCase().includes(customer),
+            )
             .filter(
                 (record) =>
                     !invoiceNumber ||
@@ -171,5 +180,6 @@ export class DesktopRecordStore {
 
     #isActivated = (): boolean => isActivated(this.#database);
 
-    #find = (recordId: string): StoredRecord | undefined => getStoredRecord(this.#database, recordId);
+    #find = (recordId: string): StoredRecord | undefined =>
+        getStoredRecord(this.#database, recordId);
 }

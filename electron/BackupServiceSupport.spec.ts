@@ -51,10 +51,12 @@ describe('backup service support', () => {
         };
         const checksums = buildChecksums(files);
 
-        expect(() => validateChecksums(files, checksums)).not.toThrow();
-        expect(() =>
-            validateChecksums({ ...files, extra: new TextEncoder().encode('extra') }, checksums),
-        ).toThrow('Backup checksum inventory does not match.');
+        expect(() => {
+            validateChecksums(files, checksums);
+        }).not.toThrow();
+        expect(() => {
+            validateChecksums({ ...files, extra: new TextEncoder().encode('extra') }, checksums);
+        }).toThrow('Backup checksum inventory does not match.');
     });
 
     it('validates the restored database shape', () => {
@@ -68,7 +70,9 @@ describe('backup service support', () => {
         `);
         database.close();
 
-        expect(() => validateDatabase(databasePath)).not.toThrow();
+        expect(() => {
+            validateDatabase(databasePath);
+        }).not.toThrow();
     });
 
     it('validates the manifest schema shape', () => {

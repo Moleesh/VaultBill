@@ -11,15 +11,15 @@ const enabledSettings = {
     SenderId: 'VAULT',
     UseServerSideProxy: false,
     Secrets: {
-        ApiKey: 'apikey-123456',
-        ApiSecret: 'secret-7890',
+        ApiKey: 'key1234',
+        ApiSecret: 'sec7890',
     },
 };
 
 describe('SmsProvider', () => {
     it('masks secrets before settings are displayed', () => {
         expect(maskSmsSecrets(enabledSettings)).toMatchObject({
-            Secrets: { ApiKey: '****3456', ApiSecret: '****7890' },
+            Secrets: { ApiKey: '****1234', ApiSecret: '****7890' },
         });
     });
 

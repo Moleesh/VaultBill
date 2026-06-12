@@ -122,7 +122,10 @@ export const createRecordStoreTables = (database: DatabaseSync) => {
     `);
 };
 
-export const getStoredRecord = (database: DatabaseSync, recordId: string): StoredRecord | undefined => {
+export const getStoredRecord = (
+    database: DatabaseSync,
+    recordId: string,
+): StoredRecord | undefined => {
     const row = database
         .prepare('SELECT record_json FROM app_records WHERE record_id = ?;')
         .get(recordId);
@@ -148,7 +151,13 @@ export const writeStoredRecord = (database: DatabaseSync, record: StoredRecord) 
           updated_at = excluded.updated_at;
       `,
         )
-        .run(record.recordId, record.status, record.documentNumber, JSON.stringify(record), record.updatedAt);
+        .run(
+            record.recordId,
+            record.status,
+            record.documentNumber,
+            JSON.stringify(record),
+            record.updatedAt,
+        );
 };
 
 export const getTrialSeconds = (database: DatabaseSync): number => {

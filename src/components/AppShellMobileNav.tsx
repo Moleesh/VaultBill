@@ -1,0 +1,25 @@
+/** @format */
+
+import { NavLink } from 'react-router-dom';
+import type { FC } from 'react';
+
+import { appShellIcons } from './AppShellSupport';
+import type { ShellSection } from '../types/AppTypes';
+
+type AppShellMobileNavProps = {
+    readonly sections: readonly ShellSection[];
+};
+
+export const AppShellMobileNav: FC<AppShellMobileNavProps> = ({ sections }) => (
+    <nav aria-label="Mobile primary" className="app-shell__mobile-nav">
+        {sections.map((section) => {
+            const Icon = appShellIcons[section.id as keyof typeof appShellIcons];
+            return (
+                <NavLink aria-label={section.label} key={section.id} to={`/app/${section.id}`}>
+                    <Icon aria-hidden="true" size={20} />
+                    <span>{section.label}</span>
+                </NavLink>
+            );
+        })}
+    </nav>
+);

@@ -21,7 +21,9 @@ import { mainState, hostedAppUrl } from './MainState.js';
 
 export const readLicenseVerifier = (): string => {
     try {
-        const packageJson = JSON.parse(readFileSync(path.join(app.getAppPath(), 'package.json'), 'utf8')) as {
+        const packageJson = JSON.parse(
+            readFileSync(path.join(app.getAppPath(), 'package.json'), 'utf8'),
+        ) as {
             vaultBillLicenseVerifier?: string;
         };
         return packageJson.vaultBillLicenseVerifier ?? '';
@@ -64,12 +66,15 @@ export const createWindow = async () => {
             : new URL(hostedAppUrl).origin;
         if (!url.startsWith(allowedOrigin)) event.preventDefault();
     });
-    if (process.env.VITE_DEV_SERVER_URL) await mainState.mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL);
+    if (process.env.VITE_DEV_SERVER_URL)
+        await mainState.mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL);
     else await mainState.mainWindow.loadURL(hostedAppUrl);
 };
 
 export const createTray = () => {
-    const icon = nativeImage.createFromPath(path.join(mainState.currentDirectory, '../build/icon.png'));
+    const icon = nativeImage.createFromPath(
+        path.join(mainState.currentDirectory, '../build/icon.png'),
+    );
     mainState.tray = new Tray(icon);
     mainState.tray.setToolTip('VaultBill is hosting the local workspace');
     mainState.tray.setContextMenu(

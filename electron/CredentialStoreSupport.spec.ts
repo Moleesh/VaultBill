@@ -49,7 +49,7 @@ describe('credential store support', () => {
     it('bootstraps the default SysAdmin and backup password', () => {
         const database = createDatabase();
 
-        bootstrapCredentialStore(database, (password) => {
+        bootstrapCredentialStore(database, (password: string) => {
             setBackupPassword(database, protector, password);
         });
 
@@ -92,7 +92,9 @@ describe('credential store support', () => {
         setBackupPassword(database, protector, defaultCredential);
 
         expect(loadCredentialAccount(database, 'admin_1').displayName).toBe('Operations Admin');
-        expect(() => validateCredentialLimits(database)).not.toThrow();
+        expect(() => {
+            validateCredentialLimits(database);
+        }).not.toThrow();
         expect(getCredentialStatus(database, protector).sysAdminUsesDefaultPassword).toBe(false);
     });
 

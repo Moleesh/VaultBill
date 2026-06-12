@@ -10,7 +10,7 @@ const settings = {
     BaseUrl: 'https://gsp.example/api/',
     Sandbox: true,
     ClientId: 'client-1',
-    ClientSecret: 'super-secret-4567',
+    ClientSecret: 'secret4567',
     Endpoints: {
         EInvoice: '/einvoice',
         Gstr: '/gstr',

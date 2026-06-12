@@ -4,7 +4,7 @@ import { access, readFile } from 'node:fs/promises';
 
 const read = (path) => readFile(path, 'utf8');
 const [main, preload, html, vite, packageConfig] = await Promise.all([
-    read('electron/Main.ts'),
+    read('electron/MainRuntime.ts'),
     read('electron/Preload.ts'),
     read('index.html'),
     read('vite.config.ts'),

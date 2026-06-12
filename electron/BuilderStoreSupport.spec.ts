@@ -36,9 +36,9 @@ describe('builder store support', () => {
     });
 
     it('rejects unsafe svg content', () => {
-        expect(() => sanitizeSvg('<svg><script /></svg>')).toThrow(
-            'SVG assets cannot contain scripts, active content, or external resources.',
-        );
+        expect(() => {
+            sanitizeSvg('<svg><script /></svg>');
+        }).toThrow('SVG assets cannot contain scripts, active content, or external resources.');
     });
 
     it('normalizes binary blobs into buffers', () => {
