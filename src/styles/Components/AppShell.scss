@@ -179,25 +179,6 @@
     background: transparent;
 }
 
-.app-shell__body::before {
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    background:
-        radial-gradient(
-            circle at top center,
-            color-mix(in srgb, var(--color-primary) 7%, transparent),
-            transparent 34rem
-        ),
-        linear-gradient(
-            180deg,
-            color-mix(in srgb, var(--color-surface) 16%, transparent),
-            transparent 13rem
-        );
-    content: '';
-    pointer-events: none;
-}
-
 .app-shell__topbar {
     position: relative;
     z-index: 30;
@@ -237,6 +218,25 @@
     padding: clamp(var(--space-5), 4vw, var(--space-10));
 }
 
+.app-shell__content::before {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background:
+        radial-gradient(
+            circle at top center,
+            color-mix(in srgb, var(--color-primary) 7%, transparent),
+            transparent 34rem
+        ),
+        linear-gradient(
+            180deg,
+            color-mix(in srgb, var(--color-surface) 16%, transparent),
+            transparent 13rem
+        );
+    content: '';
+    pointer-events: none;
+}
+
 .app-shell__content::-webkit-scrollbar {
     display: none;
 }
@@ -269,7 +269,7 @@
 .app-shell__scroll-rail span {
     display: block;
     width: 100%;
-    min-height: 0.4rem;
+    min-height: 0.75rem;
     border-radius: inherit;
     background: var(--color-primary);
 }

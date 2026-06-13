@@ -23,8 +23,8 @@ input:focus-visible,
 textarea:focus-visible,
 select:focus-visible {
     box-shadow:
-        0 0 0 0.14rem color-mix(in srgb, var(--color-primary) 20%, transparent),
-        0 0.22rem 0.75rem color-mix(in srgb, var(--color-panel-shadow) 8%, transparent);
+        0 0 0 0.16rem color-mix(in srgb, var(--color-primary) 18%, transparent),
+        0 0.18rem 0.55rem color-mix(in srgb, var(--color-panel-shadow) 6%, transparent);
 }
 
 .button-primary {
@@ -316,8 +316,8 @@ select:focus-visible {
     color: var(--color-text-body);
     padding: var(--space-3);
     box-shadow:
-        inset 0 0 0 1px color-mix(in srgb, var(--color-border) 10%, transparent),
-        0 0.18rem 0.55rem color-mix(in srgb, var(--color-panel-shadow) 5%, transparent);
+        inset 0 0 0 1px color-mix(in srgb, var(--color-border) 8%, transparent),
+        0 0.12rem 0.4rem color-mix(in srgb, var(--color-panel-shadow) 4%, transparent);
 }
 
 button:disabled,
@@ -325,10 +325,11 @@ input:disabled,
 textarea:disabled,
 select:disabled {
     border-style: dashed;
+    border-color: color-mix(in srgb, var(--color-border) 72%, transparent);
     color: var(--color-text-disabled);
     background: color-mix(in srgb, var(--color-surface-muted) 78%, transparent);
     box-shadow: none;
-    opacity: 0.86;
+    opacity: 0.82;
 }
 
 .record-search,
@@ -580,14 +581,14 @@ textarea::placeholder {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
-    gap: 0.15rem;
+    gap: 0.45rem;
     min-height: 2.65rem;
-    padding-inline: var(--space-3) var(--space-2);
+    padding-inline: var(--space-3) var(--space-3);
     background: var(--color-surface-raised);
     text-align: left;
     box-shadow:
-        inset 0 0 0 1px color-mix(in srgb, var(--color-border) 24%, transparent),
-        0 0.14rem 0.45rem color-mix(in srgb, var(--color-panel-shadow) 7%, transparent);
+        inset 0 0 0 1px color-mix(in srgb, var(--color-border) 20%, transparent),
+        0 0.12rem 0.4rem color-mix(in srgb, var(--color-panel-shadow) 6%, transparent);
 }
 
 .searchable-dropdown__trigger span:first-child {
@@ -601,7 +602,7 @@ textarea::placeholder {
     flex: none;
     color: var(--color-text-muted);
     justify-self: end;
-    margin-inline: 0 -0.15rem;
+    margin-inline: 0;
 }
 
 .searchable-dropdown__menu {
@@ -625,6 +626,14 @@ textarea::placeholder {
     max-height: min(24rem, calc(var(--dropdown-top) - 1rem));
 }
 
+.searchable-dropdown__menu[data-open-direction='below'] {
+    transform-origin: top center;
+}
+
+.searchable-dropdown__menu[data-open-direction='above'] {
+    transform-origin: bottom center;
+}
+
 .searchable-dropdown__menu input {
     min-width: 0;
     min-height: 2.5rem;
@@ -644,7 +653,7 @@ textarea::placeholder {
     border-color: transparent;
     text-align: left;
     white-space: normal;
-    padding-block: 0.72rem;
+    padding-block: 0.64rem;
 }
 
 .searchable-dropdown__menu [role='option'] strong {
