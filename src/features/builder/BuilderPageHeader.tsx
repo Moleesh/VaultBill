@@ -37,7 +37,11 @@ export const BuilderPageHeader: FC<BuilderPageHeaderProps> = ({
                 </button>
             </div>
         </div>
-        <HorizontalProgress className="page-tabs builder-steps" label="Builder steps">
+        <HorizontalProgress
+            activeIndex={activeStepIndex}
+            className="page-tabs builder-steps"
+            label="Builder steps"
+        >
             {steps.map((step, index) => (
                 <button
                     className={

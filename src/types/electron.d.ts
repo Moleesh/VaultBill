@@ -28,7 +28,8 @@ type VaultBillDesktopBridge = {
     readonly completeSetup: (request: {
         readonly companyName: string;
         readonly address: string;
-        readonly sysAdminName: string;
+        readonly adminUsername: string;
+        readonly adminDisplayName: string;
     }) => Promise<void>;
     readonly getBusinessSettings: () => Promise<unknown>;
     readonly saveBusinessSettings: (request: unknown) => Promise<unknown>;

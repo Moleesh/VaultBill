@@ -78,6 +78,34 @@
     gap: var(--space-3);
 }
 
+.app-shell__trial-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-width: 0;
+    white-space: nowrap;
+}
+
+.app-shell__trial-pill-copy {
+    display: inline-grid;
+    gap: 0.05rem;
+    align-items: start;
+    text-align: left;
+    line-height: 1;
+}
+
+.app-shell__trial-pill-copy strong {
+    font-size: var(--font-size-md);
+}
+
+.app-shell__trial-pill-copy small {
+    color: color-mix(in srgb, currentColor 72%, transparent);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
 .app-shell__mobile-account-actions {
     display: none;
     align-items: center;

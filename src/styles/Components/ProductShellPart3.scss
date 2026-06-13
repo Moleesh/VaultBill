@@ -14,6 +14,18 @@
     gap: var(--space-3);
 }
 
+.integration-key-value-table__header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) auto;
+    gap: var(--space-3);
+    align-items: center;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-bold);
+    letter-spacing: var(--letter-spacing-label);
+    text-transform: uppercase;
+}
+
 .integration-key-value-row {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) auto;
@@ -39,7 +51,8 @@
 }
 
 .integration-key-value-row button {
-    min-width: 6rem;
+    min-width: 2.75rem;
+    align-self: center;
 }
 
 .operator-create {
@@ -105,6 +118,42 @@
     border-radius: var(--radius-lg);
     background: var(--color-surface-muted);
     padding: var(--space-5);
+}
+
+.upload-card__header {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: var(--space-3);
+    align-items: start;
+}
+
+.upload-card__icon {
+    display: inline-grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: var(--radius-sm);
+    color: var(--color-text-body);
+    flex-shrink: 0;
+}
+
+.upload-card__icon svg {
+    display: block;
+}
+
+.upload-card__copy {
+    display: grid;
+    gap: var(--space-2);
+    min-width: 0;
+}
+
+.upload-card__copy h3,
+.upload-card__copy p {
+    margin: 0;
+}
+
+.upload-card__copy p {
+    color: var(--color-text-muted);
 }
 
 .builder-workspace.builder-workspace--single {

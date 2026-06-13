@@ -1,12 +1,12 @@
 /** @format */
 
-import { ArrowRight, GripVertical } from 'lucide-react';
+import { GripVertical } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import type { DragEvent, FC } from 'react';
 
 import type { DocumentFormatConfig } from '../../db/startup/ConfigSchemas';
 import { move } from './BuilderPageSupport';
-import { type CalculationTarget } from './BuilderPageCalculationSupport';
+import { sampleFormula, type CalculationTarget } from './BuilderPageCalculationSupport';
 import type { FieldConfig } from './BuilderPageSupport';
 
 type BuilderCalculationsStepProps = {
@@ -58,6 +58,7 @@ export const BuilderCalculationsStep: FC<BuilderCalculationsStepProps> = ({
                     const { field } = target;
                     const sectionLabel =
                         target.kind === 'document' ? 'Document field' : 'Line item';
+                    const preview = sampleFormula(field, allFields, currencyPolicy);
                     return (
                         <article
                             draggable
@@ -99,19 +100,11 @@ export const BuilderCalculationsStep: FC<BuilderCalculationsStepProps> = ({
                                 <strong>{`Edit ${field.Label}`}</strong>
                                 <span>{sectionLabel}</span>
                                 <small>{field.Formula ?? 'No formula yet'}</small>
+                                <small>{`Preview: ${preview}`}</small>
                             </button>
                             <small className="builder-calculation-order">
-                                <ArrowRight size={14} />
-                                {index === 0 ? 'First trigger' : 'Next trigger'}
+                                #{String(index + 1)} trigger
                             </small>
-                            <button
-                                onClick={() => {
-                                    onEditFormula(field.FieldId);
-                                }}
-                                type="button"
-                            >
-                                Formula
-                            </button>
                         </article>
                     );
                 })}

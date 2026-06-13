@@ -8,10 +8,12 @@ import type { FC, PropsWithChildren, UIEvent, WheelEvent } from 'react';
 type HorizontalProgressProps = PropsWithChildren<{
     readonly label: string;
     readonly className?: string;
+    readonly activeIndex?: number;
 }>;
 
 export const HorizontalProgress: FC<HorizontalProgressProps> = ({
     children,
+    activeIndex,
     className = '',
     label,
 }) => {
@@ -49,6 +51,22 @@ export const HorizontalProgress: FC<HorizontalProgressProps> = ({
             observer?.disconnect();
         };
     }, []);
+
+    useEffect(() => {
+        if (activeIndex === undefined) return;
+        const track = trackRef.current;
+        const activeChild = track?.children.item(activeIndex);
+        if (
+            activeChild instanceof HTMLElement &&
+            typeof activeChild.scrollIntoView === 'function'
+        ) {
+            activeChild.scrollIntoView({
+                behavior: 'smooth',
+                block: 'nearest',
+                inline: 'center',
+            });
+        }
+    }, [activeIndex]);
 
     const scrollByPage = (direction: -1 | 1) => {
         const track = trackRef.current;
