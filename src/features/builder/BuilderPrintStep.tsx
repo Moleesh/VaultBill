@@ -41,6 +41,7 @@ export const BuilderPrintStep: FC<BuilderPrintStepProps> = ({
             </label>
             {templateHtml ? (
                 <button
+                    className="button-file"
                     onClick={() => {
                         const blob = new Blob([templateHtml], { type: 'text/html;charset=utf-8' });
                         const url = URL.createObjectURL(blob);

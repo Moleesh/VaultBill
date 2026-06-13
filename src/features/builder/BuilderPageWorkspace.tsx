@@ -16,7 +16,6 @@ import {
     newField,
     steps,
     type BuilderLayoutConfig,
-    type BuilderLayoutMode,
 } from './BuilderPageSupport';
 import type { FC } from 'react';
 import type { BuilderPageController } from './useBuilderPageController';
@@ -25,7 +24,7 @@ export const BuilderPageWorkspace: FC<{ readonly controller: BuilderPageControll
     controller,
 }) => {
     const { lineSection, referencedFieldIds } = controller;
-    const layout = controller.config.Layout ?? { Columns: 2, Mode: 'Flow' as BuilderLayoutMode };
+    const layout = controller.config.Layout ?? { Columns: 2, Gap: 16 };
 
     return (
         <div className="page-stack builder-page">
@@ -89,6 +88,9 @@ export const BuilderPageWorkspace: FC<{ readonly controller: BuilderPageControll
                 {controller.activeStep === 'Line Items' && lineSection ? (
                     <BuilderLineItemsStep
                         lineSection={lineSection}
+                        onPrevious={() => {
+                            controller.setStepIndex((current) => Math.max(0, current - 1));
+                        }}
                         onAdd={() => {
                             const fields = [
                                 ...lineSection.Fields,
@@ -163,6 +165,7 @@ export const BuilderPageWorkspace: FC<{ readonly controller: BuilderPageControll
                     <BuilderFieldPreviewStep
                         assets={controller.assets}
                         config={controller.config}
+                        layout={layout}
                         fields={controller.config.Fields}
                         lineSection={lineSection}
                     />

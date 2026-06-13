@@ -45,6 +45,20 @@ describe('FormulaEngine', () => {
         ).toBe('1180.00');
     });
 
+    it('evaluates SUMALL aggregates with the supplied callback', () => {
+        expect(
+            evaluateFormula(
+                'SUMALL(Quantity) + SUM(Items.Rate)',
+                { Quantity: '2.000', Rate: '500.0000' },
+                policy,
+                2,
+                {
+                    sumAll: (fieldId) => (fieldId === 'Quantity' ? '3.000' : '500.0000'),
+                },
+            ).formatted,
+        ).toBe('503.00');
+    });
+
     it('evaluates parentheses, unary minus, and division', () => {
         expect(
             evaluateFormula(

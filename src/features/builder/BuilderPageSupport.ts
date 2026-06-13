@@ -18,10 +18,9 @@ export const steps = [
     'Print Preview',
 ] as const;
 export type BuilderStep = (typeof steps)[number];
-export type BuilderLayoutMode = 'Flow' | 'Split' | 'Compact';
 export type BuilderLayoutConfig = {
     readonly Columns: number;
-    readonly Mode: BuilderLayoutMode;
+    readonly Gap: number;
 };
 export type FieldConfig = DocumentFormatConfig['Fields'][number];
 export type AssetSummary = {
@@ -86,10 +85,11 @@ export const move = <T>(items: readonly T[], from: number, to: number): readonly
 export const helperFor = (step: BuilderStep): string =>
     ({
         Format: 'Choose the document name operators see when creating a record.',
-        Layout: 'Choose a page flow that fits the document and print rhythm.',
+        Layout: 'Choose columns and spacing for the document flow.',
         Fields: 'Add the business fields shown above the line-item table.',
-        'Line Items': 'Design repeatable product or service rows with totals.',
-        Calculations: 'Connect numeric fields with formulas, GST, and round-off.',
+        'Line Items':
+            'Design repeatable product or service rows and keep subtotal and total formulas visible.',
+        Calculations: 'Connect numeric fields with formulas, SUMALL totals, GST, and round-off.',
         Print: 'Upload one HTML file and the images or fonts it references.',
         'Field Preview': 'Review the entry form before you publish.',
         'Print Preview': 'Check the rendered print output before publishing.',

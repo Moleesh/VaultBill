@@ -59,7 +59,7 @@ describe('record print HTML', () => {
         const html = renderRecordHtml(record, record, {
             config: builtInDefaultFormat,
             templateHtml:
-                '<main><img src="{{Asset.Logo}}"><h1>{{Record.Number}}</h1><p>{{Record.CustomerName}}</p><strong>{{Record.CancellationReason}}</strong><span>{{Record.Subtotal}}</span><span>{{Record.TaxTotal}}</span><span>{{Record.RoundOff}}</span>{{Items.Table}}</main>',
+                '<main><img src="{{Asset.Logo}}"><h1>{{Record.Number}}</h1><p>{{Record.CustomerName}}</p><strong>{{Record.CancellationReason}}</strong><span>{{Record.Subtotal}}</span><span>{{Record.TaxTotal}}</span><span>{{Record.RoundOff}}</span><em>{{Record.CreatedByName}}</em><em>{{Record.LastActionByName}}</em>{{Items.Table}}</main>',
             assets: [{ name: 'Logo', type: 'image/png', dataBase64: 'cG5n' }],
         });
 
@@ -67,6 +67,7 @@ describe('record print HTML', () => {
         expect(html).toContain('GST-000001');
         expect(html).toContain('&lt;Unsafe Customer&gt;');
         expect(html).toContain('Duplicate');
+        expect(html).toContain('Admin');
         expect(html).toContain('<table>');
         expect(html).toContain('100.00');
         expect(html).toContain('18.00');

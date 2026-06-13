@@ -90,6 +90,21 @@ The built-in theme IDs are:
 The template JSON metadata must match the `print_templates` row. Template HTML
 is sanitized before saving and again before compilation.
 
+Available placeholder groups in record print templates:
+
+- Company profile: `Company.Name`, `Company.LegalName`, `Company.Gstin`,
+  `Company.Address`, `Company.Phone`, `Company.Email`
+- Record metadata: `Record.Number`, `Record.Status`, `Record.IsCancelled`,
+  `Record.CancellationReason`, `Record.InvoiceDate`, `Record.CustomerName`,
+  `Record.CustomerGstin`, `Record.Gstin`, `Record.State`,
+  `Record.BillingAddress`, `Record.Subtotal`, `Record.TaxTotal`,
+  `Record.RoundOff`, `Record.GrandTotal`, `Record.FormatName`
+- Operator metadata: `Record.CreatedBy`, `Record.CreatedByName`,
+  `Record.LastActionBy`, `Record.LastActionByName`
+- Record collections: `Items.Table`, `Items.Rows`
+- Custom document fields: `Record.{FieldId}`
+- Shared assets: `Asset.Name`
+
 ## Printer Profile
 
 ```json

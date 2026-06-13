@@ -14,6 +14,7 @@ type LineSection = {
 type BuilderLineItemsStepProps = {
     readonly lineSection: LineSection;
     readonly referencedFieldIds: ReadonlySet<string>;
+    readonly onPrevious: () => void;
     readonly onLabelChange: (value: string) => void;
     readonly onMaxRowsChange: (value: number) => void;
     readonly onAdd: () => void;
@@ -25,6 +26,7 @@ type BuilderLineItemsStepProps = {
 export const BuilderLineItemsStep: FC<BuilderLineItemsStepProps> = ({
     lineSection,
     referencedFieldIds,
+    onPrevious,
     onLabelChange,
     onMaxRowsChange,
     onAdd,
@@ -32,6 +34,29 @@ export const BuilderLineItemsStep: FC<BuilderLineItemsStepProps> = ({
     onEdit,
 }) => (
     <>
+        <div className="builder-step-bridge">
+            <div>
+                <p className="eyebrow">Previous step</p>
+                <h3>Fields</h3>
+                <p>
+                    Keep the line-item summary formulas in JSON so subtotal and total stay easy to
+                    review.
+                </p>
+            </div>
+            <button className="button-secondary" onClick={onPrevious} type="button">
+                Previous: Fields
+            </button>
+        </div>
+        <div className="builder-line-summary">
+            <article>
+                <small>Subtotal</small>
+                <strong>SUMALL(Amount)</strong>
+            </article>
+            <article>
+                <small>Total</small>
+                <strong>Subtotal + TaxTotal + RoundOff</strong>
+            </article>
+        </div>
         <div className="form-grid">
             <label>
                 <span>Section label</span>

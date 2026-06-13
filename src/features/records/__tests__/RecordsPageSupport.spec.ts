@@ -49,7 +49,7 @@ describe('RecordsPageSupport', () => {
                     Label: 'Grand total',
                     Type: 'Money',
                     Calculated: true,
-                    Formula: 'SUM(Items.Amount)',
+                    Formula: 'SUMALL(Amount)',
                     Precision: 2,
                 } as never,
                 {

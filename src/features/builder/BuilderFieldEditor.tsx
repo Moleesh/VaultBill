@@ -90,6 +90,9 @@ export const BuilderFieldEditor: FC<BuilderFieldEditorProps> = ({
                         <strong>{`Edit ${field.Label}`}</strong>
                         <span>{field.Type}</span>
                         {field.Calculated ? <small>Calculated</small> : null}
+                        {referencedFieldIds.has(field.FieldId) ? (
+                            <small className="builder-field-warning">Used in a formula</small>
+                        ) : null}
                     </button>
                     <button
                         aria-label={`Duplicate ${field.Label}`}
@@ -110,13 +113,12 @@ export const BuilderFieldEditor: FC<BuilderFieldEditorProps> = ({
                     </button>
                     <button
                         aria-label={`Delete ${field.Label}`}
-                        disabled={referencedFieldIds.has(field.FieldId)}
                         onClick={() => {
                             onChange(fields.filter((_, fieldIndex) => fieldIndex !== index));
                         }}
                         title={
                             referencedFieldIds.has(field.FieldId)
-                                ? 'Remove formula references before deleting this field.'
+                                ? 'This field is referenced in a formula, but it can still be deleted.'
                                 : undefined
                         }
                         type="button"

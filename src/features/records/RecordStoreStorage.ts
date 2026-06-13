@@ -77,5 +77,8 @@ export const buildStoredRecord = (
         updatedAt: now,
         createdBy: existing?.createdBy ?? operatorContext.CreatedBy,
         createdByName: existing?.createdByName ?? operatorContext.CreatedByName,
+        lastActionAt: now,
+        lastActionBy: operatorContext.LastActionBy,
+        lastActionByName: operatorContext.LastActionByName,
     });
 };

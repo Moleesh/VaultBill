@@ -5,7 +5,12 @@ import type { LineItemRow } from '../schemaEngine/LineItemTypes';
 import type { FieldConfig } from '../schemaEngine/SchemaEngineTypes';
 import { formatDecimal } from './DecimalMath';
 import { evaluateFormulaToDecimal } from './FormulaParser';
-import type { CalculationPolicy, FormulaEvaluation, FormulaVariableMap } from './FormulaTypes';
+import type {
+    CalculationPolicy,
+    FormulaEvaluation,
+    FormulaEvaluationContext,
+    FormulaVariableMap,
+} from './FormulaTypes';
 import { toRoundingMode } from './FormulaTypes';
 import type { z } from 'zod';
 
@@ -16,13 +21,32 @@ export const evaluateFormula = (
     variables: FormulaVariableMap,
     policy: CalculationPolicy,
     precision: number,
+    context?: FormulaEvaluationContext,
 ): FormulaEvaluation => {
-    const value = evaluateFormulaToDecimal(formula, variables, policy);
+    const resolvedFormula = context?.sumAll ? resolveAggregateFunctions(formula, context) : formula;
+    const value = evaluateFormulaToDecimal(resolvedFormula, variables, policy);
 
     return {
         value,
         formatted: formatDecimal(value, precision, toRoundingMode(policy.RoundingMode)),
     };
+};
+
+const resolveAggregateFunctions = (formula: string, context: FormulaEvaluationContext): string =>
+    formula
+        .replace(/\bSUMALL\(\s*([A-Za-z_][A-Za-z0-9_]*)\s*\)/gu, (_match, fieldId: string) =>
+            resolveAggregateValue(fieldId, context),
+        )
+        .replace(/\bSUM\(\s*Items\.([A-Za-z_][A-Za-z0-9_]*)\s*\)/gu, (_match, fieldId: string) =>
+            resolveAggregateValue(fieldId, context),
+        );
+
+const resolveAggregateValue = (fieldId: string, context: FormulaEvaluationContext): string => {
+    const value = context.sumAll?.(fieldId);
+    if (value === undefined) {
+        throw new Error(`Formula variable ${fieldId} is missing.`);
+    }
+    return String(value);
 };
 
 export const calculateLineItemRows = (

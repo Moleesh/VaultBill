@@ -38,9 +38,8 @@ describe('App', () => {
             });
             fireEvent.click(screen.getByRole('button', { name: 'Log in' }));
 
-            expect(
-                await screen.findByRole('heading', { name: /Configuration control centre/u }),
-            ).toBeVisible();
+            expect(await screen.findByText('Business workspace')).toBeVisible();
+            expect(await screen.findByText('Publishing health')).toBeVisible();
         }
 
         expect(screen.queryByText(/Phase \d/u)).not.toBeInTheDocument();

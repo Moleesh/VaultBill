@@ -40,6 +40,9 @@ export const AppRecordSchema = z.object({
     updatedAt: z.string().min(1),
     createdBy: z.string().min(1),
     createdByName: z.string().min(1),
+    lastActionAt: z.string().nullable().optional(),
+    lastActionBy: z.string().nullable().optional(),
+    lastActionByName: z.string().nullable().optional(),
     cancellationReason: z.string().optional(),
 });
 

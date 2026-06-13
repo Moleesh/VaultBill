@@ -3,7 +3,7 @@
 import type { FC } from 'react';
 
 import type { DocumentFormatConfig } from '../../db/startup/ConfigSchemas';
-import type { AssetSummary, FieldConfig } from './BuilderPageSupport';
+import type { AssetSummary, BuilderLayoutConfig, FieldConfig } from './BuilderPageSupport';
 import { previewValue } from './BuilderPagePreviewSupport';
 
 type LineSection = {
@@ -12,6 +12,7 @@ type LineSection = {
 
 type BuilderFieldPreviewStepProps = {
     readonly config: DocumentFormatConfig;
+    readonly layout: BuilderLayoutConfig;
     readonly fields: readonly FieldConfig[];
     readonly lineSection: LineSection | undefined;
     readonly assets: readonly AssetSummary[];
@@ -20,6 +21,7 @@ type BuilderFieldPreviewStepProps = {
 /** Shows the interactive document-entry preview before the print template step. */
 export const BuilderFieldPreviewStep: FC<BuilderFieldPreviewStepProps> = ({
     config,
+    layout,
     fields,
     lineSection,
     assets,
@@ -46,7 +48,13 @@ export const BuilderFieldPreviewStep: FC<BuilderFieldPreviewStepProps> = ({
             </div>
         </dl>
         <div className="builder-preview-surface" aria-label="Document field preview">
-            <div className="builder-preview-grid">
+            <div
+                className="builder-preview-grid"
+                style={{
+                    gap: `${String(Math.max(0, layout.Gap))}px`,
+                    gridTemplateColumns: `repeat(${String(Math.max(1, layout.Columns))}, minmax(0, 1fr))`,
+                }}
+            >
                 {fields.map((field) => (
                     <label key={field.FieldId}>
                         <span>{field.Label}</span>

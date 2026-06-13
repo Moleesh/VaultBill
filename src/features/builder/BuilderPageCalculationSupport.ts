@@ -1,8 +1,8 @@
 /** @format */
 
-import { evaluateFormula } from '../../engines/formulaEngine/FormulaEngine';
 import type { DocumentFormatConfig } from '../../db/startup/ConfigSchemas';
 import type { FieldConfig } from './BuilderPageSupport';
+export { sampleFormula } from './BuilderFormulaPreviewSupport';
 
 const numericFieldTypes = new Set(['Number', 'Decimal', 'Money', 'Quantity', 'Rate']);
 
@@ -65,7 +65,13 @@ export const collectCalculationTargets = (
 };
 
 export const formulaReferences = (formula: string): readonly string[] =>
-    [...formula.matchAll(/\b([A-Za-z_][\w]*)\b/gu)].map((match) => match[1] ?? '');
+    [
+        ...formula
+            .replace(/\bSUMALL\(\s*/giu, '(')
+            .replace(/\bSUM\(\s*Items\./giu, '(')
+            .replace(/\bCOUNT\(\s*Items\s*\)/giu, '')
+            .matchAll(/\b([A-Za-z_][\w]*)\b/gu),
+    ].map((match) => match[1] ?? '');
 
 export const collectReferencedFieldIds = (fields: readonly FieldConfig[]): ReadonlySet<string> => {
     const ids = new Set<string>();
@@ -135,36 +141,6 @@ export const applyCalculationOrderOverride = (
             Fields: section.Fields.map(apply),
         })),
     };
-};
-
-export const sampleFormula = (
-    field: FieldConfig,
-    allFields: readonly FieldConfig[],
-    policy: DocumentFormatConfig['CalculationPolicy'],
-): string => {
-    const formula = field.Formula?.trim();
-    if (!formula) return 'No formula';
-    const values = Object.fromEntries(
-        allFields.map((candidate) => {
-            const defaultValue = candidate.DefaultValue;
-            const numeric =
-                typeof defaultValue === 'number' || typeof defaultValue === 'string'
-                    ? Number.parseFloat(String(defaultValue))
-                    : 0;
-            return [candidate.FieldId, Number.isNaN(numeric) ? 0 : numeric];
-        }),
-    );
-    try {
-        const result = evaluateFormula(
-            formula,
-            values,
-            policy,
-            field.Precision ?? policy.MoneyPrecision,
-        );
-        return result.formatted;
-    } catch {
-        return 'Formula could not be previewed';
-    }
 };
 
 export const applyCalculationOrder = (config: DocumentFormatConfig): DocumentFormatConfig => {

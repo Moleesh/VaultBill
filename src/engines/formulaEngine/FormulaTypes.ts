@@ -8,6 +8,10 @@ export type CalculationPolicy = z.infer<typeof CalculationPolicySchema>;
 
 export type FormulaVariableMap = Readonly<Record<string, string | number>>;
 
+export type FormulaEvaluationContext = {
+    readonly sumAll?: (fieldId: string) => string | number;
+};
+
 export type FormulaTokenType = 'Identifier' | 'Number' | 'Operator' | 'LeftParen' | 'RightParen';
 
 export type FormulaToken = {

@@ -42,7 +42,7 @@ describe('BuilderPageSupport', () => {
             'Print Preview',
         ]);
         expect(helperFor('Format')).toContain('document name');
-        expect(helperFor('Layout')).toContain('page flow');
+        expect(helperFor('Layout')).toContain('columns and spacing');
         expect(helperFor('Field Preview')).toContain('entry form');
         expect(helperFor('Print Preview')).toContain('rendered print output');
         expect(move([1, 2, 3], 0, 2)).toEqual([2, 3, 1]);

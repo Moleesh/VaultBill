@@ -112,9 +112,9 @@ export const BuilderCalculationsStep: FC<BuilderCalculationsStepProps> = ({
             <div className="helper-card">
                 <strong>Formula helper</strong>
                 <p>
-                    Use same-row fields such as <code>Quantity * Rate</code>. Keep GST, subtotal,
-                    grand total, and round-off formulas separate so the preview stays easy to
-                    follow.
+                    Use same-row fields such as <code>Quantity * Rate</code>. Use
+                    <code>SUMALL(Amount)</code> for subtotal-style totals and keep GST, grand total,
+                    and round-off formulas separate so the preview stays easy to follow.
                 </p>
                 <p>Drag the rows to make the trigger order easier to inspect before publishing.</p>
             </div>

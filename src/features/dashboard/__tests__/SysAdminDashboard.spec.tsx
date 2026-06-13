@@ -72,12 +72,13 @@ describe('SysAdmin dashboard', () => {
         );
 
         await waitFor(() => {
-            expect(screen.getByText('Formats published')).toBeVisible();
+            expect(screen.getByText('Publishing health')).toBeVisible();
         });
         expect(screen.getByText('Trial countdown')).toBeVisible();
-        expect(screen.getByText('Templates published')).toBeVisible();
+        expect(screen.getByText('Document mix')).toBeVisible();
+        expect(screen.getByText('People and backup')).toBeVisible();
         expect(screen.getByText('Users created')).toBeVisible();
-        expect(screen.getByText('Active users')).toBeVisible();
-        expect(screen.getByText('Records total')).toBeVisible();
+        expect(screen.getByText('active users')).toBeVisible();
+        expect(screen.getByText('Total records')).toBeVisible();
     });
 });

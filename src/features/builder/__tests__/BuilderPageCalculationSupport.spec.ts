@@ -20,7 +20,8 @@ import {
 
 describe('BuilderPageCalculationSupport', () => {
     it('extracts formula references and flags bad calculation graphs', () => {
-        expect(formulaReferences('Subtotal + GST + RoundOff')).toEqual([
+        expect(formulaReferences('SUMALL(Amount) + Subtotal + GST + RoundOff')).toEqual([
+            'Amount',
             'Subtotal',
             'GST',
             'RoundOff',
@@ -82,7 +83,7 @@ describe('BuilderPageCalculationSupport', () => {
             Label: 'Subtotal',
             Type: 'Money',
             Calculated: true,
-            Formula: 'SUM(Items.Amount)',
+            Formula: 'SUMALL(Amount)',
             Precision: 2,
         } as const;
 
@@ -127,7 +128,7 @@ describe('BuilderPageCalculationSupport', () => {
                     Label: 'Subtotal',
                     Type: 'Money',
                     Calculated: true,
-                    Formula: 'SUM(Items.Amount)',
+                    Formula: 'SUMALL(Amount)',
                 } as never,
             ],
         });
@@ -150,7 +151,7 @@ describe('BuilderPageCalculationSupport', () => {
                             Label: 'Subtotal',
                             Type: 'Money',
                             Calculated: true,
-                            Formula: 'SUM(Items.Amount)',
+                            Formula: 'SUMALL(Amount)',
                         } as never,
                     ],
                     LineItemSections: [

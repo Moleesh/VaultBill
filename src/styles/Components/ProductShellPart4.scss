@@ -4,7 +4,7 @@
 
 .builder-fields__main {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto auto;
+    grid-template-columns: minmax(0, 1fr) auto auto auto;
     gap: var(--space-3);
     align-items: center;
     border-color: transparent;
@@ -24,10 +24,26 @@
     white-space: nowrap;
 }
 
+.builder-fields__main small {
+    justify-self: end;
+    border-radius: var(--radius-pill);
+    background: color-mix(in srgb, var(--color-secondary) 16%, transparent);
+    color: var(--color-secondary-text);
+    padding: 0.18rem var(--space-2);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    white-space: nowrap;
+}
+
 .builder-fields > article > button:not(.builder-fields__main) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     width: 2.65rem;
     min-width: 2.65rem;
+    height: 2.65rem;
     padding: 0;
+    line-height: 0;
 }
 
 .builder-field-handle {
@@ -42,6 +58,11 @@
 
 .builder-field-handle:active {
     cursor: grabbing;
+}
+
+.builder-fields > article > button:not(.builder-fields__main) svg,
+.builder-field-handle svg {
+    display: block;
 }
 
 .calculation-list article,
@@ -140,8 +161,101 @@
         var(--color-surface);
 }
 
+.builder-layout-preview--Flow .builder-layout-preview__grid {
+    grid-template-columns: 1fr;
+}
+
+.builder-layout-preview--Flow .builder-layout-preview__grid i {
+    min-height: 2.9rem;
+}
+
+.builder-layout-preview--Flow .layout-preview-flow:first-child i {
+    min-height: 4rem;
+}
+
+.builder-layout-preview--Split .builder-layout-preview__grid {
+    gap: var(--space-3);
+}
+
+.builder-layout-preview--Split .builder-layout-preview__grid i {
+    min-height: 2.5rem;
+}
+
+.builder-layout-preview--Split .layout-preview-split:nth-child(4n + 1) i,
+.builder-layout-preview--Split .layout-preview-split:nth-child(4n + 2) i {
+    min-height: 3.5rem;
+}
+
+.builder-layout-preview--Compact .builder-layout-preview__grid {
+    gap: var(--space-1);
+}
+
 .builder-layout-preview--Compact .builder-layout-preview__grid i {
-    min-height: 1.8rem;
+    min-height: 1.6rem;
+}
+
+.builder-layout-preview--Compact .layout-preview-compact:nth-child(3n + 1) i {
+    min-height: 2.2rem;
+}
+
+.builder-layout-preview--Compact .layout-preview-compact:nth-child(3n + 2) i {
+    min-height: 1.4rem;
+}
+
+.builder-step-bridge {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: var(--space-4);
+    border-bottom: var(--line-width) solid var(--color-border);
+    padding-bottom: var(--space-4);
+}
+
+.builder-step-bridge > div {
+    display: grid;
+    gap: var(--space-1);
+}
+
+.builder-step-bridge > div h3,
+.builder-step-bridge > div p {
+    margin: 0;
+}
+
+.builder-step-bridge > div p {
+    color: var(--color-text-muted);
+}
+
+.builder-line-summary {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-3);
+}
+
+.builder-line-summary article {
+    display: grid;
+    gap: var(--space-1);
+    border: var(--line-width) solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-muted);
+    padding: var(--space-3);
+}
+
+.builder-line-summary small {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-bold);
+    letter-spacing: var(--letter-spacing-label);
+    text-transform: uppercase;
+}
+
+.builder-line-summary strong {
+    color: var(--color-text-heading);
+    font-family: var(--font-display);
+    font-size: var(--font-size-lg);
+}
+
+.builder-field-warning {
+    color: var(--color-warning);
 }
 
 .builder-layout-preview__grid {
@@ -164,6 +278,13 @@
         color-mix(in srgb, var(--color-primary) 14%, transparent),
         color-mix(in srgb, var(--color-secondary) 10%, transparent)
     );
+}
+
+.builder-layout-preview__grid .layout-preview-flow,
+.builder-layout-preview__grid .layout-preview-split,
+.builder-layout-preview__grid .layout-preview-compact {
+    display: grid;
+    gap: var(--space-2);
 }
 
 .button-file {

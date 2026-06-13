@@ -67,7 +67,12 @@
     overflow-x: auto;
     border: var(--line-width) solid var(--color-border);
     border-radius: var(--radius-md);
-    background: color-mix(in srgb, var(--color-surface) 92%, transparent);
+    background:
+        linear-gradient(
+            180deg,
+            color-mix(in srgb, var(--color-secondary) 20%, var(--color-surface)),
+            color-mix(in srgb, var(--color-surface) 88%, transparent)
+        );
     padding: var(--space-2);
     box-shadow: var(--shadow-card);
     backdrop-filter: blur(18px);
@@ -84,7 +89,21 @@
 
 .settings-jump-links a:hover,
 .settings-jump-links a:focus-visible {
-    background: var(--color-secondary);
+    background: color-mix(in srgb, var(--color-primary) 12%, var(--color-surface));
+}
+
+.settings-jump-links a[href*='#business'],
+.settings-jump-links a[href*='#security'],
+.settings-jump-links a[href*='#integrations'],
+.settings-jump-links a[href*='#backup'] {
+    background: color-mix(in srgb, var(--color-surface-muted) 70%, transparent);
+}
+
+.settings-jump-links a[aria-current='true'],
+.settings-jump-links a[aria-current='page'],
+.settings-jump-links a[aria-pressed='true'] {
+    background: color-mix(in srgb, var(--color-primary) 14%, var(--color-surface));
+    color: var(--color-primary-strong);
 }
 
 .settings-section {

@@ -36,7 +36,7 @@
     }
 
     .builder-fields__main {
-        grid-template-columns: minmax(0, 1fr) auto auto;
+        grid-template-columns: minmax(0, 1fr) auto auto auto;
     }
 
     .calculation-list article,
@@ -60,6 +60,20 @@
     .builder-header-actions > * {
         width: 100%;
         min-width: 0;
+    }
+
+    .builder-step-bridge,
+    .builder-line-summary {
+        grid-template-columns: 1fr;
+        align-items: stretch;
+    }
+
+    .builder-step-bridge {
+        flex-direction: column;
+    }
+
+    .builder-step-bridge > button {
+        width: 100%;
     }
 }
 

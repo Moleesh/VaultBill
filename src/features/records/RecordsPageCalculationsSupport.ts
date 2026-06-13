@@ -88,14 +88,7 @@ export const applyDocumentCalculations = (
         let value: string;
         const sumMatch = /^SUM\(Items\.([^)]+)\)$/iu.exec(formula);
         if (sumMatch?.[1]) {
-            value = record.lineItems
-                .reduce(
-                    (total, item) =>
-                        total +
-                        (Number.parseFloat(lineItemFieldValue(item, sumMatch[1] ?? '')) || 0),
-                    0,
-                )
-                .toFixed(field.Precision ?? config.CalculationPolicy.MoneyPrecision);
+            value = sumLineItemField(record.lineItems, sumMatch[1], field);
         } else if (/^COUNT\(Items\)$/iu.test(formula)) {
             value = String(record.lineItems.length);
         } else {
@@ -105,6 +98,9 @@ export const applyDocumentCalculations = (
                     values,
                     config.CalculationPolicy,
                     field.Precision ?? config.CalculationPolicy.MoneyPrecision,
+                    {
+                        sumAll: (fieldId) => sumLineItemField(record.lineItems, fieldId, field),
+                    },
                 ).formatted;
             } catch {
                 continue;
@@ -120,6 +116,19 @@ export const applyDocumentCalculations = (
     }
     return next;
 };
+
+/** Sums a line-item field using the active document precision. */
+const sumLineItemField = (
+    lineItems: readonly RecordLineItem[],
+    fieldId: string,
+    field: ConfiguredFieldDefinition,
+): string =>
+    lineItems
+        .reduce(
+            (total, item) => total + (Number.parseFloat(lineItemFieldValue(item, fieldId)) || 0),
+            0,
+        )
+        .toFixed(field.Precision);
 
 /** Resolves a line-item field value from built-in or custom field values. */
 export const lineItemFieldValue = (item: RecordLineItem, fieldId: string): string => {

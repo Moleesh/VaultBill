@@ -30,7 +30,7 @@ describe('BuilderCalculationsStep', () => {
                             Label: 'Subtotal',
                             Type: 'Money',
                             Calculated: true,
-                            Formula: 'SUM(Items.Amount)',
+                            Formula: 'SUMALL(Amount)',
                         } as never,
                     },
                     {
