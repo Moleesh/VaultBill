@@ -24,7 +24,7 @@ export const SettingsPage: FC = () => {
                     <h1>{isSysAdmin ? 'Administration settings' : 'Operator settings'}</h1>
                     <p>
                         {isSysAdmin
-                            ? 'Business, security, backups, and integrations in one focused workspace.'
+                            ? 'Business, security, backups, and connected services in one focused workspace.'
                             : 'Manage User accounts and your own password.'}
                     </p>
                 </div>

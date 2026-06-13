@@ -12,7 +12,6 @@
     height: 100vh;
     overflow: hidden;
     background: var(--gradient-page);
-    background-attachment: fixed;
 }
 
 .app-shell.is-sidebar-expanded {
@@ -176,6 +175,17 @@
     height: 100vh;
     min-width: 0;
     overflow: hidden;
+    background:
+        radial-gradient(
+            circle at top center,
+            color-mix(in srgb, var(--color-primary) 6%, transparent),
+            transparent 34rem
+        ),
+        linear-gradient(
+            180deg,
+            color-mix(in srgb, var(--color-surface) 18%, transparent),
+            transparent 12rem
+        );
 }
 
 .app-shell__topbar {
@@ -187,9 +197,9 @@
     min-height: 5rem;
     padding: var(--space-3) clamp(var(--space-4), 4vw, var(--space-8));
     border-bottom: var(--line-width) solid var(--color-border);
-    background: color-mix(in srgb, var(--color-surface) 88%, transparent);
-    backdrop-filter: blur(46px) saturate(160%);
-    box-shadow: 0 0.35rem 1.75rem color-mix(in srgb, var(--color-panel-shadow) 22%, transparent);
+    background: color-mix(in srgb, var(--color-surface) 92%, transparent);
+    backdrop-filter: blur(56px) saturate(170%);
+    box-shadow: 0 0.45rem 2rem color-mix(in srgb, var(--color-panel-shadow) 18%, transparent);
 }
 
 .app-shell__topbar-actions {
@@ -210,11 +220,7 @@
     overscroll-behavior: contain;
     scrollbar-width: none;
     scrollbar-color: transparent transparent;
-    background: linear-gradient(
-        180deg,
-        color-mix(in srgb, var(--color-surface) 12%, transparent),
-        transparent 12rem
-    );
+    background: transparent;
     padding: clamp(var(--space-5), 4vw, var(--space-10));
 }
 

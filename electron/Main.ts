@@ -42,6 +42,9 @@ const createBackupHandlers = () => ({
             encrypted,
             encrypted ? mainState.credentialStore.getBackupPassword() : undefined,
         );
+        mainState.settingsStore?.saveBackupMetadata({
+            lastBackupAt: new Date().toISOString(),
+        });
         const timestamp = new Date()
             .toISOString()
             .slice(0, 16)
@@ -148,6 +151,7 @@ void app
             mainState.recordStore,
             mainState.credentialStore,
             mainState.builderStore,
+            mainState.settingsStore,
             path.join(mainState.currentDirectory, '../dist'),
             mainState.hostedWebSettings,
             createBackupHandlers(),

@@ -19,7 +19,10 @@ import {
     type BuilderStep,
     type StoredBuilderPackage,
 } from './BuilderPageSupport';
-import { validateCalculationGraph } from './BuilderPageCalculationSupport';
+import {
+    collectCalculationTargets,
+    validateCalculationGraph,
+} from './BuilderPageCalculationSupport';
 import { useBuilderPageActions } from './useBuilderPageActions';
 
 type EditingState = { readonly kind: 'document' | 'line'; readonly index: number } | undefined;
@@ -58,6 +61,7 @@ export const useBuilderPageController = () => {
         () => [...config.Fields, ...(lineSection?.Fields ?? [])],
         [config.Fields, lineSection?.Fields],
     );
+    const calculationTargets = useMemo(() => collectCalculationTargets(config), [config]);
     const referencedFieldIds = new Set<string>();
     for (const field of allFields) {
         for (const reference of field.Formula?.matchAll(/\b([A-Za-z_][\w]*)\b/gu) ?? []) {
@@ -126,6 +130,24 @@ export const useBuilderPageController = () => {
         setConfig({ ...config, LineItemSections: [{ ...lineSection, Fields: [...fields] }] });
     };
 
+    const updateCalculationOrder = (orderedFieldIds: readonly string[]) => {
+        const orderById = new Map(orderedFieldIds.map((fieldId, index) => [fieldId, index + 1]));
+        setConfig({
+            ...config,
+            Fields: config.Fields.map((field) => {
+                const order = orderById.get(field.FieldId);
+                return order ? { ...field, CalculationOrder: order } : field;
+            }),
+            LineItemSections: config.LineItemSections.map((section) => ({
+                ...section,
+                Fields: section.Fields.map((field) => {
+                    const order = orderById.get(field.FieldId);
+                    return order ? { ...field, CalculationOrder: order } : field;
+                }),
+            })),
+        });
+    };
+
     const actions = useBuilderPageActions({
         assets,
         capabilities: { isLanBrowser: capabilities.isLanBrowser },
@@ -144,6 +166,7 @@ export const useBuilderPageController = () => {
         allFields,
         assets,
         config,
+        calculationTargets,
         editing,
         editingField,
         importWarnings,
@@ -156,6 +179,7 @@ export const useBuilderPageController = () => {
         setStepIndex,
         stepIndex,
         templateHtml,
+        updateCalculationOrder,
         updateFields,
         validation,
     };

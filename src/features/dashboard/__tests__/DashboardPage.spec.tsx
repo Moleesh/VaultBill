@@ -31,6 +31,7 @@ describe('dashboard page', () => {
     beforeEach(() => {
         document.body.innerHTML = '<div id="portal-root"></div>';
         window.localStorage.clear();
+        window.localStorage.setItem('vaultbill.setup.complete', 'true');
         window.localStorage.setItem('vaultbill.operator', 'sysadmin_1');
         window.localStorage.setItem(
             'vaultbill.accounts',
@@ -44,9 +45,41 @@ describe('dashboard page', () => {
                 },
             ]),
         );
+        Object.defineProperty(window, 'vaultBillDesktop', {
+            configurable: true,
+            value: {
+                listBuilderInventory: () =>
+                    Promise.resolve([
+                        {
+                            formatId: 'gst-invoice',
+                            formatName: 'GST Invoice',
+                            isDefault: true,
+                            updatedAt: '2026-06-11T12:00:00.000Z',
+                            templateName: 'default-template.html',
+                            assetCount: 1,
+                            isValid: true,
+                        },
+                    ]),
+                listRecords: () =>
+                    Promise.resolve([
+                        { status: 'Draft' },
+                        { status: 'Finalized' },
+                        { status: 'Cancelled' },
+                    ]),
+                listAccounts: () => Promise.resolve([{ isActive: true }, { isActive: false }]),
+                getBackupStatus: () =>
+                    Promise.resolve({ lastBackupAt: '2026-06-12T08:30:00.000Z' }),
+                getTrialStatus: () =>
+                    Promise.resolve({
+                        isFullVersion: false,
+                        isExpired: false,
+                        remainingSeconds: 3600,
+                    }),
+            },
+        });
     });
 
-    it('renders the dashboard greeting for the active operator', async () => {
+    it('renders the dashboard greeting for the active operator', () => {
         render(
             <MemoryRouter initialEntries={['/app/dashboard']}>
                 <CapabilityProvider value={desktopCapabilities}>
@@ -61,9 +94,13 @@ describe('dashboard page', () => {
             </MemoryRouter>,
         );
 
-        expect(
-            await screen.findByRole('heading', { name: 'Configuration control centre' }),
-        ).toBeVisible();
         expect(screen.getByRole('link', { name: 'Create format' })).toBeVisible();
+        expect(screen.getByText('Trial countdown')).toBeVisible();
+        expect(document.querySelector('.dashboard-hero-stack strong')).toHaveTextContent(
+            /remaining/u,
+        );
+        expect(screen.getByText('Records total')).toBeVisible();
+        expect(screen.getByText('Cancelled records')).toBeVisible();
+        expect(screen.getAllByText('Last backup').length).toBeGreaterThan(0);
     });
 });

@@ -1,13 +1,15 @@
 /** @format */
 
-import { timingSafeEqual } from 'node:crypto';
-import type { IncomingMessage, ServerResponse } from 'node:http';
+import type { IncomingMessage } from 'node:http';
 
 import type { BuilderStore } from '../BuilderStore.js';
 import type { CredentialStore, DesktopOperatorAccount } from '../CredentialStore.js';
 import type { DesktopRecordStore } from '../RecordStore.js';
+import type { SettingsStore } from '../SettingsStore.js';
 import type { LocalApiConfiguration } from './LocalApiSecurity.js';
-import { MAX_LOCAL_API_BODY_BYTES } from './LocalApiSecurity.js';
+import { ApiError, parseCookies, safeEqual } from './LocalApiHttp.js';
+
+export { ApiError } from './LocalApiHttp.js';
 
 export type HostedSession = {
     readonly sessionId: string;
@@ -64,6 +66,7 @@ export type LocalApiState = {
     readonly recordStore: DesktopRecordStore;
     readonly credentialStore: CredentialStore;
     readonly builderStore: BuilderStore;
+    readonly settingsStore: SettingsStore;
     readonly staticDirectory: string;
     readonly sessions: Map<string, HostedSession>;
     readonly loginAttempts: Map<string, LoginAttempts>;
@@ -76,78 +79,6 @@ const sessionLifetimeMs = 8 * 60 * 60 * 1000;
 const loginWindowMs = 5 * 60 * 1000;
 const maxLoginAttempts = 5;
 
-export const parseCookies = (header: string | undefined): Readonly<Record<string, string>> =>
-    Object.fromEntries(
-        (header ?? '')
-            .split(';')
-            .map((part) => part.trim())
-            .filter(Boolean)
-            .map((part) => {
-                const separator = part.indexOf('=');
-                return separator < 0
-                    ? [decodeURIComponent(part), '']
-                    : [
-                          decodeURIComponent(part.slice(0, separator)),
-                          decodeURIComponent(part.slice(separator + 1)),
-                      ];
-            }),
-    );
-
-export const safeEqual = (left: string, right: string): boolean => {
-    const leftBytes = Buffer.from(left);
-    const rightBytes = Buffer.from(right);
-    return leftBytes.length === rightBytes.length && timingSafeEqual(leftBytes, rightBytes);
-};
-
-export const isLoopbackAddress = (address: string): boolean =>
-    address === '127.0.0.1' || address === '::1' || address === '::ffff:127.0.0.1';
-
-export const decodeHeaderSecret = (value: string | string[] | undefined): string => {
-    const current = Array.isArray(value) ? value[0] : value;
-    if (!current) return '';
-    return Buffer.from(current, 'base64').toString('utf8');
-};
-
-export const readRawBody = async (request: IncomingMessage): Promise<Uint8Array> => {
-    const chunks: Uint8Array[] = [];
-    let size = 0;
-    for await (const chunk of request) {
-        const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
-        size += buffer.length;
-        if (size > MAX_LOCAL_API_BODY_BYTES) throw new ApiError(413, 'Request body is too large.');
-        chunks.push(buffer);
-    }
-    return new Uint8Array(Buffer.concat(chunks));
-};
-
-export const readBody = async (request: IncomingMessage): Promise<unknown> => {
-    const body = await readRawBody(request);
-    const text = Buffer.from(body).toString('utf8');
-    return text.length > 0 ? (JSON.parse(text) as unknown) : {};
-};
-
-export const sendJson = (response: ServerResponse, status: number, payload: unknown) => {
-    response.writeHead(status);
-    response.end(JSON.stringify(payload));
-};
-
-export const sendArchive = (
-    response: ServerResponse,
-    archive: {
-        readonly bytes: Uint8Array;
-        readonly fileName: string;
-        readonly recoveryKey?: string;
-    },
-) => {
-    response.writeHead(200, {
-        'content-type': 'application/zip',
-        'content-disposition': `attachment; filename="${archive.fileName.replaceAll('"', '')}"`,
-        'content-length': archive.bytes.byteLength,
-        ...(archive.recoveryKey ? { 'x-vaultbill-recovery-key': archive.recoveryKey } : {}),
-    });
-    response.end(Buffer.from(archive.bytes));
-};
-
 export const requireDataOperations = (state: LocalApiState): LocalApiDataOperations => {
     if (!state.dataOperations)
         throw new ApiError(503, 'Desktop data operations are not available.');
@@ -158,15 +89,6 @@ export const sessionCookie = sessionCookieName;
 export const sessionLifetime = sessionLifetimeMs;
 export const loginWindow = loginWindowMs;
 export const maxLoginAttemptsPerWindow = maxLoginAttempts;
-
-export class ApiError extends Error {
-    public constructor(
-        public readonly status: number,
-        message: string,
-    ) {
-        super(message);
-    }
-}
 
 export const assertWritableTrial = (state: LocalApiState, operation: string) => {
     if (state.recordStore.getTrialStatus().isExpired) {

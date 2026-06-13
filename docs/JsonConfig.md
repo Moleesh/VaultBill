@@ -230,22 +230,6 @@ The required responsive test matrix is tracked in code and docs:
 Viewport widths below `640` use single-column layout, widths below `1200` use
 double-column layout, and wider screens may use the three-column desktop layout.
 
-## Signature Pad
-
-```json
-{
-    "SignaturePad": {
-        "Enabled": true,
-        "Mode": "Screen",
-        "TestedUsbDevices": []
-    }
-}
-```
-
-`Mode` can be `Screen` or `UsbHid`. USB/HID support is desktop-only and only for
-explicitly tested devices. Signature values are stored in `record_json` as SVG
-path data strings.
-
 ## SMS Provider
 
 ```json

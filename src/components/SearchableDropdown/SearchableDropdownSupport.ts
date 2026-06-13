@@ -17,21 +17,26 @@ export type DropdownMenuPlacement = {
 export const getDropdownMenuPlacement = (
     rect: DOMRect,
     viewportHeight: number,
+    viewportWidth: number,
 ): DropdownMenuPlacement => {
     const preferredHeight = Math.min(448, viewportHeight - 32);
     const belowSpace = viewportHeight - rect.bottom - 8;
     const aboveSpace = rect.top - 8;
     const openDirection: 'above' | 'below' =
-        belowSpace < preferredHeight && aboveSpace > belowSpace ? 'above' : 'below';
+        belowSpace >= 120 || belowSpace >= aboveSpace * 0.75 ? 'below' : 'above';
+    const availableHeight = openDirection === 'above' ? aboveSpace : belowSpace;
+    const boundedHeight = Math.max(16, Math.min(preferredHeight, availableHeight));
+    const rawWidth = Math.max(rect.width, 280);
+    const left = Math.min(Math.max(16, rect.left), Math.max(16, viewportWidth - rawWidth - 16));
 
     return {
-        left: `${String(rect.left)}px`,
+        left: `${String(left)}px`,
         top: `${String(
             openDirection === 'above'
-                ? Math.max(16, rect.top - preferredHeight - 8)
+                ? Math.max(16, rect.top - boundedHeight - 8)
                 : rect.bottom + 8,
         )}px`,
-        width: `${String(Math.max(rect.width, 280))}px`,
+        width: `${String(rawWidth)}px`,
         openDirection,
     };
 };

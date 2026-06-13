@@ -1,6 +1,6 @@
 /** @format */
 
-import { Download, Upload } from 'lucide-react';
+import { Check, ChevronRight, Download, Upload } from 'lucide-react';
 import type { FC } from 'react';
 
 import { HorizontalProgress } from '../../components/HorizontalProgress/HorizontalProgress';
@@ -40,14 +40,24 @@ export const BuilderPageHeader: FC<BuilderPageHeaderProps> = ({
         <HorizontalProgress className="page-tabs builder-steps" label="Builder steps">
             {steps.map((step, index) => (
                 <button
+                    className={
+                        activeStepIndex === index
+                            ? 'is-active'
+                            : index < activeStepIndex
+                              ? 'is-complete'
+                              : ''
+                    }
                     aria-pressed={activeStepIndex === index}
+                    aria-current={activeStepIndex === index ? 'step' : undefined}
                     key={step}
                     onClick={() => {
                         onStepChange(index);
                     }}
                     type="button"
                 >
-                    <small aria-hidden="true">{index < activeStepIndex ? '✓' : '›'}</small>
+                    <span aria-hidden="true" className="builder-step__icon">
+                        {index < activeStepIndex ? <Check size={14} /> : <ChevronRight size={14} />}
+                    </span>
                     {step}
                 </button>
             ))}

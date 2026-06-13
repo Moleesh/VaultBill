@@ -10,6 +10,8 @@ import { describe, expect, it } from 'vitest';
 import { cloneDefault } from '../BuilderPageSupport';
 import {
     applyCalculationOrder,
+    applyCalculationOrderOverride,
+    collectCalculationTargets,
     collectReferencedFieldIds,
     formulaReferences,
     sampleFormula,
@@ -106,5 +108,76 @@ describe('BuilderPageCalculationSupport', () => {
 
         expect(ordered.Fields[0]?.CalculationOrder).toBeGreaterThan(0);
         expect(ordered.LineItemSections[0]?.Fields[0]?.CalculationOrder).toBeGreaterThan(0);
+    });
+
+    it('collects calculated targets and preserves manual order overrides', () => {
+        const config = cloneDefault();
+        const orderedTargets = collectCalculationTargets({
+            ...config,
+            Fields: [
+                {
+                    FieldId: 'GrandTotal',
+                    Label: 'Grand total',
+                    Type: 'Money',
+                    Calculated: true,
+                    Formula: 'Subtotal + RoundOff',
+                } as never,
+                {
+                    FieldId: 'Subtotal',
+                    Label: 'Subtotal',
+                    Type: 'Money',
+                    Calculated: true,
+                    Formula: 'SUM(Items.Amount)',
+                } as never,
+            ],
+        });
+
+        expect(orderedTargets.map((target) => target.field.FieldId)).toEqual([
+            'Amount',
+            'GrandTotal',
+            'Subtotal',
+        ]);
+
+        const reordered = applyCalculationOrderOverride(
+            (() => {
+                const lineItemSection = config.LineItemSections[0];
+                if (!lineItemSection) throw new Error('Missing default line-item section.');
+                return {
+                    ...config,
+                    Fields: [
+                        {
+                            FieldId: 'Subtotal',
+                            Label: 'Subtotal',
+                            Type: 'Money',
+                            Calculated: true,
+                            Formula: 'SUM(Items.Amount)',
+                        } as never,
+                    ],
+                    LineItemSections: [
+                        {
+                            ...lineItemSection,
+                            Fields: [
+                                {
+                                    FieldId: 'Amount',
+                                    Label: 'Amount',
+                                    Type: 'Money',
+                                    Calculated: true,
+                                    Formula: 'Quantity * Rate',
+                                } as never,
+                            ],
+                        },
+                    ],
+                };
+            })(),
+            ['Subtotal', 'Amount'],
+        );
+
+        expect(
+            reordered.Fields.find((field) => field.FieldId === 'Subtotal')?.CalculationOrder,
+        ).toBe(1);
+        expect(
+            reordered.LineItemSections[0]?.Fields.find((field) => field.FieldId === 'Amount')
+                ?.CalculationOrder,
+        ).toBe(2);
     });
 });

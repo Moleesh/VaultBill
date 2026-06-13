@@ -18,6 +18,15 @@ button:hover:not(:disabled) {
     border-color: var(--color-primary);
 }
 
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+    box-shadow:
+        0 0 0 0.15rem color-mix(in srgb, var(--color-primary) 22%, transparent),
+        0 0.35rem 1rem color-mix(in srgb, var(--color-panel-shadow) 10%, transparent);
+}
+
 .button-primary {
     display: inline-flex;
     align-items: center;
@@ -251,14 +260,28 @@ button:hover:not(:disabled) {
     background: transparent;
 }
 
+.builder-steps button {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    white-space: nowrap;
+}
+
 .page-tabs button[aria-pressed='true'] {
     border-color: var(--color-primary);
     background: var(--color-secondary);
     color: var(--color-secondary-text);
 }
 
-.page-tabs button small {
-    margin-right: var(--space-2);
+.builder-steps button.is-complete {
+    color: var(--color-primary-strong);
+}
+
+.builder-step__icon {
+    display: inline-grid;
+    place-items: center;
+    width: 1rem;
+    height: 1rem;
 }
 
 .form-grid,
@@ -287,11 +310,25 @@ button:hover:not(:disabled) {
 .builder-field-list input,
 .setup-card input {
     min-height: 2.8rem;
-    border: var(--line-width) solid var(--color-border);
+    border: var(--line-width) solid color-mix(in srgb, var(--color-border) 72%, transparent);
     border-radius: var(--radius-sm);
     background: var(--color-surface-raised);
     color: var(--color-text-body);
     padding: var(--space-3);
+    box-shadow:
+        inset 0 0 0 1px color-mix(in srgb, var(--color-border) 14%, transparent),
+        0 0.22rem 0.7rem color-mix(in srgb, var(--color-panel-shadow) 6%, transparent);
+}
+
+button:disabled,
+input:disabled,
+textarea:disabled,
+select:disabled {
+    border-style: dashed;
+    color: var(--color-text-disabled);
+    background: color-mix(in srgb, var(--color-surface-muted) 78%, transparent);
+    box-shadow: none;
+    opacity: 0.86;
 }
 
 .record-search,
@@ -528,7 +565,7 @@ textarea::placeholder {
 .searchable-dropdown {
     display: grid;
     min-width: 0;
-    gap: 0.15rem;
+    gap: 0.18rem;
 }
 
 .searchable-dropdown__label {
@@ -543,12 +580,14 @@ textarea::placeholder {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
-    gap: 0.35rem;
+    gap: 0.2rem;
     min-height: 2.7rem;
-    padding-inline: var(--space-3);
+    padding-inline: var(--space-3) var(--space-2);
     background: var(--color-surface-raised);
     text-align: left;
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-border) 40%, transparent);
+    box-shadow:
+        inset 0 0 0 1px color-mix(in srgb, var(--color-border) 30%, transparent),
+        0 0.18rem 0.5rem color-mix(in srgb, var(--color-panel-shadow) 8%, transparent);
 }
 
 .searchable-dropdown__trigger span:first-child {
@@ -562,8 +601,7 @@ textarea::placeholder {
     flex: none;
     color: var(--color-text-muted);
     justify-self: end;
-    margin-left: 0;
-    margin-right: -0.15rem;
+    margin-inline: 0 -0.2rem;
 }
 
 .searchable-dropdown__menu {
@@ -572,8 +610,8 @@ textarea::placeholder {
     top: var(--dropdown-top);
     left: var(--dropdown-left);
     display: grid;
-    width: min(var(--dropdown-width), calc(100vw - 2rem));
-    max-height: min(28rem, calc(100vh - var(--dropdown-top) - 1rem));
+    width: min(var(--dropdown-width), calc(100vw - 1.5rem));
+    max-height: min(24rem, calc(100vh - var(--dropdown-top) - 1rem));
     gap: var(--space-2);
     overflow: auto;
     border: var(--line-width) solid var(--color-border-strong);
@@ -584,7 +622,7 @@ textarea::placeholder {
 }
 
 .searchable-dropdown__menu[data-open-direction='above'] {
-    max-height: min(28rem, calc(var(--dropdown-top) - 1rem));
+    max-height: min(24rem, calc(var(--dropdown-top) - 1rem));
 }
 
 .searchable-dropdown__menu input {
@@ -605,6 +643,8 @@ textarea::placeholder {
     gap: 0.15rem;
     border-color: transparent;
     text-align: left;
+    white-space: normal;
+    padding-block: var(--space-2);
 }
 
 .searchable-dropdown__menu [role='option'] strong {
@@ -839,6 +879,25 @@ textarea::placeholder {
 .login-card__auth {
     display: grid;
     gap: var(--space-4);
+}
+
+.login-password {
+    display: grid;
+    gap: 0.35rem;
+    color: var(--color-label);
+    font-weight: var(--font-weight-semibold);
+}
+
+.login-password input {
+    min-height: 2.8rem;
+    border: var(--line-width) solid color-mix(in srgb, var(--color-border) 82%, transparent);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface-raised);
+    color: var(--color-text-body);
+    padding: var(--space-3);
+    box-shadow:
+        inset 0 0 0 1px color-mix(in srgb, var(--color-border) 20%, transparent),
+        0 0.2rem 0.65rem color-mix(in srgb, var(--color-panel-shadow) 6%, transparent);
 }
 
 .login-card footer {

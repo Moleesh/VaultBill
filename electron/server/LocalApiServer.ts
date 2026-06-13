@@ -6,6 +6,7 @@ import type { IncomingMessage, Server, ServerResponse } from 'node:http';
 import type { BuilderStore } from '../BuilderStore.js';
 import type { CredentialStore, DesktopOperatorAccount } from '../CredentialStore.js';
 import type { DesktopRecordStore } from '../RecordStore.js';
+import type { SettingsStore } from '../SettingsStore.js';
 import {
     getLocalApiHost,
     isAllowedLocalApiOrigin,
@@ -33,6 +34,7 @@ export class LocalApiServer {
     readonly #recordStore: DesktopRecordStore;
     readonly #credentialStore: CredentialStore;
     readonly #builderStore: BuilderStore;
+    readonly #settingsStore: SettingsStore;
     readonly #staticDirectory: string;
     readonly #sessions = new Map<string, HostedSession>();
     readonly #loginAttempts = new Map<string, LoginAttempts>();
@@ -44,6 +46,7 @@ export class LocalApiServer {
         recordStore: DesktopRecordStore,
         credentialStore: CredentialStore,
         builderStore: BuilderStore,
+        settingsStore: SettingsStore,
         staticDirectory: string,
         configuration?: unknown,
         dataOperations?: LocalApiDataOperations,
@@ -51,6 +54,7 @@ export class LocalApiServer {
         this.#recordStore = recordStore;
         this.#credentialStore = credentialStore;
         this.#builderStore = builderStore;
+        this.#settingsStore = settingsStore;
         this.#staticDirectory = staticDirectory;
         this.#configuration = LocalApiConfigurationSchema.parse(configuration ?? {});
         this.#dataOperations = dataOperations;
@@ -105,6 +109,7 @@ export class LocalApiServer {
         recordStore: this.#recordStore,
         credentialStore: this.#credentialStore,
         builderStore: this.#builderStore,
+        settingsStore: this.#settingsStore,
         staticDirectory: this.#staticDirectory,
         sessions: this.#sessions,
         loginAttempts: this.#loginAttempts,

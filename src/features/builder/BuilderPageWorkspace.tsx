@@ -113,9 +113,10 @@ export const BuilderPageWorkspace: FC<{ readonly controller: BuilderPageControll
                 ) : null}
                 {controller.activeStep === 'Calculations' ? (
                     <BuilderCalculationsStep
+                        calculationTargets={controller.calculationTargets}
                         allFields={controller.allFields}
                         currencyPolicy={controller.config.CalculationPolicy}
-                        fields={[...controller.config.Fields, ...(lineSection?.Fields ?? [])]}
+                        onOrderChange={controller.updateCalculationOrder}
                         onEditFormula={(fieldId) => {
                             const documentIndex = controller.config.Fields.findIndex(
                                 (candidate) => candidate.FieldId === fieldId,
@@ -146,17 +147,6 @@ export const BuilderPageWorkspace: FC<{ readonly controller: BuilderPageControll
                         onRemoveAsset={(assetName) => {
                             controller.setAssets((current) =>
                                 current.filter((asset) => asset.name !== assetName),
-                            );
-                        }}
-                        onRenameAsset={(asset) => {
-                            const nextName = window.prompt('Asset name', asset.name)?.trim();
-                            if (!nextName || nextName === asset.name) return;
-                            controller.setAssets((current) =>
-                                current.map((candidate) =>
-                                    candidate.name === asset.name
-                                        ? { ...candidate, name: nextName }
-                                        : candidate,
-                                ),
                             );
                         }}
                         templateHtml={controller.templateHtml}

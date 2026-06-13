@@ -64,6 +64,16 @@ const defaultHostedWebSettings: HostedWebSettings = {
     port: 4317,
 };
 
+const BackupMetadataSchema = z.object({
+    lastBackupAt: z.string().nullable(),
+});
+
+export type BackupMetadata = z.infer<typeof BackupMetadataSchema>;
+
+const defaultBackupMetadata: BackupMetadata = {
+    lastBackupAt: null,
+};
+
 export class SettingsStore {
     readonly #database: DatabaseSync;
 
@@ -103,6 +113,15 @@ export class SettingsStore {
         const hostedWeb = HostedWebSettingsSchema.parse(input);
         this.#write('hosted-web', hostedWeb);
         return hostedWeb;
+    };
+
+    public getBackupMetadata = (): BackupMetadata =>
+        this.#read('backup-metadata', BackupMetadataSchema, defaultBackupMetadata);
+
+    public saveBackupMetadata = (input: unknown): BackupMetadata => {
+        const metadata = BackupMetadataSchema.parse(input);
+        this.#write('backup-metadata', metadata);
+        return metadata;
     };
 
     public isSetupComplete = (): boolean => {

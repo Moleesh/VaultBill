@@ -34,6 +34,20 @@ select {
 
 button:disabled {
     cursor: not-allowed;
+    opacity: 0.72;
+}
+
+button:disabled:not(.button-primary) {
+    box-shadow: none;
+    background: var(--color-surface-muted);
+    border-color: color-mix(in srgb, var(--color-border) 72%, transparent);
+    color: var(--color-text-disabled);
+}
+
+.button-primary:disabled {
+    background: color-mix(in srgb, var(--color-primary) 28%, var(--color-surface-muted));
+    border-color: color-mix(in srgb, var(--color-primary) 24%, transparent);
+    color: color-mix(in srgb, var(--color-primary-text) 82%, var(--color-text-disabled));
 }
 
 .sr-only {

@@ -5,14 +5,14 @@ import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { ReactNode } from 'react';
 
-import { CapabilityProvider } from '../capability/CapabilityContext';
-import type { CapabilityRegistry } from '../capability/Capability.types';
-import { SearchableDropdown } from '../components/SearchableDropdown/SearchableDropdown';
-import { SessionProvider } from '../features/auth/SessionContext';
-import { BuilderPage } from '../features/builder/BuilderPage';
-import { RecordsPage } from '../features/records/RecordsPage';
-import { RecordStoreProvider } from '../features/records/RecordStoreContext';
-import { ReportsPage } from '../features/reports/ReportsPage';
+import { CapabilityProvider } from './capability/CapabilityContext';
+import type { CapabilityRegistry } from './capability/Capability.types';
+import { SearchableDropdown } from './components/SearchableDropdown/SearchableDropdown';
+import { SessionProvider } from './features/auth/SessionContext';
+import { BuilderPage } from './features/builder/BuilderPage';
+import { RecordsPage } from './features/records/RecordsPage';
+import { RecordStoreProvider } from './features/records/RecordStoreContext';
+import { ReportsPage } from './features/reports/ReportsPage';
 
 const webCapabilities: CapabilityRegistry = {
     isDesktop: false,

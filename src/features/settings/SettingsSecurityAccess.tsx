@@ -76,7 +76,7 @@ export const SettingsSecurityAccess: FC<SettingsSecurityAccessProps> = ({
                 <div className="section-heading">
                     <div>
                         <h3>Hosted web access</h3>
-                        <p>Serve the full role-authorized application from this desktop.</p>
+                        <p>Flip hosted web access on or off for this desktop session.</p>
                     </div>
                     <ShieldCheck aria-hidden="true" />
                 </div>
@@ -89,7 +89,7 @@ export const SettingsSecurityAccess: FC<SettingsSecurityAccessProps> = ({
                         }}
                         type="checkbox"
                     />
-                    <span>Allow authenticated devices on this network</span>
+                    <span>Allow hosted web access</span>
                 </label>
             </div>
         ) : null}

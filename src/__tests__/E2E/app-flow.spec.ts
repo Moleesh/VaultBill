@@ -65,7 +65,6 @@ test('operator can log in, create records, and open contextual help', async ({ p
 });
 
 test('Admin direct Builder URL is redirected to Records', async ({ page }) => {
-    test.skip(process.env.VITE_DEMO_MODE === 'true', 'Demo has one fixed User account.');
     await page.getByRole('button', { name: /Operator account/u }).click();
     await page.getByRole('option', { name: /Operations Admin/u }).click();
     await page.getByRole('button', { name: 'Log in' }).click();
@@ -85,13 +84,16 @@ test('mobile help opens as a full-screen sheet', async ({ page }) => {
 });
 
 test('demo web saves and reloads a draft in browser storage', async ({ page }) => {
-    test.skip(process.env.VITE_DEMO_MODE !== 'true', 'Demo mode configuration is required.');
-
     const customerName = `Playwright ${Date.now().toString()}`;
-    await page.getByRole('button', { name: 'Start demo' }).click();
+    const startDemoButton = page.getByRole('button', { name: 'Start demo' });
+    if ((await startDemoButton.count()) > 0) {
+        await startDemoButton.click();
+    } else {
+        await loginAsAdmin(page);
+    }
     await page.getByRole('link', { name: /Records/u }).click();
     await page.getByPlaceholder('Business or customer name').fill(customerName);
-    await page.getByRole('button', { name: /^Draft Control\+S$/u }).click();
+    await page.getByRole('button', { name: /^Draft(?: Control\+S)?$/u }).click();
     await expect(page.getByText(/Draft saved/u)).toBeVisible();
 
     const storedRecordsJson = await page.evaluate<string>(

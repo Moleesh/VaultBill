@@ -6,15 +6,17 @@ import { z } from 'zod';
 import type { DesktopOperatorAccount } from '../CredentialStore.js';
 import type { LocalApiDataOperations, LocalApiState } from './LocalApiContext.js';
 import {
-    ApiError,
-    assertWritableTrial,
     decodeHeaderSecret,
     readBody,
     readRawBody,
-    requireDataOperations,
-    requireSysAdmin,
     sendArchive,
     sendJson,
+} from './LocalApiHttp.js';
+import {
+    ApiError,
+    assertWritableTrial,
+    requireDataOperations,
+    requireSysAdmin,
 } from './LocalApiContext.js';
 
 const requireSysAdminAccess = (account: DesktopOperatorAccount) => {
@@ -72,6 +74,11 @@ export const handleLocalApiAdminRoutes = async (
             response,
             getDataOperations(state).createBackup(input.encrypted, input.currentPassword),
         );
+        return true;
+    }
+    if (request.method === 'GET' && request.url === '/backup/status') {
+        requireSysAdminAccess(account);
+        sendJson(response, 200, state.settingsStore.getBackupMetadata());
         return true;
     }
     if (request.method === 'POST' && request.url === '/backup/restore') {

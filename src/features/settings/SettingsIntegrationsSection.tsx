@@ -13,7 +13,7 @@ import {
     type IntegrationSettings,
 } from './SettingsIntegrationsSectionSupport';
 
-/** Owns GST/GSP and SMS integration settings. */
+/** Owns shared key/value integration settings for GST, SMS, and future services. */
 export const SettingsIntegrationsSection: FC = () => {
     const capabilities = useCapabilities();
     const [settings, setSettings] = useState<IntegrationSettings>(defaultIntegrationSettings);
@@ -54,19 +54,20 @@ export const SettingsIntegrationsSection: FC = () => {
             <header>
                 <p className="eyebrow">Integrations</p>
                 <h2>Connected services</h2>
+                <p>Store provider keys and related values as JSON-backed key/value pairs.</p>
             </header>
             <IntegrationServiceCard
-                description="Configure GST helpers and any API fields they need."
+                description="Store GST provider details in a shared JSON-style key/value table."
                 onServiceChange={(service) => {
                     setSettings((current) => ({ ...current, gst: service }));
                 }}
                 providerChoices={providerOptions.gst}
                 providerValue={settings.gst.provider}
                 service={settings.gst}
-                title="GST and GSP"
+                title="GST service"
             />
             <IntegrationServiceCard
-                description="Configure SMS routing, keys, and provider details."
+                description="Store SMS provider routing and keys in the same flexible JSON-style model."
                 onServiceChange={(service) => {
                     setSettings((current) => ({ ...current, sms: service }));
                 }}

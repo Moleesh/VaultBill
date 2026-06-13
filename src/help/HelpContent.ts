@@ -14,8 +14,8 @@ const platformHelp = (capabilities: CapabilityRegistry): readonly HelpSection[] 
         return [
             {
                 title: 'Desktop tools',
-                body: 'Choose installed printers, download PDF files, create encrypted backups, manage hosted web access, and keep the desktop host ready for connected browsers.',
-                keywords: ['printer', 'backup', 'pdf', 'lan', 'local files'],
+                body: 'Use installed printers, create or restore backups, and flip hosted web access on when another browser needs the desktop host.',
+                keywords: ['printer', 'backup', 'pdf', 'lan', 'hosted web'],
             },
         ];
     }
@@ -24,8 +24,8 @@ const platformHelp = (capabilities: CapabilityRegistry): readonly HelpSection[] 
         return [
             {
                 title: 'Demo mode limits',
-                body: 'Use browser print and Save as PDF. Exact printer selection, local folders, backup, restore, and USB devices stay unavailable in the browser-only demo build.',
-                keywords: ['demo', 'printer', 'backup', 'pdf', 'local files', 'usb'],
+                body: 'Use browser print and Save as PDF. Printer selection, backup, restore, and USB devices stay on the desktop build.',
+                keywords: ['demo', 'printer', 'backup', 'pdf', 'usb'],
             },
         ];
     }
@@ -33,7 +33,7 @@ const platformHelp = (capabilities: CapabilityRegistry): readonly HelpSection[] 
     return [
         {
             title: 'LAN browser access',
-            body: 'This browser connects to the desktop machine through the local API. Use browser print or Save as PDF while the desktop host keeps printer, backup, and activation controls.',
+            body: 'This browser connects to the desktop host through the local API. Use browser print or Save as PDF while the host keeps printer, backup, and activation controls.',
             keywords: ['lan', 'desktop server', 'printer', 'backup', 'pdf'],
         },
     ];
@@ -50,7 +50,7 @@ const pageSections: Readonly<Record<string, readonly HelpSection[]>> = {
     dashboard: [
         {
             title: 'Start your work',
-            body: 'Records handles documents, Reports summarizes business data, Builder configures formats, and Settings keeps the app tidy.',
+            body: 'Records handles documents, Reports shows totals, Document builder configures formats, and Settings keeps the app tidy.',
             keywords: ['records', 'reports', 'builder', 'settings', 'modules'],
         },
     ],
@@ -76,14 +76,14 @@ const pageSections: Readonly<Record<string, readonly HelpSection[]>> = {
     builder: [
         {
             title: 'Configure document formats',
-            body: 'Work through format, fields, line items, calculations, print, and preview. Builder JSON stays separate from HTML print templates and shared assets.',
+            body: 'Work through format, fields, layout, line items, calculations, print, and preview. Document builder JSON stays separate from HTML print templates and shared assets.',
             keywords: ['fields', 'line items', 'templates', 'preview', 'assets'],
         },
     ],
     settings: [
         {
             title: 'Manage VaultBill',
-            body: 'Business, security, backup, and integrations sit on one page with jump links. Desktop-only tools stay on the host machine.',
+            body: 'Business, security, backup, and connected services sit on one page with jump links. Desktop-only tools stay on the host machine.',
             keywords: [
                 'branding',
                 'themes',
@@ -106,7 +106,7 @@ export const getHelpSections = (
         title: 'Your access',
         body:
             role === 'SysAdmin'
-                ? 'You can use Builder and system configuration tools.'
+                ? 'You can use Document builder and system configuration tools.'
                 : `You are signed in as ${role}. Features outside your access level remain unavailable.`,
         keywords: ['permission', 'role', role],
     };

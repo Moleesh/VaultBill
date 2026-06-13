@@ -154,6 +154,9 @@ export const SettingsSecuritySection: FC = () => {
                 </p>
             ) : null}
             <SettingsSecurityAccounts
+                canCreateOperator={
+                    newUsername.trim().length > 0 && newDisplayName.trim().length > 0
+                }
                 manageableAccounts={manageableAccounts}
                 newDisplayName={newDisplayName}
                 newPassword={newPassword}

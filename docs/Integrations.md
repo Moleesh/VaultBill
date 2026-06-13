@@ -3,9 +3,13 @@
 # Optional Integrations
 
 This is a supporting reference for the current integration split and provider
-configuration. VaultBill does not guarantee GST, SMS provider, signature
-hardware, e-invoice, or GSP compliance. Provider or validation failures must be
-shown as clear user-facing messages.
+configuration. VaultBill does not guarantee GST, SMS provider, e-invoice, or
+GSP compliance. Provider or validation failures must be shown as clear
+user-facing messages.
+
+VaultBill stores each connected service as a JSON-backed key/value collection so
+GST, SMS, and future providers can add fields without changing the settings
+surface.
 
 ## SMS
 
@@ -27,22 +31,6 @@ SMS uses a provider adapter pattern:
 
 Secrets are stored in DB settings and masked before display. Production web
 mode blocks direct secrets unless `UseServerSideProxy` is enabled.
-
-## Signature Pad
-
-```json
-{
-    "SignaturePad": {
-        "Enabled": true,
-        "Mode": "Screen",
-        "TestedUsbDevices": []
-    }
-}
-```
-
-Screen mode supports mouse/touch drawing. USB/HID mode is desktop-only and
-available only for devices explicitly listed in `TestedUsbDevices`. Signature
-values are stored in `record_json` as SVG path data strings.
 
 ## GST Helpers
 

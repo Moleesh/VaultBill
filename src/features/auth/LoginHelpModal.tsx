@@ -14,6 +14,6 @@ type LoginHelpModalProps = {
  */
 export const LoginHelpModal: FC<LoginHelpModalProps> = ({ isOpen, onClose }) => (
     <AppModal isOpen={isOpen} onClose={onClose} title="Login help">
-        <p>Choose your account, enter the password if one is set, then press Enter or Log in.</p>
+        <p>Choose your account, enter the password if one is set, then press Enter to log in.</p>
     </AppModal>
 );

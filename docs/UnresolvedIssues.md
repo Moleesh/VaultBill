@@ -2,8 +2,8 @@
 
 # Unresolved Issues
 
-These items remain open under the current spec and are not hidden release
-claims.
+These items remain open in the current implementation and are not hidden
+release claims.
 
 - Backup ZIP creation and hosted restore upload currently buffer the compressed
   archive in memory. SQLite snapshots and restore replacement are staged on
@@ -15,9 +15,11 @@ claims.
   `SUM(Items.Field)`, and `COUNT(Items)` are connected today.
 - Hosted sessions are enforced server-side, but a SysAdmin session inventory and
   selective revoke screen is not yet exposed in Settings.
-- GST/GSP, SMS, and signature settings and helper engines are present, but each
-  production provider still needs its own reviewed secret-handling adapter and
-  compliance validation before real submission or messaging.
+- GST/GSP and SMS settings use the shared key/value model, but each production
+  provider still needs its own reviewed secret-handling adapter and compliance
+  validation before real submission or messaging.
+- Signature references now live in document-builder/template configuration
+  rather than the general settings page.
 - Public artifacts are unsigned unless repository signing credentials are
   configured. Unsigned packages are testing builds.
 - macOS signing/notarization, native Android, discovery/certificate handling,

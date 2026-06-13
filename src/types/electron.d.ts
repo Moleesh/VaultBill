@@ -34,6 +34,9 @@ type VaultBillDesktopBridge = {
     readonly saveBusinessSettings: (request: unknown) => Promise<unknown>;
     readonly getIntegrationSettings: () => Promise<unknown>;
     readonly saveIntegrationSettings: (request: unknown) => Promise<unknown>;
+    readonly getBackupStatus: () => Promise<{
+        readonly lastBackupAt: string | null;
+    }>;
     readonly getCredentialStatus: () => Promise<{
         readonly sysAdminUsesDefaultPassword: boolean;
         readonly backupUsesDefaultPassword: boolean;

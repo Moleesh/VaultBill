@@ -6,17 +6,15 @@ import { z } from 'zod';
 
 import { getBuildIdentity } from '../BuildIdentity.js';
 import type { DesktopOperatorAccount } from '../CredentialStore.js';
+import { isLoopbackAddress, readBody, sendJson } from './LocalApiHttp.js';
 import {
     ApiError,
     assertLoginAllowed,
     getSession,
-    isLoopbackAddress,
     recordFailedLogin,
-    readBody,
     requireCsrf,
     sessionCookie,
     sessionLifetime,
-    sendJson,
     type HostedSession,
     type LocalApiState,
 } from './LocalApiContext.js';

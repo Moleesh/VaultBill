@@ -11,8 +11,7 @@ workspace with two clearly different modes:
   hosted local web workspace while VaultBill is running.
 
 The repo documents the product directly through the app, docs, and workflows.
-No central spec file is required to understand the current behavior. Nice and
-tidy. 🙂
+Nice and tidy. 🙂
 
 [![Demo Pages](https://img.shields.io/github/actions/workflow/status/Moleesh/VaultBill/demo-pages.yml?branch=main&label=demo%20pages)](https://github.com/Moleesh/VaultBill/actions/workflows/demo-pages.yml)
 [![Release App](https://img.shields.io/github/actions/workflow/status/Moleesh/VaultBill/release-app.yml?branch=main&label=release%20app)](https://github.com/Moleesh/VaultBill/actions/workflows/release-app.yml)
@@ -91,7 +90,7 @@ a compact help popover keep the screen light instead of noisy.
 
 ## Builder 🧩
 
-Builder uses six focused steps:
+Document builder uses six focused steps:
 
 1. Format
 2. Fields

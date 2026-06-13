@@ -92,6 +92,9 @@ export const registerMainIpcHandlers = () => {
         if (!mainState.settingsStore) throw new Error('Settings are not ready.');
         return mainState.settingsStore.saveIntegrations(request);
     });
+    ipcMain.handle('vaultbill:settings:backup:status', () =>
+        mainState.settingsStore?.getBackupMetadata(),
+    );
 
     ipcMain.handle('vaultbill:download-pdf', (_event, request: unknown) =>
         renderHtmlToPdf(request),

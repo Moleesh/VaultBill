@@ -5,6 +5,7 @@ import type { z } from 'zod';
 
 import { requestHostedApi } from '../../runtime/HostedApi';
 import { DocumentFormatConfigSchema } from '../../db/startup/ConfigSchemas';
+import { applyCalculationOrder } from './BuilderPageCalculationSupport';
 import {
     confirmLargeFile,
     htmlStorageKey,
@@ -29,40 +30,7 @@ type BuilderPageActionProps = {
 };
 
 const orderConfigForPublish = (config: DocumentFormatConfig): DocumentFormatConfig => {
-    const fields = [
-        ...config.Fields.map((field) => ({ ...field })),
-        ...(config.LineItemSections[0]?.Fields ?? []).map((field) => ({ ...field })),
-    ];
-    const calculatedIds = new Set(
-        fields.filter((field) => field.Calculated && field.Formula).map((field) => field.FieldId),
-    );
-    const ordered: string[] = [];
-    const visited = new Set<string>();
-    const visit = (fieldId: string) => {
-        if (visited.has(fieldId)) return;
-        visited.add(fieldId);
-        const field = fields.find((candidate) => candidate.FieldId === fieldId);
-        if (!field || !calculatedIds.has(field.FieldId)) return;
-        for (const reference of field.Formula?.matchAll(/\b([A-Za-z_][\w]*)\b/gu) ?? []) {
-            const nextId = reference[1];
-            if (nextId) visit(nextId);
-        }
-        ordered.push(field.FieldId);
-    };
-    for (const field of fields) visit(field.FieldId);
-    const orderById = new Map(ordered.map((fieldId, index) => [fieldId, index + 1]));
-    const apply = (field: DocumentFormatConfig['Fields'][number]) => {
-        const order = orderById.get(field.FieldId);
-        return order ? { ...field, CalculationOrder: order } : field;
-    };
-    return {
-        ...config,
-        Fields: config.Fields.map(apply),
-        LineItemSections: config.LineItemSections.map((section) => ({
-            ...section,
-            Fields: section.Fields.map(apply),
-        })),
-    };
+    return applyCalculationOrder(config);
 };
 
 /** Builds the import, asset, and publish actions for the builder page. */

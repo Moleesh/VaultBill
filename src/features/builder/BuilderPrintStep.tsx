@@ -1,6 +1,6 @@
 /** @format */
 
-import { Download, FileCode2, FileJson2, Plus, Pencil, Trash2, Upload } from 'lucide-react';
+import { Download, FileCode2, FileJson2, Plus, Trash2, Upload } from 'lucide-react';
 import type { ChangeEvent, FC } from 'react';
 
 import type { AssetSummary } from './BuilderPageSupport';
@@ -11,7 +11,6 @@ type BuilderPrintStepProps = {
     readonly assets: readonly AssetSummary[];
     readonly onImportHtml: (event: ChangeEvent<HTMLInputElement>) => void;
     readonly onImportAssets: (event: ChangeEvent<HTMLInputElement>) => void;
-    readonly onRenameAsset: (asset: AssetSummary) => void;
     readonly onRemoveAsset: (assetName: string) => void;
 };
 
@@ -21,7 +20,6 @@ export const BuilderPrintStep: FC<BuilderPrintStepProps> = ({
     assets,
     onImportHtml,
     onImportAssets,
-    onRenameAsset,
     onRemoveAsset,
 }) => (
     <div className="print-upload-grid">
@@ -35,6 +33,22 @@ export const BuilderPrintStep: FC<BuilderPrintStepProps> = ({
                 {templateHtml ? 'Replace HTML' : 'Upload HTML'}
                 <input accept=".html,text/html" onChange={onImportHtml} type="file" />
             </label>
+            {templateHtml ? (
+                <button
+                    onClick={() => {
+                        const blob = new Blob([templateHtml], { type: 'text/html;charset=utf-8' });
+                        const url = URL.createObjectURL(blob);
+                        const anchor = document.createElement('a');
+                        anchor.href = url;
+                        anchor.download = 'print-template.html';
+                        anchor.click();
+                        URL.revokeObjectURL(url);
+                    }}
+                    type="button"
+                >
+                    <Download aria-hidden="true" size={18} /> Download HTML
+                </button>
+            ) : null}
             {templateHtml ? (
                 <small>{templateHtml.length.toLocaleString()} characters loaded</small>
             ) : null}
@@ -61,15 +75,6 @@ export const BuilderPrintStep: FC<BuilderPrintStepProps> = ({
                 <article key={asset.name}>
                     <code>{`{{Asset.${asset.name}}}`}</code>
                     <span>{formatBytes(asset.size)}</span>
-                    <button
-                        aria-label={`Rename ${asset.name}`}
-                        onClick={() => {
-                            onRenameAsset(asset);
-                        }}
-                        type="button"
-                    >
-                        <Pencil aria-hidden="true" size={17} />
-                    </button>
                     <button
                         aria-label={`Download ${asset.name}`}
                         onClick={() => {

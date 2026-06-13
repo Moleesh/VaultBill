@@ -31,6 +31,7 @@ type SettingsSecurityAccountsProps = {
     readonly onChangePassword: () => void;
     readonly onArchiveAccount: (userId: string) => void;
     readonly onSetAccountActive: (account: OperatorAccount, isActive: boolean) => void;
+    readonly canCreateOperator: boolean;
 };
 
 /** Renders operator creation and password management controls. */
@@ -51,6 +52,7 @@ export const SettingsSecurityAccounts: FC<SettingsSecurityAccountsProps> = ({
     onChangePassword,
     onArchiveAccount,
     onSetAccountActive,
+    canCreateOperator,
 }) => (
     <>
         <div className="settings-subsection">
@@ -95,6 +97,7 @@ export const SettingsSecurityAccounts: FC<SettingsSecurityAccountsProps> = ({
                 ) : null}
                 <button
                     className="button-primary"
+                    disabled={!canCreateOperator}
                     onClick={() => {
                         void onCreateOperator();
                     }}

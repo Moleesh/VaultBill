@@ -36,6 +36,7 @@ export type VaultBillDesktopBridge = {
     readonly saveBusinessSettings: (request: unknown) => Promise<unknown>;
     readonly getIntegrationSettings: () => Promise<unknown>;
     readonly saveIntegrationSettings: (request: unknown) => Promise<unknown>;
+    readonly getBackupStatus: () => Promise<{ readonly lastBackupAt: string | null }>;
     readonly getCredentialStatus: () => Promise<CredentialStatus>;
     readonly setBackupPassword: (password: string) => Promise<CredentialStatus>;
     readonly downloadPdf: (request: PdfRequest) => Promise<PdfResult>;
@@ -117,6 +118,10 @@ const desktopBridge: VaultBillDesktopBridge = {
         ipcRenderer.invoke('vaultbill:settings:integrations:get') as Promise<unknown>,
     saveIntegrationSettings: async (request) =>
         ipcRenderer.invoke('vaultbill:settings:integrations:save', request) as Promise<unknown>,
+    getBackupStatus: async () =>
+        ipcRenderer.invoke('vaultbill:settings:backup:status') as Promise<{
+            readonly lastBackupAt: string | null;
+        }>,
     getCredentialStatus: async () =>
         ipcRenderer.invoke('vaultbill:credentials:status') as Promise<CredentialStatus>,
     setBackupPassword: async (password) =>

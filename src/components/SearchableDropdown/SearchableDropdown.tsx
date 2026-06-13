@@ -55,7 +55,7 @@ export const SearchableDropdown: FC<SearchableDropdownProps> = ({
 
         if (!rect || !menu) return;
 
-        const placement = getDropdownMenuPlacement(rect, window.innerHeight);
+        const placement = getDropdownMenuPlacement(rect, window.innerHeight, window.innerWidth);
         menu.style.setProperty('--dropdown-left', placement.left);
         menu.style.setProperty('--dropdown-width', placement.width);
         menu.style.setProperty('--dropdown-top', placement.top);

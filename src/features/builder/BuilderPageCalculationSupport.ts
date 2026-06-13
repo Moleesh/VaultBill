@@ -6,6 +6,64 @@ import type { FieldConfig } from './BuilderPageSupport';
 
 const numericFieldTypes = new Set(['Number', 'Decimal', 'Money', 'Quantity', 'Rate']);
 
+export type CalculationTarget = {
+    readonly kind: 'document' | 'line';
+    readonly sectionIndex: number;
+    readonly fieldIndex: number;
+    readonly field: FieldConfig;
+};
+
+const calculationRoots = (config: DocumentFormatConfig): readonly FieldConfig[] => {
+    const fields = [
+        ...config.Fields,
+        ...config.LineItemSections.flatMap((section) => section.Fields),
+    ];
+    return [...fields]
+        .map((field, index) => ({ field, index }))
+        .sort((left, right) => {
+            const leftOrder = left.field.CalculationOrder ?? Number.MAX_SAFE_INTEGER;
+            const rightOrder = right.field.CalculationOrder ?? Number.MAX_SAFE_INTEGER;
+            return leftOrder - rightOrder || left.index - right.index;
+        })
+        .map(({ field }) => field);
+};
+
+export const collectCalculationTargets = (
+    config: DocumentFormatConfig,
+): readonly CalculationTarget[] => {
+    const targets: CalculationTarget[] = config.Fields.filter((field) => field.Calculated).map(
+        (field, fieldIndex) => ({
+            kind: 'document' as const,
+            sectionIndex: 0,
+            fieldIndex,
+            field,
+        }),
+    );
+    for (const [sectionIndex, section] of config.LineItemSections.entries()) {
+        targets.push(
+            ...section.Fields.filter((field) => field.Calculated).map((field, fieldIndex) => ({
+                kind: 'line' as const,
+                sectionIndex,
+                fieldIndex,
+                field,
+            })),
+        );
+    }
+    const orderById = new Map(
+        calculationRoots(config).map((field, index) => [field.FieldId, index]),
+    );
+    return [...targets].sort((left, right) => {
+        const leftOrder = orderById.get(left.field.FieldId) ?? Number.MAX_SAFE_INTEGER;
+        const rightOrder = orderById.get(right.field.FieldId) ?? Number.MAX_SAFE_INTEGER;
+        return (
+            leftOrder - rightOrder ||
+            left.kind.localeCompare(right.kind) ||
+            left.sectionIndex - right.sectionIndex ||
+            left.fieldIndex - right.fieldIndex
+        );
+    });
+};
+
 export const formulaReferences = (formula: string): readonly string[] =>
     [...formula.matchAll(/\b([A-Za-z_][\w]*)\b/gu)].map((match) => match[1] ?? '');
 
@@ -60,6 +118,25 @@ export const validateCalculationGraph = (fields: readonly FieldConfig[]): readon
     return issues;
 };
 
+export const applyCalculationOrderOverride = (
+    config: DocumentFormatConfig,
+    orderedFieldIds: readonly string[],
+): DocumentFormatConfig => {
+    const orderById = new Map(orderedFieldIds.map((fieldId, index) => [fieldId, index + 1]));
+    const apply = (field: FieldConfig): FieldConfig => {
+        const order = orderById.get(field.FieldId);
+        return order ? { ...field, CalculationOrder: order } : field;
+    };
+    return {
+        ...config,
+        Fields: config.Fields.map(apply),
+        LineItemSections: config.LineItemSections.map((section) => ({
+            ...section,
+            Fields: section.Fields.map(apply),
+        })),
+    };
+};
+
 export const sampleFormula = (
     field: FieldConfig,
     allFields: readonly FieldConfig[],
@@ -91,10 +168,7 @@ export const sampleFormula = (
 };
 
 export const applyCalculationOrder = (config: DocumentFormatConfig): DocumentFormatConfig => {
-    const fields = [
-        ...config.Fields.map((field) => ({ ...field })),
-        ...(config.LineItemSections[0]?.Fields ?? []).map((field) => ({ ...field })),
-    ];
+    const fields = calculationRoots(config).map((field) => ({ ...field }));
     const calculatedIds = new Set(
         fields.filter((field) => field.Calculated && field.Formula).map((field) => field.FieldId),
     );
