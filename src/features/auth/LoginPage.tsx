@@ -6,7 +6,7 @@
  */
 
 import { KeyRound } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import type { FC } from 'react';
 
@@ -24,6 +24,7 @@ export const LoginPage: FC = () => {
     const capabilities = useCapabilities();
     const { accounts, hostedConnectionState, login, operatorContext } = useSession();
     const navigate = useNavigate();
+    const loginSubmissionInFlightRef = useRef(false);
     const [selectedAccountId, setSelectedAccountId] = useState(accounts[0]?.userId ?? '');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
@@ -39,6 +40,19 @@ export const LoginPage: FC = () => {
     }));
     const selectedAccount = accounts.find((account) => account.userId === selectedAccountId);
     const isLoginDisabled = !selectedAccountId || hostedConnectionState !== 'connected';
+
+    const submitLogin = async () => {
+        if (isLoginDisabled || loginSubmissionInFlightRef.current) return;
+        loginSubmissionInFlightRef.current = true;
+        try {
+            await login(selectedAccountId, password);
+            void navigate('/app/dashboard');
+        } catch (reason) {
+            setError(reason instanceof Error ? reason.message : 'Login failed.');
+        } finally {
+            loginSubmissionInFlightRef.current = false;
+        }
+    };
 
     useEffect(() => {
         if (!selectedAccountId && accounts[0]) setSelectedAccountId(accounts[0].userId);
@@ -87,18 +101,19 @@ export const LoginPage: FC = () => {
                     ) : null}
                     <form
                         className="login-card__auth"
+                        onKeyDownCapture={(event) => {
+                            if (event.key !== 'Enter') return;
+                            event.preventDefault();
+                            void submitLogin();
+                        }}
+                        onKeyUpCapture={(event) => {
+                            if (event.key !== 'Enter') return;
+                            event.preventDefault();
+                            void submitLogin();
+                        }}
                         onSubmit={(event) => {
                             event.preventDefault();
-                            if (isLoginDisabled) return;
-                            void login(selectedAccountId, password)
-                                .then(() => {
-                                    void navigate('/app/dashboard');
-                                })
-                                .catch((reason: unknown) => {
-                                    setError(
-                                        reason instanceof Error ? reason.message : 'Login failed.',
-                                    );
-                                });
+                            void submitLogin();
                         }}
                     >
                         {capabilities.isDemoMode ? (
