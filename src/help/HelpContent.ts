@@ -50,8 +50,8 @@ const pageSections: Readonly<Record<string, readonly HelpSection[]>> = {
     dashboard: [
         {
             title: 'Start your work',
-            body: 'Records handles documents, Reports shows totals, Document builder configures formats, and Settings keeps the app tidy.',
-            keywords: ['records', 'reports', 'builder', 'settings', 'modules'],
+            body: 'Records handles documents, Reports shows totals, Document builder configures formats, and SysAdmin can review inventory, backup health, and trial time from the dashboard.',
+            keywords: ['records', 'reports', 'builder', 'settings', 'dashboard'],
         },
     ],
     records: [
@@ -76,14 +76,14 @@ const pageSections: Readonly<Record<string, readonly HelpSection[]>> = {
     builder: [
         {
             title: 'Configure document formats',
-            body: 'Work through format, fields, layout, line items, calculations, print, and preview. Document builder JSON stays separate from HTML print templates and shared assets.',
+            body: 'Work through format, fields, layout, line items, calculations, print, field preview, and print preview. Document builder JSON stays separate from HTML print templates and shared assets.',
             keywords: ['fields', 'line items', 'templates', 'preview', 'assets'],
         },
     ],
     settings: [
         {
             title: 'Manage VaultBill',
-            body: 'Business, security, backup, and connected services sit on one page with jump links. Desktop-only tools stay on the host machine.',
+            body: 'Business, security, backup, and connected services sit on one page with jump links. Connected services use flexible JSON-style key/value settings, and desktop-only tools stay on the host machine.',
             keywords: [
                 'branding',
                 'themes',
@@ -92,6 +92,7 @@ const pageSections: Readonly<Record<string, readonly HelpSection[]>> = {
                 'backup',
                 'security',
                 'integrations',
+                'json',
             ],
         },
     ],

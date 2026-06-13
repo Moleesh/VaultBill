@@ -230,60 +230,32 @@ The required responsive test matrix is tracked in code and docs:
 Viewport widths below `640` use single-column layout, widths below `1200` use
 double-column layout, and wider screens may use the three-column desktop layout.
 
-## SMS Provider
+## Connected Services
+
+Connected services are stored as a generic key/value structure so GST, SMS, and
+future providers can add fields without schema churn:
 
 ```json
 {
-    "Enabled": true,
-    "ProviderId": "generic-sms",
-    "EndpointUrl": "https://sms.example/send",
-    "SenderId": "VAULT",
-    "UseServerSideProxy": true,
-    "Secrets": {
-        "ApiKey": "stored-in-settings",
-        "ApiSecret": "stored-in-settings"
+    "gst": {
+        "enabled": true,
+        "provider": "local-gsp",
+        "fields": [
+            { "key": "DefaultSellerStateCode", "value": "29" },
+            { "key": "BaseUrl", "value": "https://api.example" }
+        ]
+    },
+    "sms": {
+        "enabled": true,
+        "provider": "local-relay",
+        "fields": [
+            { "key": "SenderId", "value": "VAULT" },
+            { "key": "ApiKey", "value": "stored-in-settings" }
+        ]
     }
 }
 ```
 
-Secrets are stored in DB settings and masked before display. Production web mode
-must use a server-side provider flow.
-
-## GST Integration
-
-```json
-{
-    "Enabled": true,
-    "DefaultSellerStateCode": "29",
-    "HsnSacCatalog": [
-        {
-            "Code": "9983",
-            "Description": "Professional services",
-            "TaxRatePercent": "18"
-        }
-    ]
-}
-```
-
-GST helpers validate GSTIN format/checksum, look up HSN/SAC catalog rows, split
-same-state CGST/SGST, calculate interstate IGST, and escape GSTR export cells.
-
-## GSP Integration
-
-```json
-{
-    "Enabled": true,
-    "ProviderId": "generic-gsp",
-    "BaseUrl": "https://gsp.example/api",
-    "Sandbox": true,
-    "ClientId": "client",
-    "ClientSecret": "secret",
-    "Endpoints": {
-        "EInvoice": "/einvoice",
-        "Gstr": "/gstr"
-    }
-}
-```
-
-GSP hooks prepare generic POST request plans only. VaultBill does not guarantee
-GST, e-invoice, GSTR, or provider compliance.
+Sensitive values are masked in the UI and stored in local application data.
+GST-specific helper behavior, reporting placeholders, and calculation rules are
+described in the schema and builder docs.

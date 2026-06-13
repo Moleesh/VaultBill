@@ -2,58 +2,34 @@
 
 # Optional Integrations
 
-This is a supporting reference for the current integration split and provider
-configuration. VaultBill does not guarantee GST, SMS provider, e-invoice, or
-GSP compliance. Provider or validation failures must be shown as clear
-user-facing messages.
+VaultBill keeps connected services in a JSON-backed key/value model so GST,
+SMS, and future providers can expose whatever fields they need without changing
+the settings surface.
 
-VaultBill stores each connected service as a JSON-backed key/value collection so
-GST, SMS, and future providers can add fields without changing the settings
-surface.
-
-## SMS
-
-SMS uses a provider adapter pattern:
+The current implementation keeps provider choice small and explicit, but the
+stored data remains flexible:
 
 ```json
 {
-    "Enabled": true,
-    "ProviderId": "generic-sms",
-    "EndpointUrl": "https://sms.example/send",
-    "SenderId": "VAULT",
-    "UseServerSideProxy": true,
-    "Secrets": {
-        "ApiKey": "stored-in-settings",
-        "ApiSecret": "stored-in-settings"
+    "gst": {
+        "enabled": true,
+        "provider": "local-gsp",
+        "fields": [
+            { "key": "ApiKey", "value": "stored-in-settings" },
+            { "key": "BaseUrl", "value": "https://api.example" }
+        ]
+    },
+    "sms": {
+        "enabled": true,
+        "provider": "local-relay",
+        "fields": [{ "key": "SenderId", "value": "VAULT" }]
     }
 }
 ```
 
-Secrets are stored in DB settings and masked before display. Production web
-mode blocks direct secrets unless `UseServerSideProxy` is enabled.
+Secrets remain masked in the UI and stored in local application data. Desktop
+sessions may use host-side providers, while browser-only demo mode keeps
+integration surfaces hidden.
 
-## GST Helpers
-
-Helpers include GSTIN format/checksum validation, HSN/SAC catalog lookup,
-same-state CGST/SGST splitting, interstate IGST calculation, and GSTR export
-cell escaping.
-
-## GSP Hooks
-
-```json
-{
-    "Enabled": true,
-    "ProviderId": "generic-gsp",
-    "BaseUrl": "https://gsp.example/api",
-    "Sandbox": true,
-    "ClientId": "client",
-    "ClientSecret": "secret",
-    "Endpoints": {
-        "EInvoice": "/einvoice",
-        "Gstr": "/gstr"
-    }
-}
-```
-
-GSP hooks prepare generic POST request plans. They are placeholders for provider
-integration and do not claim compliance success.
+GST-specific calculation helpers and print/report placeholders are documented in
+the schema and builder docs rather than duplicated here.

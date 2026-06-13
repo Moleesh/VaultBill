@@ -175,20 +175,31 @@
     height: 100vh;
     min-width: 0;
     overflow: hidden;
+    isolation: isolate;
+    background: transparent;
+}
+
+.app-shell__body::before {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
     background:
         radial-gradient(
             circle at top center,
-            color-mix(in srgb, var(--color-primary) 6%, transparent),
+            color-mix(in srgb, var(--color-primary) 7%, transparent),
             transparent 34rem
         ),
         linear-gradient(
             180deg,
-            color-mix(in srgb, var(--color-surface) 18%, transparent),
-            transparent 12rem
+            color-mix(in srgb, var(--color-surface) 16%, transparent),
+            transparent 13rem
         );
+    content: '';
+    pointer-events: none;
 }
 
 .app-shell__topbar {
+    position: relative;
     z-index: 30;
     display: flex;
     align-items: center;
@@ -215,6 +226,8 @@
 }
 
 .app-shell__content {
+    position: relative;
+    z-index: 1;
     width: 100%;
     overflow: auto;
     overscroll-behavior: contain;

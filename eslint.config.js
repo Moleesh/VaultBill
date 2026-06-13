@@ -23,6 +23,7 @@ export default tseslint.config(
             'dist-electron',
             'release',
             'coverage',
+            'test-results',
             'node_modules',
             'eslint.config.js',
         ],
