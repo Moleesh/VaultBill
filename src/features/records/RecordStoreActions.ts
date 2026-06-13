@@ -1,19 +1,21 @@
 /** @format */
 
-import { z } from 'zod';
-
 import { requestHostedApi } from '../../runtime/HostedApi';
 import type { OperatorContext } from '../auth/AccountTypes';
 import {
     AppRecordSchema,
     buildStoredRecord,
     demoSeedRecords,
-    readBrowserRecords,
     recordStoreEventName,
     sortLatestFirst,
     type AppRecord,
 } from './RecordStoreSupport';
 import type { RecordStoreContextValue } from './RecordStoreTypes';
+import {
+    loadBrowserRecords,
+    loadDesktopRecords,
+    loadHostedRecords,
+} from './RecordStoreActionsSupport';
 
 type RecordStoreActionDependencies = {
     readonly accounts: () => readonly AppRecord[];
@@ -31,60 +33,44 @@ export const createRecordStoreActions = (dependencies: RecordStoreActionDependen
         const desktopBridge = window.vaultBillDesktop;
 
         if (desktopBridge && !dependencies.isDemoMode()) {
-            void desktopBridge
-                .listRecords()
-                .then((storedRecords) => {
-                    dependencies.setRecords(
-                        sortLatestFirst(z.array(AppRecordSchema).parse(storedRecords)),
-                    );
-                    dependencies.setError('');
-                })
-                .catch((reason: unknown) => {
-                    dependencies.setError(
-                        reason instanceof Error ? reason.message : 'Records could not be loaded.',
-                    );
-                })
-                .finally(() => {
-                    dependencies.setLoading(false);
-                });
+            void loadDesktopRecords(
+                {
+                    setRecords: dependencies.setRecords,
+                    setLoading: dependencies.setLoading,
+                    setError: dependencies.setError,
+                },
+                desktopBridge,
+            );
             return;
         }
 
         if (dependencies.isLanBrowser()) {
-            if (!dependencies.sessionOperator()) {
-                dependencies.setRecords([]);
-                dependencies.setLoading(false);
-                return;
-            }
-
-            void requestHostedApi('/records')
-                .then((storedRecords) => {
-                    dependencies.setRecords(
-                        sortLatestFirst(z.array(AppRecordSchema).parse(storedRecords)),
-                    );
-                    dependencies.setError('');
-                })
-                .catch((reason: unknown) => {
-                    dependencies.setError(
-                        reason instanceof Error ? reason.message : 'Records could not be loaded.',
-                    );
-                })
-                .finally(() => {
-                    dependencies.setLoading(false);
-                });
+            void loadHostedRecords(
+                {
+                    accounts: dependencies.accounts,
+                    isDemoMode: dependencies.isDemoMode,
+                    isLanBrowser: dependencies.isLanBrowser,
+                    sessionOperator: dependencies.sessionOperator,
+                },
+                {
+                    setRecords: dependencies.setRecords,
+                    setLoading: dependencies.setLoading,
+                    setError: dependencies.setError,
+                },
+            );
             return;
         }
 
-        try {
-            dependencies.setRecords(readBrowserRecords(dependencies.isDemoMode()));
-            dependencies.setError('');
-        } catch (reason) {
-            dependencies.setError(
-                reason instanceof Error ? reason.message : 'Records could not be loaded.',
-            );
-        } finally {
-            dependencies.setLoading(false);
-        }
+        loadBrowserRecords(
+            {
+                isDemoMode: dependencies.isDemoMode,
+            },
+            {
+                setRecords: dependencies.setRecords,
+                setLoading: dependencies.setLoading,
+                setError: dependencies.setError,
+            },
+        );
     };
 
     const saveDraft: RecordStoreContextValue['saveDraft'] = async (input, operatorContext) => {

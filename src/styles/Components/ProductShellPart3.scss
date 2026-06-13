@@ -1,0 +1,158 @@
+/** @format */
+
+@use '../Breakpoints' as *;
+
+.settings-subsection {
+    display: grid;
+    gap: var(--space-4);
+    border-top: var(--line-width) solid var(--color-border);
+    padding-top: var(--space-5);
+}
+
+.integration-key-value-table {
+    display: grid;
+    gap: var(--space-3);
+}
+
+.integration-key-value-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) auto;
+    gap: var(--space-3);
+    align-items: end;
+}
+
+.integration-key-value-row label {
+    display: grid;
+    gap: var(--space-1);
+    color: var(--color-label);
+    font-weight: var(--font-weight-semibold);
+}
+
+.integration-key-value-row input {
+    min-height: 2.8rem;
+    border: var(--line-width) solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface-raised);
+    color: var(--color-text-body);
+    padding: var(--space-3);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-border) 20%, transparent);
+}
+
+.integration-key-value-row button {
+    min-width: 6rem;
+}
+
+.operator-create {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+    gap: var(--space-3);
+    align-items: end;
+}
+
+.operator-create > label {
+    display: grid;
+    gap: var(--space-1);
+    color: var(--color-label);
+    font-weight: var(--font-weight-semibold);
+}
+
+.operator-create input {
+    min-height: 2.8rem;
+    border: var(--line-width) solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface-raised);
+    color: var(--color-text-body);
+    padding: var(--space-3);
+}
+
+.operator-list {
+    display: grid;
+    border: var(--line-width) solid var(--color-border);
+    border-radius: var(--radius-md);
+}
+
+.operator-list article {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    gap: var(--space-4);
+    align-items: center;
+    padding: var(--space-4);
+    border-bottom: var(--line-width) solid var(--color-border);
+}
+
+.operator-list article:last-child {
+    border-bottom: 0;
+}
+
+.operator-list article > div {
+    display: grid;
+}
+
+.integration-grid,
+.print-upload-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-4);
+}
+
+.integration-grid article,
+.upload-card,
+.helper-card {
+    display: grid;
+    gap: var(--space-3);
+    align-content: start;
+    border: var(--line-width) solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface-muted);
+    padding: var(--space-5);
+}
+
+.builder-workspace.builder-workspace--single {
+    display: grid;
+    grid-template-columns: 1fr;
+}
+
+.builder-step-header {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-6);
+    align-items: end;
+    border-bottom: var(--line-width) solid var(--color-border);
+    padding-bottom: var(--space-5);
+}
+
+.builder-step-header > p {
+    max-width: 42rem;
+    color: var(--color-text-muted);
+}
+
+.builder-step-header small {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--color-secondary) 75%, transparent);
+    color: var(--color-secondary-text);
+    font-weight: var(--font-weight-bold);
+}
+
+.builder-fields,
+.calculation-list,
+.asset-list {
+    display: grid;
+    gap: var(--space-3);
+    margin-top: var(--space-5);
+}
+
+.builder-fields > article {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) repeat(2, auto);
+    gap: var(--space-2);
+    align-items: center;
+    border: var(--line-width) solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-raised);
+    padding: var(--space-2);
+}

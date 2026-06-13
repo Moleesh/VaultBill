@@ -9,6 +9,9 @@ import type { FC } from 'react';
 import { AppBrandIcon } from '../../components/AppBrandIcon/AppBrandIcon';
 import { HorizontalProgress } from '../../components/HorizontalProgress/HorizontalProgress';
 import { VENDOR } from '../../constants/Vendor';
+import { SetupAdministratorStep } from './SetupAdministratorStep';
+import { SetupBusinessProfileStep } from './SetupBusinessProfileStep';
+import { SetupWelcomeStep } from './SetupWelcomeStep';
 
 const steps = ['Welcome', 'Business Profile', 'System Administrator'] as const;
 const defaultPasswordHash = '5e800c5e134b84a0d73bd6f0d0f65b768f8a3afeba9c26ce3fe9b8d58fd027f1';
@@ -109,63 +112,20 @@ export const SetupPage: FC<SetupPageProps> = ({ onComplete }) => {
                         </p>
                         <h2 id="setup-step-title">{activeStep}</h2>
                     </div>
-                    {activeStep === 'Welcome' ? (
-                        <div className="setup-intro">
-                            <p>Three short steps prepare your local billing workspace.</p>
-                            <ul>
-                                <li>Add the business identity shown on documents.</li>
-                                <li>Create the protected System Administrator.</li>
-                                <li>
-                                    Manage operators, themes, backups, and integrations later in
-                                    Settings.
-                                </li>
-                            </ul>
-                        </div>
-                    ) : null}
+                    {activeStep === 'Welcome' ? <SetupWelcomeStep /> : null}
                     {activeStep === 'Business Profile' ? (
-                        <div className="form-grid">
-                            <label>
-                                <span>Business name</span>
-                                <input
-                                    autoFocus
-                                    onChange={(event) => {
-                                        setCompanyName(event.currentTarget.value);
-                                    }}
-                                    placeholder="Registered business name"
-                                    required
-                                    value={companyName}
-                                />
-                            </label>
-                            <label className="span-2">
-                                <span>Business address</span>
-                                <textarea
-                                    onChange={(event) => {
-                                        setAddress(event.currentTarget.value);
-                                    }}
-                                    placeholder="Address shown on invoices and reports"
-                                    required
-                                    value={address}
-                                />
-                            </label>
-                        </div>
+                        <SetupBusinessProfileStep
+                            address={address}
+                            companyName={companyName}
+                            onAddressChange={setAddress}
+                            onCompanyNameChange={setCompanyName}
+                        />
                     ) : null}
                     {activeStep === 'System Administrator' ? (
-                        <div className="form-grid">
-                            <label>
-                                <span>Administrator display name</span>
-                                <input
-                                    autoFocus
-                                    onChange={(event) => {
-                                        setSysAdminName(event.currentTarget.value);
-                                    }}
-                                    value={sysAdminName}
-                                />
-                            </label>
-                            <div className="feedback-info span-2">
-                                VaultBill initializes the administrator and backup passwords
-                                securely. Change both from Security after your first login.
-                            </div>
-                        </div>
+                        <SetupAdministratorStep
+                            onSysAdminNameChange={setSysAdminName}
+                            sysAdminName={sysAdminName}
+                        />
                     ) : null}
                     {message ? <p className="feedback-error">{message}</p> : null}
                 </section>

@@ -1,0 +1,160 @@
+/** @format */
+
+@use '../Breakpoints' as *;
+
+.feedback-info {
+    margin-top: var(--space-5);
+    background: var(--color-secondary);
+    color: var(--color-secondary-text);
+}
+
+.builder-panel,
+.builder-workspace {
+    display: grid;
+    grid-template-columns: minmax(13rem, 0.4fr) minmax(0, 1fr);
+    gap: var(--space-6);
+}
+
+.builder-panel aside,
+.builder-preview {
+    border-right: var(--line-width) solid var(--color-border);
+}
+
+.builder-editor,
+.builder-preview {
+    display: grid;
+    align-content: start;
+    gap: var(--space-4);
+}
+
+.builder-workspace {
+    border: var(--line-width) solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-card);
+    padding: clamp(var(--space-4), 4vw, var(--space-6));
+    box-shadow: var(--shadow-card);
+}
+
+.builder-field-list {
+    display: grid;
+    gap: var(--space-3);
+}
+
+.builder-field-list label {
+    grid-template-columns: minmax(10rem, 0.4fr) minmax(0, 1fr);
+    align-items: center;
+}
+
+.builder-preview dl {
+    display: grid;
+    gap: var(--space-2);
+    margin: 0;
+}
+
+.builder-preview dl div {
+    display: flex;
+    justify-content: space-between;
+    border-bottom: var(--line-width) solid var(--color-border);
+    padding-block: var(--space-2);
+}
+
+.builder-preview dd {
+    margin: 0;
+    font-weight: var(--font-weight-bold);
+}
+
+.checkbox-field {
+    display: flex !important;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.checkbox-field input {
+    width: 1.2rem;
+    min-height: auto;
+    height: 1.2rem;
+}
+
+.settings-actions,
+.wizard-actions {
+    margin-top: var(--space-4);
+    padding-top: var(--space-4);
+    border-top: var(--line-width) solid var(--color-border);
+}
+
+.settings-panel,
+.empty-panel {
+    display: grid;
+    gap: var(--space-4);
+}
+
+.searchable-dropdown {
+    display: grid;
+    min-width: 0;
+    gap: 0.14rem;
+}
+
+.searchable-dropdown__label {
+    color: var(--color-label);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-bold);
+    letter-spacing: var(--letter-spacing-label);
+    text-transform: uppercase;
+}
+
+.searchable-dropdown__trigger {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.45rem;
+    min-height: 2.65rem;
+    padding-inline: var(--space-3) var(--space-3);
+    background: var(--color-surface-raised);
+    text-align: left;
+    box-shadow:
+        inset 0 0 0 1px color-mix(in srgb, var(--color-border) 20%, transparent),
+        0 0.12rem 0.4rem color-mix(in srgb, var(--color-panel-shadow) 6%, transparent);
+}
+
+.searchable-dropdown__trigger span:first-child {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.searchable-dropdown__caret {
+    flex: none;
+    color: var(--color-text-muted);
+    justify-self: end;
+    margin-inline: 0;
+}
+
+.searchable-dropdown__menu {
+    position: fixed;
+    z-index: 120;
+    top: var(--dropdown-top);
+    left: var(--dropdown-left);
+    display: grid;
+    width: min(var(--dropdown-width), calc(100vw - 1.5rem));
+    max-height: min(22rem, calc(100vh - var(--dropdown-top) - 1rem));
+    gap: var(--space-1);
+    overflow: auto;
+    border: var(--line-width) solid var(--color-border-strong);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-raised);
+    padding: var(--space-2);
+    box-shadow: var(--shadow-popover);
+}
+
+.searchable-dropdown__menu[data-open-direction='above'] {
+    max-height: min(24rem, calc(var(--dropdown-top) - 1rem));
+}
+
+.searchable-dropdown__menu[data-open-direction='below'] {
+    transform-origin: top center;
+}
+
+.searchable-dropdown__menu[data-open-direction='above'] {
+    transform-origin: bottom center;
+}

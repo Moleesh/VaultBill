@@ -9,14 +9,11 @@ import type { Role } from '../../types/AppTypes';
 import { useSession } from '../auth/SessionContext';
 import { SettingsSecurityAccess } from './SettingsSecurityAccess';
 import { SettingsSecurityAccounts } from './SettingsSecurityAccounts';
-
-type OperatorAccount = {
-    readonly userId: string;
-    readonly username: string;
-    readonly displayName: string;
-    readonly role: Role;
-    readonly isActive: boolean;
-};
+import {
+    getManageableSecurityAccounts,
+    getOperatorCreationMessage,
+    isDefaultCredentialsActive,
+} from './SettingsSecuritySectionSupport';
 
 /** Owns the security area while delegating the visual blocks to small helpers. */
 export const SettingsSecuritySection: FC = () => {
@@ -75,14 +72,11 @@ export const SettingsSecuritySection: FC = () => {
     }, [capabilities.isLanBrowser]);
 
     if (!operatorContext) return null;
-    const manageableAccounts = accounts.filter((account) =>
-        operatorContext.role === 'SysAdmin' ? account.role !== 'SysAdmin' : account.role === 'User',
-    ) as readonly OperatorAccount[];
-    const defaultCredentialsActive =
-        credentialStatus?.sysAdminUsesDefaultPassword === true ||
-        credentialStatus?.backupUsesDefaultPassword === true ||
-        (!credentialStatus &&
-            window.localStorage.getItem('vaultbill.default-credentials-active') !== 'false');
+    const manageableAccounts = getManageableSecurityAccounts(accounts, operatorContext.role);
+    const defaultCredentialsActive = isDefaultCredentialsActive(
+        credentialStatus?.sysAdminUsesDefaultPassword,
+        credentialStatus?.backupUsesDefaultPassword,
+    );
 
     const createOperator = async () => {
         const username = newUsername.trim();
@@ -91,24 +85,20 @@ export const SettingsSecuritySection: FC = () => {
             setMessage('Username and display name are required.');
             return;
         }
-        try {
-            await saveAccount({
-                userId: crypto.randomUUID(),
-                username,
-                displayName,
-                role: newRole,
-                isActive: true,
-            });
-            setNewUsername('');
-            setNewDisplayName('');
-            setMessage(
-                newRole === 'Admin'
-                    ? 'Operator created. The admin can manage users after a password is set.'
-                    : 'Operator created. Set a password before enabling LAN login.',
-            );
-        } catch (reason) {
-            setMessage(reason instanceof Error ? reason.message : 'Operator could not be created.');
-        }
+            try {
+                await saveAccount({
+                    userId: crypto.randomUUID(),
+                    username,
+                    displayName,
+                    role: newRole,
+                    isActive: true,
+                });
+                setNewUsername('');
+                setNewDisplayName('');
+                setMessage(getOperatorCreationMessage(newRole));
+            } catch (reason) {
+                setMessage(reason instanceof Error ? reason.message : 'Operator could not be created.');
+            }
     };
 
     const changePassword = () => {

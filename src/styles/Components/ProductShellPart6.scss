@@ -1,0 +1,67 @@
+/** @format */
+
+@use '../Breakpoints' as *;
+
+@include respond-to('phone') {
+    .dashboard-metrics,
+    .operator-create,
+    .report-filter-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .dashboard-metrics article {
+        min-height: 6.5rem;
+    }
+
+    .rank-list > div {
+        grid-template-columns: 1fr auto;
+    }
+
+    .rank-list__bar {
+        grid-column: 1 / -1;
+        grid-row: 2;
+    }
+
+    .operator-list article {
+        grid-template-columns: minmax(0, 1fr) auto;
+    }
+
+    .operator-list .checkbox-field {
+        grid-column: 1 / -1;
+    }
+
+    .builder-fields > article {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    .builder-fields__main {
+        grid-template-columns: 1fr;
+    }
+
+    .calculation-list article,
+    .asset-list article {
+        grid-template-columns: 1fr auto;
+    }
+
+    .calculation-list article > code,
+    .asset-list article > span {
+        grid-column: 1 / -1;
+    }
+
+    .settings-inline-actions,
+    .builder-header-actions {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .settings-inline-actions > *,
+    .builder-header-actions > * {
+        width: 100%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .bar-chart__item > span {
+        animation: none;
+    }
+}

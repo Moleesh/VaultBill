@@ -72,3 +72,12 @@ export const extractDocumentFragment = (document: string): string => {
         .replace(/<!doctype[^>]*>/giu, '')
         .replace(/<\/?(?:html|head|body)\b[^>]*>/giu, '')}`;
 };
+
+/** Escapes arbitrary text so it can be written safely into HTML. */
+export const escapePrintHtml = (value: string): string =>
+    value
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');

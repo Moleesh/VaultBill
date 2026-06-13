@@ -1,0 +1,157 @@
+/** @format */
+
+@use '../Breakpoints' as *;
+
+.searchable-dropdown__menu input {
+    min-width: 0;
+    min-height: 2.5rem;
+    border-color: var(--color-border);
+    padding-block: var(--space-2);
+}
+
+.searchable-dropdown__menu [role='listbox'] {
+    display: grid;
+    gap: var(--space-1);
+}
+
+.searchable-dropdown__menu [role='option'] {
+    display: grid;
+    height: auto;
+    gap: 0.12rem;
+    border-color: transparent;
+    text-align: left;
+    white-space: normal;
+    padding-block: 0.64rem;
+}
+
+.searchable-dropdown__menu [role='option'] strong {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+}
+
+.searchable-dropdown__menu [role='option'].is-active,
+.searchable-dropdown__menu [role='option'][aria-selected='true'] {
+    background: var(--color-secondary);
+}
+
+.app-date-picker__label {
+    color: var(--color-label);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-bold);
+    letter-spacing: var(--letter-spacing-label);
+    text-transform: uppercase;
+}
+
+.app-date-picker__trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-width: 12rem;
+    background: var(--color-surface-raised);
+}
+
+.app-date-picker__popup {
+    position: fixed;
+    z-index: 130;
+    top: 50%;
+    left: 50%;
+    display: grid;
+    width: min(23rem, calc(100vw - 2rem));
+    gap: var(--space-3);
+    transform: translate(-50%, -50%);
+    border: var(--line-width) solid var(--color-border-strong);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+    padding: var(--space-4);
+    box-shadow: var(--shadow-popover);
+}
+
+.app-date-picker__popup header,
+.app-date-picker__popup footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+}
+
+.app-date-picker__weekdays,
+.app-date-picker__days {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: var(--space-1);
+    text-align: center;
+}
+
+.app-date-picker__weekdays {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-xs);
+}
+
+.app-date-picker__days button {
+    min-height: 2.4rem;
+    padding: 0;
+}
+
+.app-date-picker__days button[aria-pressed='true'] {
+    background: var(--color-primary);
+    color: var(--color-primary-text);
+}
+
+.setup-page {
+    display: grid;
+    min-height: 100vh;
+    place-items: center;
+    background: var(--gradient-page);
+    padding: var(--space-4);
+}
+
+.setup-card {
+    display: grid;
+    width: min(62rem, 100%);
+    gap: var(--space-5);
+    border: var(--line-width) solid var(--color-border);
+    border-radius: var(--radius-xl);
+    background: var(--color-card);
+    padding: clamp(var(--space-5), 5vw, var(--space-10));
+    box-shadow: var(--shadow-card-hover);
+}
+
+.setup-card__header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+}
+
+.setup-card__content {
+    display: grid;
+    min-height: 15rem;
+    align-content: start;
+    gap: var(--space-5);
+    border: var(--line-width) solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface-muted);
+    padding: var(--space-6);
+}
+
+.popup-backdrop {
+    position: fixed;
+    z-index: 110;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: color-mix(in srgb, var(--color-text-heading) 42%, transparent);
+    padding: var(--space-4);
+}
+
+.popup-frame {
+    width: min(36rem, 100%);
+    max-height: calc(100vh - 2rem);
+    overflow: auto;
+    border: var(--line-width) solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+    color: var(--color-text-body);
+    box-shadow: var(--shadow-popover);
+}

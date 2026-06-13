@@ -1,6 +1,6 @@
 /** @format */
 
-import { escapePrintHtml } from '../records/RecordPrintHtml';
+import { escapePrintHtml } from '../records/RecordPrintHtmlSupport';
 import type { AppRecord } from '../records/RecordStoreSupport';
 
 /**

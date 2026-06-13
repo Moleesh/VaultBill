@@ -1,6 +1,6 @@
 /** @format */
 
-import { GripVertical } from 'lucide-react';
+import { ArrowRight, GripVertical } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import type { DragEvent, FC } from 'react';
 
@@ -58,10 +58,6 @@ export const BuilderCalculationsStep: FC<BuilderCalculationsStepProps> = ({
                     const { field } = target;
                     const sectionLabel =
                         target.kind === 'document' ? 'Document field' : 'Line item';
-                    const orderLabel =
-                        field.CalculationOrder && field.CalculationOrder > 0
-                            ? `#${String(field.CalculationOrder)}`
-                            : `#${String(index + 1)}`;
                     return (
                         <article
                             draggable
@@ -104,7 +100,10 @@ export const BuilderCalculationsStep: FC<BuilderCalculationsStepProps> = ({
                                 <span>{sectionLabel}</span>
                                 <small>{field.Formula ?? 'No formula yet'}</small>
                             </button>
-                            <small className="builder-calculation-order">{orderLabel}</small>
+                            <small className="builder-calculation-order">
+                                <ArrowRight aria-hidden="true" size={14} />{' '}
+                                {index === 0 ? 'First trigger' : 'Next trigger'}
+                            </small>
                             <button
                                 onClick={() => {
                                     onEditFormula(field.FieldId);

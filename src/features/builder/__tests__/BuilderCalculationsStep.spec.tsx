@@ -65,6 +65,7 @@ describe('BuilderCalculationsStep', () => {
         fireEvent.drop(targetRow);
 
         expect(onOrderChange).toHaveBeenCalledWith(['Amount', 'Subtotal']);
+        expect(screen.getByText('First trigger')).toBeVisible();
 
         fireEvent.click(within(targetRow).getByRole('button', { name: 'Formula' }));
         expect(onEditFormula).toHaveBeenCalledWith('Subtotal');

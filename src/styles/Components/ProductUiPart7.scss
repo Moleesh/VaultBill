@@ -1,0 +1,100 @@
+/** @format */
+
+@use '../Breakpoints' as *;
+
+.app-brand-icon__vault,
+.app-brand-icon__paper,
+.app-brand-icon__fold,
+.app-brand-icon__monogram,
+.app-brand-icon__spark {
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 5;
+}
+
+.app-brand-icon__vault {
+    stroke-dasharray: 330;
+    animation: logo-draw 1.1s ease both;
+}
+
+.app-brand-icon__paper,
+.app-brand-icon__fold {
+    animation: logo-paper 1s 0.25s ease both;
+}
+
+.app-brand-icon__monogram {
+    animation: logo-paper 0.7s 0.55s ease both;
+}
+
+.app-brand-icon__spark {
+    animation: logo-spark 0.4s 0.9s ease both;
+}
+
+@keyframes logo-draw {
+    from {
+        stroke-dashoffset: 330;
+    }
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+@keyframes logo-paper {
+    from {
+        opacity: 0;
+        transform: translateY(0.5rem);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes logo-spark {
+    0%,
+    100% {
+        opacity: 0.5;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.25);
+    }
+}
+
+@include respond-to('tablet') {
+    .page-hero,
+    .section-heading {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .dashboard-actions,
+    .builder-panel,
+    .builder-workspace {
+        grid-template-columns: 1fr;
+    }
+
+    .builder-panel aside,
+    .builder-preview {
+        border-right: 0;
+        border-bottom: var(--line-width) solid var(--color-border);
+        padding-bottom: var(--space-4);
+    }
+
+    .operational-header,
+    .report-toolbar {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .app-drawer {
+        top: auto;
+        bottom: 0;
+        width: 100%;
+        height: min(92vh, 48rem);
+        border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    }
+}

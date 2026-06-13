@@ -1,0 +1,164 @@
+/** @format */
+
+@use '../Breakpoints' as *;
+
+.app-shell__operator-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+}
+
+.app-shell.is-sidebar-expanded .app-shell__operator-actions {
+    justify-content: flex-start;
+}
+
+.app-shell__body {
+    position: relative;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    height: 100vh;
+    min-width: 0;
+    overflow: hidden;
+    isolation: isolate;
+    background: transparent;
+}
+
+.app-shell__topbar {
+    position: relative;
+    z-index: 30;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    min-height: 5rem;
+    padding: var(--space-3) clamp(var(--space-4), 4vw, var(--space-8));
+    border-bottom: var(--line-width) solid var(--color-border);
+    background: color-mix(in srgb, var(--color-surface) 92%, transparent);
+    backdrop-filter: blur(56px) saturate(170%);
+    box-shadow: 0 0.45rem 2rem color-mix(in srgb, var(--color-panel-shadow) 18%, transparent);
+}
+
+.app-shell__topbar-actions {
+    display: flex;
+    align-items: end;
+    gap: var(--space-3);
+}
+
+.app-shell__mobile-account-actions {
+    display: none;
+    align-items: center;
+    gap: var(--space-1);
+}
+
+.app-shell__content {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    overflow: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: none;
+    scrollbar-color: transparent transparent;
+    background: transparent;
+    padding: clamp(var(--space-5), 4vw, var(--space-10));
+}
+
+.app-shell__content::before {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background:
+        radial-gradient(
+            circle at top center,
+            color-mix(in srgb, var(--color-primary) 7%, transparent),
+            transparent 34rem
+        ),
+        linear-gradient(
+            180deg,
+            color-mix(in srgb, var(--color-surface) 16%, transparent),
+            transparent 13rem
+        );
+    content: '';
+    pointer-events: none;
+}
+
+.app-shell__content::-webkit-scrollbar {
+    display: none;
+}
+
+.app-shell__content > * {
+    width: min(100%, var(--content-max-width));
+    margin-inline: auto;
+}
+
+.app-shell__nav-label {
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.app-shell__scroll-rail {
+    position: absolute;
+    z-index: 40;
+    top: 5rem;
+    right: 0.3rem;
+    bottom: 0.5rem;
+    width: 0.25rem;
+    overflow: hidden;
+    border-radius: 1rem;
+    background: color-mix(in srgb, var(--color-border) 55%, transparent);
+    pointer-events: none;
+}
+
+.app-shell__scroll-rail span {
+    display: block;
+    width: 100%;
+    min-height: 0.75rem;
+    border-radius: inherit;
+    background: var(--color-primary);
+}
+
+.icon-button {
+    display: inline-grid;
+    width: 2.75rem;
+    min-width: 2.75rem;
+    height: 2.75rem;
+    padding: 0;
+    place-items: center;
+}
+
+.theme-palette {
+    position: relative;
+}
+
+.theme-palette__popover {
+    position: absolute;
+    z-index: 140;
+    bottom: calc(100% + var(--space-2));
+    left: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 17rem;
+    gap: var(--space-2);
+    border: var(--line-width) solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    padding: var(--space-2);
+    box-shadow: var(--shadow-popover);
+}
+
+.theme-palette__popover button {
+    display: grid;
+    grid-template-columns: 1.5rem 1fr auto;
+    align-items: center;
+    gap: var(--space-2);
+    border-color: transparent;
+    text-align: left;
+    min-height: 3rem;
+}
+
+.theme-palette__popover button.is-selected {
+    background: var(--color-secondary);
+}

@@ -3,8 +3,12 @@
 import { useState } from 'react';
 
 import { useCapabilities } from '../../capability/CapabilityContext';
-import { createHostedBackup, requestHostedApi, restoreHostedBackup } from '../../runtime/HostedApi';
-import type { BackupResult } from './SettingsBackupTypes';
+import {
+    buildBackupCreationTask,
+    buildBackupPasswordUpdateTask,
+    buildResetTask,
+    buildRestoreTask,
+} from './useSettingsBackupSectionSupport';
 
 /**
  * Owns backup, restore, and application reset state for the SysAdmin settings panel.
@@ -31,15 +35,14 @@ export const useSettingsBackupSection = () => {
             return;
         }
         setBusyAction('Updating backup password');
-        const updatePassword = window.vaultBillDesktop
-            ? window.vaultBillDesktop.setBackupPassword(backupPassword)
-            : capabilities.isLanBrowser
-              ? requestHostedApi('/credentials/backup-password', 'POST', {
-                    currentPassword: remoteAuthorizationPassword,
-                    backupPassword,
-                })
-              : Promise.resolve();
-        void updatePassword
+        void buildBackupPasswordUpdateTask(
+            {
+                isLanBrowser: capabilities.isLanBrowser,
+                desktopApi: window.vaultBillDesktop,
+            },
+            backupPassword,
+            remoteAuthorizationPassword,
+        )
             .then(() => {
                 setBackupPassword('');
                 setMessage('Backup password updated securely.');
@@ -59,30 +62,14 @@ export const useSettingsBackupSection = () => {
     const createBackup = () => {
         if (!encryptBackup && !window.confirm('Create an unencrypted backup?')) return;
         setBusyAction('Creating verified backup');
-        const backupTask: Promise<BackupResult> = window.vaultBillDesktop
-            ? window.vaultBillDesktop.createBackup({ encrypted: encryptBackup }).then((result) =>
-                  result.cancelled
-                      ? { success: false, warning: 'Backup creation cancelled.' }
-                      : {
-                            success: true,
-                            ...(result.filePath ? { filePath: result.filePath } : {}),
-                            ...(result.recoveryKey ? { recoveryKey: result.recoveryKey } : {}),
-                        },
-              )
-            : createHostedBackup(encryptBackup, remoteAuthorizationPassword).then((result) => {
-                  const url = window.URL.createObjectURL(result.blob);
-                  const anchor = document.createElement('a');
-                  anchor.href = url;
-                  anchor.download = result.fileName;
-                  anchor.click();
-                  window.URL.revokeObjectURL(url);
-                  return {
-                      success: true,
-                      filePath: result.fileName,
-                      ...(result.recoveryKey ? { recoveryKey: result.recoveryKey } : {}),
-                  };
-              });
-        void backupTask
+        void buildBackupCreationTask(
+            {
+                isLanBrowser: capabilities.isLanBrowser,
+                desktopApi: window.vaultBillDesktop,
+            },
+            encryptBackup,
+            remoteAuthorizationPassword,
+        )
             .then((result) => {
                 if (!result.success) {
                     setMessage(result.warning ?? 'Backup creation cancelled.');
@@ -107,17 +94,16 @@ export const useSettingsBackupSection = () => {
             return;
         }
         setBusyAction('Validating and restoring backup');
-        const restoration = window.vaultBillDesktop
-            ? window.vaultBillDesktop.restoreBackup({
-                  ...(restorePassword ? { password: restorePassword } : {}),
-                  ...(restoreRecoveryKey ? { recoveryKey: restoreRecoveryKey } : {}),
-              })
-            : restoreHostedBackup(restoreFile, {
-                  ...(restorePassword ? { backupPassword: restorePassword } : {}),
-                  ...(restoreRecoveryKey ? { recoveryKey: restoreRecoveryKey } : {}),
-                  sysAdminPassword: remoteAuthorizationPassword,
-              });
-        void restoration
+        void buildRestoreTask(
+            {
+                isLanBrowser: capabilities.isLanBrowser,
+                desktopApi: window.vaultBillDesktop,
+            },
+            restoreFile,
+            restorePassword,
+            restoreRecoveryKey,
+            remoteAuthorizationPassword,
+        )
             .then(() => {
                 setMessage('Backup validated. VaultBill is restarting with the restored database.');
                 setRestoreOpen(false);
@@ -141,18 +127,14 @@ export const useSettingsBackupSection = () => {
             return;
         }
         setBusyAction('Resetting application data');
-        const reset = window.vaultBillDesktop
-            ? window.vaultBillDesktop.resetApplicationData({
-                  password: resetSysAdminPassword,
-                  confirmation: resetConfirmation,
-              })
-            : capabilities.isLanBrowser
-              ? requestHostedApi('/application/reset', 'POST', {
-                    currentPassword: resetSysAdminPassword,
-                    confirmation: resetConfirmation,
-                })
-              : Promise.resolve();
-        void reset
+        void buildResetTask(
+            {
+                isLanBrowser: capabilities.isLanBrowser,
+                desktopApi: window.vaultBillDesktop,
+            },
+            resetSysAdminPassword,
+            resetConfirmation,
+        )
             .then(() => {
                 setMessage('VaultBill is restarting with a clean database.');
                 setResetOpen(false);

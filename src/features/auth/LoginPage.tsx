@@ -17,6 +17,7 @@ import { defaultRuntimeBranding } from '../../constants/PhaseOneSeed';
 import { VENDOR } from '../../constants/Vendor';
 import { LoginActivationModal } from './LoginActivationModal';
 import { LoginHelpModal } from './LoginHelpModal';
+import { buildLoginAccountOptions, findLoginAccount } from './LoginPageSupport';
 import { useSession } from './SessionContext';
 
 /** Renders the compact login experience for the current runtime mode. */
@@ -32,13 +33,8 @@ export const LoginPage: FC = () => {
     const [isActivationOpen, setIsActivationOpen] = useState(false);
     const [licenseKey, setLicenseKey] = useState('');
     const [activationMessage, setActivationMessage] = useState('');
-    const accountOptions = accounts.map((account) => ({
-        value: account.userId,
-        label: account.displayName,
-        description: `${account.username} · ${account.role}`,
-        keywords: [account.username, account.role],
-    }));
-    const selectedAccount = accounts.find((account) => account.userId === selectedAccountId);
+    const accountOptions = buildLoginAccountOptions(accounts);
+    const selectedAccount = findLoginAccount(accounts, selectedAccountId);
     const isLoginDisabled = !selectedAccountId || hostedConnectionState !== 'connected';
 
     const submitLogin = async () => {
@@ -101,16 +97,6 @@ export const LoginPage: FC = () => {
                     ) : null}
                     <form
                         className="login-card__auth"
-                        onKeyDownCapture={(event) => {
-                            if (event.key !== 'Enter') return;
-                            event.preventDefault();
-                            void submitLogin();
-                        }}
-                        onKeyUpCapture={(event) => {
-                            if (event.key !== 'Enter') return;
-                            event.preventDefault();
-                            void submitLogin();
-                        }}
                         onSubmit={(event) => {
                             event.preventDefault();
                             void submitLogin();

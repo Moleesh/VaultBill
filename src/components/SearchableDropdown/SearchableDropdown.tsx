@@ -4,9 +4,9 @@
 
 import { ChevronDown } from 'lucide-react';
 import { useEffect, useId, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
 import type { FC } from 'react';
 
+import { SearchableDropdownMenu } from './SearchableDropdownMenu';
 import {
     createSearchableDropdownKeyDownHandler,
     getDropdownMenuPlacement,
@@ -142,70 +142,35 @@ export const SearchableDropdown: FC<SearchableDropdownProps> = ({
                 </span>
                 <ChevronDown aria-hidden="true" className="searchable-dropdown__caret" size={16} />
             </button>
-            {isOpen && portalRoot
-                ? createPortal(
-                      <div
-                          className="searchable-dropdown__menu"
-                          onKeyDown={createSearchableDropdownKeyDownHandler({
-                              activeIndex,
-                              filteredOptions,
-                              onChoose: chooseOption,
-                              onClose: () => {
-                                  setIsOpen(false);
-                              },
-                              setActiveIndex,
-                              triggerRef,
-                          })}
-                          ref={menuRef}
-                      >
-                          {options.length > 7 ? (
-                              <input
-                                  aria-label={`Search ${label}`}
-                                  autoFocus
-                                  onChange={(event) => {
-                                      setQuery(event.currentTarget.value);
-                                      setActiveIndex(-1);
-                                  }}
-                                  placeholder="Search options"
-                                  value={query}
-                              />
-                          ) : null}
-                          <div aria-labelledby={`${id}-label`} role="listbox">
-                              {filteredOptions.length === 0 ? (
-                                  <p className="searchable-dropdown__empty">No matching options.</p>
-                              ) : (
-                                  filteredOptions.slice(0, 100).map((option, index) => (
-                                      <button
-                                          aria-selected={option.value === value}
-                                          className={index === activeIndex ? 'is-active' : ''}
-                                          disabled={option.disabled}
-                                          onMouseEnter={() => {
-                                              setActiveIndex(index);
-                                          }}
-                                          key={option.value}
-                                          onClick={() => {
-                                              chooseOption(option);
-                                          }}
-                                          role="option"
-                                          type="button"
-                                      >
-                                          <strong>
-                                              {option.value === value ? (
-                                                  <span aria-hidden="true">✓ </span>
-                                              ) : null}
-                                              {option.label}
-                                          </strong>
-                                          {option.description ? (
-                                              <small>{option.description}</small>
-                                          ) : null}
-                                      </button>
-                                  ))
-                              )}
-                          </div>
-                      </div>,
-                      portalRoot,
-                  )
-                : null}
+            {isOpen ? (
+                <SearchableDropdownMenu
+                    activeIndex={activeIndex}
+                    filteredOptions={filteredOptions}
+                    id={id}
+                    label={label}
+                    menuRef={menuRef}
+                    onChoose={chooseOption}
+                    onKeyDown={createSearchableDropdownKeyDownHandler({
+                        activeIndex,
+                        filteredOptions,
+                        onChoose: chooseOption,
+                        onClose: () => {
+                            setIsOpen(false);
+                        },
+                        setActiveIndex,
+                        triggerRef,
+                    })}
+                    onQueryChange={(event) => {
+                        setQuery(event.currentTarget.value);
+                        setActiveIndex(-1);
+                    }}
+                    options={options}
+                    portalRoot={portalRoot}
+                    query={query}
+                    setActiveIndex={setActiveIndex}
+                    value={value}
+                />
+            ) : null}
         </div>
     );
 };

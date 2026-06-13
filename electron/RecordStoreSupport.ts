@@ -1,101 +1,27 @@
 /** @format */
 
 /**
- * Shared schemas and helpers for the desktop record store.
+ * Shared helpers for the desktop record store and its SQLite-backed runtime
+ * bookkeeping.
  */
 
 import type { DatabaseSync } from 'node:sqlite';
 import { timingSafeEqual } from 'node:crypto';
-import { z } from 'zod';
 
-const LineItemSchema = z.object({
-    rowId: z.string().min(1),
-    itemName: z.string(),
-    hsnSac: z.string(),
-    quantity: z.string(),
-    rate: z.string(),
-    taxPercent: z.string(),
-    amount: z.string(),
-    values: z.record(z.string()).optional(),
-});
+import { parseStoredRecord, type RecordWriteRequest, type StoredRecord } from './RecordStoreSchemas.js';
 
-const EditableRecordSchema = z.object({
-    recordId: z.string().min(1),
-    formatId: z.string().min(1),
-    formatName: z.string().min(1),
-    invoiceDate: z.string(),
-    customerName: z.string(),
-    gstin: z.string(),
-    state: z.string(),
-    billingAddress: z.string(),
-    lineItems: z.array(LineItemSchema),
-    grandTotal: z.string(),
-    fieldValues: z.record(z.string()).optional(),
-});
-
-const OperatorSchema = z.object({
-    account: z.object({
-        userId: z.string().min(1),
-        username: z.string(),
-        displayName: z.string().min(1),
-        role: z.enum(['SysAdmin', 'Admin', 'User']),
-        isActive: z.boolean(),
-    }),
-    role: z.enum(['SysAdmin', 'Admin', 'User']),
-    CreatedBy: z.string().min(1),
-    CreatedByName: z.string().min(1),
-    LastActionBy: z.string().min(1),
-    LastActionByName: z.string().min(1),
-});
-
-export const RecordWriteRequestSchema = z.object({
-    record: EditableRecordSchema,
-    operatorContext: OperatorSchema,
-});
-
-export const RecordCancelRequestSchema = z.object({
-    recordId: z.string().min(1),
-    reason: z.string().trim().min(1),
-    operatorContext: OperatorSchema,
-});
-
-const StoredRecordSchema = EditableRecordSchema.extend({
-    documentNumber: z.string().nullable(),
-    status: z.enum(['Draft', 'Finalized', 'Cancelled']),
-    createdAt: z.string().min(1),
-    updatedAt: z.string().min(1),
-    createdBy: z.string().min(1),
-    createdByName: z.string().min(1),
-    cancellationReason: z.string().optional(),
-});
-
-const ReportQuerySchema = z.object({
-    reportId: z.enum(['sales-register', 'tax-summary', 'customer-ledger']),
-    customer: z.string().default(''),
-    invoiceNumber: z.string().default(''),
-    fromDate: z.string().default(''),
-    toDate: z.string().default(''),
-    status: z.enum(['All', 'Draft', 'Finalized', 'Cancelled']).default('All'),
-    preset: z.enum(['All', 'Today', 'ThisMonth', 'FinancialYear', 'Last100']).default('All'),
-    cursor: z.string().optional(),
-    limit: z.number().int().min(1).max(50).default(50),
-});
-
-export type StoredRecord = z.infer<typeof StoredRecordSchema>;
-export type RecordWriteRequest = z.infer<typeof RecordWriteRequestSchema>;
-export type RecordCancelRequest = z.infer<typeof RecordCancelRequestSchema>;
-export type TrialStatus = {
-    readonly isFullVersion: boolean;
-    readonly isExpired: boolean;
-    readonly accumulatedSeconds: number;
-    readonly remainingSeconds: number;
-};
-export type ReportQuery = z.input<typeof ReportQuerySchema>;
-export type ReportQueryResult = {
-    readonly rows: readonly StoredRecord[];
-    readonly total: number;
-    readonly nextCursor?: string;
-};
+export {
+    parseReportQuery,
+    parseStoredRecord,
+    RecordCancelRequestSchema,
+    RecordWriteRequestSchema,
+    type RecordCancelRequest,
+    type RecordWriteRequest,
+    type ReportQuery,
+    type ReportQueryResult,
+    type StoredRecord,
+    type TrialStatus,
+} from './RecordStoreSchemas.js';
 
 export const createRecordStoreTables = (database: DatabaseSync) => {
     database.exec(`
@@ -129,14 +55,14 @@ export const getStoredRecord = (
     const row = database
         .prepare('SELECT record_json FROM app_records WHERE record_id = ?;')
         .get(recordId);
-    return row ? StoredRecordSchema.parse(JSON.parse(String(row.record_json))) : undefined;
+    return row ? parseStoredRecord(JSON.parse(String(row.record_json))) : undefined;
 };
 
 export const listStoredRecords = (database: DatabaseSync): readonly StoredRecord[] =>
     database
         .prepare('SELECT record_json FROM app_records ORDER BY updated_at DESC;')
         .all()
-        .map((row) => StoredRecordSchema.parse(JSON.parse(String(row.record_json))));
+        .map((row) => parseStoredRecord(JSON.parse(String(row.record_json))));
 
 export const writeStoredRecord = (database: DatabaseSync, record: StoredRecord) => {
     database
@@ -189,7 +115,7 @@ export const buildStoredRecord = (
     documentNumber: string | null,
 ): StoredRecord => {
     const now = new Date().toISOString();
-    return StoredRecordSchema.parse({
+    return {
         ...request.record,
         documentNumber,
         status,
@@ -197,12 +123,8 @@ export const buildStoredRecord = (
         updatedAt: now,
         createdBy: existing?.createdBy ?? request.operatorContext.CreatedBy,
         createdByName: existing?.createdByName ?? request.operatorContext.CreatedByName,
-    });
+    };
 };
-
-export const parseReportQuery = (rawQuery: unknown) => ReportQuerySchema.parse(rawQuery);
-
-export const parseStoredRecord = (rawRecord: unknown) => StoredRecordSchema.parse(rawRecord);
 
 export const safeBufferEqual = (left: string, right: string): boolean => {
     const leftBytes = Buffer.from(left);
