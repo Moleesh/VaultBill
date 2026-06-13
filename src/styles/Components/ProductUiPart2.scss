@@ -150,12 +150,12 @@
 .builder-field-list input,
 .setup-card input {
     min-height: 2.8rem;
-    border: var(--line-width) solid color-mix(in srgb, var(--color-border) 62%, transparent);
+    border: var(--line-width) solid color-mix(in srgb, var(--color-border) 54%, transparent);
     border-radius: var(--radius-sm);
     background: var(--color-surface-raised);
     color: var(--color-text-body);
     padding: var(--space-3);
     box-shadow:
-        inset 0 0 0 1px color-mix(in srgb, var(--color-border) 8%, transparent),
-        0 0.12rem 0.4rem color-mix(in srgb, var(--color-panel-shadow) 4%, transparent);
+        inset 0 0 0 1px color-mix(in srgb, var(--color-border) 6%, transparent),
+        0 0.18rem 0.55rem color-mix(in srgb, var(--color-panel-shadow) 4%, transparent);
 }
