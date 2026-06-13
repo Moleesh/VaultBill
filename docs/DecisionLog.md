@@ -283,7 +283,7 @@
 - Added accumulated-use desktop trial state and package-time license verifier.
 - Replaced the rigid shell with fixed navigation, Lucide icons, a scroll progress
   rail, compact theme palette, role-aware footer, and mobile bottom navigation.
-- Reworked Builder into six focused steps and separated JSON document
+- Reworked Document builder into six focused steps and separated JSON document
   configuration from HTML templates and shared assets.
 - Defined deterministic ten-record print batches and progress for all output.
 - Consolidated Settings into one jump-linked page and expanded reports with
@@ -294,7 +294,7 @@
 - Implemented hosted HttpOnly/CSRF sessions, SQLite operator persistence,
   scrypt/safeStorage credentials, cancellable native output jobs, checksummed
   encrypted ZIP backup/restore/reset, and session invalidation on data reset.
-- Connected published Builder formats to record entry and printing, including
+- Connected published Document builder formats to record entry and printing, including
   custom values, configured calculations, HTML assets, cancellation values, and
   deterministic ten-record batches.
 - Persisted business, integration, and hosted-web settings in SQLite and exposed

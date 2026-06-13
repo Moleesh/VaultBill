@@ -1,10 +1,6 @@
 /** @format */
 
-import {
-    createHostedBackup,
-    requestHostedApi,
-    restoreHostedBackup,
-} from '../../runtime/HostedApi';
+import { createHostedBackup, requestHostedApi, restoreHostedBackup } from '../../runtime/HostedApi';
 import type { BackupResult } from './SettingsBackupTypes';
 
 type BackupDesktopApi = {
@@ -89,10 +85,12 @@ export const buildRestoreTask = (
     remoteAuthorizationPassword: string,
 ): Promise<void> =>
     environment.desktopApi
-        ? environment.desktopApi.restoreBackup({
-              ...(restorePassword ? { password: restorePassword } : {}),
-              ...(restoreRecoveryKey ? { recoveryKey: restoreRecoveryKey } : {}),
-          }).then(() => undefined)
+        ? environment.desktopApi
+              .restoreBackup({
+                  ...(restorePassword ? { password: restorePassword } : {}),
+                  ...(restoreRecoveryKey ? { recoveryKey: restoreRecoveryKey } : {}),
+              })
+              .then(() => undefined)
         : restoreHostedBackup(restoreFile, {
               ...(restorePassword ? { backupPassword: restorePassword } : {}),
               ...(restoreRecoveryKey ? { recoveryKey: restoreRecoveryKey } : {}),
@@ -105,10 +103,12 @@ export const buildResetTask = (
     resetConfirmation: string,
 ): Promise<void> =>
     environment.desktopApi
-        ? environment.desktopApi.resetApplicationData({
-              password: resetSysAdminPassword,
-              confirmation: resetConfirmation,
-          }).then(() => undefined)
+        ? environment.desktopApi
+              .resetApplicationData({
+                  password: resetSysAdminPassword,
+                  confirmation: resetConfirmation,
+              })
+              .then(() => undefined)
         : requestHostedApi('/application/reset', 'POST', {
               currentPassword: resetSysAdminPassword,
               confirmation: resetConfirmation,

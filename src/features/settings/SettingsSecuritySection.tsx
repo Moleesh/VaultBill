@@ -85,20 +85,20 @@ export const SettingsSecuritySection: FC = () => {
             setMessage('Username and display name are required.');
             return;
         }
-            try {
-                await saveAccount({
-                    userId: crypto.randomUUID(),
-                    username,
-                    displayName,
-                    role: newRole,
-                    isActive: true,
-                });
-                setNewUsername('');
-                setNewDisplayName('');
-                setMessage(getOperatorCreationMessage(newRole));
-            } catch (reason) {
-                setMessage(reason instanceof Error ? reason.message : 'Operator could not be created.');
-            }
+        try {
+            await saveAccount({
+                userId: crypto.randomUUID(),
+                username,
+                displayName,
+                role: newRole,
+                isActive: true,
+            });
+            setNewUsername('');
+            setNewDisplayName('');
+            setMessage(getOperatorCreationMessage(newRole));
+        } catch (reason) {
+            setMessage(reason instanceof Error ? reason.message : 'Operator could not be created.');
+        }
     };
 
     const changePassword = () => {

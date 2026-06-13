@@ -12,7 +12,5 @@ export const buildLoginAccountOptions = (accounts: readonly OperatorAccount[]) =
     }));
 
 /** Returns the selected account for the current login form state. */
-export const findLoginAccount = (
-    accounts: readonly OperatorAccount[],
-    selectedAccountId: string,
-) => accounts.find((account) => account.userId === selectedAccountId);
+export const findLoginAccount = (accounts: readonly OperatorAccount[], selectedAccountId: string) =>
+    accounts.find((account) => account.userId === selectedAccountId);

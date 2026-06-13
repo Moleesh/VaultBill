@@ -9,10 +9,12 @@ release claims.
   archive in memory. SQLite snapshots and restore replacement are staged on
   disk, integrity checked, and restart-safe, but true chunked archive
   compression/decompression remains a large-database hardening item.
-- Advanced Builder field types such as attachment, signature, multi-select,
-  QR code, and rich dropdown option editors still need dedicated Records
-  widgets. Text, textarea, checkbox, date, numeric, custom values, row formulas,
-  `SUM(Items.Field)`, and `COUNT(Items)` are connected today.
+- Advanced Document builder field types such as attachment, multi-select, QR
+  code, and
+  rich dropdown option editors still need dedicated Records widgets. Text,
+  textarea, checkbox, date, numeric, custom values, row formulas,
+  `SUM(Items.Field)`, and `COUNT(Items)` are connected today. Signature support
+  remains part of document-builder/template configuration rather than Settings.
 - Hosted sessions are enforced server-side, but a SysAdmin session inventory and
   selective revoke screen is not yet exposed in Settings.
 - GST/GSP and SMS settings use the shared key/value model, but each production

@@ -25,6 +25,38 @@
     background: transparent;
 }
 
+.app-shell__body::before {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background:
+        radial-gradient(
+            circle at top center,
+            color-mix(in srgb, var(--color-primary) 7%, transparent),
+            transparent 34rem
+        ),
+        linear-gradient(
+            180deg,
+            color-mix(in srgb, var(--color-surface) 16%, transparent),
+            transparent 13rem
+        );
+    content: '';
+    pointer-events: none;
+}
+
+.app-shell__body::after {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    content: '';
+    pointer-events: none;
+    background: radial-gradient(
+        circle at 80% 0%,
+        color-mix(in srgb, var(--color-secondary) 8%, transparent),
+        transparent 30rem
+    );
+}
+
 .app-shell__topbar {
     position: relative;
     z-index: 30;
@@ -62,29 +94,6 @@
     scrollbar-color: transparent transparent;
     background: transparent;
     padding: clamp(var(--space-5), 4vw, var(--space-10));
-}
-
-.app-shell__content::before {
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    background:
-        radial-gradient(
-            circle at top center,
-            color-mix(in srgb, var(--color-primary) 7%, transparent),
-            transparent 34rem
-        ),
-        linear-gradient(
-            180deg,
-            color-mix(in srgb, var(--color-surface) 16%, transparent),
-            transparent 13rem
-        );
-    content: '';
-    pointer-events: none;
-}
-
-.app-shell__content::-webkit-scrollbar {
-    display: none;
 }
 
 .app-shell__content > * {

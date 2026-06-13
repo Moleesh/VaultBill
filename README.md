@@ -60,12 +60,12 @@ native Android remain future scope.
 
 ## Roles And Access 🔐
 
-| Role       | Main workspace                                                  |
-| ---------- | --------------------------------------------------------------- |
-| `SysAdmin` | Dashboard, Builder, Business / Security / Integration Settings  |
-| `Admin`    | Dashboard, Records, Reports, restricted password/settings views |
-| `User`     | Records, Reports, personal password control                     |
-| `Demo`     | Dashboard, Records, Reports, browser print/PDF, confirmed reset |
+| Role       | Main workspace                                                                 |
+| ---------- | ------------------------------------------------------------------------------ |
+| `SysAdmin` | Dashboard, Document builder, Business / Security / Connected services / Backup |
+| `Admin`    | Dashboard, Records, Reports, restricted password/settings views                |
+| `User`     | Records, Reports, personal password control                                    |
+| `Demo`     | Dashboard, Records, Reports, browser print/PDF, confirmed reset                |
 
 First-run setup creates only the protected System Administrator. Admin and
 User accounts are added later through Settings. VaultBill allows one active
@@ -88,7 +88,7 @@ The login page lets the operator choose the account, enter a password only when
 one is configured, and press `Enter` to sign in. A one-time logo animation and
 a compact help popover keep the screen light instead of noisy.
 
-## Builder 🧩
+## Document Builder 🧩
 
 Document builder uses eight focused steps:
 
@@ -108,7 +108,7 @@ WOFF, and WOFF2 assets. Templates reference assets with `{{Asset.Name}}`.
 Starter builder examples live in `samples/first-application/` so the sample
 document JSON, matching HTML template, and shared asset sit together. The fresh
 desktop database also seeds the same starter print template and asset so the
-Builder opens with a usable format instead of an empty promise. 🙂
+Document builder opens with a usable format instead of an empty promise. 🙂
 
 Formula examples:
 

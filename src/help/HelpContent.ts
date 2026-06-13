@@ -14,7 +14,7 @@ const platformHelp = (capabilities: CapabilityRegistry): readonly HelpSection[] 
         return [
             {
                 title: 'Desktop tools',
-                body: 'Use printers, backups, and hosted web access on the desktop host.',
+                body: 'Use printers, backups, hosted web access, and activation on the desktop host.',
                 keywords: ['printer', 'backup', 'pdf', 'lan', 'hosted web'],
             },
         ];
@@ -43,14 +43,14 @@ const pageSections: Readonly<Record<string, readonly HelpSection[]>> = {
     login: [
         {
             title: 'Choose your account',
-            body: 'Pick your account, enter the password if one is set, then press Enter or choose Log in.',
+            body: 'Choose your account, enter the password only when one is set, and press Enter to log in.',
             keywords: ['operator', 'account', 'password', 'login'],
         },
     ],
     dashboard: [
         {
             title: 'Start your work',
-            body: 'Records handles documents, Reports shows totals, Document builder configures formats, and SysAdmin can review inventory, backup health, and trial time from the dashboard.',
+            body: 'Records handles documents, Reports shows totals, Document builder configures formats, and SysAdmin reviews inventory, backup health, and trial time.',
             keywords: ['records', 'reports', 'builder', 'settings', 'dashboard'],
         },
     ],

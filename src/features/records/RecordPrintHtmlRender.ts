@@ -3,11 +3,7 @@
 import type { DocumentFormatConfig } from '../../db/startup/ConfigSchemas';
 import type { AppRecord, EditableRecord } from './RecordStoreContext';
 import { calculateRecordTotals } from './RecordTotals';
-import {
-    escapePrintHtml,
-    readBusinessProfile,
-    recordFieldValue,
-} from './RecordPrintHtmlSupport';
+import { escapePrintHtml, readBusinessProfile, recordFieldValue } from './RecordPrintHtmlSupport';
 
 type PrintPackageLike = {
     readonly config: DocumentFormatConfig;

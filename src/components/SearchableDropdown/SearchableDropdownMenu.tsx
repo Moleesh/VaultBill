@@ -47,11 +47,7 @@ export const SearchableDropdownMenu: FC<SearchableDropdownMenuProps> = ({
     if (!portalRoot) return null;
 
     return createPortal(
-        <div
-            className="searchable-dropdown__menu"
-            onKeyDown={onKeyDown}
-            ref={menuRef}
-        >
+        <div className="searchable-dropdown__menu" onKeyDown={onKeyDown} ref={menuRef}>
             {options.length > 7 ? (
                 <input
                     aria-label={`Search ${label}`}

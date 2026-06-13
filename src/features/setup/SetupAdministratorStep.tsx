@@ -24,8 +24,8 @@ export const SetupAdministratorStep: FC<SetupAdministratorStepProps> = ({
             />
         </label>
         <div className="feedback-info span-2">
-            VaultBill initializes the administrator and backup passwords securely. Change both
-            from Security after your first login.
+            VaultBill initializes the administrator and backup passwords securely. Change both from
+            Security after your first login.
         </div>
     </div>
 );
