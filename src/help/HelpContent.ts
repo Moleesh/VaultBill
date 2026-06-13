@@ -14,7 +14,7 @@ const platformHelp = (capabilities: CapabilityRegistry): readonly HelpSection[] 
         return [
             {
                 title: 'Desktop tools',
-                body: 'Use installed printers, create or restore backups, and flip hosted web access on when another browser needs the desktop host.',
+                body: 'Use printers, backups, and hosted web access on the desktop host.',
                 keywords: ['printer', 'backup', 'pdf', 'lan', 'hosted web'],
             },
         ];
@@ -76,14 +76,14 @@ const pageSections: Readonly<Record<string, readonly HelpSection[]>> = {
     builder: [
         {
             title: 'Configure document formats',
-            body: 'Work through format, fields, layout, line items, calculations, print, field preview, and print preview. Document builder JSON stays separate from HTML print templates and shared assets.',
+            body: 'Work through format, fields, layout, line items, calculations, print, field preview, and print preview.',
             keywords: ['fields', 'line items', 'templates', 'preview', 'assets'],
         },
     ],
     settings: [
         {
             title: 'Manage VaultBill',
-            body: 'Business, security, backup, and connected services sit on one page with jump links. Connected services use flexible JSON-style key/value settings, and desktop-only tools stay on the host machine.',
+            body: 'Business, security, backup, and connected services sit on one page with jump links. Connected services use flexible JSON-style key/value settings.',
             keywords: [
                 'branding',
                 'themes',

@@ -203,9 +203,9 @@ npm run test:e2e
 
 The repository intentionally keeps exactly two workflows:
 
-- **Demo Pages** runs on every `main` push and on manual dispatch. It checks
-  formatting, lint, typecheck, unit/security/browser gates, builds the
-  `/VaultBill/` bundle, and deploys to the `VaultBill` environment.
+- **Demo Pages** runs on every `main` push. It checks formatting, lint,
+  typecheck, unit/security/browser gates, builds the `/VaultBill/` bundle, and
+  deploys to the `VaultBill` environment.
 - **Release App** runs on every `main` push, `v*` tag, and manual dispatch. It
   verifies once, builds Windows and Linux in separate jobs, uploads workflow
   artifacts on `main`, and publishes GitHub Releases for tags and manual runs.

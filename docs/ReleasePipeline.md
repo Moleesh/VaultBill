@@ -6,7 +6,7 @@ VaultBill maintains exactly two GitHub Actions workflows.
 
 ## Demo Pages
 
-Triggers on every `main` push and manual dispatch.
+Triggers on every `main` push.
 
 It runs formatting, lint, typecheck, unit tests, dependency/security checks,
 secret scanning, Playwright, and the web build with:
