@@ -2,14 +2,15 @@
 
 import { BuilderPageDrawer } from './BuilderPageDrawer';
 import { BuilderCalculationsStep } from './BuilderCalculationsStep';
+import { BuilderFieldPreviewStep } from './BuilderFieldPreviewStep';
 import { BuilderFieldsStep } from './BuilderFieldsStep';
 import { BuilderFormatStep } from './BuilderFormatStep';
 import { BuilderLayoutStep } from './BuilderLayoutStep';
 import { BuilderLineItemsStep } from './BuilderLineItemsStep';
 import { BuilderPageFooter } from './BuilderPageFooter';
 import { BuilderPageHeader } from './BuilderPageHeader';
-import { BuilderPreviewStep } from './BuilderPreviewStep';
 import { BuilderPrintStep } from './BuilderPrintStep';
+import { BuilderPrintPreviewStep } from './BuilderPrintPreviewStep';
 import { helperFor, newField, steps, type BuilderLayoutConfig } from './BuilderPageSupport';
 import type { FC } from 'react';
 import type { BuilderPageController } from './useBuilderPageController';
@@ -152,12 +153,18 @@ export const BuilderPageWorkspace: FC<{ readonly controller: BuilderPageControll
                         templateHtml={controller.templateHtml}
                     />
                 ) : null}
-                {controller.activeStep === 'Preview & Save' ? (
-                    <BuilderPreviewStep
+                {controller.activeStep === 'Field Preview' ? (
+                    <BuilderFieldPreviewStep
                         assets={controller.assets}
                         config={controller.config}
                         fields={controller.config.Fields}
                         lineSection={lineSection}
+                    />
+                ) : null}
+                {controller.activeStep === 'Print Preview' ? (
+                    <BuilderPrintPreviewStep
+                        assets={controller.assets}
+                        config={controller.config}
                         templateHtml={controller.templateHtml}
                         validation={controller.validation}
                     />

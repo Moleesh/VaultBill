@@ -86,7 +86,7 @@ export const SettingsBusinessSection: FC = () => {
                     document format.
                 </p>
                 <p className="field-note span-2">
-                    GSTIN, output target, and printer defaults are saved with the business profile.
+                    Business profile details and printer defaults are saved together here.
                 </p>
             </div>
             <div className="settings-inline-actions">

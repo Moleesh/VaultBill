@@ -63,7 +63,7 @@ describe('product UI', () => {
         expect(screen.getByRole('button', { name: /Finalize/u })).toBeEnabled();
     });
 
-    it('shows demo report data and the six Builder steps', async () => {
+    it('shows demo report data and the builder steps', async () => {
         renderPage(
             <>
                 <ReportsPage />
@@ -109,7 +109,19 @@ describe('product UI', () => {
         expect(screen.queryByText('Sample value')).not.toBeInTheDocument();
     });
 
-    it('shows field and print previews in the final builder step', () => {
+    it('shows field and print previews in the builder preview steps', () => {
+        renderPage(<BuilderPage />);
+
+        fireEvent.click(screen.getByRole('button', { name: /Field Preview/u }));
+        expect(screen.getByRole('heading', { name: /Field preview/u })).toBeVisible();
+        expect(screen.getByLabelText('Invoice Date')).toBeVisible();
+        expect(screen.getByText('Item Name')).toBeVisible();
+
+        fireEvent.click(screen.getByRole('button', { name: /Print Preview/u }));
+        expect(screen.getByRole('heading', { name: /Print preview/u })).toBeVisible();
+    });
+
+    it('can open the print preview step directly from the route', () => {
         render(
             <MemoryRouter initialEntries={['/app/builder?step=preview']}>
                 <CapabilityProvider value={webCapabilities}>
@@ -122,10 +134,7 @@ describe('product UI', () => {
             </MemoryRouter>,
         );
 
-        expect(screen.getByRole('heading', { name: /Field preview/u })).toBeVisible();
         expect(screen.getByRole('heading', { name: /Print preview/u })).toBeVisible();
-        expect(screen.getByLabelText('Invoice Date')).toBeVisible();
-        expect(screen.getByText('Item Name')).toBeVisible();
     });
 
     it('filters long dropdown options through its portal', () => {

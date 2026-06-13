@@ -38,10 +38,12 @@ describe('BuilderPageSupport', () => {
             'Line Items',
             'Calculations',
             'Print',
-            'Preview & Save',
+            'Field Preview',
+            'Print Preview',
         ]);
         expect(helperFor('Format')).toContain('document name');
-        expect(helperFor('Preview & Save')).toContain('field and print previews');
+        expect(helperFor('Field Preview')).toContain('entry form');
+        expect(helperFor('Print Preview')).toContain('rendered print output');
         expect(move([1, 2, 3], 0, 2)).toEqual([2, 3, 1]);
         expect(newField(0)).toMatchObject({ FieldId: 'Field1', Label: 'New field 1' });
         expect(mimeTypeFromName('logo.WEBP')).toBe('image/webp');

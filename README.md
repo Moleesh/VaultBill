@@ -90,14 +90,16 @@ a compact help popover keep the screen light instead of noisy.
 
 ## Builder 🧩
 
-Document builder uses six focused steps:
+Document builder uses eight focused steps:
 
 1. Format
 2. Fields
-3. Line Items
-4. Calculations
-5. Print
-6. Preview & Save
+3. Layout
+4. Line Items
+5. Calculations
+6. Print
+7. Field Preview
+8. Print Preview
 
 Document configuration imports and exports as versioned JSON. Print templates
 stay separate as one sanitized HTML file plus shared PNG, JPEG, WebP, SVG,

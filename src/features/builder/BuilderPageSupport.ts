@@ -14,7 +14,8 @@ export const steps = [
     'Line Items',
     'Calculations',
     'Print',
-    'Preview & Save',
+    'Field Preview',
+    'Print Preview',
 ] as const;
 export type BuilderStep = (typeof steps)[number];
 export type BuilderLayoutConfig = {
@@ -89,7 +90,8 @@ export const helperFor = (step: BuilderStep): string =>
         'Line Items': 'Design repeatable product or service rows with totals.',
         Calculations: 'Connect numeric fields with formulas, GST, and round-off.',
         Print: 'Upload one HTML file and the images or fonts it references.',
-        'Preview & Save': 'Check field and print previews before publishing.',
+        'Field Preview': 'Review the entry form before you publish.',
+        'Print Preview': 'Check the rendered print output before publishing.',
     })[step];
 
 export const formatBytes = (size: number): string =>
