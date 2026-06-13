@@ -21,14 +21,21 @@ export const BuilderPrintPreviewStep: FC<BuilderPrintPreviewStepProps> = ({
     validation,
 }) => (
     <>
-        <section className="builder-preview-card" aria-labelledby="builder-print-preview-title">
-            <h3 id="builder-print-preview-title">Print preview</h3>
-            <p>{config.FormatName} template</p>
-            <iframe
-                sandbox=""
-                srcDoc={renderBuilderPreview(templateHtml, config, assets)}
-                title="Print template preview"
-            />
+        <section
+            className="builder-preview-card builder-preview-card--print span-2"
+            aria-labelledby="builder-print-preview-title"
+        >
+            <div className="builder-preview-card__intro">
+                <h3 id="builder-print-preview-title">Print preview</h3>
+                <p>{config.FormatName} template</p>
+            </div>
+            <div className="builder-preview-card__frame">
+                <iframe
+                    sandbox=""
+                    srcDoc={renderBuilderPreview(templateHtml, config, assets)}
+                    title="Print template preview"
+                />
+            </div>
         </section>
         {validation.length > 0 ? (
             <div className="feedback-info span-2">

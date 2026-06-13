@@ -31,16 +31,18 @@
     }
 
     .builder-fields > article {
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: auto minmax(0, 1fr) auto auto;
+        align-items: center;
     }
 
     .builder-fields__main {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr) auto auto;
     }
 
     .calculation-list article,
     .asset-list article {
-        grid-template-columns: 1fr auto;
+        grid-template-columns: auto minmax(0, 1fr) auto auto;
+        align-items: center;
     }
 
     .calculation-list article > code,
@@ -57,6 +59,7 @@
     .settings-inline-actions > *,
     .builder-header-actions > * {
         width: 100%;
+        min-width: 0;
     }
 }
 

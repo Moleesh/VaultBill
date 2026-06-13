@@ -1,6 +1,7 @@
 /** @format */
 
 import { BrowserWindow, ipcMain } from 'electron';
+import { z } from 'zod';
 
 import { cancelOutputJob, printHtmlWithElectron } from './PrintBridge.js';
 import { renderHtmlToPdf } from './PdfBridge.js';
@@ -9,6 +10,13 @@ import { mainState } from './MainState.js';
 import { refreshTray } from './MainRuntime.js';
 import { LocalApiConfigurationSchema } from './server/LocalApiSecurity.js';
 import { registerMainIpcBackupHandlers } from './MainIpcBackupHandlers.js';
+
+const SetupCompleteRequestSchema = z.object({
+    companyName: z.string().trim().min(1),
+    address: z.string().trim().min(1),
+    adminUsername: z.string().trim().min(1),
+    adminDisplayName: z.string().trim().min(1),
+});
 
 export const registerMainIpcHandlers = () => {
     ipcMain.handle('vaultbill:get-app-identity', () => mainState.identity);
@@ -70,10 +78,23 @@ export const registerMainIpcHandlers = () => {
         }
         mainState.credentialStore.configureSysAdmin(displayName);
     });
-    ipcMain.handle('vaultbill:setup:complete', () => {
+    ipcMain.handle('vaultbill:setup:complete', (_event, request: unknown) => {
         if (!mainState.credentialStore || !mainState.settingsStore) {
             throw new Error('Setup services are not ready.');
         }
+        const setup = SetupCompleteRequestSchema.parse(request);
+        mainState.settingsStore.saveBusiness({
+            ...mainState.settingsStore.getBusiness(),
+            companyName: setup.companyName,
+            address: setup.address,
+        });
+        mainState.credentialStore.saveAccount({
+            userId: 'admin_1',
+            username: setup.adminUsername,
+            displayName: setup.adminDisplayName,
+            role: 'Admin',
+            isActive: true,
+        });
         return {
             credentialStatus: mainState.credentialStore.getCredentialStatus(),
             business: mainState.settingsStore.getBusiness(),

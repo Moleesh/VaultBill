@@ -24,6 +24,11 @@ select:disabled {
     font-weight: var(--font-weight-semibold);
 }
 
+.required-indicator {
+    color: var(--color-danger);
+    font-weight: var(--font-weight-bold);
+}
+
 .record-status-row,
 .record-summary,
 .report-toolbar,

@@ -65,21 +65,27 @@ export const SettingsSecurityAccounts: FC<SettingsSecurityAccountsProps> = ({
             </div>
             <div className="operator-create">
                 <label>
-                    <span>Username</span>
+                    <span>
+                        Username <span className="required-indicator">*</span>
+                    </span>
                     <input
                         value={newUsername}
                         onChange={(event) => {
                             onNewUsernameChange(event.currentTarget.value);
                         }}
+                        required
                     />
                 </label>
                 <label>
-                    <span>Display name</span>
+                    <span>
+                        Display name <span className="required-indicator">*</span>
+                    </span>
                     <input
                         value={newDisplayName}
                         onChange={(event) => {
                             onNewDisplayNameChange(event.currentTarget.value);
                         }}
+                        required
                     />
                 </label>
                 {operatorRole === 'SysAdmin' ? (
@@ -148,7 +154,7 @@ export const SettingsSecurityAccounts: FC<SettingsSecurityAccountsProps> = ({
             </div>
             <div className="operator-create">
                 <SearchableDropdown
-                    label="Account"
+                    label="Account *"
                     onChange={onPasswordUserIdChange}
                     options={manageableAccounts.map((account) => ({
                         value: account.userId,
@@ -157,13 +163,16 @@ export const SettingsSecurityAccounts: FC<SettingsSecurityAccountsProps> = ({
                     value={passwordUserId}
                 />
                 <label>
-                    <span>New password</span>
+                    <span>
+                        New password <span className="required-indicator">*</span>
+                    </span>
                     <input
                         type="password"
                         value={newPassword}
                         onChange={(event) => {
                             onNewPasswordChange(event.currentTarget.value);
                         }}
+                        required
                     />
                 </label>
                 <button onClick={onChangePassword} type="button">

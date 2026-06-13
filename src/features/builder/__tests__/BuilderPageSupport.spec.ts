@@ -33,8 +33,8 @@ describe('BuilderPageSupport', () => {
     it('keeps the wizard steps and helper copy aligned', () => {
         expect(steps).toEqual([
             'Format',
-            'Fields',
             'Layout',
+            'Fields',
             'Line Items',
             'Calculations',
             'Print',
@@ -42,6 +42,7 @@ describe('BuilderPageSupport', () => {
             'Print Preview',
         ]);
         expect(helperFor('Format')).toContain('document name');
+        expect(helperFor('Layout')).toContain('page flow');
         expect(helperFor('Field Preview')).toContain('entry form');
         expect(helperFor('Print Preview')).toContain('rendered print output');
         expect(move([1, 2, 3], 0, 2)).toEqual([2, 3, 1]);

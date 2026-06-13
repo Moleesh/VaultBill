@@ -9,10 +9,12 @@ type ReportsActionBarProps = {
     readonly fromDate: string;
     readonly toDate: string;
     readonly status: string;
+    readonly preset: string;
     readonly onClearCustomer: () => void;
     readonly onClearInvoiceNumber: () => void;
     readonly onClearDateRange: () => void;
     readonly onClearStatus: () => void;
+    readonly onClearPreset: () => void;
     readonly onReset: () => void;
     readonly visibleCount: number;
     readonly totalRecords: number;
@@ -31,10 +33,12 @@ export const ReportsActionBar: FC<ReportsActionBarProps> = ({
     fromDate,
     toDate,
     status,
+    preset,
     onClearCustomer,
     onClearInvoiceNumber,
     onClearDateRange,
     onClearStatus,
+    onClearPreset,
     onReset,
     visibleCount,
     totalRecords,
@@ -66,6 +70,11 @@ export const ReportsActionBar: FC<ReportsActionBarProps> = ({
             {status !== 'All' ? (
                 <button onClick={onClearStatus} type="button">
                     Status: {status} ×
+                </button>
+            ) : null}
+            {preset !== 'All' ? (
+                <button onClick={onClearPreset} type="button">
+                    Range: {preset === 'Last100' ? 'Last 100' : preset} ×
                 </button>
             ) : null}
             <button onClick={onReset} type="button">

@@ -27,6 +27,28 @@ select:focus-visible {
         0 0.2rem 0.8rem color-mix(in srgb, var(--color-panel-shadow) 7%, transparent);
 }
 
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+    outline: none;
+    border-color: color-mix(in srgb, var(--color-primary) 72%, transparent);
+    box-shadow: inset 0 0 0 0.14rem color-mix(in srgb, var(--color-primary) 26%, transparent);
+}
+
+input[aria-invalid='true'],
+textarea[aria-invalid='true'],
+select[aria-invalid='true'] {
+    border-color: color-mix(in srgb, var(--color-danger) 70%, transparent);
+    box-shadow: inset 0 0 0 0.14rem color-mix(in srgb, var(--color-danger) 28%, transparent);
+}
+
+input[aria-invalid='true']:focus-visible,
+textarea[aria-invalid='true']:focus-visible,
+select[aria-invalid='true']:focus-visible {
+    border-color: color-mix(in srgb, var(--color-danger) 84%, transparent);
+    box-shadow: inset 0 0 0 0.16rem color-mix(in srgb, var(--color-danger) 34%, transparent);
+}
+
 .button-primary {
     display: inline-flex;
     align-items: center;

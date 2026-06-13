@@ -24,9 +24,15 @@ export const BuilderPrintStep: FC<BuilderPrintStepProps> = ({
 }) => (
     <div className="print-upload-grid">
         <article className="upload-card">
-            <FileCode2 aria-hidden="true" />
-            <h3>HTML template</h3>
-            <p>Upload one self-contained HTML file with embedded CSS.</p>
+            <div className="upload-card__header">
+                <span className="upload-card__icon" aria-hidden="true">
+                    <FileCode2 size={18} />
+                </span>
+                <div className="upload-card__copy">
+                    <h3>HTML template</h3>
+                    <p>Upload one self-contained HTML file with embedded CSS.</p>
+                </div>
+            </div>
             <small>Unsafe scripts, frames, forms, and remote URLs are removed.</small>
             <label className="button-file">
                 <Upload aria-hidden="true" size={18} />
@@ -54,12 +60,18 @@ export const BuilderPrintStep: FC<BuilderPrintStepProps> = ({
             ) : null}
         </article>
         <article className="upload-card">
-            <FileJson2 aria-hidden="true" />
-            <h3>Shared assets</h3>
-            <p>
-                Images and fonts are referenced with <code>{'{{Asset.Name}}'}</code>. Existing
-                assets remain visible here.
-            </p>
+            <div className="upload-card__header">
+                <span className="upload-card__icon" aria-hidden="true">
+                    <FileJson2 size={18} />
+                </span>
+                <div className="upload-card__copy">
+                    <h3>Shared assets</h3>
+                    <p>
+                        Images and fonts are referenced with <code>{'{{Asset.Name}}'}</code>.
+                        Existing assets remain visible here.
+                    </p>
+                </div>
+            </div>
             <label className="button-file">
                 <Plus aria-hidden="true" size={18} /> Add or replace assets
                 <input

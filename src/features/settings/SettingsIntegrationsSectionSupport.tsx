@@ -1,6 +1,6 @@
 /** @format */
 
-import { ShieldCheck } from 'lucide-react';
+import { Plus, ShieldCheck, Trash2 } from 'lucide-react';
 import type { FC } from 'react';
 
 import { SearchableDropdown } from '../../components/SearchableDropdown/SearchableDropdown';
@@ -140,6 +140,11 @@ export const IntegrationServiceCard: FC<IntegrationServiceCardProps> = ({
             value={providerValue}
         />
         <div className="integration-key-value-table" aria-label={`${title} configuration`}>
+            <div className="integration-key-value-table__header">
+                <span>Key</span>
+                <span>Value</span>
+                <span>Action</span>
+            </div>
             {service.fields.map((field, index) => (
                 <div className="integration-key-value-row" key={`${title}-${String(index)}`}>
                     <label>
@@ -180,17 +185,18 @@ export const IntegrationServiceCard: FC<IntegrationServiceCardProps> = ({
                         }}
                         type="button"
                     >
-                        Remove
+                        <Trash2 aria-hidden="true" size={16} />
                     </button>
                 </div>
             ))}
             <button
+                className="button-file"
                 onClick={() => {
                     onServiceChange({ ...service, fields: [...service.fields, createField()] });
                 }}
                 type="button"
             >
-                Add field
+                <Plus aria-hidden="true" size={18} /> Add field
             </button>
         </div>
     </div>

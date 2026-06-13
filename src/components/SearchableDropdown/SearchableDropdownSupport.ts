@@ -22,7 +22,7 @@ export const getDropdownMenuPlacement = (
     const preferredHeight = Math.min(448, viewportHeight - 32);
     const belowSpace = viewportHeight - rect.bottom - 8;
     const aboveSpace = rect.top - 8;
-    const shouldOpenAbove = belowSpace < 160 && aboveSpace > belowSpace + 48;
+    const shouldOpenAbove = belowSpace < 112 && aboveSpace > belowSpace + 160;
     const openDirection: 'above' | 'below' = shouldOpenAbove ? 'above' : 'below';
     const availableHeight = openDirection === 'above' ? aboveSpace : belowSpace;
     const boundedHeight = Math.max(16, Math.min(preferredHeight, availableHeight));

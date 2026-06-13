@@ -4,6 +4,7 @@ import { KeyRound, LogOut, RotateCcw } from 'lucide-react';
 import type { FC } from 'react';
 
 import { ThemePalette } from './ThemePalette';
+import { formatTrialCountdownParts } from '../features/dashboard/SysAdminDashboardSupport';
 import type { ThemeController } from '../types/AppTypes';
 
 type AppShellTopbarProps = {
@@ -67,14 +68,23 @@ export const AppShellTopbar: FC<AppShellTopbarProps> = ({
             </div>
             {!isDemoMode && trialStatus && !trialStatus.isFullVersion ? (
                 <button
-                    className={trialStatus.isExpired ? 'button-danger' : ''}
+                    className={`app-shell__trial-pill${trialStatus.isExpired ? ' button-danger' : ''}`}
                     onClick={onOpenActivation}
                     type="button"
                 >
                     <KeyRound aria-hidden="true" size={17} />
-                    {trialStatus.isExpired
-                        ? 'Trial expired'
-                        : `${String(Math.ceil(trialStatus.remainingSeconds / 3600))}h trial`}
+                    <span className="app-shell__trial-pill-copy">
+                        <strong>
+                            {trialStatus.isExpired
+                                ? 'Trial expired'
+                                : formatTrialCountdownParts(trialStatus.remainingSeconds).amount}
+                        </strong>
+                        <small>
+                            {trialStatus.isExpired
+                                ? 'Open activation'
+                                : formatTrialCountdownParts(trialStatus.remainingSeconds).label}
+                        </small>
+                    </span>
                 </button>
             ) : null}
         </div>

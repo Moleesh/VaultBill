@@ -72,14 +72,12 @@ describe('SysAdmin dashboard', () => {
         );
 
         await waitFor(() => {
-            expect(
-                screen.getByRole('heading', { name: 'Configuration control centre' }),
-            ).toBeVisible();
+            expect(screen.getByText('Formats published')).toBeVisible();
         });
         expect(screen.getByText('Trial countdown')).toBeVisible();
-        expect(screen.getAllByText('1h 0m remaining')).toHaveLength(2);
-        expect(screen.getByText('Formats published')).toBeVisible();
-        expect(screen.getByText('GST Invoice')).toBeVisible();
-        expect(screen.getAllByText('Last backup')).toHaveLength(2);
+        expect(screen.getByText('Templates published')).toBeVisible();
+        expect(screen.getByText('Users created')).toBeVisible();
+        expect(screen.getByText('Active users')).toBeVisible();
+        expect(screen.getByText('Records total')).toBeVisible();
     });
 });

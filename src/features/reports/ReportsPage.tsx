@@ -47,6 +47,7 @@ export const ReportsPage: FC = () => {
                     customer={controller.customer}
                     fromDate={controller.fromDate}
                     invoiceNumber={controller.invoiceNumber}
+                    preset={controller.preset}
                     onClearCustomer={() => {
                         controller.setCustomer('');
                     }}
@@ -59,6 +60,9 @@ export const ReportsPage: FC = () => {
                     }}
                     onClearStatus={() => {
                         controller.setStatus('All');
+                    }}
+                    onClearPreset={() => {
+                        controller.setPreset('All');
                     }}
                     onExportAll={controller.exportAll}
                     onPrintRecords={() => {

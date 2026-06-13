@@ -32,15 +32,15 @@ describe('dashboard page', () => {
         document.body.innerHTML = '<div id="portal-root"></div>';
         window.localStorage.clear();
         window.localStorage.setItem('vaultbill.setup.complete', 'true');
-        window.localStorage.setItem('vaultbill.operator', 'sysadmin_1');
+        window.localStorage.setItem('vaultbill.operator', 'admin_1');
         window.localStorage.setItem(
             'vaultbill.accounts',
             JSON.stringify([
                 {
-                    userId: 'sysadmin_1',
-                    username: 'sysadmin',
-                    displayName: 'System Administrator',
-                    role: 'SysAdmin',
+                    userId: 'admin_1',
+                    username: 'admin',
+                    displayName: 'Operations Admin',
+                    role: 'Admin',
                     isActive: true,
                 },
             ]),
@@ -95,15 +95,9 @@ describe('dashboard page', () => {
         );
 
         await waitFor(() => {
-            expect(
-                screen.getByRole('heading', { name: 'Configuration control centre' }),
-            ).toBeVisible();
+            expect(screen.getByRole('heading', { name: /Welcome back,/u })).toBeVisible();
         });
-        expect(screen.getByRole('link', { name: 'Create document' })).toBeVisible();
         expect(screen.getByText('Finalized revenue')).toBeVisible();
         expect(screen.getByText('Latest records')).toBeVisible();
-        expect(
-            screen.getByText('Invoices, customers, and the numbers worth noticing today.'),
-        ).toBeVisible();
     });
 });

@@ -9,11 +9,11 @@ import type { FC } from 'react';
 import { AppBrandIcon } from '../../components/AppBrandIcon/AppBrandIcon';
 import { HorizontalProgress } from '../../components/HorizontalProgress/HorizontalProgress';
 import { VENDOR } from '../../constants/Vendor';
-import { SetupAdministratorStep } from './SetupAdministratorStep';
+import { SetupAdminUserStep } from './SetupAdminUserStep';
 import { SetupBusinessProfileStep } from './SetupBusinessProfileStep';
 import { SetupWelcomeStep } from './SetupWelcomeStep';
 
-const steps = ['Welcome', 'Business Profile', 'System Administrator'] as const;
+const steps = ['Welcome', 'Business Profile', 'Admin User'] as const;
 const defaultPasswordHash = '5e800c5e134b84a0d73bd6f0d0f65b768f8a3afeba9c26ce3fe9b8d58fd027f1';
 
 export const setupCompleteStorageKey = 'vaultbill.setup.complete';
@@ -30,22 +30,27 @@ export const SetupPage: FC<SetupPageProps> = ({ onComplete }) => {
     const [stepIndex, setStepIndex] = useState(0);
     const [companyName, setCompanyName] = useState('');
     const [address, setAddress] = useState('');
-    const [sysAdminName, setSysAdminName] = useState('System Administrator');
+    const [adminUsername, setAdminUsername] = useState('');
+    const [adminDisplayName, setAdminDisplayName] = useState('');
     const [message, setMessage] = useState('');
+    const [hasAttemptedBusinessProfileContinue, setHasAttemptedBusinessProfileContinue] =
+        useState(false);
+    const [hasAttemptedAdminUserFinish, setHasAttemptedAdminUserFinish] = useState(false);
     const activeStep = steps[stepIndex] ?? 'Welcome';
 
-    const canContinue =
-        activeStep !== 'Business Profile' ||
-        (companyName.trim().length > 0 && address.trim().length > 0);
+    const isBusinessProfileInvalid = companyName.trim().length === 0 || address.trim().length === 0;
+    const isAdminUserInvalid =
+        adminUsername.trim().length === 0 || adminDisplayName.trim().length === 0;
+    const canContinue = activeStep !== 'Business Profile' || !isBusinessProfileInvalid;
 
     const completeSetup = () => {
-        const normalizedName = sysAdminName.trim() || 'System Administrator';
         const finish = async () => {
             if (window.vaultBillDesktop) {
                 await window.vaultBillDesktop.completeSetup({
                     companyName: companyName.trim(),
                     address: address.trim(),
-                    sysAdminName: normalizedName,
+                    adminUsername: adminUsername.trim(),
+                    adminDisplayName: adminDisplayName.trim(),
                 });
             } else {
                 window.localStorage.setItem(
@@ -54,11 +59,18 @@ export const SetupPage: FC<SetupPageProps> = ({ onComplete }) => {
                         {
                             userId: 'sysadmin_1',
                             username: 'sysadmin',
-                            displayName: normalizedName,
+                            displayName: 'System Administrator',
                             role: 'SysAdmin',
                             isActive: true,
                             passwordHash: defaultPasswordHash,
                             usesDefaultPassword: true,
+                        },
+                        {
+                            userId: 'admin_1',
+                            username: adminUsername.trim(),
+                            displayName: adminDisplayName.trim(),
+                            role: 'Admin',
+                            isActive: true,
                         },
                     ]),
                 );
@@ -100,7 +112,6 @@ export const SetupPage: FC<SetupPageProps> = ({ onComplete }) => {
                             }}
                             type="button"
                         >
-                            <small>{index + 1}</small>
                             {step}
                         </button>
                     ))}
@@ -119,12 +130,16 @@ export const SetupPage: FC<SetupPageProps> = ({ onComplete }) => {
                             companyName={companyName}
                             onAddressChange={setAddress}
                             onCompanyNameChange={setCompanyName}
+                            showValidation={hasAttemptedBusinessProfileContinue}
                         />
                     ) : null}
-                    {activeStep === 'System Administrator' ? (
-                        <SetupAdministratorStep
-                            onSysAdminNameChange={setSysAdminName}
-                            sysAdminName={sysAdminName}
+                    {activeStep === 'Admin User' ? (
+                        <SetupAdminUserStep
+                            displayName={adminDisplayName}
+                            onDisplayNameChange={setAdminDisplayName}
+                            onUsernameChange={setAdminUsername}
+                            showValidation={hasAttemptedAdminUserFinish}
+                            username={adminUsername}
                         />
                     ) : null}
                     {message ? <p className="feedback-error">{message}</p> : null}
@@ -144,9 +159,11 @@ export const SetupPage: FC<SetupPageProps> = ({ onComplete }) => {
                             className="button-primary"
                             onClick={() => {
                                 if (!canContinue) {
+                                    setHasAttemptedBusinessProfileContinue(true);
                                     setMessage('Business name and address are required.');
                                     return;
                                 }
+                                setHasAttemptedBusinessProfileContinue(false);
                                 setMessage('');
                                 setStepIndex((current) => Math.min(steps.length - 1, current + 1));
                             }}
@@ -155,7 +172,20 @@ export const SetupPage: FC<SetupPageProps> = ({ onComplete }) => {
                             Continue
                         </button>
                     ) : (
-                        <button className="button-primary" onClick={completeSetup} type="button">
+                        <button
+                            className="button-primary"
+                            onClick={() => {
+                                if (isAdminUserInvalid) {
+                                    setHasAttemptedAdminUserFinish(true);
+                                    setMessage('Admin username and display name are required.');
+                                    return;
+                                }
+                                setHasAttemptedAdminUserFinish(false);
+                                setMessage('');
+                                completeSetup();
+                            }}
+                            type="button"
+                        >
                             Start using VaultBill
                         </button>
                     )}
