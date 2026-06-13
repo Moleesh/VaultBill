@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 import type { FC } from 'react';
 
 import { DashboardMetric } from './DashboardMetric';
-import { useSysAdminDashboardState } from './SysAdminDashboardSupport';
+import { formatTrialCountdown, useSysAdminDashboardState } from './SysAdminDashboardSupport';
 
 /**
  * SysAdmin dashboard surfaces document-format inventory and readiness.
@@ -19,7 +19,7 @@ export const SysAdminDashboard: FC = () => {
         ? 'Full version active'
         : summary.isTrialExpired
           ? 'Trial expired'
-          : `${String(Math.ceil(summary.trialRemainingSeconds / 3600))}h remaining`;
+          : formatTrialCountdown(summary.trialRemainingSeconds);
 
     return (
         <div className="page-stack">

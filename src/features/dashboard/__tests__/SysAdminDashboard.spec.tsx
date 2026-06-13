@@ -1,14 +1,12 @@
 /** @format */
 
 import { render, screen, waitFor } from '@testing-library/react';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import type { CapabilityRegistry } from '../../../capability/Capability.types';
 import { CapabilityProvider } from '../../../capability/CapabilityContext';
-import { RecordStoreProvider } from '../../records/RecordStoreContext';
-import { SessionProvider } from '../../auth/SessionContext';
-import { DashboardPage } from '../DashboardPage';
+import { SysAdminDashboard } from '../SysAdminDashboard';
 
 const desktopCapabilities: CapabilityRegistry = {
     isDesktop: true,
@@ -27,24 +25,9 @@ const desktopCapabilities: CapabilityRegistry = {
     hasLocalDb: true,
 };
 
-describe('dashboard page', () => {
+describe('SysAdmin dashboard', () => {
     beforeEach(() => {
         document.body.innerHTML = '<div id="portal-root"></div>';
-        window.localStorage.clear();
-        window.localStorage.setItem('vaultbill.setup.complete', 'true');
-        window.localStorage.setItem('vaultbill.operator', 'sysadmin_1');
-        window.localStorage.setItem(
-            'vaultbill.accounts',
-            JSON.stringify([
-                {
-                    userId: 'sysadmin_1',
-                    username: 'sysadmin',
-                    displayName: 'System Administrator',
-                    role: 'SysAdmin',
-                    isActive: true,
-                },
-            ]),
-        );
         Object.defineProperty(window, 'vaultBillDesktop', {
             configurable: true,
             value: {
@@ -79,17 +62,11 @@ describe('dashboard page', () => {
         });
     });
 
-    it('renders the dashboard for the active operator', async () => {
+    it('shows the operational summary and trial countdown', async () => {
         render(
-            <MemoryRouter initialEntries={['/app/dashboard']}>
+            <MemoryRouter>
                 <CapabilityProvider value={desktopCapabilities}>
-                    <SessionProvider>
-                        <RecordStoreProvider>
-                            <Routes>
-                                <Route path="/app/dashboard" element={<DashboardPage />} />
-                            </Routes>
-                        </RecordStoreProvider>
-                    </SessionProvider>
+                    <SysAdminDashboard />
                 </CapabilityProvider>
             </MemoryRouter>,
         );
@@ -99,11 +76,10 @@ describe('dashboard page', () => {
                 screen.getByRole('heading', { name: 'Configuration control centre' }),
             ).toBeVisible();
         });
-        expect(screen.getByRole('link', { name: 'Create document' })).toBeVisible();
-        expect(screen.getByText('Finalized revenue')).toBeVisible();
-        expect(screen.getByText('Latest records')).toBeVisible();
-        expect(
-            screen.getByText('Invoices, customers, and the numbers worth noticing today.'),
-        ).toBeVisible();
+        expect(screen.getByText('Trial countdown')).toBeVisible();
+        expect(screen.getAllByText('1h 0m remaining')).toHaveLength(2);
+        expect(screen.getByText('Formats published')).toBeVisible();
+        expect(screen.getByText('GST Invoice')).toBeVisible();
+        expect(screen.getAllByText('Last backup')).toHaveLength(2);
     });
 });

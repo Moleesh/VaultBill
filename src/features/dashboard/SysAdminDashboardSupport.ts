@@ -46,6 +46,22 @@ export type SysAdminDashboardState = {
     readonly message: string;
 };
 
+export const formatTrialCountdown = (remainingSeconds: number): string => {
+    if (remainingSeconds <= 0) return '0m remaining';
+    const totalMinutes = Math.max(1, Math.floor(remainingSeconds / 60));
+    const days = Math.floor(totalMinutes / (24 * 60));
+    const hours = Math.floor((totalMinutes % (24 * 60)) / 60);
+    const minutes = totalMinutes % 60;
+
+    if (days > 0) {
+        return `${String(days)}d ${String(hours)}h remaining`;
+    }
+    if (hours > 0) {
+        return `${String(hours)}h ${String(minutes)}m remaining`;
+    }
+    return `${String(minutes)}m remaining`;
+};
+
 const defaultSummary: SysAdminSummary = {
     formatCount: 0,
     defaultFormatCount: 0,

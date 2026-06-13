@@ -3,6 +3,8 @@
 import { KeyRound, ShieldCheck } from 'lucide-react';
 import type { FC } from 'react';
 
+import { formatTrialCountdown } from '../dashboard/SysAdminDashboardSupport';
+
 type SettingsSecurityAccessProps = {
     readonly isSysAdmin: boolean;
     readonly isDemoMode: boolean;
@@ -38,13 +40,13 @@ export const SettingsSecurityAccess: FC<SettingsSecurityAccessProps> = ({
             <div className="settings-subsection">
                 <div className="section-heading">
                     <div>
-                        <h3>License and trial</h3>
+                        <h3>Activation and trial</h3>
                         <p>
                             {trialStatus?.isFullVersion
                                 ? 'Full version activated.'
                                 : trialStatus?.isExpired
                                   ? 'The accumulated-use trial has expired. Read-only access remains available.'
-                                  : `${String(Math.ceil((trialStatus?.remainingSeconds ?? 0) / 3600))} trial hours remaining.`}
+                                  : `${formatTrialCountdown(trialStatus?.remainingSeconds ?? 0)} left.`}
                         </p>
                     </div>
                     <KeyRound aria-hidden="true" />
@@ -76,7 +78,7 @@ export const SettingsSecurityAccess: FC<SettingsSecurityAccessProps> = ({
                 <div className="section-heading">
                     <div>
                         <h3>Hosted web access</h3>
-                        <p>Flip hosted web access on or off for this desktop session.</p>
+                        <p>Enable or disable hosted web access for this desktop session.</p>
                     </div>
                     <ShieldCheck aria-hidden="true" />
                 </div>
@@ -89,7 +91,7 @@ export const SettingsSecurityAccess: FC<SettingsSecurityAccessProps> = ({
                         }}
                         type="checkbox"
                     />
-                    <span>Allow hosted web access</span>
+                    <span>Hosted web access enabled</span>
                 </label>
             </div>
         ) : null}
