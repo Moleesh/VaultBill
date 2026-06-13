@@ -27,14 +27,14 @@ describe('SmsProvider', () => {
         expect(canUseSmsProvider(enabledSettings, 'ProductionWeb')).toMatchObject({
             ok: false,
             userMessage:
-                'Production web SMS must use a server-side provider flow. Direct secrets are not allowed.',
+                'Production web SMS must use a server-side integration flow. Direct secrets are not allowed.',
         });
         expect(
             canUseSmsProvider({ ...enabledSettings, UseServerSideProxy: true }, 'ProductionWeb'),
         ).toMatchObject({ ok: true });
     });
 
-    it('returns clear provider failure messages', () => {
+    it('returns clear integration failure messages', () => {
         expect(createSmsFailure('Gateway timeout')).toEqual({
             ok: false,
             userMessage: 'Gateway timeout',

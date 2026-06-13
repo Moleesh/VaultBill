@@ -60,12 +60,12 @@ native Android remain future scope.
 
 ## Roles And Access 🔐
 
-| Role       | Main workspace                                                                 |
-| ---------- | ------------------------------------------------------------------------------ |
-| `SysAdmin` | Dashboard, Document builder, Business / Security / Connected services / Backup |
-| `Admin`    | Dashboard, Records, Reports, restricted password/settings views                |
-| `User`     | Records, Reports, personal password control                                    |
-| `Demo`     | Dashboard, Records, Reports, browser print/PDF, confirmed reset                |
+| Role       | Main workspace                                                      |
+| ---------- | ------------------------------------------------------------------- |
+| `SysAdmin` | Dashboard, Document builder, Business / Security / Secrets / Backup |
+| `Admin`    | Dashboard, Records, Reports, restricted password/settings views     |
+| `User`     | Records, Reports, personal password control                         |
+| `Demo`     | Dashboard, Records, Reports, browser print/PDF, confirmed reset     |
 
 First-run setup creates only the protected System Administrator. Admin and
 User accounts are added later through Settings. VaultBill allows one active
@@ -93,8 +93,8 @@ a compact help popover keep the screen light instead of noisy.
 Document builder uses eight focused steps:
 
 1. Format
-2. Fields
-3. Layout
+2. Layout
+3. Fields
 4. Line Items
 5. Calculations
 6. Print

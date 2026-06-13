@@ -8,6 +8,10 @@ import { builtInDefaultFormat } from '../../db/startup/BuiltInDefaultFormat';
 import { documentFormatSummaries } from '../../constants/PhaseFourFormats';
 import { requestHostedApi } from '../../runtime/HostedApi';
 import { useSession } from '../auth/SessionContext';
+import {
+    normalizeSecretsSettings,
+    secretValuesFromSettings,
+} from '../settings/SettingsIntegrationsSectionSupport';
 import { loadRecordPrintPackage, type RecordPrintPackage } from './RecordPrintHtml';
 import {
     createEmptyRecord,
@@ -42,6 +46,7 @@ export const useRecordsPageState = () => {
     const [outputTask, setOutputTask] = useState<OutputTask>();
     const [activePrintPackage, setActivePrintPackage] = useState<RecordPrintPackage>();
     const [publishedFormats, setPublishedFormats] = useState<readonly PublishedFormat[]>([]);
+    const [secretValues, setSecretValues] = useState<Readonly<Record<string, string>>>({});
 
     const activeTab: 'create' | 'reprint' =
         searchParams.get('tab') === 'reprint' ? 'reprint' : 'create';
@@ -106,6 +111,18 @@ export const useRecordsPageState = () => {
     }, [capabilities.isLanBrowser]);
 
     useEffect(() => {
+        const request = window.vaultBillDesktop
+            ? window.vaultBillDesktop.getIntegrationSettings()
+            : capabilities.isLanBrowser
+              ? requestHostedApi('/settings/integrations')
+              : undefined;
+        void request?.then((rawSettings) => {
+            const normalized = normalizeSecretsSettings(rawSettings);
+            setSecretValues(secretValuesFromSettings(normalized.secrets));
+        });
+    }, [capabilities.isLanBrowser]);
+
+    useEffect(() => {
         setActivePrintPackage(undefined);
         void loadRecordPrintPackage(record.formatId, capabilities.isLanBrowser)
             .then(setActivePrintPackage)
@@ -142,6 +159,7 @@ export const useRecordsPageState = () => {
         publishedFormats,
         record,
         recordTotals,
+        secretValues,
         records,
         reprintRecords,
         searchParams,

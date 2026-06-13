@@ -67,9 +67,15 @@
     min-height: 5rem;
     padding: var(--space-3) clamp(var(--space-4), 4vw, var(--space-8));
     border-bottom: var(--line-width) solid var(--color-border);
-    background: color-mix(in srgb, var(--color-surface) 92%, transparent);
-    backdrop-filter: blur(56px) saturate(170%);
-    box-shadow: 0 0.45rem 2rem color-mix(in srgb, var(--color-panel-shadow) 18%, transparent);
+    background: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--color-surface) 98%, transparent),
+        color-mix(in srgb, var(--color-surface) 92%, transparent)
+    );
+    backdrop-filter: blur(64px) saturate(175%);
+    box-shadow:
+        0 0.45rem 2rem color-mix(in srgb, var(--color-panel-shadow) 18%, transparent),
+        inset 0 -1px 0 color-mix(in srgb, var(--color-border) 48%, transparent);
 }
 
 .app-shell__topbar-actions {
@@ -122,6 +128,11 @@
     scrollbar-color: transparent transparent;
     background: transparent;
     padding: clamp(var(--space-5), 4vw, var(--space-10));
+}
+
+.app-shell__content::-webkit-scrollbar {
+    width: 0;
+    height: 0;
 }
 
 .app-shell__content > * {

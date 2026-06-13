@@ -222,15 +222,16 @@
 
 ## 2026-06-04 Phase 20
 
-- Added optional integration settings for signature pad, SMS provider, GST
-  helpers, and GSP hooks using DB-stored JSON settings.
+- Added optional integration settings for signature pad, messaging, tax, and
+  helper flows using DB-stored JSON settings. These legacy provider surfaces
+  are now superseded by the single Secrets settings model.
 - Implemented GSTIN format/checksum validation, HSN/SAC lookup, state-based GST
   split/IGST helpers, and GSTR export cell escaping without claiming compliance.
-- Added SMS provider adapter contracts with secret masking and a production-web
-  guard that requires server-side provider flow.
+- Added adapter contracts with secret masking and a production-web guard that
+  requires server-side integration flow.
 - Added signature pad availability rules that allow screen drawing, limit
   USB/HID support to tested desktop devices, and validate SVG path-only storage.
-- Added generic GSP request planning with masked client secrets and explicit
+- Added generic request planning with masked client secrets and explicit
   non-compliance-guarantee messaging.
 - Hardened GitHub Actions test execution by running the SQLite-heavy Vitest
   suites in serial mode on CI and release smoke jobs, and opted the workflows
@@ -312,5 +313,7 @@
 - Kept the close icon, tray-close behavior, fixed blurred shell, hidden shell
   scrollbar, compact dropdowns, and pinned `1.0.0` version as the current UI
   baseline.
+- Superseded the old legacy integration settings with the single Secrets
+  surface and `Secrets.Key` formula syntax.
 - Removed the central spec file and rewrote the README/docs copy so the
   practical documentation stands on its own.

@@ -35,13 +35,13 @@ export const canUseSmsProvider = (
     deploymentMode: SmsDeploymentMode,
 ): SmsSendResult => {
     if (!settings.Enabled) {
-        return { ok: false, userMessage: 'SMS provider is disabled in settings.' };
+        return { ok: false, userMessage: 'SMS integration is disabled in settings.' };
     }
 
     if (!settings.ProviderId.trim() || !settings.EndpointUrl.trim()) {
         return {
             ok: false,
-            userMessage: 'SMS provider configuration is incomplete.',
+            userMessage: 'SMS integration configuration is incomplete.',
         };
     }
 
@@ -49,14 +49,14 @@ export const canUseSmsProvider = (
         return {
             ok: false,
             userMessage:
-                'Production web SMS must use a server-side provider flow. Direct secrets are not allowed.',
+                'Production web SMS must use a server-side integration flow. Direct secrets are not allowed.',
         };
     }
 
-    return { ok: true, userMessage: 'SMS provider is ready.' };
+    return { ok: true, userMessage: 'SMS integration is ready.' };
 };
 
 export const createSmsFailure = (message: string): SmsSendResult => ({
     ok: false,
-    userMessage: message.trim() || 'SMS provider failed. Please check settings.',
+    userMessage: message.trim() || 'SMS integration failed. Please check settings.',
 });

@@ -2,7 +2,7 @@
 
 import type { FC } from 'react';
 
-import { formatTrialCountdownParts } from './SysAdminDashboardSupport';
+import { formatTrialCountdownParts } from './SysAdminDashboardTrialSupport';
 
 type DashboardTrialCountdownProps = {
     readonly remainingSeconds: number;

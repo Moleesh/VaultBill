@@ -4,6 +4,8 @@ import type { Dispatch, SetStateAction } from 'react';
 
 import { firstMissingRequiredField, toEditableRecord } from './RecordsPageSupport';
 import {
+    confirmCancelRecord,
+    confirmFinalizeRecord,
     handleRecordEntryNavigation,
     selectRecordForReprint,
     updateRecordLineItem,
@@ -29,6 +31,7 @@ type RecordsPageState = {
     ) => Promise<AppRecord>;
     readonly operatorContext: OperatorContext | undefined;
     readonly record: EditableRecord;
+    readonly secretValues: Readonly<Record<string, string>>;
     readonly saveDraft: (
         record: EditableRecord,
         operatorContext: OperatorContext,
@@ -111,50 +114,35 @@ export const useRecordsPageActions = (state: RecordsPageState) => {
         state.setIsFinalizeOpen(false);
     };
 
-    const confirmFinalize = () => {
-        if (!state.operatorContext) return;
-        void state
-            .finalizeRecord(state.record, state.operatorContext)
-            .then((finalized) => {
-                state.setRecord(toEditableRecord(finalized));
-                state.setActionState('Finalized');
-                state.setIsFinalizeOpen(false);
-                state.setNotice(
-                    `Document ${finalized.documentNumber ?? ''} finalized successfully.`,
-                );
-            })
-            .catch((reason: unknown) => {
-                state.setOperationError(
-                    reason instanceof Error ? reason.message : 'Document could not be finalized.',
-                );
-                state.setIsFinalizeOpen(false);
-            });
-    };
-
-    const confirmRecordCancel = () => {
-        if (!state.operatorContext) return;
-        void state
-            .cancelRecord(state.record.recordId, state.cancelReason, state.operatorContext)
-            .then((cancelled) => {
-                state.setRecord(toEditableRecord(cancelled));
-                state.setIsCancelOpen(false);
-                state.setNotice('Record cancelled. It remains available for audit and reprint.');
-            })
-            .catch((reason: unknown) => {
-                state.setOperationError(
-                    reason instanceof Error ? reason.message : 'Record could not be cancelled.',
-                );
-                state.setIsCancelOpen(false);
-            });
-    };
-
     return {
         cancelOutput,
         closeCancel,
         closeFinalize,
         closeOutput,
-        confirmFinalize,
-        confirmRecordCancel,
+        confirmFinalize: () => {
+            confirmFinalizeRecord({
+                operatorContext: state.operatorContext,
+                record: state.record,
+                setActionState: state.setActionState,
+                setIsFinalizeOpen: state.setIsFinalizeOpen,
+                setNotice: state.setNotice,
+                setOperationError: state.setOperationError,
+                setRecord: state.setRecord,
+                finalizeRecord: state.finalizeRecord,
+            });
+        },
+        confirmRecordCancel: () => {
+            confirmCancelRecord({
+                cancelReason: state.cancelReason,
+                operatorContext: state.operatorContext,
+                record: state.record,
+                setIsCancelOpen: state.setIsCancelOpen,
+                setNotice: state.setNotice,
+                setOperationError: state.setOperationError,
+                setRecord: state.setRecord,
+                cancelRecord: state.cancelRecord,
+            });
+        },
         handleEntryNavigation: handleRecordEntryNavigation,
         markChanged,
         openCancel,
@@ -194,7 +182,15 @@ export const useRecordsPageActions = (state: RecordsPageState) => {
             );
         },
         updateLineItem: (rowId: string, changes: Partial<EditableRecord['lineItems'][number]>) => {
-            markChanged(updateRecordLineItem(state.record, state.activeConfig, rowId, changes));
+            markChanged(
+                updateRecordLineItem(
+                    state.record,
+                    state.activeConfig,
+                    rowId,
+                    changes,
+                    state.secretValues,
+                ),
+            );
         },
     };
 };

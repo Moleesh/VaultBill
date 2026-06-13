@@ -67,12 +67,11 @@
     overflow-x: auto;
     border: var(--line-width) solid var(--color-border);
     border-radius: var(--radius-md);
-    background:
-        linear-gradient(
-            180deg,
-            color-mix(in srgb, var(--color-secondary) 20%, var(--color-surface)),
-            color-mix(in srgb, var(--color-surface) 88%, transparent)
-        );
+    background: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--color-secondary) 20%, var(--color-surface)),
+        color-mix(in srgb, var(--color-surface) 88%, transparent)
+    );
     padding: var(--space-2);
     box-shadow: var(--shadow-card);
     backdrop-filter: blur(18px);

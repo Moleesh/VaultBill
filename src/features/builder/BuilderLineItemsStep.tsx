@@ -36,27 +36,36 @@ export const BuilderLineItemsStep: FC<BuilderLineItemsStepProps> = ({
     <>
         <div className="builder-step-bridge">
             <div>
-                <p className="eyebrow">Previous step</p>
-                <h3>Fields</h3>
+                <p className="eyebrow">Step separator</p>
+                <h3>Previous: Fields</h3>
                 <p>
-                    Keep the line-item summary formulas in JSON so subtotal and total stay easy to
-                    review.
+                    Keep subtotal and total formulas in JSON so the row-level summary logic stays
+                    easy to review.
                 </p>
             </div>
             <button className="button-secondary" onClick={onPrevious} type="button">
                 Previous: Fields
             </button>
         </div>
-        <div className="builder-line-summary">
-            <article>
-                <small>Subtotal</small>
-                <strong>SUMALL(Amount)</strong>
-            </article>
-            <article>
-                <small>Total</small>
-                <strong>Subtotal + TaxTotal + RoundOff</strong>
-            </article>
-        </div>
+        <section className="builder-line-summary" aria-labelledby="builder-line-summary-title">
+            <div className="section-heading builder-line-summary__heading">
+                <div>
+                    <p className="eyebrow">Summary formulas</p>
+                    <h3 id="builder-line-summary-title">Subtotal and total</h3>
+                </div>
+                <p>Keep these calculations visible so operators can review how totals are built.</p>
+            </div>
+            <div className="builder-line-summary__cards">
+                <article>
+                    <small>Subtotal</small>
+                    <strong>SUMALL(Amount)</strong>
+                </article>
+                <article>
+                    <small>Total</small>
+                    <strong>Subtotal + TaxTotal + RoundOff</strong>
+                </article>
+            </div>
+        </section>
         <div className="form-grid">
             <label>
                 <span>Section label</span>

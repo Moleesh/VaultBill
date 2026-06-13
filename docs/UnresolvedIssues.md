@@ -17,8 +17,7 @@ release claims.
   remains part of document-builder/template configuration rather than Settings.
 - Hosted sessions are enforced server-side, but a SysAdmin session inventory and
   selective revoke screen is not yet exposed in Settings.
-- GST/GSP and SMS settings use the shared key/value model, but each production
-  provider still needs its own reviewed secret-handling adapter and compliance
+- Secrets-backed GST/GSP and SMS adapters still need reviewed compliance
   validation before real submission or messaging.
 - Signature references now live in document-builder/template configuration
   rather than the general settings page.

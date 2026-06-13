@@ -122,7 +122,11 @@
     border: var(--line-width) solid var(--color-border);
     border-radius: var(--radius-xl);
     background:
-        linear-gradient(160deg, color-mix(in srgb, var(--color-primary) 6%, transparent), transparent 68%),
+        linear-gradient(
+            160deg,
+            color-mix(in srgb, var(--color-primary) 6%, transparent),
+            transparent 68%
+        ),
         var(--color-card);
     padding: var(--space-6);
     box-shadow: var(--shadow-card);
@@ -155,7 +159,8 @@
     inset: var(--chart-hole);
     border-radius: inherit;
     background: var(--color-card);
-    box-shadow: inset 0 0 0 var(--line-width) color-mix(in srgb, var(--color-border) 55%, transparent);
+    box-shadow: inset 0 0 0 var(--line-width)
+        color-mix(in srgb, var(--color-border) 55%, transparent);
     content: '';
 }
 

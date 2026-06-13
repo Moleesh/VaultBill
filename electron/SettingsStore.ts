@@ -13,20 +13,14 @@ export const BusinessSettingsSchema = z.object({
     outputTarget: z.enum(['PreviewOnly', 'DownloadPdf', 'SystemPrinter']),
 });
 
-const IntegrationFieldSchema = z.object({
+const SecretEntrySchema = z.object({
     key: z.string().trim().min(1),
     value: z.string(),
-});
-
-const IntegrationServiceSchema = z.object({
-    enabled: z.boolean(),
-    provider: z.string().trim(),
-    fields: z.array(IntegrationFieldSchema),
+    description: z.string().trim().optional().default(''),
 });
 
 export const IntegrationSettingsSchema = z.object({
-    gst: IntegrationServiceSchema,
-    sms: IntegrationServiceSchema,
+    secrets: z.array(SecretEntrySchema),
 });
 export const HostedWebSettingsSchema = z.object({
     lanEnabled: z.boolean(),
@@ -47,16 +41,7 @@ const defaultBusinessSettings: BusinessSettings = {
 };
 
 const defaultIntegrationSettings: IntegrationSettings = {
-    gst: {
-        enabled: false,
-        provider: '',
-        fields: [],
-    },
-    sms: {
-        enabled: false,
-        provider: '',
-        fields: [],
-    },
+    secrets: [],
 };
 const defaultHostedWebSettings: HostedWebSettings = {
     lanEnabled: false,
@@ -150,18 +135,26 @@ export class SettingsStore {
         const normalized = IntegrationSettingsSchema.safeParse(parsed);
         if (normalized.success) return normalized.data;
         if (typeof parsed !== 'object') return defaultIntegrationSettings;
-        return IntegrationSettingsSchema.parse({
-            gst: {
-                enabled: typeof parsed.gstEnabled === 'boolean' ? parsed.gstEnabled : false,
-                provider: typeof parsed.gspProvider === 'string' ? parsed.gspProvider : '',
-                fields: [],
-            },
-            sms: {
-                enabled: typeof parsed.smsEnabled === 'boolean' ? parsed.smsEnabled : false,
-                provider: typeof parsed.smsProvider === 'string' ? parsed.smsProvider : '',
-                fields: [],
-            },
-        });
+        const legacy = parsed;
+        const secrets: IntegrationSettings['secrets'] = [];
+        for (const [prefix, rawService] of [
+            ['GST', legacy.gst],
+            ['SMS', legacy.sms],
+        ] as const) {
+            if (!rawService || typeof rawService !== 'object') continue;
+            const service = rawService as Record<string, unknown>;
+            const fields = Array.isArray(service.fields) ? service.fields : [];
+            for (const field of fields) {
+                const entry = SecretEntrySchema.safeParse(field);
+                if (!entry.success) continue;
+                secrets.push({
+                    key: entry.data.key,
+                    value: entry.data.value,
+                    description: entry.data.description || `${prefix} legacy setting`,
+                });
+            }
+        }
+        return { secrets };
     };
 
     #write = (key: string, value: unknown) => {

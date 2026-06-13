@@ -124,8 +124,8 @@ describe('settings UI', () => {
         renderPage(<SettingsPage />, desktopCapabilities);
 
         expect(screen.getByText('Preferred printer')).toBeVisible();
-        expect(screen.getByText('GST service')).toBeVisible();
-        expect(screen.getByText('SMS provider')).toBeVisible();
+        expect(screen.getByText(/Store shared keys and values here/i)).toBeVisible();
+        expect(screen.getByText('Key')).toBeVisible();
         expect(screen.getByRole('heading', { name: 'Backup and restore' })).toBeVisible();
         expect(screen.getByRole('heading', { name: 'Backup password' })).toBeVisible();
         expect(screen.getByRole('button', { name: /Add operator/i })).toBeDisabled();

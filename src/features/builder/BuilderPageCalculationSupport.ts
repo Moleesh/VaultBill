@@ -5,6 +5,7 @@ import type { FieldConfig } from './BuilderPageSupport';
 export { sampleFormula } from './BuilderFormulaPreviewSupport';
 
 const numericFieldTypes = new Set(['Number', 'Decimal', 'Money', 'Quantity', 'Rate']);
+const externalReferencePrefix = 'Secrets.';
 
 export type CalculationTarget = {
     readonly kind: 'document' | 'line';
@@ -70,13 +71,18 @@ export const formulaReferences = (formula: string): readonly string[] =>
             .replace(/\bSUMALL\(\s*/giu, '(')
             .replace(/\bSUM\(\s*Items\./giu, '(')
             .replace(/\bCOUNT\(\s*Items\s*\)/giu, '')
-            .matchAll(/\b([A-Za-z_][\w]*)\b/gu),
+            .matchAll(/\b([A-Za-z_][\w]*(?:\.[A-Za-z_][\w]*)*)\b/gu),
     ].map((match) => match[1] ?? '');
+
+const isExternalReference = (reference: string): boolean =>
+    reference.startsWith(externalReferencePrefix);
 
 export const collectReferencedFieldIds = (fields: readonly FieldConfig[]): ReadonlySet<string> => {
     const ids = new Set<string>();
     for (const field of fields) {
-        for (const reference of formulaReferences(field.Formula ?? '')) ids.add(reference);
+        for (const reference of formulaReferences(field.Formula ?? '')) {
+            if (!isExternalReference(reference)) ids.add(reference);
+        }
     }
     return ids;
 };
@@ -89,6 +95,7 @@ export const validateCalculationGraph = (fields: readonly FieldConfig[]): readon
     for (const field of calculated) {
         const references = formulaReferences(field.Formula ?? '');
         for (const reference of references) {
+            if (isExternalReference(reference)) continue;
             const target = byId.get(reference);
             if (!target) {
                 issues.push(`Formula for ${field.Label} references unknown field ${reference}.`);
@@ -109,6 +116,7 @@ export const validateCalculationGraph = (fields: readonly FieldConfig[]): readon
         visiting.add(fieldId);
         const field = byId.get(fieldId);
         const cycle = formulaReferences(field?.Formula ?? '').some((reference) => {
+            if (isExternalReference(reference)) return false;
             const target = byId.get(reference);
             return Boolean(target?.Calculated && visit(reference));
         });
@@ -155,7 +163,9 @@ export const applyCalculationOrder = (config: DocumentFormatConfig): DocumentFor
         visited.add(fieldId);
         const field = fields.find((candidate) => candidate.FieldId === fieldId);
         if (!field || !calculatedIds.has(field.FieldId)) return;
-        for (const reference of formulaReferences(field.Formula ?? '')) visit(reference);
+        for (const reference of formulaReferences(field.Formula ?? '')) {
+            if (!isExternalReference(reference)) visit(reference);
+        }
         ordered.push(field.FieldId);
     };
     for (const field of fields) visit(field.FieldId);

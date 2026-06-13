@@ -46,6 +46,7 @@ describe('BuilderCalculationsStep', () => {
                         } as never,
                     },
                 ]}
+                secretValues={{}}
                 currencyPolicy={config.CalculationPolicy}
                 onEditFormula={onEditFormula}
                 onOrderChange={onOrderChange}

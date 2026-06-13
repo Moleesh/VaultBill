@@ -83,7 +83,7 @@ const pageSections: Readonly<Record<string, readonly HelpSection[]>> = {
     settings: [
         {
             title: 'Manage VaultBill',
-            body: 'Business, security, backup, and connected services sit on one page with jump links. Connected services use flexible JSON-style key/value settings.',
+            body: 'Business, security, backup, and secrets sit on one page with jump links. Secrets use flexible key/value settings with a short description.',
             keywords: [
                 'branding',
                 'themes',
@@ -91,7 +91,7 @@ const pageSections: Readonly<Record<string, readonly HelpSection[]>> = {
                 'printers',
                 'backup',
                 'security',
-                'integrations',
+                'secrets',
                 'json',
             ],
         },

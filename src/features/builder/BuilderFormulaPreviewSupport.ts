@@ -18,12 +18,18 @@ export const sampleFormula = (
     field: FieldConfig,
     allFields: readonly FieldConfig[],
     policy: DocumentFormatConfig['CalculationPolicy'],
+    secretValues: Readonly<Record<string, string>> = {},
 ): string => {
     const formula = field.Formula?.trim();
     if (!formula) return 'No formula';
     const values = Object.fromEntries(
         allFields.map((candidate) => [candidate.FieldId, sampleValueFor(candidate)]),
     );
+    Object.assign(values, secretValues);
+    for (const match of formula.matchAll(/\bSecrets\.([A-Za-z_][A-Za-z0-9_]*)\b/gu)) {
+        const reference = match[0];
+        if (!(reference in values)) values[reference] = 0;
+    }
     try {
         return evaluateFormula(formula, values, policy, field.Precision ?? policy.MoneyPrecision, {
             sumAll: (fieldId) =>

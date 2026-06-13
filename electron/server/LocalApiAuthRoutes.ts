@@ -5,7 +5,6 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import { z } from 'zod';
 
 import { getBuildIdentity } from '../BuildIdentity.js';
-import type { DesktopOperatorAccount } from '../CredentialStore.js';
 import { isLoopbackAddress, readBody, sendJson } from './LocalApiHttp.js';
 import {
     ApiError,
@@ -19,6 +18,13 @@ import {
     type LocalApiState,
 } from './LocalApiContext.js';
 import type { LocalApiHealth } from './LocalApi.types.js';
+import {
+    accountForSession,
+    accountsVisibleTo,
+    assertCanManage,
+    assertCanResetPassword,
+    findAccount,
+} from './LocalApiAuthRoutesSupport.js';
 
 const LoginSchema = z.object({
     userId: z.string().min(1),
@@ -49,48 +55,6 @@ export const getLocalApiHealth = (appName: string, passwordRequired = true): Loc
     status: 'Ready',
     passwordRequired,
 });
-
-const accountForSession = (state: LocalApiState, session: HostedSession): DesktopOperatorAccount =>
-    findAccount(state, session.userId);
-
-const findAccount = (state: LocalApiState, userId: string): DesktopOperatorAccount => {
-    const account = state.credentialStore
-        .listAccounts()
-        .find((candidate) => candidate.userId === userId && candidate.isActive);
-    if (!account) throw new ApiError(401, 'The operator session is no longer active.');
-    return account;
-};
-
-const accountsVisibleTo = (state: LocalApiState, account: DesktopOperatorAccount) => {
-    const accounts = state.credentialStore.listAccounts();
-    if (account.role === 'SysAdmin') return accounts;
-    if (account.role === 'Admin') {
-        return accounts.filter(
-            (candidate) => candidate.userId === account.userId || candidate.role === 'User',
-        );
-    }
-    return accounts.filter((candidate) => candidate.userId === account.userId);
-};
-
-const assertCanManage = (
-    actor: DesktopOperatorAccount,
-    targetRole: DesktopOperatorAccount['role'],
-    targetUserId: string,
-) => {
-    if (targetUserId === 'sysadmin_1' || targetRole === 'SysAdmin') {
-        throw new ApiError(403, 'The protected System Administrator cannot be managed here.');
-    }
-    if (actor.role === 'SysAdmin') return;
-    if (actor.role === 'Admin' && targetRole === 'User') return;
-    throw new ApiError(403, 'You cannot manage this operator account.');
-};
-
-const assertCanResetPassword = (actor: DesktopOperatorAccount, target: DesktopOperatorAccount) => {
-    if (actor.userId === target.userId) return;
-    if (actor.role === 'SysAdmin') return;
-    if (actor.role === 'Admin' && target.role === 'User') return;
-    throw new ApiError(403, 'You cannot reset this operator password.');
-};
 
 /** Handles authentication and account-management routes. */
 export const handleLocalApiAuthRoutes = async (

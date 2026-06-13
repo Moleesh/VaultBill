@@ -19,7 +19,9 @@ export const tokenizeFormula = (formula: string): readonly FormulaToken[] => {
         }
 
         if (/[A-Za-z_]/u.test(character)) {
-            const match = /^[A-Za-z_][A-Za-z0-9_]*/u.exec(formula.slice(index));
+            const match = /^[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*/u.exec(
+                formula.slice(index),
+            );
             const value = match?.[0];
 
             if (!value) {

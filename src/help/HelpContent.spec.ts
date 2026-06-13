@@ -27,9 +27,7 @@ describe('HelpContent', () => {
         const settingsSections = getHelpSections('settings', 'SysAdmin', desktopCapabilities);
         const builderSections = getHelpSections('builder', 'SysAdmin', desktopCapabilities);
 
-        expect(
-            settingsSections.some((section) => section.body.includes('connected services')),
-        ).toBe(true);
+        expect(settingsSections.some((section) => section.body.includes('secrets'))).toBe(true);
         expect(builderSections.some((section) => section.body.includes('field preview'))).toBe(
             true,
         );

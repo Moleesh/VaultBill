@@ -3,7 +3,7 @@
 import { KeyRound, ShieldCheck } from 'lucide-react';
 import type { FC } from 'react';
 
-import { formatTrialCountdown } from '../dashboard/SysAdminDashboardSupport';
+import { formatTrialCountdown } from '../dashboard/SysAdminDashboardTrialSupport';
 
 type SettingsSecurityAccessProps = {
     readonly isSysAdmin: boolean;

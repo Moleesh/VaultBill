@@ -2,19 +2,21 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import type { z } from 'zod';
 
 import { useCapabilities } from '../../capability/CapabilityContext';
 import { builtInDefaultPrintTemplateHtml } from '../../db/startup/BuiltInDefaultPrintTemplate';
 import { DocumentFormatConfigSchema } from '../../db/startup/ConfigSchemas';
 import { requestHostedApi } from '../../runtime/HostedApi';
 import {
+    normalizeSecretsSettings,
+    secretValuesFromSettings,
+} from '../settings/SettingsIntegrationsSectionSupport';
+import {
     base64ByteLength,
     builtInSampleAsset,
     htmlStorageKey,
     readConfig,
     steps,
-    type BuilderLayoutConfig,
     type AssetSummary,
     type BuilderStep,
     type StoredBuilderPackage,
@@ -23,13 +25,14 @@ import {
     collectCalculationTargets,
     validateCalculationGraph,
 } from './BuilderPageCalculationSupport';
+import {
+    type DocumentFormatConfig,
+    type EditingState,
+    type FieldConfig,
+    updateBuilderCalculationOrder,
+    updateBuilderFields,
+} from './BuilderPageControllerSupport';
 import { useBuilderPageActions } from './useBuilderPageActions';
-
-type EditingState = { readonly kind: 'document' | 'line'; readonly index: number } | undefined;
-type DocumentFormatConfig = z.infer<typeof DocumentFormatConfigSchema> & {
-    readonly Layout?: BuilderLayoutConfig;
-};
-type FieldConfig = DocumentFormatConfig['Fields'][number];
 
 /** Keeps the builder state, loading, and rendering actions in a compact hook. */
 export const useBuilderPageController = () => {
@@ -47,6 +50,7 @@ export const useBuilderPageController = () => {
     const [editing, setEditing] = useState<EditingState>();
     const [message, setMessage] = useState('');
     const [importWarnings, setImportWarnings] = useState<readonly string[]>([]);
+    const [secretValues, setSecretValues] = useState<Readonly<Record<string, string>>>({});
 
     const activeStep: BuilderStep = steps[stepIndex] ?? 'Format';
     const lineSection: DocumentFormatConfig['LineItemSections'][number] | undefined =
@@ -121,32 +125,17 @@ export const useBuilderPageController = () => {
         }
     }, [capabilities.isLanBrowser, requestedFormatId]);
 
-    const updateFields = (kind: 'document' | 'line', fields: readonly FieldConfig[]) => {
-        if (kind === 'document') {
-            setConfig({ ...config, Fields: [...fields] });
-            return;
-        }
-        if (!lineSection) return;
-        setConfig({ ...config, LineItemSections: [{ ...lineSection, Fields: [...fields] }] });
-    };
-
-    const updateCalculationOrder = (orderedFieldIds: readonly string[]) => {
-        const orderById = new Map(orderedFieldIds.map((fieldId, index) => [fieldId, index + 1]));
-        setConfig({
-            ...config,
-            Fields: config.Fields.map((field) => {
-                const order = orderById.get(field.FieldId);
-                return order ? { ...field, CalculationOrder: order } : field;
-            }),
-            LineItemSections: config.LineItemSections.map((section) => ({
-                ...section,
-                Fields: section.Fields.map((field) => {
-                    const order = orderById.get(field.FieldId);
-                    return order ? { ...field, CalculationOrder: order } : field;
-                }),
-            })),
+    useEffect(() => {
+        const request = window.vaultBillDesktop
+            ? window.vaultBillDesktop.getIntegrationSettings()
+            : capabilities.isLanBrowser
+              ? requestHostedApi('/settings/integrations')
+              : undefined;
+        void request?.then((rawSettings) => {
+            const normalized = normalizeSecretsSettings(rawSettings);
+            setSecretValues(secretValuesFromSettings(normalized.secrets));
         });
-    };
+    }, [capabilities.isLanBrowser]);
 
     const actions = useBuilderPageActions({
         assets,
@@ -172,6 +161,7 @@ export const useBuilderPageController = () => {
         importWarnings,
         lineSection,
         message,
+        secretValues,
         referencedFieldIds,
         setAssets,
         setConfig,
@@ -179,8 +169,12 @@ export const useBuilderPageController = () => {
         setStepIndex,
         stepIndex,
         templateHtml,
-        updateCalculationOrder,
-        updateFields,
+        updateCalculationOrder: (orderedFieldIds: readonly string[]) => {
+            setConfig(updateBuilderCalculationOrder(config, orderedFieldIds));
+        },
+        updateFields: (kind: 'document' | 'line', fields: readonly FieldConfig[]) => {
+            setConfig(updateBuilderFields(config, lineSection, kind, fields));
+        },
         validation,
     };
 };

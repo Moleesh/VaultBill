@@ -4,7 +4,7 @@ import { KeyRound, LogOut, RotateCcw } from 'lucide-react';
 import type { FC } from 'react';
 
 import { ThemePalette } from './ThemePalette';
-import { formatTrialCountdownParts } from '../features/dashboard/SysAdminDashboardSupport';
+import { formatTrialCountdownParts } from '../features/dashboard/SysAdminDashboardTrialSupport';
 import type { ThemeController } from '../types/AppTypes';
 
 type AppShellTopbarProps = {

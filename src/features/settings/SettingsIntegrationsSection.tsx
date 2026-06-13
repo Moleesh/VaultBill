@@ -6,31 +6,31 @@ import type { FC } from 'react';
 import { useCapabilities } from '../../capability/CapabilityContext';
 import { requestHostedApi } from '../../runtime/HostedApi';
 import {
-    defaultIntegrationSettings,
-    IntegrationServiceCard,
-    normalizeIntegrationSettings,
-    providerOptions,
-    type IntegrationSettings,
+    defaultSecretsSettings,
+    normalizeSecretsSettings,
+    SecretsSectionCard,
+    SecretsTable,
+    type SecretsSettings,
 } from './SettingsIntegrationsSectionSupport';
 
-/** Owns shared key/value integration settings for GST, SMS, and future services. */
+/** Owns the shared Secrets table for GST, SMS, and formula references. */
 export const SettingsIntegrationsSection: FC = () => {
     const capabilities = useCapabilities();
-    const [settings, setSettings] = useState<IntegrationSettings>(defaultIntegrationSettings);
+    const [settings, setSettings] = useState<SecretsSettings>(defaultSecretsSettings);
     const [message, setMessage] = useState('');
 
     useEffect(() => {
-        const integrationRequest = window.vaultBillDesktop
+        const secretRequest = window.vaultBillDesktop
             ? window.vaultBillDesktop.getIntegrationSettings()
             : capabilities.isLanBrowser
               ? requestHostedApi('/settings/integrations')
               : undefined;
-        void integrationRequest?.then((rawSettings) => {
-            setSettings(normalizeIntegrationSettings(rawSettings));
+        void secretRequest?.then((rawSettings) => {
+            setSettings(normalizeSecretsSettings(rawSettings));
         });
     }, [capabilities.isLanBrowser]);
 
-    const saveIntegrations = () => {
+    const saveSecrets = () => {
         const persistence = window.vaultBillDesktop
             ? window.vaultBillDesktop.saveIntegrationSettings(settings)
             : capabilities.isLanBrowser
@@ -38,46 +38,38 @@ export const SettingsIntegrationsSection: FC = () => {
               : Promise.resolve(settings);
         void persistence
             .then(() => {
-                setMessage('Connected services saved.');
+                setMessage('Secrets saved.');
             })
             .catch((reason: unknown) => {
                 setMessage(
-                    reason instanceof Error
-                        ? reason.message
-                        : 'Connected services could not be saved.',
+                    reason instanceof Error ? reason.message : 'Secrets could not be saved.',
                 );
             });
     };
 
     return (
-        <section className="settings-section" id="integrations">
+        <section className="settings-section" id="secrets">
             <header>
-                <p className="eyebrow">Integrations</p>
-                <h2>Connected services</h2>
-                <p>Store provider keys and related values as JSON-backed key/value pairs.</p>
+                <p className="eyebrow">Secrets</p>
+                <h2>Secrets</h2>
+                <p>
+                    Store shared keys and values here. Use them in formulas as{' '}
+                    <code>Secrets.Key</code>.
+                </p>
             </header>
-            <IntegrationServiceCard
-                description="Store GST provider details in a shared JSON-style key/value table."
-                onServiceChange={(service) => {
-                    setSettings((current) => ({ ...current, gst: service }));
-                }}
-                providerChoices={providerOptions.gst}
-                providerValue={settings.gst.provider}
-                service={settings.gst}
-                title="GST service"
-            />
-            <IntegrationServiceCard
-                description="Store SMS provider routing and keys in the same flexible JSON-style model."
-                onServiceChange={(service) => {
-                    setSettings((current) => ({ ...current, sms: service }));
-                }}
-                providerChoices={providerOptions.sms}
-                providerValue={settings.sms.provider}
-                service={settings.sms}
-                title="SMS provider"
-            />
-            <button className="button-primary" onClick={saveIntegrations} type="button">
-                Save connected services
+            <SecretsSectionCard
+                description="Keep shared values for GST, SMS, and formula references in a single table."
+                title="Secrets"
+            >
+                <SecretsTable
+                    onChange={(secrets) => {
+                        setSettings({ secrets });
+                    }}
+                    secrets={settings.secrets}
+                />
+            </SecretsSectionCard>
+            <button className="button-primary" onClick={saveSecrets} type="button">
+                Save secrets
             </button>
             {message ? (
                 <p className="feedback-info" role="status">

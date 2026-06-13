@@ -20,10 +20,9 @@ export const getDropdownMenuPlacement = (
     viewportWidth: number,
 ): DropdownMenuPlacement => {
     const preferredHeight = Math.min(448, viewportHeight - 32);
-    const minimumBelowHeight = Math.min(96, preferredHeight);
     const belowSpace = viewportHeight - rect.bottom - 8;
     const aboveSpace = rect.top - 8;
-    const shouldOpenAbove = belowSpace < minimumBelowHeight && aboveSpace > belowSpace + 240;
+    const shouldOpenAbove = belowSpace < 56 && aboveSpace > 160;
     const openDirection: 'above' | 'below' = shouldOpenAbove ? 'above' : 'below';
     const availableHeight = openDirection === 'above' ? aboveSpace : belowSpace;
     const boundedHeight = Math.max(16, Math.min(preferredHeight, availableHeight));

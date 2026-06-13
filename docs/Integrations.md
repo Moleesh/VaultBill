@@ -1,35 +1,38 @@
 <!-- @format -->
 
-# Optional Integrations
+# Secrets
 
-VaultBill keeps connected services in a JSON-backed key/value model so GST,
-SMS, and future providers can expose whatever fields they need without changing
-the settings surface.
+VaultBill keeps shared integration values in a JSON-backed key/value model.
+The Settings screen exposes one `Secrets` table with these fields:
 
-The current implementation keeps provider choice small and explicit, but the
-stored data remains flexible:
+- `key`
+- `value`
+- `description`
+
+Use the values in formulas with the universal reference syntax:
+
+```text
+Secrets.Key
+```
+
+Example persisted data:
 
 ```json
 {
-    "gst": {
-        "enabled": true,
-        "provider": "local-gsp",
-        "fields": [
-            { "key": "ApiKey", "value": "stored-in-settings" },
-            { "key": "BaseUrl", "value": "https://api.example" }
-        ]
-    },
-    "sms": {
-        "enabled": true,
-        "provider": "local-relay",
-        "fields": [{ "key": "SenderId", "value": "VAULT" }]
-    }
+    "secrets": [
+        {
+            "key": "CompanyGSTIN",
+            "value": "29ABCDE1234F1Z5",
+            "description": "GST registration number"
+        },
+        {
+            "key": "SmsSenderId",
+            "value": "VAULT",
+            "description": "SMS routing"
+        }
+    ]
 }
 ```
 
-Secrets remain masked in the UI and stored in local application data. Desktop
-sessions may use host-side providers, while browser-only demo mode keeps
-integration surfaces hidden.
-
-GST-specific calculation helpers and print/report placeholders are documented in
-the schema and builder docs rather than duplicated here.
+The repository keeps the storage flexible so GST, SMS, and future integrations
+can share the same settings surface without introducing extra schema splits.

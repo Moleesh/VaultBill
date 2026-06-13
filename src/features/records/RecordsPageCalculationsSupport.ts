@@ -26,6 +26,7 @@ export const defaultFieldValue = (field: ConfiguredFieldDefinition): string => {
 export const calculateConfiguredLineItem = (
     item: RecordLineItem,
     config: DocumentFormatConfig | undefined,
+    secretValues: Readonly<Record<string, string>> = {},
 ): RecordLineItem => {
     const section = config?.LineItemSections[0];
     if (!section) return item;
@@ -38,6 +39,7 @@ export const calculateConfiguredLineItem = (
         TaxPercent: item.taxPercent,
         Amount: item.amount,
         ...(item.values ?? {}),
+        ...secretValues,
     };
     for (const field of section.Fields.filter(
         (candidate) => candidate.Calculated && candidate.Formula,
@@ -64,6 +66,7 @@ export const calculateConfiguredLineItem = (
 export const applyDocumentCalculations = (
     record: EditableRecord,
     config: DocumentFormatConfig | undefined,
+    secretValues: Readonly<Record<string, string>> = {},
 ): EditableRecord => {
     if (!config) return record;
     let next = record;
@@ -80,6 +83,7 @@ export const applyDocumentCalculations = (
         TaxTotal: totals.taxTotal,
         RoundOff: totals.roundOff,
         ...(record.fieldValues ?? {}),
+        ...secretValues,
     };
     for (const field of config.Fields.filter(
         (candidate) => candidate.Calculated && candidate.Formula,

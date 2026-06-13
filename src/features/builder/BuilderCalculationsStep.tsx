@@ -13,6 +13,7 @@ type BuilderCalculationsStepProps = {
     readonly calculationTargets: readonly CalculationTarget[];
     readonly allFields: readonly FieldConfig[];
     readonly currencyPolicy: DocumentFormatConfig['CalculationPolicy'];
+    readonly secretValues: Readonly<Record<string, string>>;
     readonly onOrderChange: (orderedFieldIds: readonly string[]) => void;
     readonly onEditFormula: (fieldId: string) => void;
 };
@@ -22,6 +23,7 @@ export const BuilderCalculationsStep: FC<BuilderCalculationsStepProps> = ({
     calculationTargets,
     allFields,
     currencyPolicy,
+    secretValues,
     onOrderChange,
     onEditFormula,
 }) => {
@@ -58,7 +60,7 @@ export const BuilderCalculationsStep: FC<BuilderCalculationsStepProps> = ({
                     const { field } = target;
                     const sectionLabel =
                         target.kind === 'document' ? 'Document field' : 'Line item';
-                    const preview = sampleFormula(field, allFields, currencyPolicy);
+                    const preview = sampleFormula(field, allFields, currencyPolicy, secretValues);
                     return (
                         <article
                             draggable
@@ -113,7 +115,8 @@ export const BuilderCalculationsStep: FC<BuilderCalculationsStepProps> = ({
                 <strong>Formula helper</strong>
                 <p>
                     Use same-row fields such as <code>Quantity * Rate</code>. Use
-                    <code>SUMALL(Amount)</code> for subtotal-style totals and keep GST, grand total,
+                    <code>SUMALL(Amount)</code> for subtotal-style totals. Use{' '}
+                    <code>Secrets.Key</code> for shared stored values, and keep GST, grand total,
                     and round-off formulas separate so the preview stays easy to follow.
                 </p>
                 <p>Drag the rows to make the trigger order easier to inspect before publishing.</p>

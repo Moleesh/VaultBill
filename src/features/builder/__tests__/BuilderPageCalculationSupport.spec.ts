@@ -20,15 +20,12 @@ import {
 
 describe('BuilderPageCalculationSupport', () => {
     it('extracts formula references and flags bad calculation graphs', () => {
-        expect(formulaReferences('SUMALL(Amount) + Subtotal + GST + RoundOff')).toEqual([
-            'Amount',
-            'Subtotal',
-            'GST',
-            'RoundOff',
-        ]);
+        expect(formulaReferences('SUMALL(Amount) + Subtotal + GST + Secrets.CompanyGSTIN')).toEqual(
+            ['Amount', 'Subtotal', 'GST', 'Secrets.CompanyGSTIN'],
+        );
         expect(
             collectReferencedFieldIds([
-                { FieldId: 'Subtotal', Formula: 'GST + RoundOff' } as never,
+                { FieldId: 'Subtotal', Formula: 'GST + Secrets.CompanyGSTIN' } as never,
                 { FieldId: 'GST', Formula: 'RoundOff + 1' } as never,
             ]),
         ).toEqual(new Set(['GST', 'RoundOff']));
@@ -39,7 +36,7 @@ describe('BuilderPageCalculationSupport', () => {
                 Label: 'Grand total',
                 Type: 'Money',
                 Calculated: true,
-                Formula: 'MissingField + 1',
+                Formula: 'MissingField + Secrets.CompanyGSTIN',
             } as never,
             {
                 FieldId: 'Description',
@@ -75,7 +72,7 @@ describe('BuilderPageCalculationSupport', () => {
             Label: 'Amount',
             Type: 'Money',
             Calculated: true,
-            Formula: 'Quantity * Rate',
+            Formula: 'Quantity * Rate + Secrets.CompanyGSTIN',
             Precision: 2,
         } as const;
         const subtotalField = {
@@ -96,8 +93,9 @@ describe('BuilderPageCalculationSupport', () => {
                     amountField,
                 ] as never,
                 config.CalculationPolicy,
+                { 'Secrets.CompanyGSTIN': '18' },
             ),
-        ).toBe('20.00');
+        ).toBe('38.00');
 
         const lineItemSection = config.LineItemSections[0];
         if (!lineItemSection) throw new Error('Missing default line-item section.');

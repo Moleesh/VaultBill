@@ -11,12 +11,7 @@ import { BuilderPageFooter } from './BuilderPageFooter';
 import { BuilderPageHeader } from './BuilderPageHeader';
 import { BuilderPrintStep } from './BuilderPrintStep';
 import { BuilderPrintPreviewStep } from './BuilderPrintPreviewStep';
-import {
-    helperFor,
-    newField,
-    steps,
-    type BuilderLayoutConfig,
-} from './BuilderPageSupport';
+import { helperFor, newField, steps, type BuilderLayoutConfig } from './BuilderPageSupport';
 import type { FC } from 'react';
 import type { BuilderPageController } from './useBuilderPageController';
 
@@ -125,6 +120,7 @@ export const BuilderPageWorkspace: FC<{ readonly controller: BuilderPageControll
                         calculationTargets={controller.calculationTargets}
                         allFields={controller.allFields}
                         currencyPolicy={controller.config.CalculationPolicy}
+                        secretValues={controller.secretValues}
                         onOrderChange={controller.updateCalculationOrder}
                         onEditFormula={(fieldId) => {
                             const documentIndex = controller.config.Fields.findIndex(

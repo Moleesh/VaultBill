@@ -1,117 +1,177 @@
 /** @format */
 
 import { Plus, ShieldCheck, Trash2 } from 'lucide-react';
-import type { FC } from 'react';
+import type { FC, ReactNode } from 'react';
 
-import { SearchableDropdown } from '../../components/SearchableDropdown/SearchableDropdown';
-
-export type IntegrationField = {
+type SecretEntry = {
     readonly key: string;
     readonly value: string;
+    readonly description: string;
 };
 
-export type IntegrationService = {
-    readonly enabled: boolean;
-    readonly provider: string;
-    readonly fields: readonly IntegrationField[];
+export type SecretsSettings = {
+    readonly secrets: readonly SecretEntry[];
 };
 
-export type IntegrationSettings = {
-    readonly gst: IntegrationService;
-    readonly sms: IntegrationService;
+export const secretValuesFromSettings = (
+    secrets: readonly SecretEntry[],
+): Readonly<Record<string, string>> =>
+    Object.fromEntries(secrets.map((entry) => [`Secrets.${entry.key}`, entry.value]));
+
+const emptySecret = (): SecretEntry => ({ key: '', value: '', description: '' });
+
+export const defaultSecretsSettings: SecretsSettings = {
+    secrets: [],
 };
 
-export const providerOptions = {
-    gst: [
-        { value: 'local-gsp', label: 'Local GSP helper', description: 'Good for desktop testing' },
-        { value: 'sandbox-gsp', label: 'Sandbox GSP', description: 'Use provider sandbox details' },
-        { value: 'custom-gsp', label: 'Custom API', description: 'Enter your own endpoint' },
-    ],
-    sms: [
-        { value: 'local-relay', label: 'Local relay', description: 'Simple desktop gateway' },
-        {
-            value: 'trial-provider',
-            label: 'Trial SMS provider',
-            description: 'Starter integration',
-        },
-        { value: 'custom-sms', label: 'Custom API', description: 'Use your own endpoint' },
-    ],
-} as const;
-
-export const defaultIntegrationSettings: IntegrationSettings = {
-    gst: { enabled: false, provider: '', fields: [] },
-    sms: { enabled: false, provider: '', fields: [] },
-};
-
-export const normalizeIntegrationSettings = (input: unknown): IntegrationSettings => {
-    if (!input || typeof input !== 'object') return defaultIntegrationSettings;
+const toSecretEntry = (input: unknown): SecretEntry | undefined => {
+    if (!input || typeof input !== 'object') return undefined;
     const raw = input as Record<string, unknown>;
-    if (typeof raw.gst === 'object' && typeof raw.sms === 'object') {
-        return {
-            gst: {
-                enabled:
-                    typeof (raw.gst as Record<string, unknown>).enabled === 'boolean'
-                        ? ((raw.gst as Record<string, unknown>).enabled as boolean)
-                        : false,
-                provider:
-                    typeof (raw.gst as Record<string, unknown>).provider === 'string'
-                        ? String((raw.gst as Record<string, unknown>).provider)
-                        : '',
-                fields: Array.isArray((raw.gst as Record<string, unknown>).fields)
-                    ? ((raw.gst as Record<string, unknown>).fields as readonly IntegrationField[])
-                    : [],
-            },
-            sms: {
-                enabled:
-                    typeof (raw.sms as Record<string, unknown>).enabled === 'boolean'
-                        ? ((raw.sms as Record<string, unknown>).enabled as boolean)
-                        : false,
-                provider:
-                    typeof (raw.sms as Record<string, unknown>).provider === 'string'
-                        ? String((raw.sms as Record<string, unknown>).provider)
-                        : '',
-                fields: Array.isArray((raw.sms as Record<string, unknown>).fields)
-                    ? ((raw.sms as Record<string, unknown>).fields as readonly IntegrationField[])
-                    : [],
-            },
-        };
-    }
+    if (typeof raw.key !== 'string') return undefined;
     return {
-        gst: {
-            enabled: typeof raw.gstEnabled === 'boolean' ? raw.gstEnabled : false,
-            provider: typeof raw.gspProvider === 'string' ? raw.gspProvider : '',
-            fields: [],
-        },
-        sms: {
-            enabled: typeof raw.smsEnabled === 'boolean' ? raw.smsEnabled : false,
-            provider: typeof raw.smsProvider === 'string' ? raw.smsProvider : '',
-            fields: [],
-        },
+        key: raw.key.trim(),
+        value: typeof raw.value === 'string' ? raw.value : '',
+        description: typeof raw.description === 'string' ? raw.description : '',
     };
 };
 
-const createField = (): IntegrationField => ({ key: '', value: '' });
-
-type IntegrationServiceCardProps = {
-    readonly title: string;
-    readonly description: string;
-    readonly providerValue: string;
-    readonly service: IntegrationService;
-    readonly onServiceChange: (service: IntegrationService) => void;
-    readonly providerChoices: readonly {
-        readonly value: string;
-        readonly label: string;
-        readonly description: string;
-    }[];
+const secretEntriesFromLegacySettings = (input: Record<string, unknown>): SecretEntry[] => {
+    const legacySections = [
+        { prefix: 'GST', value: input.gst },
+        { prefix: 'SMS', value: input.sms },
+    ];
+    const entries: SecretEntry[] = [];
+    for (const section of legacySections) {
+        const service = section.value as Record<string, unknown> | undefined;
+        if (!service || typeof service !== 'object') continue;
+        const fields = Array.isArray(service.fields) ? service.fields : [];
+        for (const field of fields) {
+            const entry = toSecretEntry(field);
+            if (!entry) continue;
+            entries.push({
+                key: entry.key,
+                value: entry.value,
+                description: entry.description || `${section.prefix} legacy setting`,
+            });
+        }
+    }
+    return entries;
 };
 
-export const IntegrationServiceCard: FC<IntegrationServiceCardProps> = ({
+export const normalizeSecretsSettings = (input: unknown): SecretsSettings => {
+    if (!input || typeof input !== 'object') return defaultSecretsSettings;
+    const raw = input as Record<string, unknown>;
+    if (Array.isArray(raw.secrets)) {
+        return {
+            secrets: raw.secrets
+                .map(toSecretEntry)
+                .filter((entry): entry is SecretEntry => Boolean(entry)),
+        };
+    }
+    const legacyEntries = secretEntriesFromLegacySettings(raw);
+    return {
+        secrets: legacyEntries,
+    };
+};
+
+type SecretTableRowProps = {
+    readonly entry: SecretEntry;
+    readonly index: number;
+    readonly onChange: (entry: SecretEntry) => void;
+    readonly onRemove: () => void;
+};
+
+const SecretTableRow: FC<SecretTableRowProps> = ({ entry, index, onChange, onRemove }) => (
+    <div className="integration-key-value-row integration-key-value-row--secrets">
+        <label>
+            <span>Key</span>
+            <input
+                aria-label={`Secret key ${String(index + 1)}`}
+                onChange={(event) => {
+                    onChange({ ...entry, key: event.currentTarget.value });
+                }}
+                placeholder="CompanyGSTIN"
+                value={entry.key}
+            />
+        </label>
+        <label>
+            <span>Value</span>
+            <input
+                aria-label={`Secret value ${String(index + 1)}`}
+                onChange={(event) => {
+                    onChange({ ...entry, value: event.currentTarget.value });
+                }}
+                placeholder="Enter value"
+                value={entry.value}
+            />
+        </label>
+        <label>
+            <span>Description</span>
+            <input
+                aria-label={`Secret description ${String(index + 1)}`}
+                onChange={(event) => {
+                    onChange({ ...entry, description: event.currentTarget.value });
+                }}
+                placeholder="Optional note"
+                value={entry.description}
+            />
+        </label>
+        <button aria-label={`Remove secret ${String(index + 1)}`} onClick={onRemove} type="button">
+            <Trash2 aria-hidden="true" size={16} />
+        </button>
+    </div>
+);
+
+type SecretsTableProps = {
+    readonly secrets: readonly SecretEntry[];
+    readonly onChange: (secrets: readonly SecretEntry[]) => void;
+};
+
+export const SecretsTable: FC<SecretsTableProps> = ({ secrets, onChange }) => (
+    <div className="integration-key-value-table" aria-label="Secrets configuration">
+        <div className="integration-key-value-table__header integration-key-value-table__header--secrets">
+            <span>Key</span>
+            <span>Value</span>
+            <span>Description</span>
+            <span>Action</span>
+        </div>
+        {secrets.map((entry, index) => (
+            <SecretTableRow
+                entry={entry}
+                index={index}
+                key={`${entry.key || 'secret'}-${String(index)}`}
+                onChange={(nextEntry) => {
+                    const next = [...secrets];
+                    next[index] = nextEntry;
+                    onChange(next);
+                }}
+                onRemove={() => {
+                    onChange(secrets.filter((_, secretIndex) => secretIndex !== index));
+                }}
+            />
+        ))}
+        <button
+            className="button-file"
+            onClick={() => {
+                onChange([...secrets, emptySecret()]);
+            }}
+            type="button"
+        >
+            <Plus aria-hidden="true" size={18} /> Add secret
+        </button>
+    </div>
+);
+
+type SecretsSectionCardProps = {
+    readonly title: string;
+    readonly description: string;
+    readonly children: ReactNode;
+};
+
+export const SecretsSectionCard: FC<SecretsSectionCardProps> = ({
     title,
     description,
-    providerValue,
-    service,
-    onServiceChange,
-    providerChoices,
+    children,
 }) => (
     <div className="settings-subsection">
         <div className="section-heading">
@@ -121,83 +181,6 @@ export const IntegrationServiceCard: FC<IntegrationServiceCardProps> = ({
             </div>
             <ShieldCheck aria-hidden="true" />
         </div>
-        <label className="checkbox-field">
-            <input
-                checked={service.enabled}
-                onChange={(event) => {
-                    onServiceChange({ ...service, enabled: event.currentTarget.checked });
-                }}
-                type="checkbox"
-            />
-            <span>Enable {title}</span>
-        </label>
-        <SearchableDropdown
-            label="Provider"
-            onChange={(value) => {
-                onServiceChange({ ...service, provider: value });
-            }}
-            options={providerChoices}
-            value={providerValue}
-        />
-        <div className="integration-key-value-table" aria-label={`${title} configuration`}>
-            <div className="integration-key-value-table__header">
-                <span>Key</span>
-                <span>Value</span>
-                <span>Action</span>
-            </div>
-            {service.fields.map((field, index) => (
-                <div className="integration-key-value-row" key={`${title}-${String(index)}`}>
-                    <label>
-                        <span>Key</span>
-                        <input
-                            aria-label={`${title} field key ${String(index + 1)}`}
-                            onChange={(event) => {
-                                const next = [...service.fields];
-                                next[index] = { ...field, key: event.currentTarget.value };
-                                onServiceChange({ ...service, fields: next });
-                            }}
-                            placeholder="apiKey"
-                            value={field.key}
-                        />
-                    </label>
-                    <label>
-                        <span>Value</span>
-                        <input
-                            aria-label={`${title} field value ${String(index + 1)}`}
-                            onChange={(event) => {
-                                const next = [...service.fields];
-                                next[index] = { ...field, value: event.currentTarget.value };
-                                onServiceChange({ ...service, fields: next });
-                            }}
-                            placeholder="Enter value"
-                            value={field.value}
-                        />
-                    </label>
-                    <button
-                        aria-label={`Remove ${title} field ${String(index + 1)}`}
-                        onClick={() => {
-                            onServiceChange({
-                                ...service,
-                                fields: service.fields.filter(
-                                    (_, fieldIndex) => fieldIndex !== index,
-                                ),
-                            });
-                        }}
-                        type="button"
-                    >
-                        <Trash2 aria-hidden="true" size={16} />
-                    </button>
-                </div>
-            ))}
-            <button
-                className="button-file"
-                onClick={() => {
-                    onServiceChange({ ...service, fields: [...service.fields, createField()] });
-                }}
-                type="button"
-            >
-                <Plus aria-hidden="true" size={18} /> Add field
-            </button>
-        </div>
+        {children}
     </div>
 );

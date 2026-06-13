@@ -1,3 +1,5 @@
+/** @format */
+
 import type { FC } from 'react';
 
 import { DashboardTrialCountdown } from './DashboardTrialCountdown';

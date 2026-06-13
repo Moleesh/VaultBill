@@ -42,7 +42,10 @@ export const BuilderLayoutStep: FC<BuilderLayoutStepProps> = ({ layout, onLayout
                 />
             </label>
         </div>
-        <article className="builder-layout-preview builder-layout-preview--Flow" data-layout-mode="Flow">
+        <article
+            className="builder-layout-preview builder-layout-preview--Flow"
+            data-layout-mode="Flow"
+        >
             <div>
                 <strong>Layout preview</strong>
                 <p>Use the column count and gap to shape a simple page flow for the form.</p>

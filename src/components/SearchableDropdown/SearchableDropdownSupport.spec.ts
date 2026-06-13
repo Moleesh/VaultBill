@@ -42,4 +42,19 @@ describe('SearchableDropdownSupport', () => {
         expect(Number.parseInt(placement.top, 10)).toBeLessThan(760);
         expect(placement.width).toBe('280px');
     });
+
+    it('stays below when there is still reasonable room beneath the trigger', () => {
+        const placement = getDropdownMenuPlacement(
+            {
+                top: 620,
+                bottom: 660,
+                left: 24,
+                width: 240,
+            } as DOMRect,
+            760,
+            1280,
+        );
+
+        expect(placement.openDirection).toBe('below');
+    });
 });

@@ -16,7 +16,7 @@
 
 .integration-key-value-table__header {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) auto;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) minmax(0, 1.2fr) auto;
     gap: var(--space-3);
     align-items: center;
     color: var(--color-text-muted);
@@ -28,7 +28,7 @@
 
 .integration-key-value-row {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) auto;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) minmax(0, 1.2fr) auto;
     gap: var(--space-3);
     align-items: end;
 }
@@ -53,6 +53,29 @@
 .integration-key-value-row button {
     min-width: 2.75rem;
     align-self: center;
+}
+
+.integration-key-value-row--secrets {
+    align-items: start;
+}
+
+.integration-key-value-table__header--secrets {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) minmax(0, 1.2fr) auto;
+}
+
+@media (max-width: 52rem) {
+    .integration-key-value-table__header,
+    .integration-key-value-row {
+        grid-template-columns: 1fr;
+    }
+
+    .integration-key-value-table__header span:last-child {
+        display: none;
+    }
+
+    .integration-key-value-row button {
+        justify-self: end;
+    }
 }
 
 .operator-create {

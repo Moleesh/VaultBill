@@ -161,7 +161,7 @@ export const BuilderFieldDrawer: FC<BuilderFieldDrawerProps> = ({ field, onChang
                         onChange({ ...field, Formula: event.currentTarget.value });
                     }}
                 />
-                <small>Examples: Quantity * Rate or SUMALL(Amount)</small>
+                <small>Examples: Quantity * Rate, SUMALL(Amount), or Secrets.Key</small>
             </label>
         ) : null}
     </div>

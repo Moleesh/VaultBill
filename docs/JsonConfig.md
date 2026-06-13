@@ -245,32 +245,27 @@ The required responsive test matrix is tracked in code and docs:
 Viewport widths below `640` use single-column layout, widths below `1200` use
 double-column layout, and wider screens may use the three-column desktop layout.
 
-## Connected Services
+## Secrets
 
-Connected services are stored as a generic key/value structure so GST, SMS, and
-future providers can add fields without schema churn:
+Secrets are stored as a generic key/value structure so GST, SMS, and future
+integrations can add fields without schema churn:
 
 ```json
 {
-    "gst": {
-        "enabled": true,
-        "provider": "local-gsp",
-        "fields": [
-            { "key": "DefaultSellerStateCode", "value": "29" },
-            { "key": "BaseUrl", "value": "https://api.example" }
-        ]
-    },
-    "sms": {
-        "enabled": true,
-        "provider": "local-relay",
-        "fields": [
-            { "key": "SenderId", "value": "VAULT" },
-            { "key": "ApiKey", "value": "stored-in-settings" }
-        ]
-    }
+    "secrets": [
+        {
+            "key": "CompanyGSTIN",
+            "value": "29ABCDE1234F1Z5",
+            "description": "GST registration number"
+        },
+        {
+            "key": "SmsSenderId",
+            "value": "VAULT",
+            "description": "SMS routing"
+        }
+    ]
 }
 ```
 
-Sensitive values are masked in the UI and stored in local application data.
-GST-specific helper behavior, reporting placeholders, and calculation rules are
-described in the schema and builder docs.
+Sensitive values are stored in local application data and can be referenced in
+formulas with `Secrets.Key`.

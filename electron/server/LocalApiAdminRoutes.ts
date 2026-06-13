@@ -26,7 +26,7 @@ const requireSysAdminAccess = (account: DesktopOperatorAccount) => {
 const getDataOperations = (state: LocalApiState): LocalApiDataOperations =>
     requireDataOperations(state);
 
-/** Handles business, security, trial, backup, and integration routes. */
+/** Handles business, security, trial, backup, and secrets routes. */
 export const handleLocalApiAdminRoutes = async (
     state: LocalApiState,
     account: DesktopOperatorAccount,

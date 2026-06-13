@@ -19,27 +19,49 @@ import {
 
 describe('BuilderPagePreviewSupport', () => {
     it('renders preview values and escapes markup safely', () => {
-        const config = {
-            ...cloneDefault(),
-            FormatName: 'GST <Invoice>',
-            FormatId: 'TaxInvoice',
-            Fields: [
-                {
-                    FieldId: 'CustomerName',
-                    Label: 'Customer name',
-                    Type: 'Text',
-                    SampleValue: '<Acme & Co>',
-                } as never,
-            ],
-        };
+        const config = cloneDefault();
+        config.FormatName = 'GST <Invoice>';
+        config.FormatId = 'TaxInvoice';
+        config.Fields = [
+            {
+                FieldId: 'CustomerName',
+                Label: 'Customer name',
+                Type: 'Text',
+                SampleValue: 'Sample Customer',
+            } as never,
+        ];
+        const lineSection = config.LineItemSections[0];
+        if (!lineSection) throw new Error('Default builder seed should include one line section.');
+        config.LineItemSections = [
+            {
+                ...lineSection,
+                Fields: [
+                    {
+                        FieldId: 'Amount',
+                        Label: 'Amount',
+                        Type: 'Money',
+                        SampleValue: '1000.00',
+                    } as never,
+                ],
+            },
+        ];
         const html = renderBuilderPreview(
-            '<main>{{FormatName}} {{CustomerName}} {{Asset.logo.svg}}</main>',
+            '<main>{{FormatName}} {{Company.Name}} {{Record.CustomerName}} {{Items.0.Amount}} {{Asset.logo.svg}}</main>',
             config,
-            [{ name: 'logo.svg', type: 'image/svg+xml', size: 12, dataBase64: 'PHN2Zz48L3N2Zz4=' }],
+            [
+                {
+                    name: 'logo.svg',
+                    type: 'image/svg+xml',
+                    size: 12,
+                    dataBase64: 'PHN2Zz48L3N2Zz4=',
+                },
+            ],
         );
 
         expect(html).toContain('GST &lt;Invoice&gt;');
-        expect(html).toContain('&lt;Acme &amp; Co&gt;');
+        expect(html).toContain('VaultBill Demo');
+        expect(html).toContain('Sample Customer');
+        expect(html).toContain('1000.00');
         expect(html).toContain('data:image/svg+xml;base64,PHN2Zz48L3N2Zz4=');
         expect(escapePreviewHtml('"Hello" & <world>')).toBe(
             '&quot;Hello&quot; &amp; &lt;world&gt;',

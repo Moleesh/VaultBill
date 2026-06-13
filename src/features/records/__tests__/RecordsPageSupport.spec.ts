@@ -68,13 +68,14 @@ describe('RecordsPageSupport', () => {
                             Label: 'Amount',
                             Type: 'Money',
                             Calculated: true,
-                            Formula: 'Quantity * Rate',
+                            Formula: 'Quantity * Rate + Secrets.CompanyGSTIN',
                             Precision: 2,
                         } as never,
                     ],
                 },
             ],
         };
+        const secretValues = { 'Secrets.CompanyGSTIN': '18' };
         const record = {
             ...createEmptyRecord(),
             customerName: 'Acme',
@@ -82,19 +83,20 @@ describe('RecordsPageSupport', () => {
                 calculateConfiguredLineItem(
                     { ...emptyLineItem(), quantity: '2', rate: '10' },
                     config as never,
+                    secretValues,
                 ),
             ],
         };
-        const next = applyDocumentCalculations(record, config as never);
+        const next = applyDocumentCalculations(record, config as never, secretValues);
         const firstItem = record.lineItems[0];
         const nextItem = next.lineItems[0];
         if (!firstItem || !nextItem) throw new Error('Expected one configured line item.');
 
         expect(calculateItemAmount(firstItem)).toBe('23.60');
-        expect(next.grandTotal).toBe('20.00');
+        expect(next.grandTotal).toBe('38.00');
         expect(documentFieldValue(next, 'CustomerName')).toBe('Acme');
         expect(firstMissingRequiredField(next, config as never)).toBeUndefined();
-        expect(lineItemFieldValue(nextItem, 'Amount')).toBe('20.00');
+        expect(lineItemFieldValue(nextItem, 'Amount')).toBe('38.00');
         expect(defaultFieldValue({ DefaultValue: 25 } as never)).toBe('25');
         expect(isNumericField({ Type: 'Money' } as never)).toBe(true);
     });

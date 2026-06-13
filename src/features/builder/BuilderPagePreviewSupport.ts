@@ -11,11 +11,24 @@ export const renderBuilderPreview = (
     const values: Record<string, string> = {
         FormatName: config.FormatName,
         FormatId: config.FormatId,
+        'Company.Name': 'VaultBill Demo',
+        'Company.Address': '1 Demo Lane',
+        'Record.FormatName': config.FormatName,
+        'Record.Status': 'Finalized',
+        'Record.IsCancelled': 'false',
+        'Record.CancellationReason': '',
     };
     let rendered = templateHtml;
     for (const field of config.Fields) {
         const sample = field.SampleValue ?? field.DefaultValue ?? field.Label;
-        values[field.FieldId] = previewValue(sample);
+        const preview = previewValue(sample);
+        values[field.FieldId] = preview;
+        values[`Record.${field.FieldId}`] = preview;
+    }
+    for (const field of config.LineItemSections[0]?.Fields ?? []) {
+        const sample = field.SampleValue ?? field.DefaultValue ?? field.Label;
+        const preview = previewValue(sample);
+        values[`Items.0.${field.FieldId}`] = preview;
     }
     for (const asset of assets) {
         values[`Asset.${asset.name}`] = `data:${asset.type};base64,${asset.dataBase64}`;

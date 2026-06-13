@@ -45,6 +45,17 @@ describe('FormulaEngine', () => {
         ).toBe('1180.00');
     });
 
+    it('evaluates dotted secret references as ordinary variables', () => {
+        expect(
+            evaluateFormula(
+                'Quantity + Secrets.CompanyGSTIN',
+                { Quantity: '2.000', 'Secrets.CompanyGSTIN': '18.00' },
+                policy,
+                2,
+            ).formatted,
+        ).toBe('20.00');
+    });
+
     it('evaluates SUMALL aggregates with the supplied callback', () => {
         expect(
             evaluateFormula(
