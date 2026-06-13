@@ -86,8 +86,11 @@
 }
 
 .builder-calculation-order {
+    display: inline-flex;
     justify-self: end;
     align-self: center;
+    align-items: center;
+    gap: var(--space-1);
     border-radius: var(--radius-pill);
     background: var(--color-surface-muted);
     color: var(--color-text-weak);

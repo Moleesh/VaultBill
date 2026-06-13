@@ -65,9 +65,7 @@ test('operator can log in, create records, and open contextual help', async ({ p
 });
 
 test('Admin direct Builder URL is redirected to Records', async ({ page }) => {
-    await page.getByRole('button', { name: /Operator account/u }).click();
-    await page.getByRole('option', { name: /Operations Admin/u }).click();
-    await page.getByRole('button', { name: 'Log in' }).click();
+    await loginAsAdmin(page);
     await page.goto(page.url().replace(/\/app\/[^/?]+(?:\?.*)?$/u, '/app/builder'));
     await expect(page.getByRole('heading', { name: /Create GST Invoice/u })).toBeVisible();
 });

@@ -29,7 +29,7 @@ export const BuilderPrintStep: FC<BuilderPrintStepProps> = ({
             <p>Upload one self-contained HTML file with embedded CSS.</p>
             <small>Unsafe scripts, frames, forms, and remote URLs are removed.</small>
             <label className="button-file">
-                <Upload aria-hidden="true" size={18} />{' '}
+                <Upload aria-hidden="true" size={18} />
                 {templateHtml ? 'Replace HTML' : 'Upload HTML'}
                 <input accept=".html,text/html" onChange={onImportHtml} type="file" />
             </label>

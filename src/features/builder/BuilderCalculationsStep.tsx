@@ -101,7 +101,7 @@ export const BuilderCalculationsStep: FC<BuilderCalculationsStepProps> = ({
                                 <small>{field.Formula ?? 'No formula yet'}</small>
                             </button>
                             <small className="builder-calculation-order">
-                                <ArrowRight aria-hidden="true" size={14} />{' '}
+                                <ArrowRight size={14} />
                                 {index === 0 ? 'First trigger' : 'Next trigger'}
                             </small>
                             <button
