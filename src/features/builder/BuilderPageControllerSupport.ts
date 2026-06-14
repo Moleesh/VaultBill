@@ -3,13 +3,14 @@
 import type { z } from 'zod';
 
 import type { DocumentFormatConfigSchema } from '../../db/startup/ConfigSchemas';
-import type { BuilderLayoutConfig } from './BuilderPageSupport';
+import type { BuilderLayoutConfig, BuilderPrintConfig } from './BuilderPageSupport';
 
 export type EditingState =
     | { readonly kind: 'document' | 'line'; readonly index: number }
     | undefined;
 export type DocumentFormatConfig = z.infer<typeof DocumentFormatConfigSchema> & {
-    readonly Layout?: BuilderLayoutConfig;
+    readonly Layout?: BuilderLayoutConfig | undefined;
+    readonly Print?: BuilderPrintConfig | undefined;
 };
 export type FieldConfig = DocumentFormatConfig['Fields'][number];
 

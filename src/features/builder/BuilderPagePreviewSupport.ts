@@ -1,16 +1,32 @@
 /** @format */
 
 import type { DocumentFormatConfig } from '../../db/startup/ConfigSchemas';
-import type { AssetSummary } from './BuilderPageSupport';
+import type { AssetSummary, BuilderPrintConfig } from './BuilderPageSupport';
+
+const paperSizeStyles: Readonly<Record<BuilderPrintConfig['PaperSize'], string>> = {
+    A4: '210mm 297mm',
+    Letter: '216mm 279mm',
+    Thermal: '80mm auto',
+};
+
+const marginStyles: Readonly<Record<BuilderPrintConfig['MarginPreset'], string>> = {
+    Compact: '10mm',
+    Normal: '18mm',
+    Wide: '24mm',
+};
 
 export const renderBuilderPreview = (
     templateHtml: string,
     config: DocumentFormatConfig,
     assets: readonly AssetSummary[],
+    printSettings: BuilderPrintConfig,
 ): string => {
     const values: Record<string, string> = {
         FormatName: config.FormatName,
         FormatId: config.FormatId,
+        'Print.PaperSize': printSettings.PaperSize,
+        'Print.MarginPreset': printSettings.MarginPreset,
+        'Print.BottomSpacingMm': String(printSettings.BottomSpacingMm),
         'Company.Name': 'VaultBill Demo',
         'Company.Address': '1 Demo Lane',
         'Record.FormatName': config.FormatName,
@@ -29,6 +45,8 @@ export const renderBuilderPreview = (
         const sample = field.SampleValue ?? field.DefaultValue ?? field.Label;
         const preview = previewValue(sample);
         values[`Items.0.${field.FieldId}`] = preview;
+        values[`Items.1.${field.FieldId}`] =
+            field.Type === 'Text' || field.Type === 'Textarea' ? `${preview} 2` : preview;
     }
     for (const asset of assets) {
         values[`Asset.${asset.name}`] = `data:${asset.type};base64,${asset.dataBase64}`;
@@ -36,7 +54,28 @@ export const renderBuilderPreview = (
     for (const [key, value] of Object.entries(values)) {
         rendered = rendered.replaceAll(`{{${key}}}`, escapePreviewHtml(value));
     }
-    return rendered;
+    const previewStyle = `
+      @page {
+        size: ${paperSizeStyles[printSettings.PaperSize]};
+        margin: ${marginStyles[printSettings.MarginPreset]};
+      }
+      html, body {
+        min-height: 100%;
+      }
+      body {
+        margin: 0;
+        padding: 0 0 ${String(printSettings.BottomSpacingMm)}mm;
+        background: #eef6f4;
+        color: #18302c;
+      }
+      .vaultbill-print-preview,
+      .vaultbill-print-preview * {
+        box-sizing: border-box;
+      }
+    `;
+    return rendered.includes('</head>')
+        ? rendered.replace('</head>', `<style>${previewStyle}</style></head>`)
+        : `<style>${previewStyle}</style>${rendered}`;
 };
 
 export const escapePreviewHtml = (value: string): string =>

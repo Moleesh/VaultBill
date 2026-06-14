@@ -22,6 +22,11 @@ export type BuilderLayoutConfig = {
     readonly Columns: number;
     readonly Gap: number;
 };
+export type BuilderPrintConfig = {
+    readonly PaperSize: 'A4' | 'Letter' | 'Thermal';
+    readonly MarginPreset: 'Normal' | 'Compact' | 'Wide';
+    readonly BottomSpacingMm: number;
+};
 export type FieldConfig = DocumentFormatConfig['Fields'][number];
 export type AssetSummary = {
     readonly name: string;
@@ -32,16 +37,23 @@ export type AssetSummary = {
 export type StoredBuilderPackage = {
     readonly config: unknown;
     readonly templateHtml: string;
+    readonly savedTemplates?: readonly SavedPrintTemplate[];
     readonly assets: readonly {
         readonly name: string;
         readonly type: string;
         readonly dataBase64: string;
     }[];
 };
+export type SavedPrintTemplate = {
+    readonly name: string;
+    readonly templateHtml: string;
+    readonly updatedAt: string;
+};
 
 export const storageKey = 'vaultbill.builder';
 export const legacyStorageKey = 'vaultbill.builder.v24';
 export const htmlStorageKey = 'vaultbill.builder.template-html';
+export const savedTemplatesStorageKey = 'vaultbill.builder.saved-print-templates';
 
 export const cloneDefault = (): DocumentFormatConfig =>
     DocumentFormatConfigSchema.parse(JSON.parse(JSON.stringify(builtInDefaultFormat)) as unknown);
@@ -85,14 +97,15 @@ export const move = <T>(items: readonly T[], from: number, to: number): readonly
 export const helperFor = (step: BuilderStep): string =>
     ({
         Format: 'Choose the document name operators see when creating a record.',
-        Layout: 'Choose columns and spacing for the document flow.',
+        Layout: 'Choose flex columns and gap for the document flow.',
         Fields: 'Add the business fields shown above the line-item table.',
         'Line Items':
             'Design repeatable product or service rows and keep subtotal and total formulas visible.',
-        Calculations: 'Connect numeric fields with formulas, SUMALL totals, GST, and round-off.',
+        Calculations:
+            'Connect numeric fields with same-row math, SUMALL totals, secrets, GST, and round-off helpers.',
         Print: 'Upload one HTML file and the images or fonts it references.',
-        'Field Preview': 'Review the entry form before you publish.',
-        'Print Preview': 'Check the rendered print output before publishing.',
+        'Field Preview': 'Review the read-only field layout before you publish.',
+        'Print Preview': 'Check the rendered print output and paper settings before publishing.',
     })[step];
 
 export const formatBytes = (size: number): string =>
@@ -125,3 +138,17 @@ export const mimeTypeFromName = (name: string): string =>
 
 export const confirmLargeFile = (name: string, size: number): boolean =>
     window.confirm(`"${name}" is ${(size / (1024 * 1024)).toFixed(1)} MB. Continue importing it?`);
+
+
+export const defaultBuilderLayout: BuilderLayoutConfig = {
+    Columns: 2,
+    Gap: 16,
+};
+
+export const defaultBuilderPrintSettings: BuilderPrintConfig = {
+    PaperSize: 'A4',
+    MarginPreset: 'Normal',
+    BottomSpacingMm: 18,
+};
+
+export const clampColumns = (columns: number): number => Math.min(5, Math.max(1, columns));

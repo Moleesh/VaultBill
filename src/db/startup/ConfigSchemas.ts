@@ -38,6 +38,16 @@ export const SignaturePadSettingsSchema = z.object({
     }),
 });
 
+export const SecretEntrySchema = z.object({
+    key: z.string().trim().min(1),
+    value: z.string(),
+    description: z.string().trim(),
+});
+
+export const SecretsSettingsSchema = z.object({
+    secrets: z.array(SecretEntrySchema),
+});
+
 export const SmsProviderSettingsSchema = z.object({
     Enabled: z.boolean(),
     ProviderId: z.string(),
@@ -150,11 +160,28 @@ export const CalculationPolicySchema = z
     })
     .passthrough();
 
+export const BuilderLayoutSchema = z
+    .object({
+        Columns: z.number().int().min(1).max(5),
+        Gap: z.number().int().min(0),
+    })
+    .passthrough();
+
+export const BuilderPrintSettingsSchema = z
+    .object({
+        PaperSize: z.enum(['A4', 'Letter', 'Thermal']),
+        MarginPreset: z.enum(['Normal', 'Compact', 'Wide']),
+        BottomSpacingMm: z.number().int().min(0).max(60),
+    })
+    .passthrough();
+
 export const DocumentFormatConfigSchema = z
     .object({
         FormatId: z.string().min(1),
         FormatName: z.string().min(1),
         Description: z.string().optional(),
+        Layout: BuilderLayoutSchema.optional(),
+        Print: BuilderPrintSettingsSchema.optional(),
         Fields: z.array(FieldConfigSchema),
         LineItemSections: z.array(LineItemSectionConfigSchema),
         CalculationPolicy: CalculationPolicySchema,
@@ -172,4 +199,6 @@ export type GspIntegrationSettings = z.infer<typeof GspIntegrationSettingsSchema
 export type GstIntegrationSettings = z.infer<typeof GstIntegrationSettingsSchema>;
 export type RuntimeBrandingConfig = z.infer<typeof RuntimeBrandingSchema>;
 export type SignaturePadSettings = z.infer<typeof SignaturePadSettingsSchema>;
+export type SecretEntry = z.infer<typeof SecretEntrySchema>;
+export type SecretsSettings = z.infer<typeof SecretsSettingsSchema>;
 export type SmsProviderSettings = z.infer<typeof SmsProviderSettingsSchema>;

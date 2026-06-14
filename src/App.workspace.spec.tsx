@@ -75,8 +75,9 @@ describe('product UI', () => {
         fireEvent.click(screen.getByRole('button', { name: /^Print$/u }));
         expect(screen.getByRole('heading', { name: 'Print' })).toBeVisible();
         expect(
-            screen.getByText(/Unsafe scripts, frames, forms, and remote URLs are removed/u),
+            screen.getByText(/Upload or choose a reusable template/u),
         ).toBeVisible();
+        expect(screen.getByRole('heading', { name: 'Shared print HTML' })).toBeVisible();
         expect(screen.getByText('{{Asset.CompanyLogo}}')).toBeVisible();
     });
 
@@ -115,7 +116,7 @@ describe('product UI', () => {
         fireEvent.click(screen.getByRole('button', { name: /Field Preview/u }));
         expect(screen.getByRole('heading', { name: /Field preview/u })).toBeVisible();
         expect(screen.getByLabelText('Invoice Date')).toBeVisible();
-        expect(screen.getByText('Item Name')).toBeVisible();
+        expect(screen.getAllByText('Item Name').length).toBeGreaterThan(0);
 
         fireEvent.click(screen.getByRole('button', { name: /Print Preview/u }));
         expect(screen.getByRole('heading', { name: /Print preview/u })).toBeVisible();

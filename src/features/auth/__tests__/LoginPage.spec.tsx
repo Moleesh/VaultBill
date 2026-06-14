@@ -111,4 +111,37 @@ describe('login UI', () => {
         expect(screen.getByRole('option', { name: /Operations Admin/i })).toBeVisible();
         expect(screen.getByText('admin · Admin')).toBeVisible();
     });
+
+    it('reveals the hidden SysAdmin account after F8 is pressed', () => {
+        window.localStorage.setItem(
+            'vaultbill.accounts',
+            JSON.stringify([
+                {
+                    userId: 'sysadmin_1',
+                    username: 'sysadmin',
+                    displayName: 'System Administrator',
+                    role: 'SysAdmin',
+                    isActive: true,
+                    passwordHash: createHash('sha256').update('147085aA').digest('hex'),
+                },
+                {
+                    userId: 'admin_1',
+                    username: 'admin',
+                    displayName: 'Operations Admin',
+                    role: 'Admin',
+                    isActive: true,
+                },
+            ]),
+        );
+
+        renderPage(<LoginPage />);
+
+        expect(screen.queryByRole('option', { name: /System Administrator/i })).toBeNull();
+        fireEvent.keyDown(window, { key: 'F8', code: 'F8' });
+        fireEvent.click(screen.getByRole('button', { name: /Operator account Operations Admin/i }));
+        fireEvent.click(screen.getByRole('option', { name: /System Administrator/i }));
+
+        expect(screen.getByLabelText('Password')).toBeVisible();
+        expect(screen.getByText('SysAdmin access unlocked.')).toBeVisible();
+    });
 });

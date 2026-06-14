@@ -22,6 +22,7 @@ export const SysAdminDashboardCharts: FC<SysAdminDashboardChartsProps> = ({ summ
                         <div>
                             <p className="eyebrow">Formats</p>
                             <h2>Publishing health</h2>
+                            <p className="dashboard-chart-card__summary">{chartData.formatSummary}</p>
                         </div>
                     </div>
                     <div className="dashboard-chart-card__body">
@@ -49,6 +50,7 @@ export const SysAdminDashboardCharts: FC<SysAdminDashboardChartsProps> = ({ summ
                         <div>
                             <p className="eyebrow">Records</p>
                             <h2>Document mix</h2>
+                            <p className="dashboard-chart-card__summary">{chartData.recordSummary}</p>
                         </div>
                     </div>
                     <div className="dashboard-chart-card__body">
@@ -90,6 +92,7 @@ export const SysAdminDashboardCharts: FC<SysAdminDashboardChartsProps> = ({ summ
                         <div>
                             <p className="eyebrow">Operations</p>
                             <h2>People and backup</h2>
+                            <p className="dashboard-chart-card__summary">{chartData.userSummary}</p>
                         </div>
                     </div>
                     <div className="dashboard-chart-card__body">
@@ -127,6 +130,9 @@ export const SysAdminDashboardCharts: FC<SysAdminDashboardChartsProps> = ({ summ
                                 </dd>
                             </div>
                         </dl>
+                        <p className="dashboard-chart-card__summary">
+                            {chartData.backupSummary}
+                        </p>
                     </div>
                 </article>
             </section>

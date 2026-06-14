@@ -5,20 +5,20 @@
  * help actions.
  */
 
-import { KeyRound } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import type { FC } from 'react';
 
 import { AppBrandIcon } from '../../components/AppBrandIcon/AppBrandIcon';
-import { SearchableDropdown } from '../../components/SearchableDropdown/SearchableDropdown';
 import { useCapabilities } from '../../capability/CapabilityContext';
 import { defaultRuntimeBranding } from '../../constants/PhaseOneSeed';
 import { VENDOR } from '../../constants/Vendor';
 import { LoginActivationModal } from './LoginActivationModal';
 import { LoginHelpModal } from './LoginHelpModal';
-import { buildLoginAccountOptions, findLoginAccount } from './LoginPageSupport';
+import { buildLoginAccountOptions, findLoginAccount, getLoginAccountId } from './LoginPageSupport';
+import { LoginPageForm } from './LoginPageForm';
 import { useSession } from './SessionContext';
+import { useSysAdminUnlock } from './useSysAdminUnlock';
 
 /** Renders the compact login experience for the current runtime mode. */
 export const LoginPage: FC = () => {
@@ -26,14 +26,15 @@ export const LoginPage: FC = () => {
     const { accounts, hostedConnectionState, login, operatorContext } = useSession();
     const navigate = useNavigate();
     const loginSubmissionInFlightRef = useRef(false);
-    const [selectedAccountId, setSelectedAccountId] = useState(accounts[0]?.userId ?? '');
+    const [selectedAccountId, setSelectedAccountId] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [isHelpOpen, setIsHelpOpen] = useState(false);
     const [isActivationOpen, setIsActivationOpen] = useState(false);
     const [licenseKey, setLicenseKey] = useState('');
     const [activationMessage, setActivationMessage] = useState('');
-    const accountOptions = buildLoginAccountOptions(accounts);
+    const { isUnlocked: isSysAdminUnlocked } = useSysAdminUnlock();
+    const accountOptions = buildLoginAccountOptions(accounts, isSysAdminUnlocked);
     const selectedAccount = findLoginAccount(accounts, selectedAccountId);
     const isLoginDisabled = !selectedAccountId || hostedConnectionState !== 'connected';
 
@@ -51,8 +52,18 @@ export const LoginPage: FC = () => {
     };
 
     useEffect(() => {
-        if (!selectedAccountId && accounts[0]) setSelectedAccountId(accounts[0].userId);
-    }, [accounts, selectedAccountId]);
+        if (!selectedAccountId) {
+            setSelectedAccountId(getLoginAccountId(accounts, isSysAdminUnlocked));
+            return;
+        }
+
+        if (!isSysAdminUnlocked) {
+            const selected = accounts.find((account) => account.userId === selectedAccountId);
+            if (selected?.role === 'SysAdmin') {
+                setSelectedAccountId(getLoginAccountId(accounts));
+            }
+        }
+    }, [accounts, isSysAdminUnlocked, selectedAccountId]);
 
     if (operatorContext) {
         return <Navigate replace to="/app/dashboard" />;
@@ -71,96 +82,35 @@ export const LoginPage: FC = () => {
                     ) : null}
                 </div>
                 <div className="login-card__form">
-                    {capabilities.isLanBrowser && hostedConnectionState !== 'connected' ? (
-                        <div className="host-reconnect" role="status">
-                            <strong>
-                                {hostedConnectionState === 'connecting'
-                                    ? 'Connecting to VaultBill Desktop'
-                                    : 'VaultBill Desktop is unavailable'}
-                            </strong>
-                            <p>
-                                {hostedConnectionState === 'connecting'
-                                    ? 'Checking the secure local session.'
-                                    : 'Open VaultBill Desktop on the host computer, then reconnect.'}
-                            </p>
-                            {hostedConnectionState === 'unavailable' ? (
-                                <button
-                                    onClick={() => {
-                                        window.location.reload();
-                                    }}
-                                    type="button"
-                                >
-                                    Reconnect
-                                </button>
-                            ) : null}
-                        </div>
-                    ) : null}
-                    <form
-                        className="login-card__auth"
-                        onSubmit={(event) => {
-                            event.preventDefault();
-                            void submitLogin();
+                    <LoginPageForm
+                        accountOptions={accountOptions}
+                        capabilities={capabilities}
+                        error={error}
+                        hostedConnectionState={hostedConnectionState}
+                        isLoginDisabled={isLoginDisabled}
+                        isSysAdminUnlocked={isSysAdminUnlocked}
+                        onActivationOpen={() => {
+                            setIsActivationOpen(true);
                         }}
-                    >
-                        {capabilities.isDemoMode ? (
-                            <div className="demo-login-summary">
-                                <strong>Demo User</strong>
-                                <p>
-                                    Create invoices, print records, and explore the demo workspace.
-                                </p>
-                            </div>
-                        ) : (
-                            <SearchableDropdown
-                                label="Operator account"
-                                onChange={setSelectedAccountId}
-                                options={accountOptions}
-                                value={selectedAccountId}
-                            />
-                        )}
-                        {!capabilities.isDemoMode &&
-                        (selectedAccount?.passwordHash || selectedAccount?.passwordConfigured) ? (
-                            <label className="login-password">
-                                <span>Password</span>
-                                <input
-                                    autoComplete="current-password"
-                                    onChange={(event) => {
-                                        setPassword(event.currentTarget.value);
-                                        setError('');
-                                    }}
-                                    type="password"
-                                    value={password}
-                                />
-                            </label>
-                        ) : null}
-                        <button className="button-primary" disabled={isLoginDisabled} type="submit">
-                            {capabilities.isDemoMode ? 'Start demo' : 'Log in'}
-                        </button>
-                    </form>
-                    {error ? (
-                        <p className="feedback-error" role="alert">
-                            {error}
-                        </p>
-                    ) : null}
-                    <button
-                        className="login-help-link"
-                        onClick={() => {
+                        onHelpOpen={() => {
                             setIsHelpOpen(true);
                         }}
-                        type="button"
-                    >
-                        Login help
-                    </button>
-                    {capabilities.isDesktop ? (
-                        <button
-                            className="login-help-link"
-                            onClick={() => {
-                                setIsActivationOpen(true);
-                            }}
-                            type="button"
-                        >
-                            <KeyRound aria-hidden="true" size={16} /> Enter license key
-                        </button>
-                    ) : null}
+                        onPasswordChange={(value) => {
+                            setPassword(value);
+                            setError('');
+                        }}
+                        onSelectedAccountChange={(value) => {
+                            setSelectedAccountId(value);
+                            setPassword('');
+                            setError('');
+                        }}
+                        onSubmit={() => {
+                            void submitLogin();
+                        }}
+                        password={password}
+                        selectedAccount={selectedAccount}
+                        selectedAccountId={selectedAccountId}
+                    />
                 </div>
                 <footer>
                     <span>Version {VENDOR.version}</span>

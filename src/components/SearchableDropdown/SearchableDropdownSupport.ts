@@ -11,6 +11,7 @@ export type DropdownMenuPlacement = {
     readonly left: string;
     readonly top: string;
     readonly width: string;
+    readonly maxHeight: string;
     readonly openDirection: 'above' | 'below';
 };
 
@@ -19,23 +20,22 @@ export const getDropdownMenuPlacement = (
     viewportHeight: number,
     viewportWidth: number,
 ): DropdownMenuPlacement => {
-    const preferredHeight = Math.min(448, viewportHeight - 32);
-    const belowSpace = viewportHeight - rect.bottom - 8;
-    const aboveSpace = rect.top - 8;
-    const shouldOpenAbove = belowSpace < 56 && aboveSpace > 160;
-    const openDirection: 'above' | 'below' = shouldOpenAbove ? 'above' : 'below';
-    const availableHeight = openDirection === 'above' ? aboveSpace : belowSpace;
-    const boundedHeight = Math.max(16, Math.min(preferredHeight, availableHeight));
+    const availableBelow = Math.max(0, viewportHeight - rect.bottom - 12);
+    const availableAbove = Math.max(0, rect.top - 12);
     const rawWidth = Math.max(rect.width, 280);
     const left = Math.min(Math.max(16, rect.left), Math.max(16, viewportWidth - rawWidth - 16));
+    const openDirection = availableBelow >= 72 || availableBelow >= availableAbove ? 'below' : 'above';
+    const availableSpace = openDirection === 'below' ? availableBelow : availableAbove;
+    const maxHeight = Math.max(160, Math.min(352, availableSpace));
+    const top =
+        openDirection === 'below'
+            ? `${String(Math.max(12, rect.bottom + 4))}px`
+            : `${String(Math.max(12, rect.top - maxHeight - 4))}px`;
 
     return {
         left: `${String(left)}px`,
-        top: `${String(
-            openDirection === 'above'
-                ? Math.max(16, rect.top - boundedHeight - 8)
-                : rect.bottom + 8,
-        )}px`,
+        maxHeight: `${String(maxHeight)}px`,
+        top,
         width: `${String(rawWidth)}px`,
         openDirection,
     };

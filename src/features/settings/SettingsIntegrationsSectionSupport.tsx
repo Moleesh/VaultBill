@@ -35,29 +35,6 @@ const toSecretEntry = (input: unknown): SecretEntry | undefined => {
     };
 };
 
-const secretEntriesFromLegacySettings = (input: Record<string, unknown>): SecretEntry[] => {
-    const legacySections = [
-        { prefix: 'GST', value: input.gst },
-        { prefix: 'SMS', value: input.sms },
-    ];
-    const entries: SecretEntry[] = [];
-    for (const section of legacySections) {
-        const service = section.value as Record<string, unknown> | undefined;
-        if (!service || typeof service !== 'object') continue;
-        const fields = Array.isArray(service.fields) ? service.fields : [];
-        for (const field of fields) {
-            const entry = toSecretEntry(field);
-            if (!entry) continue;
-            entries.push({
-                key: entry.key,
-                value: entry.value,
-                description: entry.description || `${section.prefix} legacy setting`,
-            });
-        }
-    }
-    return entries;
-};
-
 export const normalizeSecretsSettings = (input: unknown): SecretsSettings => {
     if (!input || typeof input !== 'object') return defaultSecretsSettings;
     const raw = input as Record<string, unknown>;
@@ -68,10 +45,7 @@ export const normalizeSecretsSettings = (input: unknown): SecretsSettings => {
                 .filter((entry): entry is SecretEntry => Boolean(entry)),
         };
     }
-    const legacyEntries = secretEntriesFromLegacySettings(raw);
-    return {
-        secrets: legacyEntries,
-    };
+    return defaultSecretsSettings;
 };
 
 type SecretTableRowProps = {
@@ -90,7 +64,7 @@ const SecretTableRow: FC<SecretTableRowProps> = ({ entry, index, onChange, onRem
                 onChange={(event) => {
                     onChange({ ...entry, key: event.currentTarget.value });
                 }}
-                placeholder="CompanyGSTIN"
+                placeholder="SecretKey"
                 value={entry.key}
             />
         </label>

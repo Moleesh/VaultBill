@@ -87,44 +87,50 @@ export const BuilderFieldEditor: FC<BuilderFieldEditorProps> = ({
                         }}
                         type="button"
                     >
-                        <strong>{`Edit ${field.Label}`}</strong>
-                        <span>{field.Type}</span>
-                        {field.Calculated ? <small>Calculated</small> : null}
-                        {referencedFieldIds.has(field.FieldId) ? (
-                            <small className="builder-field-warning">Used in a formula</small>
-                        ) : null}
+                        <span className="builder-fields__main-title">{`Edit ${field.Label}`}</span>
+                        <span className="builder-fields__main-type">{field.Type}</span>
+                        <span className="builder-fields__main-meta">
+                            {field.Calculated ? <small>Calculated</small> : null}
+                            {referencedFieldIds.has(field.FieldId) ? (
+                                <small className="builder-field-warning">Used in a formula</small>
+                            ) : null}
+                        </span>
                     </button>
-                    <button
-                        aria-label={`Duplicate ${field.Label}`}
-                        onClick={() => {
-                            onChange([
-                                ...fields.slice(0, index + 1),
-                                {
-                                    ...field,
-                                    FieldId: `${field.FieldId}Copy`,
-                                    Label: `${field.Label} Copy`,
-                                },
-                                ...fields.slice(index + 1),
-                            ]);
-                        }}
-                        type="button"
-                    >
-                        <Copy aria-hidden="true" size={17} />
-                    </button>
-                    <button
-                        aria-label={`Delete ${field.Label}`}
-                        onClick={() => {
-                            onChange(fields.filter((_, fieldIndex) => fieldIndex !== index));
-                        }}
-                        title={
-                            referencedFieldIds.has(field.FieldId)
-                                ? 'This field is referenced in a formula, but it can still be deleted.'
-                                : undefined
-                        }
-                        type="button"
-                    >
-                        <Trash2 aria-hidden="true" size={17} />
-                    </button>
+                    <div className="builder-fields__actions">
+                        <button
+                            aria-label={`Duplicate ${field.Label}`}
+                            className="builder-fields__action"
+                            onClick={() => {
+                                onChange([
+                                    ...fields.slice(0, index + 1),
+                                    {
+                                        ...field,
+                                        FieldId: `${field.FieldId}Copy`,
+                                        Label: `${field.Label} Copy`,
+                                    },
+                                    ...fields.slice(index + 1),
+                                ]);
+                            }}
+                            type="button"
+                        >
+                            <Copy aria-hidden="true" size={17} />
+                        </button>
+                        <button
+                            aria-label={`Delete ${field.Label}`}
+                            className="builder-fields__action"
+                            onClick={() => {
+                                onChange(fields.filter((_, fieldIndex) => fieldIndex !== index));
+                            }}
+                            title={
+                                referencedFieldIds.has(field.FieldId)
+                                    ? 'This field is referenced in a formula, but it can still be deleted.'
+                                    : undefined
+                            }
+                            type="button"
+                        >
+                            <Trash2 aria-hidden="true" size={17} />
+                        </button>
+                    </div>
                 </article>
             ))}
         </div>

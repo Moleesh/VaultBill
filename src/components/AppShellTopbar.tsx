@@ -1,6 +1,6 @@
 /** @format */
 
-import { KeyRound, LogOut, RotateCcw } from 'lucide-react';
+import { KeyRound, LogOut, Minus, RotateCcw, X } from 'lucide-react';
 import type { FC } from 'react';
 
 import { ThemePalette } from './ThemePalette';
@@ -18,6 +18,9 @@ type AppShellTopbarProps = {
     readonly onResetDemo: () => void;
     readonly onLogout: () => void;
     readonly onOpenActivation: () => void;
+    readonly onCloseWindow?: () => void;
+    readonly onMinimizeWindow?: () => void;
+    readonly isDesktop?: boolean;
 };
 
 export const AppShellTopbar: FC<AppShellTopbarProps> = ({
@@ -29,6 +32,9 @@ export const AppShellTopbar: FC<AppShellTopbarProps> = ({
     onResetDemo,
     onLogout,
     onOpenActivation,
+    onCloseWindow,
+    onMinimizeWindow,
+    isDesktop = false,
 }) => (
     <header className="app-shell__topbar">
         <div>
@@ -36,6 +42,26 @@ export const AppShellTopbar: FC<AppShellTopbarProps> = ({
             <strong>{isDemoMode ? 'VaultBill Demo' : 'Business workspace'}</strong>
         </div>
         <div className="app-shell__topbar-actions">
+            {isDesktop && onMinimizeWindow && onCloseWindow ? (
+                <div className="app-shell__window-controls">
+                    <button
+                        className="icon-button"
+                        aria-label="Minimize window"
+                        onClick={onMinimizeWindow}
+                        type="button"
+                    >
+                        <Minus aria-hidden="true" size={18} />
+                    </button>
+                    <button
+                        className="icon-button"
+                        aria-label="Close window"
+                        onClick={onCloseWindow}
+                        type="button"
+                    >
+                        <X aria-hidden="true" size={18} />
+                    </button>
+                </div>
+            ) : null}
             <div className="app-shell__mobile-account-actions">
                 <ThemePalette controller={themeController} />
                 {!isDemoMode ? (

@@ -6,6 +6,7 @@ import type { FC } from 'react';
 import { useCapabilities } from '../../capability/CapabilityContext';
 import { requestHostedApi } from '../../runtime/HostedApi';
 import type { Role } from '../../types/AppTypes';
+import { hashPassword, defaultPasswordHash } from '../auth/SessionSupport';
 import { useSession } from '../auth/SessionContext';
 import { SettingsSecurityAccess } from './SettingsSecurityAccess';
 import { SettingsSecurityAccounts } from './SettingsSecurityAccounts';
@@ -21,6 +22,7 @@ export const SettingsSecuritySection: FC = () => {
     const { accounts, archiveAccount, operatorContext, resetPassword, saveAccount } = useSession();
     const [newUsername, setNewUsername] = useState('');
     const [newDisplayName, setNewDisplayName] = useState('');
+    const [newOperatorPassword, setNewOperatorPassword] = useState('');
     const [newRole, setNewRole] = useState<Role>('User');
     const [passwordUserId, setPasswordUserId] = useState(operatorContext?.account.userId ?? '');
     const [newPassword, setNewPassword] = useState('');
@@ -85,16 +87,24 @@ export const SettingsSecuritySection: FC = () => {
             setMessage('Username and display name are required.');
             return;
         }
+        const optionalPassword = newOperatorPassword.trim();
         try {
+            const passwordHash = optionalPassword
+                ? await hashPassword(optionalPassword)
+                : undefined;
             await saveAccount({
                 userId: crypto.randomUUID(),
                 username,
                 displayName,
                 role: newRole,
                 isActive: true,
+                passwordConfigured: optionalPassword.length > 0,
+                usesDefaultPassword: passwordHash === defaultPasswordHash,
+                ...(passwordHash ? { passwordHash } : {}),
             });
             setNewUsername('');
             setNewDisplayName('');
+            setNewOperatorPassword('');
             setMessage(getOperatorCreationMessage(newRole));
         } catch (reason) {
             setMessage(reason instanceof Error ? reason.message : 'Operator could not be created.');
@@ -149,6 +159,7 @@ export const SettingsSecuritySection: FC = () => {
                 }
                 manageableAccounts={manageableAccounts}
                 newDisplayName={newDisplayName}
+                newOperatorPassword={newOperatorPassword}
                 newPassword={newPassword}
                 newRole={newRole}
                 newUsername={newUsername}
@@ -159,6 +170,7 @@ export const SettingsSecuritySection: FC = () => {
                 onChangePassword={changePassword}
                 onCreateOperator={createOperator}
                 onNewDisplayNameChange={setNewDisplayName}
+                onNewOperatorPasswordChange={setNewOperatorPassword}
                 onNewPasswordChange={setNewPassword}
                 onNewRoleChange={setNewRole}
                 onNewUsernameChange={setNewUsername}

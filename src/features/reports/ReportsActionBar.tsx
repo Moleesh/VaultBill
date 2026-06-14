@@ -3,17 +3,30 @@
 import { Printer, RotateCcw, Sheet } from 'lucide-react';
 import type { FC } from 'react';
 
+const formatFieldLabel = (field: string): string =>
+    ({
+        customerName: 'Customer name',
+        documentNumber: 'Document number',
+        gstin: 'GSTIN',
+        invoiceDate: 'Invoice date',
+        grandTotal: 'Grand total',
+        status: 'Status',
+    })[field] ?? field;
+
 type ReportsActionBarProps = {
     readonly customer: string;
     readonly invoiceNumber: string;
     readonly fromDate: string;
     readonly toDate: string;
     readonly status: string;
+    readonly reportField: string;
+    readonly reportFieldValue: string;
     readonly preset: string;
     readonly onClearCustomer: () => void;
     readonly onClearInvoiceNumber: () => void;
     readonly onClearDateRange: () => void;
     readonly onClearStatus: () => void;
+    readonly onClearReportField: () => void;
     readonly onClearPreset: () => void;
     readonly onReset: () => void;
     readonly visibleCount: number;
@@ -33,11 +46,14 @@ export const ReportsActionBar: FC<ReportsActionBarProps> = ({
     fromDate,
     toDate,
     status,
+    reportField,
+    reportFieldValue,
     preset,
     onClearCustomer,
     onClearInvoiceNumber,
     onClearDateRange,
     onClearStatus,
+    onClearReportField,
     onClearPreset,
     onReset,
     visibleCount,
@@ -70,6 +86,12 @@ export const ReportsActionBar: FC<ReportsActionBarProps> = ({
             {status !== 'All' ? (
                 <button onClick={onClearStatus} type="button">
                     Status: {status} ×
+                </button>
+            ) : null}
+            {reportField !== 'customerName' || reportFieldValue ? (
+                <button onClick={onClearReportField} type="button">
+                    Field: {formatFieldLabel(reportField)}
+                    {reportFieldValue ? ` = ${reportFieldValue}` : ''} ×
                 </button>
             ) : null}
             {preset !== 'All' ? (

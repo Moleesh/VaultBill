@@ -6,6 +6,10 @@ export type SysAdminDashboardChartData = {
     readonly formatHealthTotal: number;
     readonly recordTotal: number;
     readonly userTotal: number;
+    readonly formatSummary: string;
+    readonly recordSummary: string;
+    readonly userSummary: string;
+    readonly backupSummary: string;
     readonly formatSegments: readonly {
         readonly label: string;
         readonly value: number;
@@ -29,6 +33,9 @@ const formatAngle = (value: number, total: number): string => `${String((value /
 
 const chartSegments = <T extends { readonly value: number }>(segments: readonly T[]): T[] =>
     segments.filter((segment) => segment.value > 0);
+
+const pluralize = (count: number, singular: string, plural = `${singular}s`) =>
+    `${String(count)} ${count === 1 ? singular : plural}`;
 
 export const buildSysAdminDashboardChartData = (
     summary: SysAdminSummary,
@@ -87,6 +94,25 @@ export const buildSysAdminDashboardChartData = (
         formatHealthTotal,
         recordTotal,
         userTotal,
+        formatSummary: `${pluralize(summary.formatCount, 'format')} published, ${pluralize(
+            summary.incompleteFormatCount,
+            'format',
+        )} need attention, ${pluralize(summary.defaultFormatCount, 'format')} marked default.`,
+        recordSummary: `${pluralize(summary.recordCount, 'record')} total across ${pluralize(
+            summary.draftCount,
+            'draft',
+        )}, ${pluralize(summary.finalizedCount, 'finalized record', 'finalized records')}, and ${pluralize(
+            summary.cancelledCount,
+            'cancelled record',
+            'cancelled records',
+        )}.`,
+        userSummary: `${pluralize(summary.activeAccountCount, 'active account')} out of ${pluralize(
+            summary.accountCount,
+            'operator account',
+        )}.`,
+        backupSummary: summary.lastBackupAt
+            ? `Last backup captured ${summary.lastBackupAt}.`
+            : 'No backup has been captured yet.',
         formatSegments,
         recordSegments,
         userSegments,

@@ -19,11 +19,13 @@ type SettingsSecurityAccountsProps = {
     readonly manageableAccounts: readonly OperatorAccount[];
     readonly newUsername: string;
     readonly newDisplayName: string;
+    readonly newOperatorPassword: string;
     readonly newRole: Role;
     readonly passwordUserId: string;
     readonly newPassword: string;
     readonly onNewUsernameChange: (value: string) => void;
     readonly onNewDisplayNameChange: (value: string) => void;
+    readonly onNewOperatorPasswordChange: (value: string) => void;
     readonly onNewRoleChange: (value: Role) => void;
     readonly onPasswordUserIdChange: (value: string) => void;
     readonly onNewPasswordChange: (value: string) => void;
@@ -40,11 +42,13 @@ export const SettingsSecurityAccounts: FC<SettingsSecurityAccountsProps> = ({
     manageableAccounts,
     newUsername,
     newDisplayName,
+    newOperatorPassword,
     newRole,
     passwordUserId,
     newPassword,
     onNewUsernameChange,
     onNewDisplayNameChange,
+    onNewOperatorPasswordChange,
     onNewRoleChange,
     onPasswordUserIdChange,
     onNewPasswordChange,
@@ -86,6 +90,18 @@ export const SettingsSecurityAccounts: FC<SettingsSecurityAccountsProps> = ({
                             onNewDisplayNameChange(event.currentTarget.value);
                         }}
                         required
+                    />
+                </label>
+                <label>
+                    <span>Optional password</span>
+                    <input
+                        autoComplete="new-password"
+                        placeholder="Leave blank to keep passwordless"
+                        type="password"
+                        value={newOperatorPassword}
+                        onChange={(event) => {
+                            onNewOperatorPasswordChange(event.currentTarget.value);
+                        }}
                     />
                 </label>
                 {operatorRole === 'SysAdmin' ? (

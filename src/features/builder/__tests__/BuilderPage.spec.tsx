@@ -42,6 +42,7 @@ describe('builder page', () => {
         );
 
         expect(await screen.findByRole('heading', { name: 'Document builder' })).toBeVisible();
+        expect(screen.getByRole('heading', { name: 'Document library' })).toBeVisible();
         expect(screen.getByText('Field Preview')).toBeVisible();
         expect(screen.getByText('Print Preview')).toBeVisible();
     });

@@ -13,7 +13,7 @@ import {
     type SecretsSettings,
 } from './SettingsIntegrationsSectionSupport';
 
-/** Owns the shared Secrets table for GST, SMS, and formula references. */
+/** Owns the shared Secrets table for formula and integration references. */
 export const SettingsIntegrationsSection: FC = () => {
     const capabilities = useCapabilities();
     const [settings, setSettings] = useState<SecretsSettings>(defaultSecretsSettings);
@@ -58,7 +58,7 @@ export const SettingsIntegrationsSection: FC = () => {
                 </p>
             </header>
             <SecretsSectionCard
-                description="Keep shared values for GST, SMS, and formula references in a single table."
+                description="Keep shared values for formulas and integrations in a single table."
                 title="Secrets"
             >
                 <SecretsTable

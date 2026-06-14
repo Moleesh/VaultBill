@@ -89,7 +89,7 @@ describe('app shell', () => {
         delete (window as Partial<Window> & { vaultBillDesktop?: unknown }).vaultBillDesktop;
     });
 
-    it('keeps window controls out of the in-page shell', () => {
+    it('shows desktop window controls in the shell top bar', () => {
         render(
             <MemoryRouter initialEntries={['/app/dashboard']}>
                 <CapabilityProvider value={desktopCapabilities}>
@@ -107,7 +107,7 @@ describe('app shell', () => {
         );
 
         expect(screen.getByRole('navigation', { name: 'Primary' })).toBeVisible();
-        expect(screen.queryByRole('button', { name: 'Close window' })).toBeNull();
-        expect(screen.queryByRole('button', { name: 'Minimize window' })).toBeNull();
+        expect(screen.getByRole('button', { name: 'Close window' })).toBeVisible();
+        expect(screen.getByRole('button', { name: 'Minimize window' })).toBeVisible();
     });
 });

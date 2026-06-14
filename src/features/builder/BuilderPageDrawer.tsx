@@ -10,32 +10,46 @@ type BuilderPageDrawerProps = {
 };
 
 /** Renders the field editor drawer for the active builder step. */
-export const BuilderPageDrawer = ({ controller, lineSection }: BuilderPageDrawerProps) => (
-    <AppDrawer
-        isOpen={Boolean(controller.editingField)}
-        onClose={() => {
-            controller.setEditing(undefined);
-        }}
-        title={controller.editingField ? `Edit ${controller.editingField.Label}` : 'Edit field'}
-    >
-        {controller.editingField && controller.editing ? (
-            <BuilderFieldDrawer
-                field={controller.editingField}
-                onChange={(field) => {
-                    const { editing } = controller;
-                    if (!editing) return;
-                    const fields =
-                        editing.kind === 'document'
-                            ? controller.config.Fields
-                            : (lineSection?.Fields ?? []);
-                    controller.updateFields(
-                        editing.kind,
-                        fields.map((candidate, index) =>
-                            index === editing.index ? field : candidate,
-                        ),
-                    );
-                }}
-            />
-        ) : null}
-    </AppDrawer>
-);
+export const BuilderPageDrawer = ({ controller, lineSection }: BuilderPageDrawerProps) => {
+    const formulaSuggestions = [
+        ...new Set([
+            ...controller.allFields.map((field) => field.FieldId),
+            ...Object.keys(controller.secretValues),
+            'Quantity * Rate',
+            'SUMALL(Amount)',
+            'SUM(Items.Amount)',
+            'COUNT(Items)',
+        ]),
+    ];
+
+    return (
+        <AppDrawer
+            isOpen={Boolean(controller.editingField)}
+            onClose={() => {
+                controller.setEditing(undefined);
+            }}
+            title={controller.editingField ? `Edit ${controller.editingField.Label}` : 'Edit field'}
+        >
+            {controller.editingField && controller.editing ? (
+                <BuilderFieldDrawer
+                    field={controller.editingField}
+                    formulaSuggestions={formulaSuggestions}
+                    onChange={(field) => {
+                        const { editing } = controller;
+                        if (!editing) return;
+                        const fields =
+                            editing.kind === 'document'
+                                ? controller.config.Fields
+                                : (lineSection?.Fields ?? []);
+                        controller.updateFields(
+                            editing.kind,
+                            fields.map((candidate, index) =>
+                                index === editing.index ? field : candidate,
+                            ),
+                        );
+                    }}
+                />
+            ) : null}
+        </AppDrawer>
+    );
+};

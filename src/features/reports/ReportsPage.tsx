@@ -27,6 +27,8 @@ export const ReportsPage: FC = () => {
                 customers={controller.customers}
                 fromDate={controller.fromDate}
                 invoiceNumber={controller.invoiceNumber}
+                onReportFieldChange={controller.setReportField}
+                onReportFieldValueChange={controller.setReportFieldValue}
                 onCustomerChange={controller.setCustomer}
                 onFromDateChange={controller.setFromDate}
                 onInvoiceNumberChange={controller.setInvoiceNumber}
@@ -36,6 +38,8 @@ export const ReportsPage: FC = () => {
                 onToDateChange={controller.setToDate}
                 preset={controller.preset}
                 reportId={controller.reportId}
+                reportField={controller.reportField}
+                reportFieldValue={controller.reportFieldValue}
                 status={controller.status}
                 toDate={controller.toDate}
             />
@@ -47,6 +51,10 @@ export const ReportsPage: FC = () => {
                     customer={controller.customer}
                     fromDate={controller.fromDate}
                     invoiceNumber={controller.invoiceNumber}
+                    onClearReportField={() => {
+                        controller.setReportField('customerName');
+                        controller.setReportFieldValue('');
+                    }}
                     preset={controller.preset}
                     onClearCustomer={() => {
                         controller.setCustomer('');
@@ -70,6 +78,8 @@ export const ReportsPage: FC = () => {
                     }}
                     onPrintReport={controller.runReportPrint}
                     onReset={controller.reset}
+                    reportField={controller.reportField}
+                    reportFieldValue={controller.reportFieldValue}
                     status={controller.status}
                     toDate={controller.toDate}
                     totalRecords={controller.totalRecords}

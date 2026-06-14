@@ -28,6 +28,8 @@ export type ReportsPageController = {
     readonly exportAll: () => void;
     readonly fromDate: string;
     readonly invoiceNumber: string;
+    readonly reportField: string;
+    readonly reportFieldValue: string;
     readonly isLoading: boolean;
     readonly loadCompleteResult: () => Promise<readonly AppRecord[]>;
     readonly matchingRecords: readonly AppRecord[];
@@ -49,6 +51,8 @@ export type ReportsPageController = {
     readonly setPreset: (value: string) => void;
     readonly setPrintSource: (records: readonly AppRecord[]) => void;
     readonly setReportId: (value: string) => void;
+    readonly setReportField: (value: string) => void;
+    readonly setReportFieldValue: (value: string) => void;
     readonly setServerRecords: (records: readonly AppRecord[]) => void;
     readonly setServerTotal: (value: number) => void;
     readonly setStatus: (value: string) => void;

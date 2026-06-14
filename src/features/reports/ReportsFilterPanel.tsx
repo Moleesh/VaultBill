@@ -8,6 +8,10 @@ import { SearchableDropdown } from '../../components/SearchableDropdown/Searchab
 type ReportsFilterPanelProps = {
     readonly reportId: string;
     readonly onReportIdChange: (value: string) => void;
+    readonly reportField: string;
+    readonly onReportFieldChange: (value: string) => void;
+    readonly reportFieldValue: string;
+    readonly onReportFieldValueChange: (value: string) => void;
     readonly customer: string;
     readonly onCustomerChange: (value: string) => void;
     readonly invoiceNumber: string;
@@ -26,6 +30,10 @@ type ReportsFilterPanelProps = {
 export const ReportsFilterPanel: FC<ReportsFilterPanelProps> = ({
     reportId,
     onReportIdChange,
+    reportField,
+    onReportFieldChange,
+    reportFieldValue,
+    onReportFieldValueChange,
     customer,
     onCustomerChange,
     invoiceNumber,
@@ -40,22 +48,26 @@ export const ReportsFilterPanel: FC<ReportsFilterPanelProps> = ({
     onPresetChange,
     customers,
 }) => (
-    <div className="operational-header">
-        <div>
-            <p className="eyebrow">Reports</p>
-            <h1>Business reports</h1>
-            <p>Search the complete record history, then export or print exactly what matches.</p>
+    <>
+        <div className="page-hero page-hero--compact reports-hero">
+            <div>
+                <p className="eyebrow">Reports</p>
+                <h1>Business reports</h1>
+                <p>Search the complete record history, then export or print exactly what matches.</p>
+            </div>
+            <div className="reports-hero__controls">
+                <SearchableDropdown
+                    label="Report"
+                    onChange={onReportIdChange}
+                    options={[
+                        { value: 'sales-register', label: 'Sales register' },
+                        { value: 'tax-summary', label: 'Tax summary' },
+                        { value: 'customer-ledger', label: 'Customer ledger' },
+                    ]}
+                    value={reportId}
+                />
+            </div>
         </div>
-        <SearchableDropdown
-            label="Report"
-            onChange={onReportIdChange}
-            options={[
-                { value: 'sales-register', label: 'Sales register' },
-                { value: 'tax-summary', label: 'Tax summary' },
-                { value: 'customer-ledger', label: 'Customer ledger' },
-            ]}
-            value={reportId}
-        />
         <section className="data-panel">
             <div className="report-filter-grid">
                 <label>
@@ -74,6 +86,61 @@ export const ReportsFilterPanel: FC<ReportsFilterPanelProps> = ({
                         ))}
                     </datalist>
                 </label>
+                <SearchableDropdown
+                    label="Field"
+                    onChange={onReportFieldChange}
+                    options={[
+                        { value: 'customerName', label: 'Customer name' },
+                        { value: 'documentNumber', label: 'Document number' },
+                        { value: 'gstin', label: 'GSTIN' },
+                        { value: 'invoiceDate', label: 'Invoice date' },
+                        { value: 'grandTotal', label: 'Grand total' },
+                        { value: 'status', label: 'Status' },
+                    ]}
+                    value={reportField}
+                />
+                {reportField === 'status' ? (
+                    <SearchableDropdown
+                        label="Value"
+                        onChange={onReportFieldValueChange}
+                        options={[
+                            { value: 'All', label: 'All' },
+                            { value: 'Draft', label: 'Draft' },
+                            { value: 'Finalized', label: 'Finalized' },
+                            { value: 'Cancelled', label: 'Cancelled' },
+                        ]}
+                        value={reportFieldValue || 'All'}
+                    />
+                ) : (
+                    <label>
+                        <span>Value</span>
+                        <input
+                            list={reportField === 'customerName' ? 'report-field-values' : undefined}
+                            placeholder={
+                                reportField === 'customerName'
+                                    ? 'Choose or type a customer'
+                                    : reportField === 'documentNumber'
+                                      ? 'Invoice or document number'
+                                      : reportField === 'gstin'
+                                        ? 'GSTIN'
+                                        : reportField === 'invoiceDate'
+                                          ? 'YYYY-MM-DD'
+                                          : 'Enter value'
+                            }
+                            value={reportFieldValue}
+                            onChange={(event) => {
+                                onReportFieldValueChange(event.currentTarget.value);
+                            }}
+                        />
+                        {reportField === 'customerName' ? (
+                            <datalist id="report-field-values">
+                                {customers.map((name) => (
+                                    <option key={name} value={name} />
+                                ))}
+                            </datalist>
+                        ) : null}
+                    </label>
+                )}
                 <label>
                     <span>Invoice number</span>
                     <input
@@ -109,5 +176,5 @@ export const ReportsFilterPanel: FC<ReportsFilterPanelProps> = ({
                 />
             </div>
         </section>
-    </div>
+    </>
 );

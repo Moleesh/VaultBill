@@ -23,6 +23,11 @@ import {
     storageKey,
     steps,
 } from '../BuilderPageSupport';
+import {
+    defaultSavedPrintTemplates,
+    normalizeSavedPrintTemplates,
+    templateNameFromFile,
+} from '../BuilderSavedTemplatesSupport';
 
 afterEach(() => {
     window.localStorage.clear();
@@ -42,12 +47,15 @@ describe('BuilderPageSupport', () => {
             'Print Preview',
         ]);
         expect(helperFor('Format')).toContain('document name');
-        expect(helperFor('Layout')).toContain('columns and spacing');
-        expect(helperFor('Field Preview')).toContain('entry form');
-        expect(helperFor('Print Preview')).toContain('rendered print output');
+        expect(helperFor('Layout')).toContain('flex columns and gap');
+        expect(helperFor('Calculations')).toContain('same-row math');
+        expect(helperFor('Field Preview')).toContain('read-only field layout');
+        expect(helperFor('Print Preview')).toContain('paper settings');
         expect(move([1, 2, 3], 0, 2)).toEqual([2, 3, 1]);
         expect(newField(0)).toMatchObject({ FieldId: 'Field1', Label: 'New field 1' });
         expect(mimeTypeFromName('logo.WEBP')).toBe('image/webp');
+        expect(templateNameFromFile('shared-template.html')).toBe('shared-template');
+        expect(defaultSavedPrintTemplates()).toHaveLength(1);
     });
 
     it('formats and decodes builder assets consistently', () => {
@@ -77,5 +85,18 @@ describe('BuilderPageSupport', () => {
         vi.spyOn(window, 'confirm').mockReturnValueOnce(true).mockReturnValueOnce(false);
         expect(confirmLargeFile('template.html', 5 * 1024 * 1024)).toBe(true);
         expect(confirmLargeFile('template.html', 5 * 1024 * 1024)).toBe(false);
+    });
+
+    it('normalizes saved print templates with a fallback', () => {
+        expect(normalizeSavedPrintTemplates(null)).toHaveLength(1);
+        expect(
+            normalizeSavedPrintTemplates([
+                {
+                    name: 'Template A',
+                    templateHtml: '<html></html>',
+                    updatedAt: '2026-06-14T00:00:00Z',
+                },
+            ]),
+        ).toHaveLength(2);
     });
 });

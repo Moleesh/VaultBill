@@ -16,6 +16,7 @@
 
 .app-shell__body {
     position: relative;
+    z-index: 1;
     display: grid;
     grid-template-rows: auto minmax(0, 1fr);
     height: 100vh;
@@ -72,7 +73,7 @@
         color-mix(in srgb, var(--color-surface) 98%, transparent),
         color-mix(in srgb, var(--color-surface) 92%, transparent)
     );
-    backdrop-filter: blur(64px) saturate(175%);
+    backdrop-filter: blur(72px) saturate(180%);
     box-shadow:
         0 0.45rem 2rem color-mix(in srgb, var(--color-panel-shadow) 18%, transparent),
         inset 0 -1px 0 color-mix(in srgb, var(--color-border) 48%, transparent);
@@ -80,8 +81,14 @@
 
 .app-shell__topbar-actions {
     display: flex;
-    align-items: end;
+    align-items: center;
     gap: var(--space-3);
+}
+
+.app-shell__window-controls {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
 }
 
 .app-shell__trial-pill {
@@ -179,16 +186,17 @@
 
 .theme-palette {
     position: relative;
+    z-index: 260;
 }
 
 .theme-palette__popover {
     position: absolute;
-    z-index: 140;
+    z-index: 270;
     bottom: calc(100% + var(--space-2));
     left: 0;
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    width: 17rem;
+    grid-template-columns: minmax(0, 1fr);
+    width: 14rem;
     gap: var(--space-2);
     border: var(--line-width) solid var(--color-border);
     border-radius: var(--radius-md);

@@ -20,6 +20,13 @@ export const BuilderAssetSchema = z.object({
     dataBase64: z.string(),
 });
 
+/** Represents one reusable HTML print template stored with the builder package. */
+export const SavedPrintTemplateSchema = z.object({
+    name: z.string().trim().min(1),
+    templateHtml: z.string().min(1),
+    updatedAt: z.string().min(1),
+});
+
 /** Validates the persisted document-format package used by the Builder. */
 export const BuilderPackageSchema = z.object({
     config: z
@@ -30,10 +37,13 @@ export const BuilderPackageSchema = z.object({
         .passthrough(),
     templateHtml: z.string().min(1),
     assets: z.array(BuilderAssetSchema),
+    savedTemplates: z.array(SavedPrintTemplateSchema).default([]),
 });
 
 /** Represents one shared asset attached to a builder package. */
 export type BuilderAsset = z.infer<typeof BuilderAssetSchema>;
+/** Represents one saved HTML template shared with the builder package. */
+export type SavedPrintTemplate = z.infer<typeof SavedPrintTemplateSchema>;
 /** Represents the versioned JSON package persisted by the Builder. */
 export type BuilderPackage = z.infer<typeof BuilderPackageSchema>;
 
@@ -100,3 +110,45 @@ export const toBuffer = (value: unknown): Buffer => {
     if (typeof value === 'string') return Buffer.from(value);
     throw new Error('Builder asset data is invalid.');
 };
+
+/** Maps SQLite asset rows into normalized builder assets. */
+export const mapBuilderAssetRows = (rows: readonly AssetRow[]): readonly BuilderAsset[] =>
+    rows.map((row) => ({
+        name: String(row.asset_name),
+        type: String(row.mime_type),
+        dataBase64: toBuffer(row.asset_blob).toString('base64'),
+    }));
+
+/** Maps SQLite template rows into normalized saved print templates. */
+export const mapSavedPrintTemplateRows = (
+    rows: readonly Record<string, unknown>[],
+): readonly SavedPrintTemplate[] =>
+    rows.map((row) => ({
+        name: String(row.template_name),
+        templateHtml: String(row.template_html),
+        updatedAt: String(row.updated_at),
+    }));
+
+/** Maps SQLite inventory rows into builder inventory entries. */
+export const mapBuilderInventoryRows = (
+    rows: readonly Record<string, unknown>[],
+): readonly BuilderInventoryItem[] =>
+    rows.map((row) => {
+        let isValid = Boolean(row.template_html);
+        try {
+            JSON.parse(String(row.format_json));
+        } catch {
+            isValid = false;
+        }
+        return {
+            formatId: String(row.format_id),
+            formatName: String(row.format_name),
+            isDefault: Number(row.is_default) === 1,
+            updatedAt: String(row.updated_at),
+            ...(typeof row.template_name === 'string' && row.template_name.length > 0
+                ? { templateName: row.template_name }
+                : {}),
+            assetCount: Number(row.asset_count),
+            isValid,
+        };
+    });

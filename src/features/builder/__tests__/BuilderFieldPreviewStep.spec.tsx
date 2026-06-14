@@ -10,7 +10,6 @@ describe('BuilderFieldPreviewStep', () => {
     it('uses the configured layout columns and gap in the field preview grid', () => {
         render(
             <BuilderFieldPreviewStep
-                assets={[]}
                 config={builtInDefaultFormat}
                 fields={builtInDefaultFormat.Fields}
                 layout={{ Columns: 3, Gap: 28 }}
@@ -19,13 +18,14 @@ describe('BuilderFieldPreviewStep', () => {
         );
 
         const grid = screen.getByLabelText('Document field preview');
-        const layoutGrid = grid.querySelector('.builder-preview-grid');
+        const layoutGrid = grid.querySelector('.builder-preview-grid--read-only');
 
         expect(layoutGrid).not.toBeNull();
-        expect(layoutGrid).toHaveStyle({
-            gap: '28px',
-            gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
-        });
+        expect(layoutGrid).toHaveStyle({ gap: '28px' });
         expect(screen.getByRole('heading', { name: 'Field preview' })).toBeVisible();
+        expect(screen.queryByText('Document fields')).toBeNull();
+        expect(
+            screen.getByText(/Flex columns 3 with 28px gap\. This view is read-only/u),
+        ).toBeVisible();
     });
 });

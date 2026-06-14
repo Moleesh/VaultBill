@@ -34,5 +34,10 @@ export const createBuilderStoreTables = (database: DatabaseSync) => {
         UNIQUE(template_id, asset_name),
         FOREIGN KEY (template_id) REFERENCES print_templates(template_id) ON DELETE CASCADE
       );
+      CREATE TABLE IF NOT EXISTS saved_print_templates (
+        template_name TEXT PRIMARY KEY,
+        template_html TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+      );
     `);
 };

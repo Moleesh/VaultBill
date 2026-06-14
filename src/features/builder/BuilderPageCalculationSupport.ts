@@ -7,6 +7,11 @@ export { sampleFormula } from './BuilderFormulaPreviewSupport';
 const numericFieldTypes = new Set(['Number', 'Decimal', 'Money', 'Quantity', 'Rate']);
 const externalReferencePrefix = 'Secrets.';
 
+const normalizeFormulaSyntax = (formula: string): string =>
+    formula
+        .replace(/\bsecrets?\[([A-Za-z_][\w]*)\]/giu, 'Secrets.$1')
+        .replace(/\bsecrets\./giu, 'Secrets.');
+
 export type CalculationTarget = {
     readonly kind: 'document' | 'line';
     readonly sectionIndex: number;
@@ -67,7 +72,9 @@ export const collectCalculationTargets = (
 
 export const formulaReferences = (formula: string): readonly string[] =>
     [
-        ...formula
+        ...normalizeFormulaSyntax(formula)
+            .trim()
+            .replace(/\s+/gu, ' ')
             .replace(/\bSUMALL\(\s*/giu, '(')
             .replace(/\bSUM\(\s*Items\./giu, '(')
             .replace(/\bCOUNT\(\s*Items\s*\)/giu, '')

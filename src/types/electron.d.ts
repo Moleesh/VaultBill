@@ -104,11 +104,16 @@ type VaultBillDesktopBridge = {
     }>;
     readonly loadBuilderPackage: (formatId?: string) => Promise<
         | {
-              readonly config: unknown;
+          readonly config: unknown;
+          readonly templateHtml: string;
+          readonly savedTemplates: readonly {
+              readonly name: string;
               readonly templateHtml: string;
-              readonly assets: readonly {
-                  readonly name: string;
-                  readonly type: string;
+              readonly updatedAt: string;
+          }[];
+          readonly assets: readonly {
+              readonly name: string;
+              readonly type: string;
                   readonly dataBase64: string;
               }[];
           }

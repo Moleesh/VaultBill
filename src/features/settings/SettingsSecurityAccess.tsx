@@ -93,6 +93,12 @@ export const SettingsSecurityAccess: FC<SettingsSecurityAccessProps> = ({
                     />
                     <span>Hosted web access enabled</span>
                 </label>
+                {!canLanServer ? (
+                    <p className="field-note">
+                        Hosted web access is available from VaultBill Desktop when the local host
+                        service can run.
+                    </p>
+                ) : null}
             </div>
         ) : null}
     </>

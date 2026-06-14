@@ -8,11 +8,16 @@ import type { FieldConfig } from './BuilderPageSupport';
 
 type BuilderFieldDrawerProps = {
     readonly field: FieldConfig;
+    readonly formulaSuggestions: readonly string[];
     readonly onChange: (field: FieldConfig) => void;
 };
 
 /** Renders the editable drawer for a single document or line-item field. */
-export const BuilderFieldDrawer: FC<BuilderFieldDrawerProps> = ({ field, onChange }) => (
+export const BuilderFieldDrawer: FC<BuilderFieldDrawerProps> = ({
+    field,
+    formulaSuggestions,
+    onChange,
+}) => (
     <div className="form-grid">
         <label>
             <span>Field ID</span>
@@ -156,12 +161,21 @@ export const BuilderFieldDrawer: FC<BuilderFieldDrawerProps> = ({ field, onChang
             <label className="span-2">
                 <span>Formula</span>
                 <input
+                    list={`formula-suggestions-${field.FieldId}`}
                     value={field.Formula ?? ''}
                     onChange={(event) => {
                         onChange({ ...field, Formula: event.currentTarget.value });
                     }}
                 />
-                <small>Examples: Quantity * Rate, SUMALL(Amount), or Secrets.Key</small>
+                <small>
+                    Examples: Quantity * Rate, SUMALL(Amount), SUM(Items.Amount), COUNT(Items),
+                    Secrets.Key, or secrets[key]
+                </small>
+                <datalist id={`formula-suggestions-${field.FieldId}`}>
+                    {formulaSuggestions.map((suggestion) => (
+                        <option key={suggestion} value={suggestion} />
+                    ))}
+                </datalist>
             </label>
         ) : null}
     </div>

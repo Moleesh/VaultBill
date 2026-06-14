@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 import { useCapabilities } from '../../capability/CapabilityContext';
+import { builtInDefaultFormat } from '../../db/startup/BuiltInDefaultFormat';
 import { builtInDefaultPrintTemplateHtml } from '../../db/startup/BuiltInDefaultPrintTemplate';
 import { DocumentFormatConfigSchema } from '../../db/startup/ConfigSchemas';
 import { requestHostedApi } from '../../runtime/HostedApi';
@@ -12,15 +13,17 @@ import {
     secretValuesFromSettings,
 } from '../settings/SettingsIntegrationsSectionSupport';
 import {
-    base64ByteLength,
     builtInSampleAsset,
-    htmlStorageKey,
-    readConfig,
     steps,
-    type AssetSummary,
     type BuilderStep,
-    type StoredBuilderPackage,
+    type AssetSummary,
+    type SavedPrintTemplate,
 } from './BuilderPageSupport';
+import {
+    defaultSavedPrintTemplates,
+    findSavedPrintTemplate,
+    removeSavedPrintTemplate,
+} from './BuilderSavedTemplatesSupport';
 import {
     collectCalculationTargets,
     validateCalculationGraph,
@@ -32,19 +35,22 @@ import {
     updateBuilderCalculationOrder,
     updateBuilderFields,
 } from './BuilderPageControllerSupport';
+import { useBuilderDocumentLibrary } from './useBuilderDocumentLibrary';
 import { useBuilderPageActions } from './useBuilderPageActions';
 
 /** Keeps the builder state, loading, and rendering actions in a compact hook. */
 export const useBuilderPageController = () => {
     const capabilities = useCapabilities();
     const [searchParams] = useSearchParams();
-    const requestedFormatId = searchParams.get('format') ?? undefined;
     const [stepIndex, setStepIndex] = useState(() =>
         searchParams.get('step') === 'preview' ? steps.length - 1 : 0,
     );
-    const [config, setConfig] = useState<DocumentFormatConfig>(() => readConfig());
-    const [templateHtml, setTemplateHtml] = useState(
-        () => window.localStorage.getItem(htmlStorageKey) ?? builtInDefaultPrintTemplateHtml,
+    const [config, setConfig] = useState<DocumentFormatConfig>(() =>
+        JSON.parse(JSON.stringify(builtInDefaultFormat)) as DocumentFormatConfig,
+    );
+    const [templateHtml, setTemplateHtml] = useState(builtInDefaultPrintTemplateHtml);
+    const [savedTemplates, setSavedTemplates] = useState<readonly SavedPrintTemplate[]>(
+        () => defaultSavedPrintTemplates(),
     );
     const [assets, setAssets] = useState<readonly AssetSummary[]>(() => [builtInSampleAsset]);
     const [editing, setEditing] = useState<EditingState>();
@@ -65,6 +71,8 @@ export const useBuilderPageController = () => {
         () => [...config.Fields, ...(lineSection?.Fields ?? [])],
         [config.Fields, lineSection?.Fields],
     );
+    const activeTemplateName =
+        findSavedPrintTemplate(savedTemplates, templateHtml)?.name ?? savedTemplates[0]?.name;
     const calculationTargets = useMemo(() => collectCalculationTargets(config), [config]);
     const referencedFieldIds = new Set<string>();
     for (const field of allFields) {
@@ -92,40 +100,6 @@ export const useBuilderPageController = () => {
     }, [allFields, config, lineSection?.Fields, templateHtml]);
 
     useEffect(() => {
-        const applyPackage = (stored: StoredBuilderPackage | undefined) => {
-            if (!stored) return;
-            const parsedConfig: DocumentFormatConfig = DocumentFormatConfigSchema.parse(
-                stored.config,
-            );
-            setConfig(parsedConfig);
-            setTemplateHtml(stored.templateHtml);
-            const nextAssets: readonly AssetSummary[] = stored.assets.map((asset) => ({
-                ...asset,
-                size: base64ByteLength(asset.dataBase64),
-            }));
-            setAssets(nextAssets);
-        };
-        if (window.vaultBillDesktop) {
-            void window.vaultBillDesktop.loadBuilderPackage(requestedFormatId).then((stored) => {
-                applyPackage(stored);
-            });
-        } else if (capabilities.isLanBrowser) {
-            const query = requestedFormatId
-                ? `?formatId=${encodeURIComponent(requestedFormatId)}`
-                : '';
-            void requestHostedApi<StoredBuilderPackage | undefined>(`/builder/package${query}`)
-                .then(applyPackage)
-                .catch((reason: unknown) => {
-                    setMessage(
-                        reason instanceof Error
-                            ? reason.message
-                            : 'Builder data could not be loaded.',
-                    );
-                });
-        }
-    }, [capabilities.isLanBrowser, requestedFormatId]);
-
-    useEffect(() => {
         const request = window.vaultBillDesktop
             ? window.vaultBillDesktop.getIntegrationSettings()
             : capabilities.isLanBrowser
@@ -137,40 +111,74 @@ export const useBuilderPageController = () => {
         });
     }, [capabilities.isLanBrowser]);
 
+    const documentLibrary = useBuilderDocumentLibrary({
+        capabilities: { isLanBrowser: capabilities.isLanBrowser },
+        config,
+        savedTemplates,
+        setAssets,
+        setConfig,
+        setMessage,
+        setSavedTemplates,
+        setTemplateHtml,
+    });
+
     const actions = useBuilderPageActions({
         assets,
         capabilities: { isLanBrowser: capabilities.isLanBrowser },
         config,
+        savedTemplates,
         setAssets,
         setConfig,
         setImportWarnings,
         setMessage,
+        setSavedTemplates,
         setTemplateHtml,
         templateHtml,
     });
 
     return {
         ...actions,
+        ...documentLibrary,
+        publish: async () => {
+            await actions.publish();
+            await documentLibrary.refreshInventory();
+        },
         activeStep,
         allFields,
         assets,
         config,
         calculationTargets,
+        activeTemplateName,
         editing,
         editingField,
         importWarnings,
         lineSection,
         message,
+        savedTemplates,
         secretValues,
         referencedFieldIds,
         setAssets,
         setConfig,
         setEditing,
+        setSavedTemplates,
         setStepIndex,
+        setTemplateHtml,
         stepIndex,
         templateHtml,
         updateCalculationOrder: (orderedFieldIds: readonly string[]) => {
             setConfig(updateBuilderCalculationOrder(config, orderedFieldIds));
+        },
+        setActiveTemplateName: (templateName: string) => {
+            const selected = findSavedPrintTemplate(savedTemplates, templateName);
+            if (!selected) return;
+            setTemplateHtml(selected.templateHtml);
+        },
+        removeSavedTemplate: (templateName: string) => {
+            const nextTemplates = removeSavedPrintTemplate(savedTemplates, templateName);
+            const nextFallback = defaultSavedPrintTemplates();
+            setSavedTemplates(nextTemplates.length > 0 ? nextTemplates : nextFallback);
+            const selected = nextTemplates[0] ?? nextFallback[0];
+            if (selected) setTemplateHtml(selected.templateHtml);
         },
         updateFields: (kind: 'document' | 'line', fields: readonly FieldConfig[]) => {
             setConfig(updateBuilderFields(config, lineSection, kind, fields));

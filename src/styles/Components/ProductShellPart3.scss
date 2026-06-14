@@ -198,6 +198,10 @@
     color: var(--color-text-muted);
 }
 
+.builder-step-header h2 {
+    white-space: nowrap;
+}
+
 .builder-step-header small {
     display: inline-flex;
     align-items: center;
@@ -227,4 +231,21 @@
     border-radius: var(--radius-md);
     background: var(--color-surface-raised);
     padding: var(--space-2);
+}
+
+.builder-fields__actions {
+    display: inline-grid;
+    grid-auto-flow: column;
+    gap: var(--space-2);
+    align-items: center;
+    justify-self: end;
+}
+
+.builder-fields__action {
+    display: inline-grid;
+    place-items: center;
+    width: 2.75rem;
+    min-width: 2.75rem;
+    height: 2.75rem;
+    padding: 0;
 }

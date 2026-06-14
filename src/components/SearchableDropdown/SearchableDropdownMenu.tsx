@@ -51,7 +51,6 @@ export const SearchableDropdownMenu: FC<SearchableDropdownMenuProps> = ({
             {options.length > 7 ? (
                 <input
                     aria-label={`Search ${label}`}
-                    autoFocus
                     onChange={onQueryChange}
                     placeholder="Search options"
                     value={query}

@@ -10,9 +10,15 @@ import {
     confirmLargeFile,
     htmlStorageKey,
     mimeTypeFromName,
+    savedTemplatesStorageKey,
     storageKey,
     type AssetSummary,
+    type SavedPrintTemplate,
 } from './BuilderPageSupport';
+import {
+    templateNameFromFile,
+    upsertSavedPrintTemplate,
+} from './BuilderSavedTemplatesSupport';
 type DocumentFormatConfig = z.infer<typeof DocumentFormatConfigSchema>;
 
 type BuilderPageActionProps = {
@@ -21,9 +27,11 @@ type BuilderPageActionProps = {
     };
     readonly config: DocumentFormatConfig;
     readonly templateHtml: string;
+    readonly savedTemplates: readonly SavedPrintTemplate[];
     readonly assets: readonly AssetSummary[];
     readonly setConfig: Dispatch<SetStateAction<DocumentFormatConfig>>;
     readonly setTemplateHtml: Dispatch<SetStateAction<string>>;
+    readonly setSavedTemplates: Dispatch<SetStateAction<readonly SavedPrintTemplate[]>>;
     readonly setAssets: Dispatch<SetStateAction<readonly AssetSummary[]>>;
     readonly setMessage: Dispatch<SetStateAction<string>>;
     readonly setImportWarnings: Dispatch<SetStateAction<readonly string[]>>;
@@ -38,9 +46,11 @@ export const useBuilderPageActions = ({
     capabilities,
     config,
     templateHtml,
+    savedTemplates,
     assets,
     setConfig,
     setTemplateHtml,
+    setSavedTemplates,
     setAssets,
     setMessage,
     setImportWarnings,
@@ -86,8 +96,12 @@ export const useBuilderPageActions = ({
                 setMessage('The HTML contains blocked active content.');
                 return;
             }
+            const nextTemplateName = templateNameFromFile(file.name);
+            setSavedTemplates((current) =>
+                upsertSavedPrintTemplate(current, nextTemplateName, html),
+            );
             setTemplateHtml(html);
-            setMessage(`${file.name} uploaded and ready for final preview.`);
+            setMessage(`${file.name} uploaded and saved as ${nextTemplateName}.`);
         } catch (reason) {
             setMessage(reason instanceof Error ? reason.message : 'The HTML template is invalid.');
         }
@@ -138,15 +152,20 @@ export const useBuilderPageActions = ({
             readonly config: DocumentFormatConfig;
             readonly templateHtml: string;
             readonly assets: readonly AssetSummary[];
-        } = { config: orderedConfig, templateHtml, assets };
+            readonly savedTemplates: readonly SavedPrintTemplate[];
+        } = { config: orderedConfig, templateHtml, assets, savedTemplates };
         try {
             if (window.vaultBillDesktop) {
                 await window.vaultBillDesktop.saveBuilderPackage(builderPackage);
             } else if (capabilities.isLanBrowser) {
                 await requestHostedApi<unknown>('/builder/package', 'POST', builderPackage);
             } else {
-                window.localStorage.setItem(storageKey, JSON.stringify(config));
+                window.localStorage.setItem(storageKey, JSON.stringify(orderedConfig));
                 window.localStorage.setItem(htmlStorageKey, templateHtml);
+                window.localStorage.setItem(
+                    savedTemplatesStorageKey,
+                    JSON.stringify(savedTemplates),
+                );
             }
             setMessage('Format, print template, and assets published.');
         } catch (reason: unknown) {

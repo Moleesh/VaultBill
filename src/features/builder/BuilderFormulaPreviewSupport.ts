@@ -20,7 +20,10 @@ export const sampleFormula = (
     policy: DocumentFormatConfig['CalculationPolicy'],
     secretValues: Readonly<Record<string, string>> = {},
 ): string => {
-    const formula = field.Formula?.trim();
+    const formula = field.Formula
+        ?.trim()
+        .replace(/\bsecrets?\[([A-Za-z_][\w]*)\]/giu, 'Secrets.$1')
+        .replace(/\bsecrets\./giu, 'Secrets.');
     if (!formula) return 'No formula';
     const values = Object.fromEntries(
         allFields.map((candidate) => [candidate.FieldId, sampleValueFor(candidate)]),

@@ -10,6 +10,18 @@ describe('App', () => {
     beforeEach(() => {
         window.localStorage.clear();
         window.localStorage.setItem('vaultbill.setup.complete', 'true');
+        window.localStorage.setItem(
+            'vaultbill.accounts',
+            JSON.stringify([
+                {
+                    userId: 'admin_1',
+                    username: 'admin',
+                    displayName: 'Operations Admin',
+                    role: 'Admin',
+                    isActive: true,
+                },
+            ]),
+        );
         const portalRoot = document.createElement('div');
         portalRoot.id = 'portal-root';
         document.body.append(portalRoot);
@@ -32,14 +44,18 @@ describe('App', () => {
                 await screen.findByRole('heading', { name: /Welcome back, Demo User/u }),
             ).toBeVisible();
         } else {
-            expect(screen.getByText(/Operator account/u)).toBeVisible();
-            fireEvent.change(screen.getByLabelText('Password'), {
-                target: { value: '147085aA' },
-            });
+            fireEvent.click(screen.getByRole('button', { name: /Operator account/u }));
+            fireEvent.click(screen.getByRole('option', { name: /Operations Admin/u }));
+            const passwordInput = screen.queryByLabelText('Password');
+            if (passwordInput) {
+                fireEvent.change(passwordInput, {
+                    target: { value: '147085aA' },
+                });
+            }
             fireEvent.click(screen.getByRole('button', { name: 'Log in' }));
 
             expect(await screen.findByText('Business workspace')).toBeVisible();
-            expect(await screen.findByText('Publishing health')).toBeVisible();
+            expect(await screen.findByText(/Welcome back, Operations Admin\./u)).toBeVisible();
         }
 
         expect(screen.queryByText(/Phase \d/u)).not.toBeInTheDocument();

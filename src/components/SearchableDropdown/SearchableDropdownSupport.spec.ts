@@ -22,11 +22,11 @@ describe('SearchableDropdownSupport', () => {
         );
 
         expect(placement.openDirection).toBe('below');
-        expect(placement.top).toBe('168px');
+        expect(placement.top).toBe('164px');
         expect(placement.width).toBe('320px');
     });
 
-    it('opens above only when there is very little room below the trigger', () => {
+    it('opens the dropdown above the trigger when space below is tight', () => {
         const placement = getDropdownMenuPlacement(
             {
                 top: 760,

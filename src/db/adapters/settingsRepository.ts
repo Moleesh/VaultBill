@@ -4,26 +4,20 @@ import type { z } from 'zod';
 
 import {
     CompanyProfileSchema,
-    GspIntegrationSettingsSchema,
-    GstIntegrationSettingsSchema,
     RuntimeBrandingSchema,
     SignaturePadSettingsSchema,
-    SmsProviderSettingsSchema,
+    SecretsSettingsSchema,
     type CompanyProfileConfig,
-    type GspIntegrationSettings,
-    type GstIntegrationSettings,
     type RuntimeBrandingConfig,
     type SignaturePadSettings,
-    type SmsProviderSettings,
+    type SecretsSettings,
 } from '../startup/ConfigSchemas';
 import { parseJsonWithSchema, stringifyValidatedJson } from '../startup/JsonParsing';
 import {
     companyProfileSettingKey,
-    gspIntegrationSettingKey,
-    gstIntegrationSettingKey,
     runtimeBrandingSettingKey,
     signaturePadSettingKey,
-    smsProviderSettingKey,
+    secretsSettingKey,
 } from '../startup/StartupSettingKeys';
 import type { SqliteConnection } from '../sqlite/SqliteConnection';
 
@@ -81,59 +75,23 @@ export const loadSignaturePadSettings = (
 ): SignaturePadSettings | undefined =>
     loadSetting(connection, signaturePadSettingKey, SignaturePadSettingsSchema);
 
-export const saveSmsProviderSettings = (
+export const saveSecretsSettings = (
     connection: SqliteConnection,
-    settings: SmsProviderSettings,
+    settings: SecretsSettings,
     updatedAt: string,
 ) => {
     upsertSetting(
         connection,
-        smsProviderSettingKey,
-        stringifyValidatedJson(settings, SmsProviderSettingsSchema),
+        secretsSettingKey,
+        stringifyValidatedJson(settings, SecretsSettingsSchema),
         updatedAt,
     );
 };
 
-export const loadSmsProviderSettings = (
+export const loadSecretsSettings = (
     connection: SqliteConnection,
-): SmsProviderSettings | undefined =>
-    loadSetting(connection, smsProviderSettingKey, SmsProviderSettingsSchema);
-
-export const saveGstIntegrationSettings = (
-    connection: SqliteConnection,
-    settings: GstIntegrationSettings,
-    updatedAt: string,
-) => {
-    upsertSetting(
-        connection,
-        gstIntegrationSettingKey,
-        stringifyValidatedJson(settings, GstIntegrationSettingsSchema),
-        updatedAt,
-    );
-};
-
-export const loadGstIntegrationSettings = (
-    connection: SqliteConnection,
-): GstIntegrationSettings | undefined =>
-    loadSetting(connection, gstIntegrationSettingKey, GstIntegrationSettingsSchema);
-
-export const saveGspIntegrationSettings = (
-    connection: SqliteConnection,
-    settings: GspIntegrationSettings,
-    updatedAt: string,
-) => {
-    upsertSetting(
-        connection,
-        gspIntegrationSettingKey,
-        stringifyValidatedJson(settings, GspIntegrationSettingsSchema),
-        updatedAt,
-    );
-};
-
-export const loadGspIntegrationSettings = (
-    connection: SqliteConnection,
-): GspIntegrationSettings | undefined =>
-    loadSetting(connection, gspIntegrationSettingKey, GspIntegrationSettingsSchema);
+): SecretsSettings | undefined =>
+    loadSetting<SecretsSettings>(connection, secretsSettingKey, SecretsSettingsSchema);
 
 const upsertSetting = (
     connection: SqliteConnection,

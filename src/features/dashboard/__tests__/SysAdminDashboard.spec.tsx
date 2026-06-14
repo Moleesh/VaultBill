@@ -80,5 +80,8 @@ describe('SysAdmin dashboard', () => {
         expect(screen.getByText('Users created')).toBeVisible();
         expect(screen.getByText('active users')).toBeVisible();
         expect(screen.getByText('Total records')).toBeVisible();
+        expect(
+            screen.getByText('1 format published, 0 formats need attention, 1 format marked default.'),
+        ).toBeVisible();
     });
 });

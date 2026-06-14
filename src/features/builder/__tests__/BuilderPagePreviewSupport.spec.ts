@@ -8,6 +8,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { cloneDefault } from '../BuilderPageSupport';
+import { defaultBuilderPrintSettings } from '../BuilderPageSupport';
 import {
     downloadBase64Asset,
     escapePreviewHtml,
@@ -56,6 +57,7 @@ describe('BuilderPagePreviewSupport', () => {
                     dataBase64: 'PHN2Zz48L3N2Zz4=',
                 },
             ],
+            defaultBuilderPrintSettings,
         );
 
         expect(html).toContain('GST &lt;Invoice&gt;');

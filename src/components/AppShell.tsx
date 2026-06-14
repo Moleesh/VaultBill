@@ -47,9 +47,7 @@ export const AppShell: FC = () => {
             Awaited<ReturnType<NonNullable<typeof window.vaultBillDesktop>['getTrialStatus']>>
         >();
     const [scrollProgress, setScrollProgress] = useState(0);
-    const [isExpanded, setIsExpanded] = useState(
-        () => window.localStorage.getItem('vaultbill.sidebar.expanded') === 'true',
-    );
+    const [isExpanded, setIsExpanded] = useState(false);
     const shellActions = createAppShellActions({
         accountPassword,
         accountUserId: operatorContext?.account.userId ?? '',
@@ -125,8 +123,11 @@ export const AppShell: FC = () => {
             />
             <div className="app-shell__body">
                 <AppShellTopbar
+                    isDesktop={capabilities.isDesktop}
                     isDemoMode={capabilities.isDemoMode}
+                    onCloseWindow={shellActions.closeWindow}
                     onChangePassword={shellActions.openPasswordDialog}
+                    onMinimizeWindow={shellActions.minimizeWindow}
                     onLogout={shellActions.logOut}
                     onOpenActivation={shellActions.openActivationDialog}
                     onResetDemo={shellActions.openResetDialog}

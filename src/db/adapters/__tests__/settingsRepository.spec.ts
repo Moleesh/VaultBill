@@ -8,18 +8,14 @@ import type { SqliteConnection } from '../../sqlite/SqliteConnection';
 import { runDatabaseStartupChecks } from '../../startup/DatabaseStartup';
 import { openNodeSqliteConnection } from '../sqliteAdapter';
 import {
-    loadGspIntegrationSettings,
-    loadGstIntegrationSettings,
     loadCompanyProfile,
     loadRuntimeBranding,
     loadSignaturePadSettings,
-    loadSmsProviderSettings,
-    saveGspIntegrationSettings,
-    saveGstIntegrationSettings,
     saveCompanyProfile,
     saveRuntimeBranding,
     saveSignaturePadSettings,
-    saveSmsProviderSettings,
+    loadSecretsSettings,
+    saveSecretsSettings,
 } from '../settingsRepository';
 
 let connection: SqliteConnection | undefined;
@@ -73,7 +69,7 @@ describe('settingsRepository', () => {
         expect(loadCompanyProfile(db)?.LegalName).toBe('Acme Pvt Ltd');
     });
 
-    it('saves optional integration JSON settings', () => {
+    it('saves shared secrets JSON settings', () => {
         const db = openStartedDatabase();
 
         saveSignaturePadSettings(
@@ -87,44 +83,19 @@ describe('settingsRepository', () => {
             },
             fixedNow,
         );
-        saveSmsProviderSettings(
+        saveSecretsSettings(
             db,
             {
-                Enabled: true,
-                ProviderId: 'generic',
-                EndpointUrl: 'https://sms.example/send',
-                SenderId: 'VAULT',
-                UseServerSideProxy: true,
-                Secrets: { ApiKey: 'key', ApiSecret: 'secret' },
-            },
-            fixedNow,
-        );
-        saveGstIntegrationSettings(
-            db,
-            {
-                Enabled: true,
-                DefaultSellerStateCode: '29',
-                HsnSacCatalog: [{ Code: '9983', Description: 'Services', TaxRatePercent: '18' }],
-            },
-            fixedNow,
-        );
-        saveGspIntegrationSettings(
-            db,
-            {
-                Enabled: true,
-                ProviderId: 'generic-gsp',
-                BaseUrl: 'https://gsp.example',
-                Sandbox: true,
-                ClientId: 'client',
-                ClientSecret: 'secret',
-                Endpoints: { EInvoice: '/einvoice', Gstr: '/gstr' },
+                secrets: [
+                    { key: 'CompanyGstin', value: '29ABCDE1234F2Z5', description: 'GSTIN' },
+                    { key: 'SmsApiKey', value: 'key', description: 'SMS gateway key' },
+                ],
             },
             fixedNow,
         );
 
         expect(loadSignaturePadSettings(db)?.SignaturePad.Mode).toBe('Screen');
-        expect(loadSmsProviderSettings(db)?.UseServerSideProxy).toBe(true);
-        expect(loadGstIntegrationSettings(db)?.HsnSacCatalog).toHaveLength(1);
-        expect(loadGspIntegrationSettings(db)?.Endpoints.EInvoice).toBe('/einvoice');
+        expect(loadSecretsSettings(db)?.secrets).toHaveLength(2);
+        expect(loadSecretsSettings(db)?.secrets[0]?.key).toBe('CompanyGstin');
     });
 });

@@ -3,14 +3,14 @@
 import { DatabaseSync } from 'node:sqlite';
 import {
     BuilderPackageSchema,
+    mapBuilderAssetRows,
+    mapBuilderInventoryRows,
+    mapSavedPrintTemplateRows,
     sanitizeSvg,
     sanitizeTemplateHtml,
-    toBuffer,
-    type AssetRow,
     type BuilderInventoryItem,
     type BuilderPackage,
     type FormatRow,
-    type TemplateRow,
 } from './BuilderStoreSupport.js';
 import { createBuilderStoreTables } from './BuilderStoreTables.js';
 
@@ -39,28 +39,32 @@ export class BuilderStore {
         const config = JSON.parse(String(format.format_json)) as BuilderPackage['config'];
         const template = this.#database
             .prepare('SELECT template_html FROM print_templates WHERE template_id = ?;')
-            .get(config.FormatId) as TemplateRow | undefined;
+            .get(config.FormatId) as { readonly template_html: unknown } | undefined;
         if (!template) return undefined;
-        const assets = this.#database
-            .prepare(
-                `SELECT asset_name, mime_type, asset_blob
+        const assets = mapBuilderAssetRows(
+            this.#database
+                .prepare(
+                    `SELECT asset_name, mime_type, asset_blob
         FROM print_template_assets
         WHERE template_id = ?
         ORDER BY asset_name COLLATE NOCASE;`,
-            )
-            .all(config.FormatId)
-            .map((row) => {
-                const asset = row as AssetRow;
-                return {
-                    name: String(asset.asset_name),
-                    type: String(asset.mime_type),
-                    dataBase64: toBuffer(asset.asset_blob).toString('base64'),
-                };
-            });
+                )
+                .all(config.FormatId),
+        );
+        const savedTemplates = mapSavedPrintTemplateRows(
+            this.#database
+                .prepare(
+                    `SELECT template_name, template_html, updated_at
+                 FROM saved_print_templates
+                 ORDER BY updated_at DESC, template_name COLLATE NOCASE;`,
+                )
+                .all(),
+        );
         return BuilderPackageSchema.parse({
             config,
             templateHtml: String(template.template_html),
             assets,
+            savedTemplates,
         });
     };
 
@@ -136,8 +140,33 @@ export class BuilderStore {
                     now,
                 );
             }
+            this.#database.prepare('DELETE FROM saved_print_templates;').run();
+            const insertTemplate = this.#database.prepare(
+                `INSERT INTO saved_print_templates
+                  (template_name, template_html, updated_at)
+                 VALUES (?, ?, ?)
+                 ON CONFLICT(template_name) DO UPDATE SET
+                   template_html = excluded.template_html,
+                   updated_at = excluded.updated_at;`,
+            );
+            const normalizedTemplates = builderPackage.savedTemplates.length
+                ? builderPackage.savedTemplates
+                : [
+                      {
+                          name: `${formatName} Shared HTML`,
+                          templateHtml,
+                          updatedAt: now,
+                      },
+                  ];
+            for (const template of normalizedTemplates) {
+                insertTemplate.run(template.name, sanitizeTemplateHtml(template.templateHtml), template.updatedAt);
+            }
             this.#database.exec('COMMIT;');
-            return { ...builderPackage, templateHtml };
+            return {
+                ...builderPackage,
+                templateHtml,
+                savedTemplates: normalizedTemplates,
+            };
         } catch (error) {
             this.#database.exec('ROLLBACK;');
             throw error;
@@ -145,9 +174,10 @@ export class BuilderStore {
     };
 
     public listInventory = (): readonly BuilderInventoryItem[] =>
-        this.#database
-            .prepare(
-                `SELECT f.format_id, f.format_name, f.format_json, f.is_default, f.updated_at,
+        mapBuilderInventoryRows(
+            this.#database
+                .prepare(
+                    `SELECT f.format_id, f.format_name, f.format_json, f.is_default, f.updated_at,
           t.template_name, t.template_html,
           COUNT(a.asset_id) AS asset_count
         FROM document_formats f
@@ -156,25 +186,9 @@ export class BuilderStore {
         GROUP BY f.format_id, f.format_name, f.format_json, f.is_default, f.updated_at,
           t.template_name, t.template_html
         ORDER BY f.is_default DESC, f.format_name COLLATE NOCASE;`,
-            )
-            .all()
-            .map((row) => {
-                let isValid = Boolean(row.template_html);
-                try {
-                    JSON.parse(String(row.format_json));
-                } catch {
-                    isValid = false;
-                }
-                return {
-                    formatId: String(row.format_id),
-                    formatName: String(row.format_name),
-                    isDefault: Number(row.is_default) === 1,
-                    updatedAt: String(row.updated_at),
-                    ...(row.template_name ? { templateName: String(row.template_name) } : {}),
-                    assetCount: Number(row.asset_count),
-                    isValid,
-                };
-            });
+                )
+                .all(),
+        );
 
     public close = () => {
         this.#database.close();

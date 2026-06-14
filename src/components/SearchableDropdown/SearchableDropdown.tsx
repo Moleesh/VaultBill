@@ -59,6 +59,7 @@ export const SearchableDropdown: FC<SearchableDropdownProps> = ({
         menu.style.setProperty('--dropdown-left', placement.left);
         menu.style.setProperty('--dropdown-width', placement.width);
         menu.style.setProperty('--dropdown-top', placement.top);
+        menu.style.setProperty('--dropdown-max-height', placement.maxHeight);
         menu.dataset.openDirection = placement.openDirection;
     };
 
@@ -79,7 +80,15 @@ export const SearchableDropdown: FC<SearchableDropdownProps> = ({
                 setIsOpen(false);
             }
         };
-        const handleScroll = () => {
+        const handleScroll = (event: Event) => {
+            const { target } = event;
+            if (
+                target instanceof Node &&
+                (menuRef.current?.contains(target) || triggerRef.current?.contains(target))
+            ) {
+                return;
+            }
+
             setIsOpen(false);
         };
         const handleResize = () => {

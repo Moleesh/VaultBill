@@ -99,10 +99,12 @@ export const BuilderCalculationsStep: FC<BuilderCalculationsStepProps> = ({
                                 }}
                                 type="button"
                             >
-                                <strong>{`Edit ${field.Label}`}</strong>
-                                <span>{sectionLabel}</span>
-                                <small>{field.Formula ?? 'No formula yet'}</small>
-                                <small>{`Preview: ${preview}`}</small>
+                                <span className="builder-calculation-main__title">{`Edit ${field.Label}`}</span>
+                                <span className="builder-calculation-main__section">{sectionLabel}</span>
+                                <small className="builder-calculation-main__formula">
+                                    {field.Formula ?? 'No formula yet'}
+                                </small>
+                                <small className="builder-calculation-main__preview">{`Preview: ${preview}`}</small>
                             </button>
                             <small className="builder-calculation-order">
                                 #{String(index + 1)} trigger
@@ -114,10 +116,12 @@ export const BuilderCalculationsStep: FC<BuilderCalculationsStepProps> = ({
             <div className="helper-card">
                 <strong>Formula helper</strong>
                 <p>
-                    Use same-row fields such as <code>Quantity * Rate</code>. Use
-                    <code>SUMALL(Amount)</code> for subtotal-style totals. Use{' '}
-                    <code>Secrets.Key</code> for shared stored values, and keep GST, grand total,
-                    and round-off formulas separate so the preview stays easy to follow.
+                    Use same-row fields such as <code>Quantity * Rate</code>. Use{' '}
+                    <code>SUMALL(Amount)</code> or <code>SUM(Items.Amount)</code> for subtotal
+                    style totals. Use <code>COUNT(Items)</code> for row counts and{' '}
+                    <code>Secrets.Key</code> or <code>secrets[key]</code> for shared stored
+                    values. Keep GST, grand total, and round-off formulas separate so the
+                    preview stays easy to follow.
                 </p>
                 <p>Drag the rows to make the trigger order easier to inspect before publishing.</p>
             </div>

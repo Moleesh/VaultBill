@@ -117,14 +117,20 @@ export const builtInDefaultPrintTemplateHtml = `<!doctype html>
             <th>Amount</th>
           </tr>
         </thead>
-        <tbody>
+      <tbody>
           <tr>
             <td>{{Items.0.ItemName}}</td>
             <td>{{Items.0.Quantity}}</td>
             <td>{{Items.0.Rate}}</td>
             <td>{{Items.0.Amount}}</td>
           </tr>
-        </tbody>
+          <tr>
+            <td>{{Items.1.ItemName}}</td>
+            <td>{{Items.1.Quantity}}</td>
+            <td>{{Items.1.Rate}}</td>
+            <td>{{Items.1.Amount}}</td>
+          </tr>
+      </tbody>
       </table>
 
       <div class="summary">

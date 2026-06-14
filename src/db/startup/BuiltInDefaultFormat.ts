@@ -6,6 +6,15 @@ export const builtInDefaultFormat: DocumentFormatConfig = {
     FormatId: 'TaxInvoice',
     FormatName: 'GST Invoice',
     Description: 'Built-in default GST invoice format for clean installations.',
+    Layout: {
+        Columns: 2,
+        Gap: 16,
+    },
+    Print: {
+        PaperSize: 'A4',
+        MarginPreset: 'Normal',
+        BottomSpacingMm: 18,
+    },
     Fields: [
         {
             FieldId: 'InvoiceDate',
