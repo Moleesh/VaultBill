@@ -4,6 +4,7 @@
 
 import type { FC } from 'react';
 
+import { SearchableDropdown } from './SearchableDropdown/SearchableDropdown';
 import type { DocumentFormatSummary } from '../types/AppTypes';
 
 type FormatSelectorProps = {
@@ -24,19 +25,16 @@ export const FormatSelector: FC<FormatSelectorProps> = ({ activeFormatId, format
     return (
         <label className="format-selector">
             <span>Document format</span>
-            <select
-                aria-describedby="format-selector-help"
+            <SearchableDropdown
+                label="Document format"
+                onChange={handleChange}
+                options={formats.map((format) => ({
+                    value: format.formatId,
+                    label: format.formatName,
+                    description: format.description,
+                }))}
                 value={activeFormatId}
-                onChange={(event) => {
-                    handleChange(event.currentTarget.value);
-                }}
-            >
-                {formats.map((format) => (
-                    <option key={format.formatId} value={format.formatId}>
-                        {format.formatName}
-                    </option>
-                ))}
-            </select>
+            />
             <small id="format-selector-help">
                 Same-page format switching keeps VaultBill SPA-first.
             </small>

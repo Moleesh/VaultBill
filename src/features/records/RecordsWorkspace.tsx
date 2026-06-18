@@ -68,7 +68,7 @@ export const RecordsWorkspace: FC<RecordsWorkspaceProps> = ({
                 ← Back to record search
             </button>
         ) : null}
-        <div className="record-workspace__form" onKeyDown={onEntryNavigation} ref={formRef}>
+        <div className="record-workspace-form" onKeyDown={onEntryNavigation} ref={formRef}>
             {statusLabel ? (
                 <div className="record-status-row">
                     <span className="status-pill">{statusLabel}</span>

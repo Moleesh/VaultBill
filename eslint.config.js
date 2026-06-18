@@ -8,6 +8,89 @@ import reactRefresh from 'eslint-plugin-react-refresh';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
+const kebabCaseClassNameRule = {
+    meta: {
+        type: 'problem',
+        docs: {
+            description: 'enforce kebab-case DOM class names',
+        },
+        schema: [],
+    },
+    create(context) {
+        const kebabClassNamePattern = /^[a-z0-9-]+$/u;
+
+        const reportInvalidClassName = (node, className) => {
+            for (const classNameToken of className.split(/\s+/u).filter(Boolean)) {
+                if (!kebabClassNamePattern.test(classNameToken)) {
+                    context.report({
+                        node,
+                        message: `Class names must use kebab-case. "${classNameToken}" is not allowed.`,
+                    });
+                    return;
+                }
+            }
+        };
+
+        const readStaticString = (node) => {
+            if (!node) {
+                return null;
+            }
+
+            if (node.type === 'Literal' && typeof node.value === 'string') {
+                return node.value;
+            }
+
+            if (node.type === 'TemplateLiteral' && node.expressions.length === 0) {
+                return node.quasis[0]?.value.cooked ?? '';
+            }
+
+            return null;
+        };
+
+        const checkClassNameValue = (node) => {
+            const value = readStaticString(node);
+
+            if (value === null) {
+                return;
+            }
+
+            reportInvalidClassName(node, value);
+        };
+
+        return {
+            JSXAttribute(node) {
+                if (node.name.type !== 'JSXIdentifier' || node.name.name !== 'className') {
+                    return;
+                }
+
+                if (!node.value) {
+                    return;
+                }
+
+                if (node.value.type === 'Literal') {
+                    checkClassNameValue(node.value);
+                    return;
+                }
+
+                if (node.value.type === 'JSXExpressionContainer') {
+                    checkClassNameValue(node.value.expression);
+                }
+            },
+            Property(node) {
+                const isClassNameProperty =
+                    (node.key.type === 'Identifier' && node.key.name === 'className') ||
+                    (node.key.type === 'Literal' && node.key.value === 'className');
+
+                if (!isClassNameProperty) {
+                    return;
+                }
+
+                checkClassNameValue(node.value);
+            },
+        };
+    },
+};
+
 const typedTypeScriptConfigs = [
     ...tseslint.configs.strictTypeChecked,
     ...tseslint.configs.stylisticTypeChecked,
@@ -54,6 +137,11 @@ export default tseslint.config(
             react,
             'react-hooks': reactHooks,
             'react-refresh': reactRefresh,
+            vaultbill: {
+                rules: {
+                    'kebab-class-names': kebabCaseClassNameRule,
+                },
+            },
         },
         rules: {
             ...reactHooks.configs.recommended.rules,
@@ -74,6 +162,7 @@ export default tseslint.config(
             '@typescript-eslint/no-unnecessary-condition': 'error',
             '@typescript-eslint/prefer-nullish-coalescing': 'error',
             '@typescript-eslint/prefer-optional-chain': 'error',
+            'vaultbill/kebab-class-names': 'error',
         },
     },
     {

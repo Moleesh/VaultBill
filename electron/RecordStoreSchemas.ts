@@ -53,6 +53,12 @@ export const RecordCancelRequestSchema = z.object({
     operatorContext: OperatorSchema,
 });
 
+const ReportFieldFilterSchema = z.object({
+    id: z.string().min(1),
+    field: z.string().min(1),
+    value: z.string(),
+});
+
 export const StoredRecordSchema = EditableRecordSchema.extend({
     documentNumber: z.string().nullable(),
     status: z.enum(['Draft', 'Finalized', 'Cancelled']),
@@ -67,6 +73,7 @@ const ReportQuerySchema = z.object({
     reportId: z.enum(['sales-register', 'tax-summary', 'customer-ledger']),
     customer: z.string().default(''),
     invoiceNumber: z.string().default(''),
+    reportFilters: z.array(ReportFieldFilterSchema).default([]),
     fromDate: z.string().default(''),
     toDate: z.string().default(''),
     status: z.enum(['All', 'Draft', 'Finalized', 'Cancelled']).default('All'),
@@ -78,6 +85,7 @@ const ReportQuerySchema = z.object({
 export type StoredRecord = z.infer<typeof StoredRecordSchema>;
 export type RecordWriteRequest = z.infer<typeof RecordWriteRequestSchema>;
 export type RecordCancelRequest = z.infer<typeof RecordCancelRequestSchema>;
+export type ReportFieldFilter = z.infer<typeof ReportFieldFilterSchema>;
 export type TrialStatus = {
     readonly isFullVersion: boolean;
     readonly isExpired: boolean;

@@ -33,6 +33,8 @@ type VaultBillDesktopBridge = {
     }) => Promise<void>;
     readonly getBusinessSettings: () => Promise<unknown>;
     readonly saveBusinessSettings: (request: unknown) => Promise<unknown>;
+    readonly getSecretsSettings: () => Promise<unknown>;
+    readonly saveSecretsSettings: (request: unknown) => Promise<unknown>;
     readonly getIntegrationSettings: () => Promise<unknown>;
     readonly saveIntegrationSettings: (request: unknown) => Promise<unknown>;
     readonly getBackupStatus: () => Promise<{
@@ -104,16 +106,16 @@ type VaultBillDesktopBridge = {
     }>;
     readonly loadBuilderPackage: (formatId?: string) => Promise<
         | {
-          readonly config: unknown;
-          readonly templateHtml: string;
-          readonly savedTemplates: readonly {
-              readonly name: string;
+              readonly config: unknown;
               readonly templateHtml: string;
-              readonly updatedAt: string;
-          }[];
-          readonly assets: readonly {
-              readonly name: string;
-              readonly type: string;
+              readonly savedTemplates: readonly {
+                  readonly name: string;
+                  readonly templateHtml: string;
+                  readonly updatedAt: string;
+              }[];
+              readonly assets: readonly {
+                  readonly name: string;
+                  readonly type: string;
                   readonly dataBase64: string;
               }[];
           }

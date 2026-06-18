@@ -100,6 +100,14 @@ const createBackupHandlers = () => ({
         if (!mainState.settingsStore) throw new Error('Settings are not ready.');
         return mainState.settingsStore.saveBusiness(input);
     },
+    getSecretsSettings: () => {
+        if (!mainState.settingsStore) throw new Error('Settings are not ready.');
+        return mainState.settingsStore.getSecrets();
+    },
+    saveSecretsSettings: (input: unknown) => {
+        if (!mainState.settingsStore) throw new Error('Settings are not ready.');
+        return mainState.settingsStore.saveSecrets(input);
+    },
     getIntegrationSettings: () => {
         if (!mainState.settingsStore) throw new Error('Settings are not ready.');
         return mainState.settingsStore.getIntegrations();

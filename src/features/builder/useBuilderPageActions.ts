@@ -15,10 +15,7 @@ import {
     type AssetSummary,
     type SavedPrintTemplate,
 } from './BuilderPageSupport';
-import {
-    templateNameFromFile,
-    upsertSavedPrintTemplate,
-} from './BuilderSavedTemplatesSupport';
+import { templateNameFromFile, upsertSavedPrintTemplate } from './BuilderSavedTemplatesSupport';
 type DocumentFormatConfig = z.infer<typeof DocumentFormatConfigSchema>;
 
 type BuilderPageActionProps = {

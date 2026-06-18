@@ -10,7 +10,7 @@
     box-shadow: var(--shadow-panel);
 }
 
-.feedback-states__grid {
+.feedback-states-grid {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: var(--space-4);
@@ -26,7 +26,7 @@
     background: var(--color-surface-raised);
 }
 
-.feedback-state__dot {
+.feedback-state-dot {
     width: 0.8rem;
     height: 0.8rem;
     border-radius: 999px;
@@ -34,13 +34,13 @@
 }
 
 @media (max-width: 980px) {
-    .feedback-states__grid {
+    .feedback-states-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 
 @media (max-width: 640px) {
-    .feedback-states__grid {
+    .feedback-states-grid {
         grid-template-columns: 1fr;
     }
 }

@@ -8,6 +8,7 @@ import { previewValue } from './BuilderPagePreviewSupport';
 
 type LineSection = {
     readonly Label: string;
+    readonly Enabled?: boolean | undefined;
     readonly Fields: readonly FieldConfig[];
 };
 
@@ -32,16 +33,18 @@ export const BuilderFieldPreviewStep: FC<BuilderFieldPreviewStepProps> = ({
             <h3 id="builder-field-preview-title">Field preview</h3>
             <p>{config.FormatName} entry form</p>
             <p className="builder-preview-layout-note">
-                Flex columns {String(columns)} with {String(Math.max(0, layout.Gap))}px gap.
-                This view is read-only and mirrors the entry form order.
+                Flex columns {String(columns)} with {String(Math.max(0, layout.Gap))}px gap. This
+                view is read-only and mirrors the entry form order.
             </p>
             <div className="builder-preview-surface" aria-label="Document field preview">
                 <div
                     className="builder-preview-grid builder-preview-grid--read-only"
-                    style={{
-                        gap: `${String(Math.max(0, layout.Gap))}px`,
-                        '--builder-layout-columns': String(columns),
-                    } as CSSProperties}
+                    style={
+                        {
+                            gap: `${String(Math.max(0, layout.Gap))}px`,
+                            '--builder-layout-columns': String(columns),
+                        } as CSSProperties
+                    }
                 >
                     {fields.map((field) => (
                         <article
@@ -51,25 +54,33 @@ export const BuilderFieldPreviewStep: FC<BuilderFieldPreviewStepProps> = ({
                         >
                             <span>{field.Label}</span>
                             <strong>
-                                {previewValue(field.SampleValue ?? field.DefaultValue ?? field.Label)}
+                                {previewValue(
+                                    field.SampleValue ?? field.DefaultValue ?? field.Label,
+                                )}
                             </strong>
                         </article>
                     ))}
                 </div>
-                {lineSection ? (
+                <p className="builder-preview-layout-note builder-preview-layout-note--bottom">
+                    Layout preview stays minimal so the real entry order is easier to compare
+                    against the published form.
+                </p>
+                {lineSection && lineSection.Enabled !== false ? (
                     <>
                         <div
                             className="builder-preview-table builder-preview-table--desktop"
                             aria-label="Line item preview"
                         >
-                            <div className="builder-preview-table__heading">
+                            <div className="builder-preview-table-heading">
                                 <div>
                                     <strong>{lineSection.Label}</strong>
-                                    <small>Two sample rows stay visible for row-level review.</small>
+                                    <small>
+                                        Two sample rows stay visible for row-level review.
+                                    </small>
                                 </div>
                             </div>
                             <div
-                                className="builder-preview-table__row builder-preview-table__row--header"
+                                className="builder-preview-table-row builder-preview-table-row--header"
                                 style={{
                                     gridTemplateColumns: `repeat(${String(
                                         lineItemFields.length || 1,
@@ -82,7 +93,7 @@ export const BuilderFieldPreviewStep: FC<BuilderFieldPreviewStepProps> = ({
                             </div>
                             {['Sample row 1', 'Sample row 2'].map((rowLabel, rowIndex) => (
                                 <div
-                                    className="builder-preview-table__row builder-preview-table__row--body"
+                                    className="builder-preview-table-row builder-preview-table-row--body"
                                     key={rowLabel}
                                     style={{
                                         gridTemplateColumns: `repeat(${String(
@@ -94,14 +105,19 @@ export const BuilderFieldPreviewStep: FC<BuilderFieldPreviewStepProps> = ({
                                         <span key={`${field.FieldId}-${String(rowIndex)}`}>
                                             {previewValue(
                                                 rowIndex === 0
-                                                    ? field.SampleValue ?? field.DefaultValue ?? field.Label
-                                                    : field.Type === 'Text' || field.Type === 'Textarea'
+                                                    ? (field.SampleValue ??
+                                                          field.DefaultValue ??
+                                                          field.Label)
+                                                    : field.Type === 'Text' ||
+                                                        field.Type === 'Textarea'
                                                       ? `${previewValue(
                                                             field.SampleValue ??
                                                                 field.DefaultValue ??
                                                                 field.Label,
                                                         )} 2`
-                                                      : field.SampleValue ?? field.DefaultValue ?? 'Sample',
+                                                      : (field.SampleValue ??
+                                                        field.DefaultValue ??
+                                                        'Sample'),
                                             )}
                                         </span>
                                     ))}
@@ -112,31 +128,33 @@ export const BuilderFieldPreviewStep: FC<BuilderFieldPreviewStepProps> = ({
                             className="builder-preview-table builder-preview-table--mobile"
                             aria-label="Line item preview"
                         >
-                            <div className="builder-preview-table__heading">
+                            <div className="builder-preview-table-heading">
                                 <div>
                                     <strong>{lineSection.Label}</strong>
-                                    <small>Two sample rows stay visible for row-level review.</small>
+                                    <small>
+                                        Two sample rows stay visible for row-level review.
+                                    </small>
                                 </div>
                             </div>
                             {['Sample row 1', 'Sample row 2'].map((rowLabel, rowIndex) => (
                                 <article
-                                    className="builder-preview-table__mobile-row"
+                                    className="builder-preview-table-mobile-row"
                                     key={rowLabel}
                                 >
                                     <strong>{rowLabel}</strong>
-                                    <div className="builder-preview-table__mobile-grid">
+                                    <div className="builder-preview-table-mobile-grid">
                                         {lineItemFields.map((field) => (
                                             <div
-                                                className="builder-preview-table__mobile-cell"
+                                                className="builder-preview-table-mobile-cell"
                                                 key={`${field.FieldId}-${String(rowIndex)}-mobile`}
                                             >
                                                 <span>{field.Label}</span>
                                                 <strong>
                                                     {previewValue(
                                                         rowIndex === 0
-                                                            ? field.SampleValue ??
+                                                            ? (field.SampleValue ??
                                                                   field.DefaultValue ??
-                                                                  field.Label
+                                                                  field.Label)
                                                             : field.Type === 'Text' ||
                                                                 field.Type === 'Textarea'
                                                               ? `${previewValue(
@@ -144,9 +162,9 @@ export const BuilderFieldPreviewStep: FC<BuilderFieldPreviewStepProps> = ({
                                                                         field.DefaultValue ??
                                                                         field.Label,
                                                                 )} 2`
-                                                              : field.SampleValue ??
+                                                              : (field.SampleValue ??
                                                                 field.DefaultValue ??
-                                                                'Sample',
+                                                                'Sample'),
                                                     )}
                                                 </strong>
                                             </div>

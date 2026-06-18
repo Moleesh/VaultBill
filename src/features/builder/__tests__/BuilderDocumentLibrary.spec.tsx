@@ -35,6 +35,7 @@ describe('BuilderDocumentLibrary', () => {
         expect(screen.getByRole('heading', { name: 'Document library' })).toBeVisible();
         expect(screen.getByRole('button', { name: /New from default/u })).toBeVisible();
         expect(screen.getByRole('button', { name: /Duplicate current/u })).toBeVisible();
+        expect(screen.getByRole('button', { name: /Edit current/u })).toBeVisible();
 
         fireEvent.click(screen.getByRole('button', { name: /GST Invoice/u }));
         expect(onLoadDocument).toHaveBeenCalledWith('TaxInvoice');

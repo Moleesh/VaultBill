@@ -4,6 +4,7 @@ import { Printer } from 'lucide-react';
 import { useRef } from 'react';
 import type { FC } from 'react';
 
+import { SearchableDropdown } from '../../components/SearchableDropdown/SearchableDropdown';
 import type { DocumentFormatConfig } from '../../db/startup/ConfigSchemas';
 import {
     defaultBuilderPrintSettings,
@@ -40,7 +41,10 @@ export const BuilderPrintPreviewStep: FC<BuilderPrintPreviewStepProps> = ({
 
     return (
         <>
-            <section className="builder-print-settings" aria-labelledby="builder-print-settings-title">
+            <section
+                className="builder-print-settings"
+                aria-labelledby="builder-print-settings-title"
+            >
                 <div className="section-heading">
                     <div>
                         <p className="eyebrow">Print settings</p>
@@ -59,40 +63,36 @@ export const BuilderPrintPreviewStep: FC<BuilderPrintPreviewStepProps> = ({
                     </button>
                 </div>
                 <div className="form-grid">
-                    <label>
-                        <span>Paper size</span>
-                        <select
-                            value={printSettings.PaperSize}
-                            onChange={(event) => {
-                                onPrintSettingsChange({
-                                    ...printSettings,
-                                    PaperSize:
-                                        event.currentTarget.value as BuilderPrintConfig['PaperSize'],
-                                });
-                            }}
-                        >
-                            <option value="A4">A4</option>
-                            <option value="Letter">Letter</option>
-                            <option value="Thermal">Thermal</option>
-                        </select>
-                    </label>
-                    <label>
-                        <span>Margin preset</span>
-                        <select
-                            value={printSettings.MarginPreset}
-                            onChange={(event) => {
-                                onPrintSettingsChange({
-                                    ...printSettings,
-                                    MarginPreset:
-                                        event.currentTarget.value as BuilderPrintConfig['MarginPreset'],
-                                });
-                            }}
-                        >
-                            <option value="Normal">Normal</option>
-                            <option value="Compact">Compact</option>
-                            <option value="Wide">Wide</option>
-                        </select>
-                    </label>
+                    <SearchableDropdown
+                        label="Paper size"
+                        onChange={(value) => {
+                            onPrintSettingsChange({
+                                ...printSettings,
+                                PaperSize: value as BuilderPrintConfig['PaperSize'],
+                            });
+                        }}
+                        options={[
+                            { value: 'A4', label: 'A4' },
+                            { value: 'Letter', label: 'Letter' },
+                            { value: 'Thermal', label: 'Thermal' },
+                        ]}
+                        value={printSettings.PaperSize}
+                    />
+                    <SearchableDropdown
+                        label="Margin preset"
+                        onChange={(value) => {
+                            onPrintSettingsChange({
+                                ...printSettings,
+                                MarginPreset: value as BuilderPrintConfig['MarginPreset'],
+                            });
+                        }}
+                        options={[
+                            { value: 'Normal', label: 'Normal' },
+                            { value: 'Compact', label: 'Compact' },
+                            { value: 'Wide', label: 'Wide' },
+                        ]}
+                        value={printSettings.MarginPreset}
+                    />
                     <label>
                         <span>Bottom spacing (mm)</span>
                         <input
@@ -114,17 +114,17 @@ export const BuilderPrintPreviewStep: FC<BuilderPrintPreviewStepProps> = ({
                 className="builder-preview-card builder-preview-card--print span-2"
                 aria-labelledby="builder-print-preview-title"
             >
-                <div className="builder-preview-card__intro">
+                <div className="builder-preview-card-intro">
                     <h3 id="builder-print-preview-title">Print preview</h3>
                     <p>{config.FormatName} template</p>
                 </div>
-                <div className="builder-print-preview__meta">
+                <div className="builder-print-preview-meta">
                     <span>{printSettings.PaperSize}</span>
                     <span>{printSettings.MarginPreset} margin</span>
                     <span>{printSettings.BottomSpacingMm} mm bottom spacing</span>
                 </div>
                 <div
-                    className="builder-preview-card__frame builder-preview-card__frame--paper"
+                    className="builder-preview-card-frame builder-preview-card-frame--paper"
                     style={{ aspectRatio: paperAspectRatio }}
                 >
                     <iframe

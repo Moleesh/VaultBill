@@ -19,7 +19,7 @@ export const BuilderLayoutStep: FC<BuilderLayoutStepProps> = ({ layout, onLayout
         <div className="builder-layout-step">
             <div className="form-grid">
                 <label>
-                    <span>Flex columns</span>
+                    <span>Columns</span>
                     <input
                         min="1"
                         max="5"
@@ -54,28 +54,34 @@ export const BuilderLayoutStep: FC<BuilderLayoutStepProps> = ({ layout, onLayout
             <article className="builder-layout-preview" data-layout-mode="Flex">
                 <div>
                     <strong>Layout preview</strong>
-                    <p>Use flex columns and gap to shape a simple page flow for the form.</p>
+                    <p>Use columns and gap to shape a simple page flow for the form.</p>
                 </div>
                 <div
-                    className="builder-layout-preview__grid builder-layout-preview__grid--flex"
-                    style={{
-                        display: 'flex',
-                        flexWrap: 'wrap',
-                        '--builder-layout-columns': String(columns),
-                        gap: `${String(gap)}px`,
-                    } as CSSProperties}
+                    className="builder-layout-preview-grid builder-layout-preview-grid--flex"
+                    style={
+                        {
+                            display: 'flex',
+                            flexWrap: 'wrap',
+                            alignItems: 'stretch',
+                            alignContent: 'flex-start',
+                            '--builder-layout-columns': String(columns),
+                            '--builder-layout-gap': `${String(gap)}px`,
+                            gap: `${String(gap)}px`,
+                        } as CSSProperties
+                    }
                 >
-                    {Array.from({ length: Math.max(4, columns * 2) }, (_, cellIndex) => (
+                    {Array.from({ length: Math.max(2, columns * 2) }, (_, cellIndex) => (
                         <span
                             key={`cell-${String(cellIndex)}`}
                             className="layout-preview-flow"
                             style={{
                                 flex: `1 1 ${cellBasis}`,
-                                minWidth: '12rem',
+                                minWidth: columns > 1 ? '12rem' : '100%',
+                                minHeight: '7rem',
                             }}
                         >
                             <i />
-                            <small>{cellIndex % 2 === 0 ? 'Primary field' : 'Supporting field'}</small>
+                            <small>{`Field ${String(cellIndex + 1)}`}</small>
                         </span>
                     ))}
                 </div>

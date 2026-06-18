@@ -10,6 +10,7 @@ export const normalizeDropdownSearch = (value: string): string =>
 export type DropdownMenuPlacement = {
     readonly left: string;
     readonly top: string;
+    readonly bottom: string;
     readonly width: string;
     readonly maxHeight: string;
     readonly openDirection: 'above' | 'below';
@@ -24,17 +25,22 @@ export const getDropdownMenuPlacement = (
     const availableAbove = Math.max(0, rect.top - 12);
     const rawWidth = Math.max(rect.width, 280);
     const left = Math.min(Math.max(16, rect.left), Math.max(16, viewportWidth - rawWidth - 16));
-    const openDirection = availableBelow >= 72 || availableBelow >= availableAbove ? 'below' : 'above';
-    const availableSpace = openDirection === 'below' ? availableBelow : availableAbove;
-    const maxHeight = Math.max(160, Math.min(352, availableSpace));
-    const top =
-        openDirection === 'below'
-            ? `${String(Math.max(12, rect.bottom + 4))}px`
-            : `${String(Math.max(12, rect.top - maxHeight - 4))}px`;
+    const openDirection: 'below' | 'above' =
+        availableBelow >= 220 || availableBelow >= availableAbove ? 'below' : 'above';
+    const maxHeight = Math.min(
+        352,
+        Math.max(96, openDirection === 'below' ? availableBelow : availableAbove),
+    );
+    const top = openDirection === 'below' ? `${String(Math.max(12, rect.bottom + 1))}px` : 'auto';
+    const bottom =
+        openDirection === 'above'
+            ? `${String(Math.max(12, viewportHeight - rect.top + 1))}px`
+            : 'auto';
 
     return {
         left: `${String(left)}px`,
         maxHeight: `${String(maxHeight)}px`,
+        bottom,
         top,
         width: `${String(rawWidth)}px`,
         openDirection,

@@ -23,23 +23,19 @@ export const ReportsPage: FC = () => {
     return (
         <div className="page-stack reports-page">
             <ReportsFilterPanel
-                customer={controller.customer}
                 customers={controller.customers}
                 fromDate={controller.fromDate}
-                invoiceNumber={controller.invoiceNumber}
-                onReportFieldChange={controller.setReportField}
-                onReportFieldValueChange={controller.setReportFieldValue}
-                onCustomerChange={controller.setCustomer}
+                onAddFilter={controller.addReportFilter}
                 onFromDateChange={controller.setFromDate}
-                onInvoiceNumberChange={controller.setInvoiceNumber}
                 onPresetChange={controller.applyPreset}
+                onRemoveFilter={controller.removeReportFilter}
                 onReportIdChange={controller.setReportId}
                 onStatusChange={controller.setStatus}
                 onToDateChange={controller.setToDate}
+                onUpdateFilter={controller.updateReportFilter}
                 preset={controller.preset}
+                reportFilters={controller.reportFilters}
                 reportId={controller.reportId}
-                reportField={controller.reportField}
-                reportFieldValue={controller.reportFieldValue}
                 status={controller.status}
                 toDate={controller.toDate}
             />
@@ -48,42 +44,32 @@ export const ReportsPage: FC = () => {
                     canExport={controller.totalRecords > 0 && !controller.trialExpired}
                     canPrintRecords={controller.canPrintRecords}
                     canPrintReport={controller.totalRecords > 0 && !controller.trialExpired}
-                    customer={controller.customer}
                     fromDate={controller.fromDate}
-                    invoiceNumber={controller.invoiceNumber}
-                    onClearReportField={() => {
-                        controller.setReportField('customerName');
-                        controller.setReportFieldValue('');
-                    }}
-                    preset={controller.preset}
-                    onClearCustomer={() => {
-                        controller.setCustomer('');
-                    }}
                     onClearDateRange={() => {
                         controller.setFromDate('');
                         controller.setToDate('');
                     }}
-                    onClearInvoiceNumber={() => {
-                        controller.setInvoiceNumber('');
+                    onClearPreset={() => {
+                        controller.setPreset('All');
+                    }}
+                    onClearReportFilter={(id) => {
+                        controller.removeReportFilter(id);
                     }}
                     onClearStatus={() => {
                         controller.setStatus('All');
                     }}
-                    onClearPreset={() => {
-                        controller.setPreset('All');
-                    }}
+                    preset={controller.preset}
                     onExportAll={controller.exportAll}
                     onPrintRecords={() => {
                         controller.runNextRecordBatch();
                     }}
                     onPrintReport={controller.runReportPrint}
                     onReset={controller.reset}
-                    reportField={controller.reportField}
-                    reportFieldValue={controller.reportFieldValue}
+                    reportFilters={controller.reportFilters}
                     status={controller.status}
-                    toDate={controller.toDate}
                     totalRecords={controller.totalRecords}
                     trialExpired={controller.trialExpired}
+                    toDate={controller.toDate}
                     visibleCount={controller.visibleRecords.length}
                 />
                 {reportError ? (

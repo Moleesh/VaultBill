@@ -90,6 +90,7 @@ export const builtInDefaultFormat: DocumentFormatConfig = {
         {
             SectionId: 'Items',
             Label: 'Items',
+            Enabled: true,
             MinRows: 1,
             MaxRows: 500,
             EssentialColumns: ['ItemName', 'Quantity', 'Rate', 'Amount'],

@@ -43,50 +43,50 @@ export const AppShellSidebar: FC<AppShellSidebarProps> = ({
     onResetDemo,
     onLogout,
 }) => (
-    <aside className="app-shell__sidebar">
-        <NavLink className="app-shell__brand" to={landingRoute}>
+    <aside className="app-shell-sidebar">
+        <NavLink className="app-shell-brand" to={landingRoute}>
             <AppBrandIcon size="small" />
-            <strong className="app-shell__nav-label">{applicationName}</strong>
+            <strong className="app-shell-nav-label">{applicationName}</strong>
         </NavLink>
         <button
             aria-label={isExpanded ? 'Collapse sidebar' : 'Expand sidebar'}
-            className="app-shell__sidebar-toggle icon-button"
+            className="app-shell-sidebar-toggle icon-button"
             onClick={onToggleExpanded}
             type="button"
         >
             {isExpanded ? <ChevronLeft aria-hidden="true" /> : <ChevronRight aria-hidden="true" />}
         </button>
-        <nav aria-label="Primary" className="app-shell__nav">
+        <nav aria-label="Primary" className="app-shell-nav">
             {sections.map((section) => {
                 const Icon = appShellIcons[section.id as keyof typeof appShellIcons];
                 return (
                     <NavLink
                         aria-label={section.label}
                         className={({ isActive }) =>
-                            `app-shell__nav-item${isActive ? ' is-active' : ''}`
+                            `app-shell-nav-item${isActive ? ' is-active' : ''}`
                         }
                         key={section.id}
                         title={isExpanded ? undefined : section.label}
                         to={`/app/${section.id}`}
                     >
-                        <Icon aria-hidden="true" className="app-shell__nav-icon" size={21} />
-                        <span className="app-shell__nav-label">{section.label}</span>
+                        <Icon aria-hidden="true" className="app-shell-nav-icon" size={21} />
+                        <span className="app-shell-nav-label">{section.label}</span>
                     </NavLink>
                 );
             })}
         </nav>
-        <div className="app-shell__operator">
-            <div className="app-shell__operator-copy app-shell__nav-label">
+        <div className="app-shell-operator">
+            <div className="app-shell-operator-copy app-shell-nav-label">
                 <strong>{operatorDisplayName}</strong>
                 <small>{isDemoMode ? 'Demo mode' : operatorRole}</small>
                 {!isDemoMode && (isDesktop || isLanBrowser) ? (
-                    <small className="app-shell__host-status">
+                    <small className="app-shell-host-status">
                         <Server aria-hidden="true" size={13} />
                         {isDesktop ? 'Hosted web active' : 'Connected to desktop host'}
                     </small>
                 ) : null}
             </div>
-            <div className="app-shell__operator-actions">
+            <div className="app-shell-operator-actions">
                 <ThemePalette controller={themeController} />
                 {!isDemoMode ? (
                     <button

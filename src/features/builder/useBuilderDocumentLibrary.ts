@@ -5,17 +5,10 @@ import { useSearchParams } from 'react-router-dom';
 
 import type { CapabilityRegistry } from '../../capability/Capability.types';
 import { builtInDefaultPrintTemplateHtml } from '../../db/startup/BuiltInDefaultPrintTemplate';
-import { DocumentFormatConfigSchema } from '../../db/startup/ConfigSchemas';
-import { requestHostedApi } from '../../runtime/HostedApi';
 import {
-    base64ByteLength,
     builtInSampleAsset,
-    htmlStorageKey,
-    readConfig,
-    savedTemplatesStorageKey,
     type AssetSummary,
     type SavedPrintTemplate,
-    type StoredBuilderPackage,
 } from './BuilderPageSupport';
 import {
     defaultSavedPrintTemplates,
@@ -27,6 +20,10 @@ import {
     duplicateDocumentDraft,
     type BuilderInventoryItem,
 } from './BuilderDocumentLibrarySupport';
+import {
+    loadAndApplyBuilderPackage,
+    refreshBuilderInventory,
+} from './BuilderDocumentLibraryRuntime';
 
 type BuilderDocumentLibraryArgs = {
     readonly capabilities: Pick<CapabilityRegistry, 'isLanBrowser'>;
@@ -37,6 +34,7 @@ type BuilderDocumentLibraryArgs = {
     readonly setMessage: (value: string) => void;
     readonly setSavedTemplates: (value: readonly SavedPrintTemplate[]) => void;
     readonly setTemplateHtml: (value: string) => void;
+    readonly setViewMode: (value: 'library' | 'builder') => void;
 };
 
 /** Loads the builder document inventory and switchable draft package. */
@@ -49,32 +47,11 @@ export const useBuilderDocumentLibrary = ({
     setMessage,
     setSavedTemplates,
     setTemplateHtml,
+    setViewMode,
 }: BuilderDocumentLibraryArgs) => {
     const [searchParams, setSearchParams] = useSearchParams();
     const requestedFormatId = searchParams.get('format') ?? undefined;
     const [inventory, setInventory] = useState<readonly BuilderInventoryItem[]>([]);
-
-    const applyPackage = useCallback(
-        (stored: StoredBuilderPackage | undefined) => {
-            if (!stored) return false;
-            const parsedConfig = DocumentFormatConfigSchema.parse(
-                stored.config,
-            ) as DocumentFormatConfig;
-            setConfig(parsedConfig);
-            setTemplateHtml(stored.templateHtml);
-            setSavedTemplates(
-                normalizeSavedPrintTemplates(stored.savedTemplates ?? defaultSavedPrintTemplates()),
-            );
-            setAssets(
-                stored.assets.map((asset) => ({
-                    ...asset,
-                    size: base64ByteLength(asset.dataBase64),
-                })),
-            );
-            return true;
-        },
-        [setAssets, setConfig, setSavedTemplates, setTemplateHtml],
-    );
 
     const syncFormatSearchParam = useCallback(
         (formatId?: string) => {
@@ -90,69 +67,44 @@ export const useBuilderDocumentLibrary = ({
 
     const loadDocument = useCallback(
         async (formatId?: string) => {
-            if (window.vaultBillDesktop) {
-                const loaded = await window.vaultBillDesktop.loadBuilderPackage(formatId);
-                if (!applyPackage(loaded)) {
-                    setMessage('The selected document could not be loaded.');
-                    return;
-                }
-            } else if (capabilities.isLanBrowser) {
-                const query = formatId ? `?formatId=${encodeURIComponent(formatId)}` : '';
-                const loaded = await requestHostedApi<StoredBuilderPackage | undefined>(
-                    `/builder/package${query}`,
-                );
-                if (!applyPackage(loaded)) {
-                    setMessage('The selected document could not be loaded.');
-                    return;
-                }
-            } else {
-                setConfig(readConfig());
-                setTemplateHtml(
-                    window.localStorage.getItem(htmlStorageKey) ?? builtInDefaultPrintTemplateHtml,
-                );
-                let storedSavedTemplates: unknown = null;
-                try {
-                    storedSavedTemplates = JSON.parse(
-                        window.localStorage.getItem(savedTemplatesStorageKey) ?? 'null',
-                    ) as unknown;
-                } catch {
-                    storedSavedTemplates = null;
-                }
-                setSavedTemplates(
-                    normalizeSavedPrintTemplates(storedSavedTemplates),
-                );
-                setAssets([builtInSampleAsset]);
+            const shouldOpenBuilder = Boolean(formatId);
+            const loaded = await loadAndApplyBuilderPackage({
+                capabilities: { isLanBrowser: capabilities.isLanBrowser },
+                formatId,
+                setters: {
+                    setAssets,
+                    setConfig,
+                    setMessage,
+                    setSavedTemplates,
+                    setTemplateHtml,
+                    setViewMode,
+                },
+            });
+            if (!loaded) {
+                setMessage('The selected document could not be loaded.');
+                return;
             }
-            if (window.vaultBillDesktop || capabilities.isLanBrowser) {
-                syncFormatSearchParam(formatId);
-            } else {
-                syncFormatSearchParam(undefined);
-            }
+            if (shouldOpenBuilder) setViewMode('builder');
+            syncFormatSearchParam(formatId);
             setMessage('');
         },
         [
-            applyPackage,
             capabilities.isLanBrowser,
             setAssets,
             setConfig,
             setMessage,
             setSavedTemplates,
             setTemplateHtml,
+            setViewMode,
             syncFormatSearchParam,
         ],
     );
 
     const refreshInventory = useCallback(async () => {
         try {
-            if (window.vaultBillDesktop) {
-                setInventory(await window.vaultBillDesktop.listBuilderInventory());
-            } else if (capabilities.isLanBrowser) {
-                setInventory(await requestHostedApi<readonly BuilderInventoryItem[]>(
-                    '/builder/inventory',
-                ));
-            } else {
-                setInventory([]);
-            }
+            setInventory(
+                await refreshBuilderInventory({ isLanBrowser: capabilities.isLanBrowser }),
+            );
         } catch {
             setInventory([]);
         }
@@ -174,6 +126,7 @@ export const useBuilderDocumentLibrary = ({
         setSavedTemplates(defaultSavedPrintTemplates());
         setAssets([builtInSampleAsset]);
         setMessage('A new document draft is ready. Publish it when it looks right.');
+        setViewMode('builder');
         syncFormatSearchParam(nextConfig.FormatId);
     }, [
         inventory,
@@ -182,16 +135,30 @@ export const useBuilderDocumentLibrary = ({
         setMessage,
         setSavedTemplates,
         setTemplateHtml,
+        setViewMode,
         syncFormatSearchParam,
     ]);
 
     const duplicateCurrentDocument = useCallback(() => {
-        const nextConfig = duplicateDocumentDraft(config, inventory.map((item) => item.formatId));
+        const nextConfig = duplicateDocumentDraft(
+            config,
+            inventory.map((item) => item.formatId),
+        );
         setConfig(nextConfig);
         setSavedTemplates(normalizeSavedPrintTemplates(savedTemplates));
         setMessage(`Copied ${config.FormatName}. Publish the new document to save it.`);
+        setViewMode('builder');
         syncFormatSearchParam(nextConfig.FormatId);
-    }, [config, inventory, savedTemplates, setConfig, setMessage, setSavedTemplates, syncFormatSearchParam]);
+    }, [
+        config,
+        inventory,
+        savedTemplates,
+        setConfig,
+        setMessage,
+        setSavedTemplates,
+        setViewMode,
+        syncFormatSearchParam,
+    ]);
 
     return {
         createNewDocument,

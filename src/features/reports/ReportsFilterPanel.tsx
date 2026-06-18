@@ -2,20 +2,20 @@
 
 import type { FC } from 'react';
 
+import { Plus } from 'lucide-react';
+
 import { AppDatePicker } from '../../components/AppDatePicker/AppDatePicker';
 import { SearchableDropdown } from '../../components/SearchableDropdown/SearchableDropdown';
+import { reportFieldOptions, reportOptions } from './ReportsPageSupport';
+import type { ReportFieldFilter } from './ReportsPageTypes';
 
 type ReportsFilterPanelProps = {
     readonly reportId: string;
     readonly onReportIdChange: (value: string) => void;
-    readonly reportField: string;
-    readonly onReportFieldChange: (value: string) => void;
-    readonly reportFieldValue: string;
-    readonly onReportFieldValueChange: (value: string) => void;
-    readonly customer: string;
-    readonly onCustomerChange: (value: string) => void;
-    readonly invoiceNumber: string;
-    readonly onInvoiceNumberChange: (value: string) => void;
+    readonly reportFilters: readonly ReportFieldFilter[];
+    readonly onAddFilter: () => void;
+    readonly onUpdateFilter: (id: string, next: Partial<ReportFieldFilter>) => void;
+    readonly onRemoveFilter: (id: string) => void;
     readonly fromDate: string;
     readonly onFromDateChange: (value: string) => void;
     readonly toDate: string;
@@ -27,17 +27,80 @@ type ReportsFilterPanelProps = {
     readonly customers: readonly string[];
 };
 
+const reportFieldValuePlaceholder = (field: string): string => {
+    if (field === 'customerName') return 'Enter value';
+    if (field === 'documentNumber') return 'Enter value';
+    if (field === 'gstin') return 'GSTIN';
+    if (field === 'invoiceDate') return 'Choose date';
+    if (field === 'grandTotal') return 'Amount';
+    if (field === 'status') return 'Choose status';
+    return 'Enter value';
+};
+
+const renderReportFieldValue = (
+    filter: ReportFieldFilter,
+    customers: readonly string[],
+    onUpdateFilter: (id: string, next: Partial<ReportFieldFilter>) => void,
+) => {
+    if (filter.field === 'status') {
+        return (
+            <SearchableDropdown
+                label="Filter value"
+                onChange={(value) => {
+                    onUpdateFilter(filter.id, { value });
+                }}
+                options={['All', 'Draft', 'Finalized', 'Cancelled'].map((value) => ({
+                    value,
+                    label: value,
+                }))}
+                value={filter.value || 'All'}
+            />
+        );
+    }
+
+    if (filter.field === 'invoiceDate') {
+        return (
+            <AppDatePicker
+                label="Value"
+                onChange={(value) => {
+                    onUpdateFilter(filter.id, { value });
+                }}
+                value={filter.value}
+            />
+        );
+    }
+
+    return (
+        <label>
+            <span>Filter value</span>
+            <input
+                list={
+                    filter.field === 'customerName' ? `report-field-values-${filter.id}` : undefined
+                }
+                placeholder={reportFieldValuePlaceholder(filter.field)}
+                value={filter.value}
+                onChange={(event) => {
+                    onUpdateFilter(filter.id, { value: event.currentTarget.value });
+                }}
+            />
+            {filter.field === 'customerName' ? (
+                <datalist id={`report-field-values-${filter.id}`}>
+                    {customers.map((name) => (
+                        <option key={name} value={name} />
+                    ))}
+                </datalist>
+            ) : null}
+        </label>
+    );
+};
+
 export const ReportsFilterPanel: FC<ReportsFilterPanelProps> = ({
     reportId,
     onReportIdChange,
-    reportField,
-    onReportFieldChange,
-    reportFieldValue,
-    onReportFieldValueChange,
-    customer,
-    onCustomerChange,
-    invoiceNumber,
-    onInvoiceNumberChange,
+    reportFilters,
+    onAddFilter,
+    onUpdateFilter,
+    onRemoveFilter,
     fromDate,
     onFromDateChange,
     toDate,
@@ -53,104 +116,51 @@ export const ReportsFilterPanel: FC<ReportsFilterPanelProps> = ({
             <div>
                 <p className="eyebrow">Reports</p>
                 <h1>Business reports</h1>
-                <p>Search the complete record history, then export or print exactly what matches.</p>
+                <p>Search records, then export or print exactly what matches.</p>
             </div>
-            <div className="reports-hero__controls">
+            <div className="reports-hero-controls">
                 <SearchableDropdown
                     label="Report"
                     onChange={onReportIdChange}
-                    options={[
-                        { value: 'sales-register', label: 'Sales register' },
-                        { value: 'tax-summary', label: 'Tax summary' },
-                        { value: 'customer-ledger', label: 'Customer ledger' },
-                    ]}
+                    options={reportOptions.map((option) => ({ ...option }))}
                     value={reportId}
                 />
             </div>
         </div>
         <section className="data-panel">
-            <div className="report-filter-grid">
-                <label>
-                    <span>Customer</span>
-                    <input
-                        list="report-customers"
-                        placeholder="Any customer"
-                        value={customer}
-                        onChange={(event) => {
-                            onCustomerChange(event.currentTarget.value);
-                        }}
-                    />
-                    <datalist id="report-customers">
-                        {customers.map((name) => (
-                            <option key={name} value={name} />
-                        ))}
-                    </datalist>
-                </label>
-                <SearchableDropdown
-                    label="Field"
-                    onChange={onReportFieldChange}
-                    options={[
-                        { value: 'customerName', label: 'Customer name' },
-                        { value: 'documentNumber', label: 'Document number' },
-                        { value: 'gstin', label: 'GSTIN' },
-                        { value: 'invoiceDate', label: 'Invoice date' },
-                        { value: 'grandTotal', label: 'Grand total' },
-                        { value: 'status', label: 'Status' },
-                    ]}
-                    value={reportField}
-                />
-                {reportField === 'status' ? (
-                    <SearchableDropdown
-                        label="Value"
-                        onChange={onReportFieldValueChange}
-                        options={[
-                            { value: 'All', label: 'All' },
-                            { value: 'Draft', label: 'Draft' },
-                            { value: 'Finalized', label: 'Finalized' },
-                            { value: 'Cancelled', label: 'Cancelled' },
-                        ]}
-                        value={reportFieldValue || 'All'}
-                    />
-                ) : (
-                    <label>
-                        <span>Value</span>
-                        <input
-                            list={reportField === 'customerName' ? 'report-field-values' : undefined}
-                            placeholder={
-                                reportField === 'customerName'
-                                    ? 'Choose or type a customer'
-                                    : reportField === 'documentNumber'
-                                      ? 'Invoice or document number'
-                                      : reportField === 'gstin'
-                                        ? 'GSTIN'
-                                        : reportField === 'invoiceDate'
-                                          ? 'YYYY-MM-DD'
-                                          : 'Enter value'
-                            }
-                            value={reportFieldValue}
-                            onChange={(event) => {
-                                onReportFieldValueChange(event.currentTarget.value);
+            <div className="report-filter-stack">
+                {reportFilters.map((filter, index) => (
+                    <div className="report-filter-row" key={filter.id}>
+                        <SearchableDropdown
+                            label="Report field"
+                            onChange={(value) => {
+                                onUpdateFilter(filter.id, { field: value, value: '' });
                             }}
+                            options={reportFieldOptions.map((option) => ({ ...option }))}
+                            value={filter.field}
                         />
-                        {reportField === 'customerName' ? (
-                            <datalist id="report-field-values">
-                                {customers.map((name) => (
-                                    <option key={name} value={name} />
-                                ))}
-                            </datalist>
-                        ) : null}
-                    </label>
-                )}
-                <label>
-                    <span>Invoice number</span>
-                    <input
-                        placeholder="Full or partial number"
-                        value={invoiceNumber}
-                        onChange={(event) => {
-                            onInvoiceNumberChange(event.currentTarget.value);
-                        }}
-                    />
-                </label>
+                        <div className="report-filter-row-value">
+                            {renderReportFieldValue(filter, customers, onUpdateFilter)}
+                            <button onClick={onAddFilter} type="button">
+                                <Plus aria-hidden="true" size={16} /> Add another filter
+                            </button>
+                        </div>
+                        <div className="report-filter-row-actions">
+                            {index > 0 ? (
+                                <button
+                                    onClick={() => {
+                                        onRemoveFilter(filter.id);
+                                    }}
+                                    type="button"
+                                >
+                                    Remove filter
+                                </button>
+                            ) : null}
+                        </div>
+                    </div>
+                ))}
+            </div>
+            <div className="report-filter-grid report-filter-grid--secondary">
                 <AppDatePicker label="From" onChange={onFromDateChange} value={fromDate} />
                 <AppDatePicker label="To" onChange={onToDateChange} value={toDate} />
                 <SearchableDropdown
@@ -163,7 +173,7 @@ export const ReportsFilterPanel: FC<ReportsFilterPanelProps> = ({
                     }))}
                 />
                 <SearchableDropdown
-                    label="Quick range"
+                    label="Quick filters"
                     value={preset}
                     onChange={onPresetChange}
                     options={[

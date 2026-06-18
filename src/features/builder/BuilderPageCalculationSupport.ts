@@ -7,11 +7,6 @@ export { sampleFormula } from './BuilderFormulaPreviewSupport';
 const numericFieldTypes = new Set(['Number', 'Decimal', 'Money', 'Quantity', 'Rate']);
 const externalReferencePrefix = 'Secrets.';
 
-const normalizeFormulaSyntax = (formula: string): string =>
-    formula
-        .replace(/\bsecrets?\[([A-Za-z_][\w]*)\]/giu, 'Secrets.$1')
-        .replace(/\bsecrets\./giu, 'Secrets.');
-
 export type CalculationTarget = {
     readonly kind: 'document' | 'line';
     readonly sectionIndex: number;
@@ -22,7 +17,9 @@ export type CalculationTarget = {
 const calculationRoots = (config: DocumentFormatConfig): readonly FieldConfig[] => {
     const fields = [
         ...config.Fields,
-        ...config.LineItemSections.flatMap((section) => section.Fields),
+        ...config.LineItemSections.flatMap((section) =>
+            section.Enabled === false ? [] : section.Fields,
+        ),
     ];
     return [...fields]
         .map((field, index) => ({ field, index }))
@@ -46,6 +43,7 @@ export const collectCalculationTargets = (
         }),
     );
     for (const [sectionIndex, section] of config.LineItemSections.entries()) {
+        if (section.Enabled === false) continue;
         targets.push(
             ...section.Fields.filter((field) => field.Calculated).map((field, fieldIndex) => ({
                 kind: 'line' as const,
@@ -72,7 +70,7 @@ export const collectCalculationTargets = (
 
 export const formulaReferences = (formula: string): readonly string[] =>
     [
-        ...normalizeFormulaSyntax(formula)
+        ...formula
             .trim()
             .replace(/\s+/gu, ' ')
             .replace(/\bSUMALL\(\s*/giu, '(')

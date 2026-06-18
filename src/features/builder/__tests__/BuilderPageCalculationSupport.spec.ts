@@ -20,14 +20,12 @@ import {
 
 describe('BuilderPageCalculationSupport', () => {
     it('extracts formula references and flags bad calculation graphs', () => {
-        expect(
-            formulaReferences(
-                'SUMALL(Amount) + Subtotal + GST + Secrets.CompanyGSTIN + secrets[CompanyName]',
-            ),
-        ).toEqual(['Amount', 'Subtotal', 'GST', 'Secrets.CompanyGSTIN', 'Secrets.CompanyName']);
+        expect(formulaReferences('SUMALL(Amount) + Subtotal + GST + Secrets.CompanyGSTIN')).toEqual(
+            ['Amount', 'Subtotal', 'GST', 'Secrets.CompanyGSTIN'],
+        );
         expect(
             collectReferencedFieldIds([
-                { FieldId: 'Subtotal', Formula: 'GST + secrets[CompanyGSTIN]' } as never,
+                { FieldId: 'Subtotal', Formula: 'GST + Secrets.CompanyGSTIN' } as never,
                 { FieldId: 'GST', Formula: 'RoundOff + 1' } as never,
             ]),
         ).toEqual(new Set(['GST', 'RoundOff']));
@@ -38,7 +36,7 @@ describe('BuilderPageCalculationSupport', () => {
                 Label: 'Grand total',
                 Type: 'Money',
                 Calculated: true,
-                Formula: 'MissingField + secrets[CompanyGSTIN]',
+                Formula: 'MissingField + Secrets.CompanyGSTIN',
             } as never,
             {
                 FieldId: 'Description',

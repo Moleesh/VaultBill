@@ -1,6 +1,6 @@
 /** @format */
 
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it } from 'vitest';
 
@@ -30,7 +30,7 @@ describe('builder page', () => {
         document.body.innerHTML = '<div id="portal-root"></div>';
     });
 
-    it('renders the document-format builder workspace', async () => {
+    it('renders the document library first and opens the builder from there', async () => {
         render(
             <MemoryRouter initialEntries={['/app/builder']}>
                 <CapabilityProvider value={demoCapabilities}>
@@ -41,9 +41,8 @@ describe('builder page', () => {
             </MemoryRouter>,
         );
 
+        expect(await screen.findByRole('heading', { name: 'Document library' })).toBeVisible();
+        fireEvent.click(screen.getByRole('button', { name: /Edit current/u }));
         expect(await screen.findByRole('heading', { name: 'Document builder' })).toBeVisible();
-        expect(screen.getByRole('heading', { name: 'Document library' })).toBeVisible();
-        expect(screen.getByText('Field Preview')).toBeVisible();
-        expect(screen.getByText('Print Preview')).toBeVisible();
     });
 });

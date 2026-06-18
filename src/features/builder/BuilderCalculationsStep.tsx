@@ -99,12 +99,14 @@ export const BuilderCalculationsStep: FC<BuilderCalculationsStepProps> = ({
                                 }}
                                 type="button"
                             >
-                                <span className="builder-calculation-main__title">{`Edit ${field.Label}`}</span>
-                                <span className="builder-calculation-main__section">{sectionLabel}</span>
-                                <small className="builder-calculation-main__formula">
+                                <span className="builder-calculation-main-title">{`Edit ${field.Label}`}</span>
+                                <span className="builder-calculation-main-section">
+                                    {sectionLabel}
+                                </span>
+                                <small className="builder-calculation-main-formula">
                                     {field.Formula ?? 'No formula yet'}
                                 </small>
-                                <small className="builder-calculation-main__preview">{`Preview: ${preview}`}</small>
+                                <small className="builder-calculation-main-preview">{`Preview: ${preview}`}</small>
                             </button>
                             <small className="builder-calculation-order">
                                 #{String(index + 1)} trigger
@@ -117,19 +119,22 @@ export const BuilderCalculationsStep: FC<BuilderCalculationsStepProps> = ({
                 <strong>Formula helper</strong>
                 <p>
                     Use same-row fields such as <code>Quantity * Rate</code>. Use{' '}
-                    <code>SUMALL(Amount)</code> or <code>SUM(Items.Amount)</code> for subtotal
-                    style totals. Use <code>COUNT(Items)</code> for row counts and{' '}
-                    <code>Secrets.Key</code> or <code>secrets[key]</code> for shared stored
-                    values. Keep GST, grand total, and round-off formulas separate so the
-                    preview stays easy to follow.
+                    <code>SUMALL(Amount)</code>, <code>SUM(Items.Amount)</code>, or{' '}
+                    <code>COUNT(Items)</code> for row-based totals and counts. Use{' '}
+                    <code>ROUND(value, 2)</code> for round-off logic and <code>Secrets.Key</code>{' '}
+                    for shared stored values. Keep GST, grand total, and round-off formulas separate
+                    so the trigger order stays easy to review.
                 </p>
-                <p>Drag the rows to make the trigger order easier to inspect before publishing.</p>
+                <p>
+                    Drag the rows to make the trigger order easier to inspect before publishing, and
+                    use the preview value under each field to catch formula mistakes early.
+                </p>
             </div>
             <div className="helper-card">
                 <strong>Formula preview</strong>
                 <p>
                     Live samples for the current order stay visible in the preview step alongside
-                    the print template.
+                    the print template so each calculation can be checked before publishing.
                 </p>
                 <small>
                     {calculatedTargets.length} calculated fields across {allFields.length} total

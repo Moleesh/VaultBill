@@ -20,8 +20,8 @@ import './styles/Themes/IndigoMint.scss';
 import './styles/Components/ActionBar.scss';
 import './styles/Components/FeedbackStates.scss';
 import './styles/Components/FormPreview.scss';
-import './styles/Components/ProductUi.scss';
-import './styles/Components/ProductShell.scss';
+import './styles/Components/AppUi.scss';
+import './styles/Components/AppScreens.scss';
 
 restoreGithubPagesRoute();
 

@@ -55,6 +55,8 @@ describe('hosted Local API maintenance', () => {
                 setBackupPassword,
                 getBusinessSettings: () => ({}),
                 saveBusinessSettings: (input: unknown) => input,
+                getSecretsSettings: () => ({}),
+                saveSecretsSettings: (input: unknown) => input,
                 getIntegrationSettings: () => ({}),
                 saveIntegrationSettings: (input: unknown) => input,
             },

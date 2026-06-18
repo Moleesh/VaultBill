@@ -41,12 +41,15 @@ export const renderBuilderPreview = (
         values[field.FieldId] = preview;
         values[`Record.${field.FieldId}`] = preview;
     }
-    for (const field of config.LineItemSections[0]?.Fields ?? []) {
-        const sample = field.SampleValue ?? field.DefaultValue ?? field.Label;
-        const preview = previewValue(sample);
-        values[`Items.0.${field.FieldId}`] = preview;
-        values[`Items.1.${field.FieldId}`] =
-            field.Type === 'Text' || field.Type === 'Textarea' ? `${preview} 2` : preview;
+    for (const section of config.LineItemSections) {
+        if (section.Enabled === false) continue;
+        for (const field of section.Fields) {
+            const sample = field.SampleValue ?? field.DefaultValue ?? field.Label;
+            const preview = previewValue(sample);
+            values[`Items.0.${field.FieldId}`] = preview;
+            values[`Items.1.${field.FieldId}`] =
+                field.Type === 'Text' || field.Type === 'Textarea' ? `${preview} 2` : preview;
+        }
     }
     for (const asset of assets) {
         values[`Asset.${asset.name}`] = `data:${asset.type};base64,${asset.dataBase64}`;
@@ -59,18 +62,30 @@ export const renderBuilderPreview = (
         size: ${paperSizeStyles[printSettings.PaperSize]};
         margin: ${marginStyles[printSettings.MarginPreset]};
       }
+      html {
+        width: 100%;
+        height: 100%;
+        background: #eef6f4;
+      }
       html, body {
         min-height: 100%;
+        width: 100%;
       }
       body {
         margin: 0;
         padding: 0 0 ${String(printSettings.BottomSpacingMm)}mm;
         background: #eef6f4;
         color: #18302c;
+        overflow: visible;
       }
       .vaultbill-print-preview,
       .vaultbill-print-preview * {
         box-sizing: border-box;
+      }
+      .vaultbill-print-preview {
+        width: 100%;
+        min-height: 100%;
+        overflow: visible;
       }
     `;
     return rendered.includes('</head>')

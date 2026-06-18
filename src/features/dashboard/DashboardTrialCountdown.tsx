@@ -21,18 +21,31 @@ export const DashboardTrialCountdown: FC<DashboardTrialCountdownProps> = ({
     if (isFullVersion) return null;
 
     const countdown = formatTrialCountdownParts(remainingSeconds);
+    const progress = Math.max(0, Math.min(100, (remainingSeconds / (24 * 60 * 60)) * 100));
 
     return (
-        <article className={`dashboard-trial-countdown${isTrialExpired ? ' is-expired' : ''}`}>
-            <small>Trial countdown</small>
-            <strong>
-                <span>{countdown.amount}</span>
-                <span>{isTrialExpired ? 'expired' : countdown.label}</span>
-            </strong>
+        <article
+            className={`dashboard-trial-countdown${isTrialExpired ? ' is-expired' : ''}`}
+            aria-label="Trial countdown"
+        >
+            <div className="dashboard-trial-countdown-copy">
+                <small>Trial countdown</small>
+                <strong>
+                    <span>{countdown.amount}</span>
+                    <span>{isTrialExpired ? 'expired' : countdown.label}</span>
+                </strong>
+            </div>
+            <div
+                className="dashboard-trial-countdown-bar"
+                aria-hidden="true"
+                title={isTrialExpired ? 'Expired' : `${countdown.amount} remaining`}
+            >
+                <span style={{ width: `${String(progress)}%` }} />
+            </div>
             <p>
                 {isTrialExpired
                     ? 'The trial is now read-only.'
-                    : 'Accumulated while VaultBill is open.'}
+                    : 'Tracked while VaultBill is open, and shown here as remaining session time.'}
             </p>
         </article>
     );

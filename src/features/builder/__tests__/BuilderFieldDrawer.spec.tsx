@@ -3,21 +3,24 @@
 import { render } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
-import { BuilderFieldDrawer } from './BuilderFieldDrawer';
+import { BuilderFieldDrawer } from '../BuilderFieldDrawer';
 
 describe('BuilderFieldDrawer', () => {
     it('shows formula suggestions for calculated fields', () => {
         render(
             <BuilderFieldDrawer
-                field={{
-                    FieldId: 'Subtotal',
-                    Label: 'Subtotal',
-                    Type: 'Money',
-                    Calculated: true,
-                    Formula: 'SUMALL(Amount)',
-                } as never}
+                field={
+                    {
+                        FieldId: 'Subtotal',
+                        Label: 'Subtotal',
+                        Type: 'Money',
+                        Calculated: true,
+                        Formula: 'SUMALL(Amount)',
+                    } as never
+                }
                 formulaSuggestions={['Quantity * Rate', 'SUMALL(Amount)', 'Secrets.CompanyName']}
-                onChange={() => undefined}
+                onCancel={() => undefined}
+                onSave={() => undefined}
             />,
         );
 

@@ -5,6 +5,12 @@ import type { CapabilityRegistry } from '../../capability/Capability.types';
 import type { AppRecord } from '../records/RecordStoreSupport';
 import type { PrintTask } from './ReportsPageSupport';
 
+export type ReportFieldFilter = {
+    readonly id: string;
+    readonly field: string;
+    readonly value: string;
+};
+
 export type ReportsPageActionInput = {
     readonly capabilities: {
         readonly isLanBrowser: boolean;
@@ -20,14 +26,14 @@ export type ReportsPageActionInput = {
 export type ReportsPageController = {
     readonly capabilities: CapabilityRegistry;
     readonly applyPreset: (value: string) => void;
+    readonly addReportFilter: () => void;
     readonly browserMatchingRecords: readonly AppRecord[];
     readonly canPrintRecords: boolean;
-    readonly customer: string;
     readonly customers: readonly string[];
     readonly error: string;
     readonly exportAll: () => void;
     readonly fromDate: string;
-    readonly invoiceNumber: string;
+    readonly reportFilters: readonly ReportFieldFilter[];
     readonly reportField: string;
     readonly reportFieldValue: string;
     readonly isLoading: boolean;
@@ -41,12 +47,11 @@ export type ReportsPageController = {
     readonly query: Readonly<Record<string, unknown>>;
     readonly reportId: string;
     readonly reset: () => void;
+    readonly removeReportFilter: (id: string) => void;
     readonly runNextRecordBatch: (startAt?: number, suppliedRecords?: readonly AppRecord[]) => void;
     readonly runReportPrint: () => void;
     readonly sentinelRef: RefObject<HTMLDivElement | null>;
-    readonly setCustomer: (value: string) => void;
     readonly setFromDate: (value: string) => void;
-    readonly setInvoiceNumber: (value: string) => void;
     readonly setPageError: (value: string) => void;
     readonly setPreset: (value: string) => void;
     readonly setPrintSource: (records: readonly AppRecord[]) => void;
@@ -60,6 +65,7 @@ export type ReportsPageController = {
     readonly setToDate: (value: string) => void;
     readonly setTrialExpired: (value: boolean) => void;
     readonly setVisibleCount: (count: number | ((current: number) => number)) => void;
+    readonly updateReportFilter: (id: string, next: Partial<ReportFieldFilter>) => void;
     readonly status: string;
     readonly task: PrintTask | undefined;
     readonly toDate: string;

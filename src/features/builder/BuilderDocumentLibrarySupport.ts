@@ -43,9 +43,7 @@ const copyName = (name: string): string => {
 const cloneFormat = (config: DocumentFormatConfig): DocumentFormatConfig =>
     JSON.parse(JSON.stringify(config)) as DocumentFormatConfig;
 
-export const createNewDocumentDraft = (
-    existingIds: readonly string[],
-): DocumentFormatConfig => {
+export const createNewDocumentDraft = (existingIds: readonly string[]): DocumentFormatConfig => {
     const draft = cloneFormat(builtInDefaultFormat);
     draft.FormatId = uniqueFormatId(normalizeIdRoot(draft.FormatName), existingIds);
     return draft;

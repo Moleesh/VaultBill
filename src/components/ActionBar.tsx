@@ -68,8 +68,8 @@ export const ActionBar: FC<ActionBarProps> = ({
                 <button
                     aria-disabled={!action.enabled}
                     aria-keyshortcuts={showShortcuts ? shortcut?.keys : undefined}
-                    className={`${action.primary ? 'action-bar__primary' : ''}${
-                        action.enabled ? '' : ' action-bar__unavailable'
+                    className={`${action.primary ? 'action-bar-primary' : ''}${
+                        action.enabled ? '' : ' action-bar-unavailable'
                     }`}
                     data-action-id={action.id}
                     key={action.id}

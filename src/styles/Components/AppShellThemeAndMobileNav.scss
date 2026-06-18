@@ -2,14 +2,14 @@
 
 @use '../Breakpoints' as *;
 
-.theme-palette__swatch {
+.theme-palette-swatch {
     width: 1.5rem;
     height: 1.5rem;
     border: var(--line-width) solid var(--color-border);
     border-radius: 50%;
 }
 
-.theme-palette__popover button span:nth-of-type(2) {
+.theme-palette-popover button span:nth-of-type(2) {
     min-width: 0;
 }
 
@@ -22,12 +22,12 @@
     padding: var(--space-4);
 }
 
-.app-shell__mobile-nav {
+.app-shell-mobile-nav {
     display: none;
 }
 
 @include respond-to('laptop') {
-    .app-shell__sidebar {
+    .app-shell-sidebar {
         padding: var(--space-4);
     }
 }
@@ -39,26 +39,26 @@
         padding-bottom: 4.75rem;
     }
 
-    .app-shell__sidebar {
+    .app-shell-sidebar {
         display: none;
     }
 
-    .app-shell__topbar {
+    .app-shell-topbar {
         min-height: 4.5rem;
     }
 
-    .app-shell__mobile-account-actions {
+    .app-shell-mobile-account-actions {
         display: flex;
     }
 
-    .app-shell__mobile-account-actions .theme-palette__popover {
+    .app-shell-mobile-account-actions .theme-palette-popover {
         top: calc(100% + var(--space-2));
         right: 0;
         bottom: auto;
         left: auto;
     }
 
-    .app-shell__mobile-nav {
+    .app-shell-mobile-nav {
         position: fixed;
         z-index: 35;
         right: 0;
@@ -73,11 +73,11 @@
         scrollbar-width: none;
     }
 
-    .app-shell__mobile-nav::-webkit-scrollbar {
+    .app-shell-mobile-nav::-webkit-scrollbar {
         display: none;
     }
 
-    .app-shell__mobile-nav a {
+    .app-shell-mobile-nav a {
         display: grid;
         flex: 1 0 4.25rem;
         gap: var(--space-1);
@@ -90,7 +90,7 @@
         font-size: var(--font-size-xs);
     }
 
-    .app-shell__mobile-nav a.active {
+    .app-shell-mobile-nav a.active {
         background: var(--color-secondary);
         color: var(--color-secondary-text);
         font-weight: var(--font-weight-bold);
@@ -98,20 +98,20 @@
 }
 
 @include respond-to('phone') {
-    .app-shell__topbar {
+    .app-shell-topbar {
         align-items: flex-start;
     }
 
-    .app-shell__topbar .searchable-dropdown {
+    .app-shell-topbar .searchable-dropdown {
         display: none;
     }
 
-    .app-shell__content {
+    .app-shell-content {
         height: calc(100vh - 4.5rem - 4.75rem);
         padding: var(--space-4);
     }
 
-    .app-shell__scroll-rail {
+    .app-shell-scroll-rail {
         top: 4.5rem;
         bottom: 4.75rem;
     }

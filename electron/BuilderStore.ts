@@ -159,7 +159,11 @@ export class BuilderStore {
                       },
                   ];
             for (const template of normalizedTemplates) {
-                insertTemplate.run(template.name, sanitizeTemplateHtml(template.templateHtml), template.updatedAt);
+                insertTemplate.run(
+                    template.name,
+                    sanitizeTemplateHtml(template.templateHtml),
+                    template.updatedAt,
+                );
             }
             this.#database.exec('COMMIT;');
             return {

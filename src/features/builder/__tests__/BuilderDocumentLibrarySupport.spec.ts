@@ -12,10 +12,10 @@ import {
 describe('BuilderDocumentLibrarySupport', () => {
     it('creates unique drafts for new and duplicated documents', () => {
         const created = createNewDocumentDraft(['TaxInvoice']);
-        const duplicated = duplicateDocumentDraft(
-            builtInDefaultFormat,
-            ['TaxInvoice', 'GSTInvoiceCopy'],
-        );
+        const duplicated = duplicateDocumentDraft(builtInDefaultFormat, [
+            'TaxInvoice',
+            'GSTInvoiceCopy',
+        ]);
 
         expect(created.FormatId).not.toBe('TaxInvoice');
         expect(created.FormatName).toBe('GST Invoice');

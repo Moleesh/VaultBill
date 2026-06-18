@@ -26,7 +26,10 @@ export const SysAdminDashboard: FC = () => {
             />
             <section className="dashboard-metrics" aria-label="SysAdmin operational summary">
                 <DashboardMetric label="Formats published" value={String(summary.formatCount)} />
-                <DashboardMetric label="Templates published" value={String(summary.templateCount)} />
+                <DashboardMetric
+                    label="Templates published"
+                    value={String(summary.templateCount)}
+                />
                 <DashboardMetric
                     label="Formats needing attention"
                     value={String(summary.incompleteFormatCount)}

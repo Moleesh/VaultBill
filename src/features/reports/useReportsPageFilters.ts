@@ -4,64 +4,76 @@ import { useMemo, useState } from 'react';
 
 import { useRecordStore } from '../records/RecordStoreContext';
 import { pageSize } from './ReportsPageSupport';
+import type { ReportFieldFilter } from './ReportsPageTypes';
+
+const defaultReportField = '';
+
+const createReportFilter = (field: string = defaultReportField, value = ''): ReportFieldFilter => ({
+    id: globalThis.crypto.randomUUID(),
+    field,
+    value,
+});
+
+const normalizeValue = (value: unknown): string =>
+    typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean'
+        ? String(value)
+        : '';
+
+const reportFieldValueFor = (record: Parameters<typeof matchesReportField>[0], field: string) => {
+    if (field === 'documentNumber') return record.documentNumber ?? '';
+    if (field === 'customerName') return record.customerName;
+    if (field === 'gstin') return record.gstin;
+    if (field === 'invoiceDate') return record.invoiceDate;
+    if (field === 'status') return record.status;
+    if (field === 'grandTotal') return record.grandTotal;
+    return '';
+};
+
+const matchesReportField = (
+    record: ReturnType<typeof useRecordStore>['records'][number],
+    filter: ReportFieldFilter,
+): boolean => {
+    const normalizedValue = filter.value.trim().toLocaleLowerCase();
+    if (
+        !filter.field ||
+        !normalizedValue ||
+        (filter.field === 'status' && normalizedValue === 'all')
+    )
+        return true;
+    const recordValue = reportFieldValueFor(record, filter.field);
+    return normalizeValue(recordValue).toLocaleLowerCase().includes(normalizedValue);
+};
 
 export const useReportsPageFilters = () => {
     const { records } = useRecordStore();
+    const includeDraftsInReports =
+        typeof window !== 'undefined' &&
+        window.localStorage.getItem('vaultbill.reports.include-drafts') === 'true';
     const [reportId, setReportId] = useState('sales-register');
-    const [reportField, setReportFieldState] = useState('customerName');
+    const [reportField, setReportFieldState] = useState(defaultReportField);
     const [reportFieldValue, setReportFieldValueState] = useState('');
-    const [customer, setCustomer] = useState('');
-    const [invoiceNumber, setInvoiceNumber] = useState('');
+    const [additionalFilters, setAdditionalFilters] = useState<readonly ReportFieldFilter[]>([]);
     const [fromDate, setFromDate] = useState('');
     const [toDate, setToDate] = useState('');
     const [status, setStatus] = useState('All');
     const [preset, setPreset] = useState('All');
     const [visibleCount, setVisibleCount] = useState(pageSize);
 
+    const reportFilters = useMemo(
+        () => [
+            { id: 'primary', field: reportField, value: reportFieldValue },
+            ...additionalFilters,
+        ],
+        [additionalFilters, reportField, reportFieldValue],
+    );
+
     const browserMatchingRecords = useMemo(() => {
-        const normalizedCustomer = customer.trim().toLocaleLowerCase();
-        const normalizedInvoice = invoiceNumber.trim().toLocaleLowerCase();
-        const normalizedFieldValue = reportFieldValue.trim().toLocaleLowerCase();
         let result = records
-            .filter((record) => record.status !== 'Draft' || status === 'Draft')
+            .filter((record) => includeDraftsInReports || record.status !== 'Draft')
             .filter((record) => status === 'All' || record.status === status)
-            .filter(
-                (record) =>
-                    !normalizedCustomer ||
-                    record.customerName.toLocaleLowerCase().includes(normalizedCustomer),
-            )
-            .filter(
-                (record) =>
-                    !normalizedInvoice ||
-                    record.documentNumber?.toLocaleLowerCase().includes(normalizedInvoice),
-            )
             .filter((record) => !fromDate || record.invoiceDate >= fromDate)
             .filter((record) => !toDate || record.invoiceDate <= toDate)
-            .filter((record) => {
-                if (!normalizedFieldValue) return true;
-                const value = (() => {
-                    if (reportField === 'documentNumber') {
-                        return record.documentNumber ?? '';
-                    }
-                    if (reportField === 'customerName') {
-                        return record.customerName;
-                    }
-                    if (reportField === 'gstin') {
-                        return record.gstin;
-                    }
-                    if (reportField === 'invoiceDate') {
-                        return record.invoiceDate;
-                    }
-                    if (reportField === 'status') {
-                        return record.status;
-                    }
-                    if (reportField === 'grandTotal') {
-                        return record.grandTotal;
-                    }
-                    return '';
-                })();
-                return value.toLocaleLowerCase().includes(normalizedFieldValue);
-            })
+            .filter((record) => reportFilters.every((filter) => matchesReportField(record, filter)))
             .sort(
                 (left, right) =>
                     right.updatedAt.localeCompare(left.updatedAt) ||
@@ -69,22 +81,24 @@ export const useReportsPageFilters = () => {
             );
         if (preset === 'Last100') result = result.slice(0, 100);
         return result;
-    }, [customer, fromDate, invoiceNumber, preset, records, reportField, reportFieldValue, status, toDate]);
+    }, [fromDate, includeDraftsInReports, preset, records, reportFilters, status, toDate]);
 
     const query = useMemo(
         () => ({
             reportId,
-            reportField,
-            reportFieldValue,
-            customer,
-            invoiceNumber,
+            reportFilters: reportFilters.filter(
+                (filter) =>
+                    filter.field &&
+                    filter.value.trim() &&
+                    !(filter.field === 'status' && filter.value.trim() === 'All'),
+            ),
             fromDate,
             toDate,
             status,
             preset,
             limit: pageSize,
         }),
-        [customer, fromDate, invoiceNumber, preset, reportField, reportFieldValue, reportId, status, toDate],
+        [fromDate, preset, reportFilters, reportId, status, toDate],
     );
 
     const customers = [
@@ -92,10 +106,9 @@ export const useReportsPageFilters = () => {
     ].sort();
 
     const reset = () => {
-        setReportFieldState('customerName');
+        setReportFieldState(defaultReportField);
         setReportFieldValueState('');
-        setCustomer('');
-        setInvoiceNumber('');
+        setAdditionalFilters([]);
         setFromDate('');
         setToDate('');
         setStatus('All');
@@ -109,6 +122,25 @@ export const useReportsPageFilters = () => {
 
     const setReportFieldValue = (value: string) => {
         setReportFieldValueState(value);
+    };
+
+    const addReportFilter = () => {
+        setAdditionalFilters((current) => [...current, createReportFilter()]);
+    };
+
+    const updateReportFilter = (id: string, next: Partial<ReportFieldFilter>) => {
+        if (id === 'primary') {
+            if (typeof next.field === 'string') setReportFieldState(next.field);
+            if (typeof next.value === 'string') setReportFieldValueState(next.value);
+            return;
+        }
+        setAdditionalFilters((current) =>
+            current.map((filter) => (filter.id === id ? { ...filter, ...next } : filter)),
+        );
+    };
+
+    const removeReportFilter = (id: string) => {
+        setAdditionalFilters((current) => current.filter((filter) => filter.id !== id));
     };
 
     const applyPreset = (value: string) => {
@@ -136,30 +168,30 @@ export const useReportsPageFilters = () => {
     };
 
     return {
+        addReportFilter,
         applyPreset,
         browserMatchingRecords,
-        customer,
         customers,
         fromDate,
-        invoiceNumber,
         query,
         reportId,
+        reportField,
+        reportFieldValue,
+        reportFilters,
         reset,
-        toDate,
-        setCustomer,
+        removeReportFilter,
         setFromDate,
-        setInvoiceNumber,
         setPreset,
+        setReportField,
+        setReportFieldValue,
         setReportId,
         setStatus,
         setToDate,
+        toDate,
         status,
         preset,
         visibleCount,
         setVisibleCount,
-        reportField,
-        reportFieldValue,
-        setReportField,
-        setReportFieldValue,
+        updateReportFilter,
     } as const;
 };

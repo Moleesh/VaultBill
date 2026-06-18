@@ -102,7 +102,7 @@ export const helperFor = (step: BuilderStep): string =>
         'Line Items':
             'Design repeatable product or service rows and keep subtotal and total formulas visible.',
         Calculations:
-            'Connect numeric fields with same-row math, SUMALL totals, secrets, GST, and round-off helpers.',
+            'Connect numeric fields with same-row math, SUMALL totals, Secrets.Key values, GST, and round-off helpers.',
         Print: 'Upload one HTML file and the images or fonts it references.',
         'Field Preview': 'Review the read-only field layout before you publish.',
         'Print Preview': 'Check the rendered print output and paper settings before publishing.',
@@ -138,7 +138,6 @@ export const mimeTypeFromName = (name: string): string =>
 
 export const confirmLargeFile = (name: string, size: number): boolean =>
     window.confirm(`"${name}" is ${(size / (1024 * 1024)).toFixed(1)} MB. Continue importing it?`);
-
 
 export const defaultBuilderLayout: BuilderLayoutConfig = {
     Columns: 2,

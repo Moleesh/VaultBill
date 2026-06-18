@@ -2,8 +2,8 @@
 
 import { describe, expect, it } from 'vitest';
 
-import type { CapabilityRegistry } from '../capability/Capability.types';
-import { getHelpSections } from './HelpContent';
+import type { CapabilityRegistry } from '../../capability/Capability.types';
+import { getHelpSections } from '../HelpContent';
 
 const desktopCapabilities: CapabilityRegistry = {
     isDesktop: true,

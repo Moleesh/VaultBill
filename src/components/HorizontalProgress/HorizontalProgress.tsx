@@ -82,7 +82,7 @@ export const HorizontalProgress: FC<HorizontalProgressProps> = ({
     return (
         <section className={`horizontal-progress ${className}`} aria-label={label}>
             <div
-                className="horizontal-progress__track"
+                className="horizontal-progress-track"
                 onKeyDown={(event) => {
                     if (event.key === 'ArrowLeft') scrollByPage(-1);
                     if (event.key === 'ArrowRight') scrollByPage(1);
@@ -101,7 +101,7 @@ export const HorizontalProgress: FC<HorizontalProgressProps> = ({
                 {children}
             </div>
             {hasOverflow ? (
-                <div className="horizontal-progress__controls">
+                <div className="horizontal-progress-controls">
                     <button
                         aria-label={`Previous ${label}`}
                         onClick={() => {
@@ -116,7 +116,7 @@ export const HorizontalProgress: FC<HorizontalProgressProps> = ({
                         aria-valuemax={100}
                         aria-valuemin={0}
                         aria-valuenow={Math.round(position * 100)}
-                        className="horizontal-progress__bar"
+                        className="horizontal-progress-bar"
                         role="progressbar"
                     >
                         <span />

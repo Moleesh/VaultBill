@@ -22,9 +22,7 @@ const toSavedPrintTemplate = (input: unknown): SavedPrintTemplate | undefined =>
     };
 };
 
-export const normalizeSavedPrintTemplates = (
-    input: unknown,
-): readonly SavedPrintTemplate[] => {
+export const normalizeSavedPrintTemplates = (input: unknown): readonly SavedPrintTemplate[] => {
     if (!Array.isArray(input)) return defaultSavedPrintTemplates();
     const templates = input
         .map(toSavedPrintTemplate)

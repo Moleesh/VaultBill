@@ -14,7 +14,7 @@ export const BuilderPageDrawer = ({ controller, lineSection }: BuilderPageDrawer
     const formulaSuggestions = [
         ...new Set([
             ...controller.allFields.map((field) => field.FieldId),
-            ...Object.keys(controller.secretValues),
+            ...Object.keys(controller.secretValues).map((key) => `Secrets.${key}`),
             'Quantity * Rate',
             'SUMALL(Amount)',
             'SUM(Items.Amount)',
@@ -34,7 +34,10 @@ export const BuilderPageDrawer = ({ controller, lineSection }: BuilderPageDrawer
                 <BuilderFieldDrawer
                     field={controller.editingField}
                     formulaSuggestions={formulaSuggestions}
-                    onChange={(field) => {
+                    onCancel={() => {
+                        controller.setEditing(undefined);
+                    }}
+                    onSave={(field) => {
                         const { editing } = controller;
                         if (!editing) return;
                         const fields =
@@ -47,6 +50,7 @@ export const BuilderPageDrawer = ({ controller, lineSection }: BuilderPageDrawer
                                 index === editing.index ? field : candidate,
                             ),
                         );
+                        controller.setEditing(undefined);
                     }}
                 />
             ) : null}

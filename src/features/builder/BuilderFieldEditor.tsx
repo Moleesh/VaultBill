@@ -52,7 +52,8 @@ export const BuilderFieldEditor: FC<BuilderFieldEditorProps> = ({
             {fields.map((field, index) => (
                 <article
                     draggable
-                    key={`${field.FieldId}-${String(index)}`}
+                    data-field-id={field.FieldId}
+                    key={field.FieldId}
                     onDragEnd={() => {
                         setDraggedIndex(undefined);
                     }}
@@ -80,26 +81,26 @@ export const BuilderFieldEditor: FC<BuilderFieldEditorProps> = ({
                         <GripVertical aria-hidden="true" size={17} />
                     </button>
                     <button
-                        className="builder-fields__main"
+                        className="builder-fields-main"
                         aria-label={`Edit ${field.Label}`}
                         onClick={() => {
                             onEdit(index);
                         }}
                         type="button"
                     >
-                        <span className="builder-fields__main-title">{`Edit ${field.Label}`}</span>
-                        <span className="builder-fields__main-type">{field.Type}</span>
-                        <span className="builder-fields__main-meta">
+                        <span className="builder-fields-main-title">{`Edit ${field.Label}`}</span>
+                        <span className="builder-fields-main-type">{field.Type}</span>
+                        <span className="builder-fields-main-meta">
                             {field.Calculated ? <small>Calculated</small> : null}
                             {referencedFieldIds.has(field.FieldId) ? (
                                 <small className="builder-field-warning">Used in a formula</small>
                             ) : null}
                         </span>
                     </button>
-                    <div className="builder-fields__actions">
+                    <div className="builder-fields-actions">
                         <button
                             aria-label={`Duplicate ${field.Label}`}
-                            className="builder-fields__action"
+                            className="builder-fields-action"
                             onClick={() => {
                                 onChange([
                                     ...fields.slice(0, index + 1),
@@ -117,7 +118,7 @@ export const BuilderFieldEditor: FC<BuilderFieldEditorProps> = ({
                         </button>
                         <button
                             aria-label={`Delete ${field.Label}`}
-                            className="builder-fields__action"
+                            className="builder-fields-action"
                             onClick={() => {
                                 onChange(fields.filter((_, fieldIndex) => fieldIndex !== index));
                             }}

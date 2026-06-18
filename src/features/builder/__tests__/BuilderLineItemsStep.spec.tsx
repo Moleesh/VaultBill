@@ -14,6 +14,7 @@ describe('BuilderLineItemsStep', () => {
     it('renders the previous-step bridge, row preview, and subtotal summary', () => {
         render(
             <BuilderLineItemsStep
+                enabled
                 lineSection={{
                     Label: 'Items',
                     MaxRows: 10,
@@ -33,6 +34,7 @@ describe('BuilderLineItemsStep', () => {
                     ],
                 }}
                 onAdd={vi.fn()}
+                onEnabledChange={vi.fn()}
                 onChange={vi.fn()}
                 onEdit={vi.fn()}
                 onLabelChange={vi.fn()}

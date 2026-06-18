@@ -82,23 +82,27 @@ export const SettingsSecurityAccess: FC<SettingsSecurityAccessProps> = ({
                     </div>
                     <ShieldCheck aria-hidden="true" />
                 </div>
-                <label className="checkbox-field">
-                    <input
-                        checked={lanEnabled}
-                        disabled={!canLanServer}
-                        onChange={(event) => {
-                            onLanEnabledChange(event.currentTarget.checked);
-                        }}
-                        type="checkbox"
-                    />
-                    <span>Hosted web access enabled</span>
-                </label>
-                {!canLanServer ? (
+                {canLanServer ? (
+                    <label className="checkbox-field">
+                        <input
+                            checked={lanEnabled}
+                            onChange={(event) => {
+                                onLanEnabledChange(event.currentTarget.checked);
+                            }}
+                            type="checkbox"
+                        />
+                        <span>
+                            {lanEnabled
+                                ? 'Hosted web access enabled'
+                                : 'Hosted web access disabled'}
+                        </span>
+                    </label>
+                ) : (
                     <p className="field-note">
-                        Hosted web access is available from VaultBill Desktop when the local host
-                        service can run.
+                        Hosted web access is managed from VaultBill Desktop when the local host
+                        service is available.
                     </p>
-                ) : null}
+                )}
             </div>
         ) : null}
     </>

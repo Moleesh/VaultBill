@@ -93,7 +93,7 @@ export const SetupPage: FC<SetupPageProps> = ({ onComplete }) => {
     return (
         <main className="setup-page">
             <section className="setup-card">
-                <header className="setup-card__header">
+                <header className="setup-card-header">
                     <AppBrandIcon size="medium" />
                     <div>
                         <p className="eyebrow">First-run setup</p>
@@ -116,7 +116,7 @@ export const SetupPage: FC<SetupPageProps> = ({ onComplete }) => {
                         </button>
                     ))}
                 </HorizontalProgress>
-                <section className="setup-card__content" aria-labelledby="setup-step-title">
+                <section className="setup-card-content" aria-labelledby="setup-step-title">
                     <div>
                         <p className="eyebrow">
                             Step {stepIndex + 1} of {steps.length}
@@ -144,7 +144,7 @@ export const SetupPage: FC<SetupPageProps> = ({ onComplete }) => {
                     ) : null}
                     {message ? <p className="feedback-error">{message}</p> : null}
                 </section>
-                <footer className="setup-card__actions">
+                <footer className="setup-card-actions">
                     <button
                         disabled={stepIndex === 0}
                         onClick={() => {
@@ -190,7 +190,7 @@ export const SetupPage: FC<SetupPageProps> = ({ onComplete }) => {
                         </button>
                     )}
                 </footer>
-                <p className="setup-card__version">Version {VENDOR.version}</p>
+                <p className="setup-card-version">Version {VENDOR.version}</p>
             </section>
         </main>
     );

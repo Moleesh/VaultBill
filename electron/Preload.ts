@@ -35,6 +35,8 @@ export type VaultBillDesktopBridge = {
     }) => Promise<void>;
     readonly getBusinessSettings: () => Promise<unknown>;
     readonly saveBusinessSettings: (request: unknown) => Promise<unknown>;
+    readonly getSecretsSettings: () => Promise<unknown>;
+    readonly saveSecretsSettings: (request: unknown) => Promise<unknown>;
     readonly getIntegrationSettings: () => Promise<unknown>;
     readonly saveIntegrationSettings: (request: unknown) => Promise<unknown>;
     readonly getBackupStatus: () => Promise<{ readonly lastBackupAt: string | null }>;
@@ -115,6 +117,10 @@ const desktopBridge: VaultBillDesktopBridge = {
         ipcRenderer.invoke('vaultbill:settings:business:get') as Promise<unknown>,
     saveBusinessSettings: async (request) =>
         ipcRenderer.invoke('vaultbill:settings:business:save', request) as Promise<unknown>,
+    getSecretsSettings: async () =>
+        ipcRenderer.invoke('vaultbill:settings:secrets:get') as Promise<unknown>,
+    saveSecretsSettings: async (request) =>
+        ipcRenderer.invoke('vaultbill:settings:secrets:save', request) as Promise<unknown>,
     getIntegrationSettings: async () =>
         ipcRenderer.invoke('vaultbill:settings:integrations:get') as Promise<unknown>,
     saveIntegrationSettings: async (request) =>

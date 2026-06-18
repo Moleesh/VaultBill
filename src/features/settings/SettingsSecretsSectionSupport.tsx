@@ -56,7 +56,7 @@ type SecretTableRowProps = {
 };
 
 const SecretTableRow: FC<SecretTableRowProps> = ({ entry, index, onChange, onRemove }) => (
-    <div className="integration-key-value-row integration-key-value-row--secrets">
+    <div className="secrets-key-value-row secrets-key-value-row--secrets">
         <label>
             <span>Key</span>
             <input
@@ -102,8 +102,8 @@ type SecretsTableProps = {
 };
 
 export const SecretsTable: FC<SecretsTableProps> = ({ secrets, onChange }) => (
-    <div className="integration-key-value-table" aria-label="Secrets configuration">
-        <div className="integration-key-value-table__header integration-key-value-table__header--secrets">
+    <div className="secrets-key-value-table" aria-label="Secrets configuration">
+        <div className="secrets-key-value-table-header secrets-key-value-table-header--secrets">
             <span>Key</span>
             <span>Value</span>
             <span>Description</span>

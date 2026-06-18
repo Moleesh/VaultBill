@@ -65,7 +65,7 @@ export const DashboardPage: FC = () => {
 
             <section className="dashboard-metrics" aria-label="Business summary">
                 <DashboardMetric label="Finalized revenue" value={`₹${revenue.toFixed(2)}`} />
-                <DashboardMetric label="Finalized documents" value={String(finalized.length)} />
+                <DashboardMetric label="Finalized records" value={String(finalized.length)} />
                 <DashboardMetric label="Drafts" value={String(draftCount)} />
                 <DashboardMetric label="Cancelled" value={String(cancelledCount)} />
             </section>
@@ -85,7 +85,7 @@ export const DashboardPage: FC = () => {
                     ) : (
                         <div className="bar-chart" aria-label="Revenue by invoice date">
                             {trend.map(([date, value]) => (
-                                <div className="bar-chart__item" key={date}>
+                                <div className="bar-chart-item" key={date}>
                                     <span
                                         style={{
                                             height: `${String(Math.max(8, (value / maximumRevenue) * 100))}%`,
@@ -115,7 +115,7 @@ export const DashboardPage: FC = () => {
                             {customers.map(([name, value]) => (
                                 <div key={name}>
                                     <span>{name}</span>
-                                    <span className="rank-list__bar">
+                                    <span className="rank-list-bar">
                                         <i
                                             style={{
                                                 width: `${String((value / maximumCustomer) * 100)}%`,

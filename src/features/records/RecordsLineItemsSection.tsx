@@ -32,7 +32,7 @@ export const RecordsLineItemsSection: FC<RecordsLineItemsSectionProps> = ({
 }) => (
     <>
         <HorizontalProgress className="line-item-grid" label="Line item columns">
-            <div className="line-item-grid__row line-item-grid__header">
+            <div className="line-item-grid-row line-item-grid-header">
                 <span>Item</span>
                 <span>HSN/SAC</span>
                 <span>Qty</span>
@@ -41,8 +41,8 @@ export const RecordsLineItemsSection: FC<RecordsLineItemsSectionProps> = ({
                 <span>Amount</span>
             </div>
             {record.lineItems.map((item) => (
-                <div className="line-item-grid__item" key={item.rowId}>
-                    <div className="line-item-grid__row">
+                <div className="line-item-grid-item" key={item.rowId}>
+                    <div className="line-item-grid-row">
                         <input
                             aria-label="Item name"
                             disabled={isReadOnly}
@@ -101,7 +101,7 @@ export const RecordsLineItemsSection: FC<RecordsLineItemsSectionProps> = ({
                         <output aria-label="Amount">₹{item.amount}</output>
                     </div>
                     {configuredLineFields.length > 0 ? (
-                        <div className="line-item-grid__custom">
+                        <div className="line-item-grid-custom">
                             {configuredLineFields.map((field) => (
                                 <RecordsFieldControl
                                     disabled={isReadOnly || Boolean(field.ReadOnly)}
@@ -141,7 +141,7 @@ export const RecordsLineItemsSection: FC<RecordsLineItemsSectionProps> = ({
                 <span>Round off</span>
                 <strong>₹{recordTotals.roundOff}</strong>
             </div>
-            <div className="record-summary__grand">
+            <div className="record-summary-grand">
                 <span>Grand total</span>
                 <strong>₹{recordTotals.grandTotal}</strong>
             </div>

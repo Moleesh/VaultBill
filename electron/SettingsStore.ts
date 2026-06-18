@@ -1,6 +1,6 @@
 /** @format */
 
-/** Settings store that persists business profile, security, and integration preferences. */
+/** Settings store that persists business profile, security, and secrets preferences. */
 
 import { DatabaseSync } from 'node:sqlite';
 import { z } from 'zod';
@@ -19,7 +19,7 @@ const SecretEntrySchema = z.object({
     description: z.string().trim().optional().default(''),
 });
 
-export const IntegrationSettingsSchema = z.object({
+export const SecretsSettingsSchema = z.object({
     secrets: z.array(SecretEntrySchema),
 });
 export const HostedWebSettingsSchema = z.object({
@@ -29,7 +29,7 @@ export const HostedWebSettingsSchema = z.object({
 });
 
 export type BusinessSettings = z.infer<typeof BusinessSettingsSchema>;
-export type IntegrationSettings = z.infer<typeof IntegrationSettingsSchema>;
+export type SecretsSettings = z.infer<typeof SecretsSettingsSchema>;
 export type HostedWebSettings = z.infer<typeof HostedWebSettingsSchema>;
 
 const defaultBusinessSettings: BusinessSettings = {
@@ -40,7 +40,7 @@ const defaultBusinessSettings: BusinessSettings = {
     outputTarget: 'PreviewOnly',
 };
 
-const defaultIntegrationSettings: IntegrationSettings = {
+const defaultSecretsSettings: SecretsSettings = {
     secrets: [],
 };
 const defaultHostedWebSettings: HostedWebSettings = {
@@ -83,13 +83,17 @@ export class SettingsStore {
         return business;
     };
 
-    public getIntegrations = (): IntegrationSettings => this.#readIntegrations();
+    public getSecrets = (): SecretsSettings => this.#readSecrets();
 
-    public saveIntegrations = (input: unknown): IntegrationSettings => {
-        const integrations = IntegrationSettingsSchema.parse(input);
-        this.#write('integrations', integrations);
-        return integrations;
+    public getIntegrations = (): SecretsSettings => this.getSecrets();
+
+    public saveSecrets = (input: unknown): SecretsSettings => {
+        const secrets = SecretsSettingsSchema.parse(input);
+        this.#write('secrets', secrets);
+        return secrets;
     };
+
+    public saveIntegrations = (input: unknown): SecretsSettings => this.saveSecrets(input);
 
     public getHostedWeb = (): HostedWebSettings =>
         this.#read('hosted-web', HostedWebSettingsSchema, defaultHostedWebSettings);
@@ -126,17 +130,20 @@ export class SettingsStore {
         return schema.parse(JSON.parse(String(row.setting_json)));
     };
 
-    #readIntegrations = (): IntegrationSettings => {
-        const row = this.#database
-            .prepare('SELECT setting_json FROM app_settings WHERE setting_key = ?;')
-            .get('integrations');
-        if (!row) return defaultIntegrationSettings;
+    #readSecrets = (): SecretsSettings => {
+        const readRow = (settingKey: string) =>
+            this.#database
+                .prepare('SELECT setting_json FROM app_settings WHERE setting_key = ?;')
+                .get(settingKey);
+
+        const row = readRow('secrets') ?? readRow('integrations');
+        if (!row) return defaultSecretsSettings;
         const parsed = JSON.parse(String(row.setting_json)) as Record<string, unknown>;
-        const normalized = IntegrationSettingsSchema.safeParse(parsed);
+        const normalized = SecretsSettingsSchema.safeParse(parsed);
         if (normalized.success) return normalized.data;
-        if (typeof parsed !== 'object') return defaultIntegrationSettings;
+        if (typeof parsed !== 'object') return defaultSecretsSettings;
         const legacy = parsed;
-        const secrets: IntegrationSettings['secrets'] = [];
+        const secrets: SecretsSettings['secrets'] = [];
         for (const [prefix, rawService] of [
             ['GST', legacy.gst],
             ['SMS', legacy.sms],

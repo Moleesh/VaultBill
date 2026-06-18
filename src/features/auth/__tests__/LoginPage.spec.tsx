@@ -142,6 +142,6 @@ describe('login UI', () => {
         fireEvent.click(screen.getByRole('option', { name: /System Administrator/i }));
 
         expect(screen.getByLabelText('Password')).toBeVisible();
-        expect(screen.getByText('SysAdmin access unlocked.')).toBeVisible();
+        expect(screen.queryByText('Press F8 to unlock SysAdmin access.')).toBeNull();
     });
 });

@@ -10,6 +10,7 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import type { FC } from 'react';
 
 import { AppBrandIcon } from '../../components/AppBrandIcon/AppBrandIcon';
+import { DesktopWindowControls } from '../../components/DesktopWindowControls';
 import { useCapabilities } from '../../capability/CapabilityContext';
 import { defaultRuntimeBranding } from '../../constants/PhaseOneSeed';
 import { VENDOR } from '../../constants/Vendor';
@@ -71,8 +72,21 @@ export const LoginPage: FC = () => {
 
     return (
         <main className="login-page">
+            {capabilities.isDesktop ? (
+                <div className="login-page-chrome">
+                    <DesktopWindowControls
+                        isDesktop={capabilities.isDesktop}
+                        onCloseWindow={() => {
+                            void window.vaultBillDesktop?.closeWindow();
+                        }}
+                        onMinimizeWindow={() => {
+                            void window.vaultBillDesktop?.minimizeWindow();
+                        }}
+                    />
+                </div>
+            ) : null}
             <section className="login-card" aria-labelledby="login-title">
-                <div className="login-card__brand">
+                <div className="login-card-brand">
                     <AppBrandIcon size="large" />
                     <p className="eyebrow">Secure billing workspace</p>
                     <h1 id="login-title">{defaultRuntimeBranding.applicationName}</h1>
@@ -81,14 +95,13 @@ export const LoginPage: FC = () => {
                         <span className="status-pill">Browser-only product demo</span>
                     ) : null}
                 </div>
-                <div className="login-card__form">
+                <div className="login-card-form">
                     <LoginPageForm
                         accountOptions={accountOptions}
                         capabilities={capabilities}
                         error={error}
                         hostedConnectionState={hostedConnectionState}
                         isLoginDisabled={isLoginDisabled}
-                        isSysAdminUnlocked={isSysAdminUnlocked}
                         onActivationOpen={() => {
                             setIsActivationOpen(true);
                         }}

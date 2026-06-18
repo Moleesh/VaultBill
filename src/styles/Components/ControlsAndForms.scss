@@ -104,7 +104,7 @@ select[aria-invalid='true']:focus-visible {
     flex-wrap: wrap;
 }
 
-.reports-hero__controls {
+.reports-hero-controls {
     display: grid;
     width: min(100%, 18rem);
     margin-inline-start: auto;
@@ -185,7 +185,7 @@ select[aria-invalid='true']:focus-visible {
 }
 
 .data-panel,
-.record-workspace__form,
+.record-workspace-form,
 .builder-panel,
 .settings-panel,
 .empty-panel {

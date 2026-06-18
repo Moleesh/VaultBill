@@ -88,9 +88,7 @@ export const saveSecretsSettings = (
     );
 };
 
-export const loadSecretsSettings = (
-    connection: SqliteConnection,
-): SecretsSettings | undefined =>
+export const loadSecretsSettings = (connection: SqliteConnection): SecretsSettings | undefined =>
     loadSetting<SecretsSettings>(connection, secretsSettingKey, SecretsSettingsSchema);
 
 const upsertSetting = (

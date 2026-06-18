@@ -3,30 +3,18 @@
 import { Printer, RotateCcw, Sheet } from 'lucide-react';
 import type { FC } from 'react';
 
-const formatFieldLabel = (field: string): string =>
-    ({
-        customerName: 'Customer name',
-        documentNumber: 'Document number',
-        gstin: 'GSTIN',
-        invoiceDate: 'Invoice date',
-        grandTotal: 'Grand total',
-        status: 'Status',
-    })[field] ?? field;
+import { formatReportFieldLabel } from './ReportsPageSupport';
+import type { ReportFieldFilter } from './ReportsPageTypes';
 
 type ReportsActionBarProps = {
-    readonly customer: string;
-    readonly invoiceNumber: string;
+    readonly reportFilters: readonly ReportFieldFilter[];
     readonly fromDate: string;
     readonly toDate: string;
     readonly status: string;
-    readonly reportField: string;
-    readonly reportFieldValue: string;
     readonly preset: string;
-    readonly onClearCustomer: () => void;
-    readonly onClearInvoiceNumber: () => void;
     readonly onClearDateRange: () => void;
     readonly onClearStatus: () => void;
-    readonly onClearReportField: () => void;
+    readonly onClearReportFilter: (id: string) => void;
     readonly onClearPreset: () => void;
     readonly onReset: () => void;
     readonly visibleCount: number;
@@ -41,19 +29,14 @@ type ReportsActionBarProps = {
 };
 
 export const ReportsActionBar: FC<ReportsActionBarProps> = ({
-    customer,
-    invoiceNumber,
+    reportFilters,
     fromDate,
     toDate,
     status,
-    reportField,
-    reportFieldValue,
     preset,
-    onClearCustomer,
-    onClearInvoiceNumber,
     onClearDateRange,
     onClearStatus,
-    onClearReportField,
+    onClearReportFilter,
     onClearPreset,
     onReset,
     visibleCount,
@@ -68,16 +51,23 @@ export const ReportsActionBar: FC<ReportsActionBarProps> = ({
 }) => (
     <>
         <div className="filter-chips" aria-label="Active filters">
-            {customer ? (
-                <button onClick={onClearCustomer} type="button">
-                    Customer: {customer} ×
-                </button>
-            ) : null}
-            {invoiceNumber ? (
-                <button onClick={onClearInvoiceNumber} type="button">
-                    Invoice: {invoiceNumber} ×
-                </button>
-            ) : null}
+            {reportFilters
+                .filter(
+                    (filter) =>
+                        filter.value.trim() &&
+                        !(filter.field === 'status' && filter.value.trim() === 'All'),
+                )
+                .map((filter) => (
+                    <button
+                        key={filter.id}
+                        onClick={() => {
+                            onClearReportFilter(filter.id);
+                        }}
+                        type="button"
+                    >
+                        {formatReportFieldLabel(filter.field)}: {filter.value} ×
+                    </button>
+                ))}
             {fromDate || toDate ? (
                 <button onClick={onClearDateRange} type="button">
                     Date range ×
@@ -88,19 +78,13 @@ export const ReportsActionBar: FC<ReportsActionBarProps> = ({
                     Status: {status} ×
                 </button>
             ) : null}
-            {reportField !== 'customerName' || reportFieldValue ? (
-                <button onClick={onClearReportField} type="button">
-                    Field: {formatFieldLabel(reportField)}
-                    {reportFieldValue ? ` = ${reportFieldValue}` : ''} ×
-                </button>
-            ) : null}
             {preset !== 'All' ? (
                 <button onClick={onClearPreset} type="button">
-                    Range: {preset === 'Last100' ? 'Last 100' : preset} ×
+                    Quick filters: {preset === 'Last100' ? 'Last 100' : preset} ×
                 </button>
             ) : null}
-            <button onClick={onReset} type="button">
-                <RotateCcw aria-hidden="true" size={16} /> Clear all
+            <button className="button-secondary" onClick={onReset} type="button">
+                <RotateCcw aria-hidden="true" size={16} /> Reset filters
             </button>
         </div>
         <div className="report-toolbar">

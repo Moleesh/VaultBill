@@ -2,11 +2,11 @@
 
 @use '../Breakpoints' as *;
 
-.app-brand-icon__vault,
-.app-brand-icon__paper,
-.app-brand-icon__fold,
-.app-brand-icon__monogram,
-.app-brand-icon__spark {
+.app-brand-icon-vault,
+.app-brand-icon-paper,
+.app-brand-icon-fold,
+.app-brand-icon-monogram,
+.app-brand-icon-spark {
     fill: none;
     stroke: currentColor;
     stroke-linecap: round;
@@ -14,21 +14,21 @@
     stroke-width: 5;
 }
 
-.app-brand-icon__vault {
+.app-brand-icon-vault {
     stroke-dasharray: 330;
     animation: logo-draw 1.1s ease both;
 }
 
-.app-brand-icon__paper,
-.app-brand-icon__fold {
+.app-brand-icon-paper,
+.app-brand-icon-fold {
     animation: logo-paper 1s 0.25s ease both;
 }
 
-.app-brand-icon__monogram {
+.app-brand-icon-monogram {
     animation: logo-paper 0.7s 0.55s ease both;
 }
 
-.app-brand-icon__spark {
+.app-brand-icon-spark {
     animation: logo-spark 0.4s 0.9s ease both;
 }
 

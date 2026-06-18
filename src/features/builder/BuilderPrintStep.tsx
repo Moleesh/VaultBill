@@ -3,6 +3,7 @@
 import { Download, FileCode2, FileJson2, Plus, Trash2, Upload } from 'lucide-react';
 import type { ChangeEvent, FC } from 'react';
 
+import { SearchableDropdown } from '../../components/SearchableDropdown/SearchableDropdown';
 import type { AssetSummary, SavedPrintTemplate } from './BuilderPageSupport';
 import { formatBytes } from './BuilderPageSupport';
 
@@ -13,8 +14,8 @@ type BuilderPrintStepProps = {
     readonly activeTemplateName: string | undefined;
     readonly onSelectTemplate: (templateName: string) => void;
     readonly onRemoveTemplate: (templateName: string) => void;
-    readonly onImportHtml: (event: ChangeEvent<HTMLInputElement>) => void;
-    readonly onImportAssets: (event: ChangeEvent<HTMLInputElement>) => void;
+    readonly onImportHtml: (event: ChangeEvent<HTMLInputElement>) => Promise<void> | void;
+    readonly onImportAssets: (event: ChangeEvent<HTMLInputElement>) => Promise<void> | void;
     readonly onRemoveAsset: (assetName: string) => void;
 };
 
@@ -38,42 +39,46 @@ export const BuilderPrintStep: FC<BuilderPrintStepProps> = ({
     return (
         <div className="print-upload-grid">
             <article className="upload-card">
-                <div className="upload-card__header">
-                    <span className="upload-card__icon" aria-hidden="true">
+                <div className="upload-card-header">
+                    <span className="upload-card-icon" aria-hidden="true">
                         <FileCode2 size={18} />
                     </span>
-                    <div className="upload-card__copy">
+                    <div className="upload-card-copy">
                         <h3>Shared print HTML</h3>
                         <p>Select a reusable HTML template or add a new one for this format.</p>
                     </div>
                 </div>
-                <label>
-                    <span>Shared print HTML</span>
-                    <select
-                        aria-label="Shared print HTML"
-                        onChange={(event) => {
-                            onSelectTemplate(event.currentTarget.value);
-                        }}
-                        value={selectedTemplateName}
-                    >
-                        {savedTemplates.map((template) => (
-                            <option key={template.name} value={template.name}>
-                                {template.name}
-                            </option>
-                        ))}
-                    </select>
-                </label>
-                <small>Upload or choose a reusable template. Built-in default stays available.</small>
-                <label className="button-file">
+                <SearchableDropdown
+                    label="Shared print HTML"
+                    onChange={onSelectTemplate}
+                    options={savedTemplates.map((template) => ({
+                        value: template.name,
+                        label: template.name,
+                        description: `Updated ${new Date(template.updatedAt).toLocaleDateString()}`,
+                    }))}
+                    value={selectedTemplateName}
+                />
+                <small>
+                    Upload or choose a reusable template. Built-in default stays available.
+                </small>
+                <label className="button-file button-file--wide">
                     <Upload aria-hidden="true" size={18} />
-                    {templateHtml ? 'Add or replace HTML' : 'Upload HTML'}
-                    <input accept=".html,text/html" onChange={onImportHtml} type="file" />
+                    <span>{templateHtml ? 'Add or replace HTML' : 'Upload HTML'}</span>
+                    <input
+                        accept=".html,text/html"
+                        onChange={(event) => {
+                            void onImportHtml(event);
+                        }}
+                        type="file"
+                    />
                 </label>
                 {templateHtml ? (
                     <button
-                        className="button-file"
+                        className="button-file button-file--wide"
                         onClick={() => {
-                            const blob = new Blob([templateHtml], { type: 'text/html;charset=utf-8' });
+                            const blob = new Blob([templateHtml], {
+                                type: 'text/html;charset=utf-8',
+                            });
                             const url = URL.createObjectURL(blob);
                             const anchor = document.createElement('a');
                             anchor.href = url;
@@ -83,18 +88,20 @@ export const BuilderPrintStep: FC<BuilderPrintStepProps> = ({
                         }}
                         type="button"
                     >
-                        <Download aria-hidden="true" size={18} /> Download HTML
+                        <Download aria-hidden="true" size={18} />
+                        <span>Download HTML</span>
                     </button>
                 ) : null}
                 {selectedTemplateName && !isBuiltInTemplate(selectedTemplateName) ? (
                     <button
-                        className="button-file"
+                        className="button-file button-file--wide"
                         onClick={() => {
                             onRemoveTemplate(selectedTemplateName);
                         }}
                         type="button"
                     >
-                        <Trash2 aria-hidden="true" size={18} /> Remove HTML
+                        <Trash2 aria-hidden="true" size={18} />
+                        <span>Remove HTML</span>
                     </button>
                 ) : null}
                 {templateHtml ? (
@@ -102,11 +109,11 @@ export const BuilderPrintStep: FC<BuilderPrintStepProps> = ({
                 ) : null}
             </article>
             <article className="upload-card">
-                <div className="upload-card__header">
-                    <span className="upload-card__icon" aria-hidden="true">
+                <div className="upload-card-header">
+                    <span className="upload-card-icon" aria-hidden="true">
                         <FileJson2 size={18} />
                     </span>
-                    <div className="upload-card__copy">
+                    <div className="upload-card-copy">
                         <h3>Shared assets</h3>
                         <p>
                             Images and fonts are referenced with <code>{'{{Asset.Name}}'}</code>.
@@ -114,12 +121,15 @@ export const BuilderPrintStep: FC<BuilderPrintStepProps> = ({
                         </p>
                     </div>
                 </div>
-                <label className="button-file">
-                    <Plus aria-hidden="true" size={18} /> Add or replace assets
+                <label className="button-file button-file--wide">
+                    <Plus aria-hidden="true" size={18} />
+                    <span>Add or replace assets</span>
                     <input
                         accept=".png,.jpg,.jpeg,.webp,.svg,.woff,.woff2"
                         multiple
-                        onChange={onImportAssets}
+                        onChange={(event) => {
+                            void onImportAssets(event);
+                        }}
                         type="file"
                     />
                 </label>

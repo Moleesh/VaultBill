@@ -1,8 +1,9 @@
 /** @format */
 
-import { KeyRound, LogOut, Minus, RotateCcw, X } from 'lucide-react';
+import { KeyRound, LogOut, RotateCcw } from 'lucide-react';
 import type { FC } from 'react';
 
+import { DesktopWindowControls } from './DesktopWindowControls';
 import { ThemePalette } from './ThemePalette';
 import { formatTrialCountdownParts } from '../features/dashboard/SysAdminDashboardTrialSupport';
 import type { ThemeController } from '../types/AppTypes';
@@ -36,33 +37,19 @@ export const AppShellTopbar: FC<AppShellTopbarProps> = ({
     onMinimizeWindow,
     isDesktop = false,
 }) => (
-    <header className="app-shell__topbar">
+    <header className="app-shell-topbar">
         <div>
             <p className="eyebrow">{pageId}</p>
             <strong>{isDemoMode ? 'VaultBill Demo' : 'Business workspace'}</strong>
         </div>
-        <div className="app-shell__topbar-actions">
-            {isDesktop && onMinimizeWindow && onCloseWindow ? (
-                <div className="app-shell__window-controls">
-                    <button
-                        className="icon-button"
-                        aria-label="Minimize window"
-                        onClick={onMinimizeWindow}
-                        type="button"
-                    >
-                        <Minus aria-hidden="true" size={18} />
-                    </button>
-                    <button
-                        className="icon-button"
-                        aria-label="Close window"
-                        onClick={onCloseWindow}
-                        type="button"
-                    >
-                        <X aria-hidden="true" size={18} />
-                    </button>
-                </div>
-            ) : null}
-            <div className="app-shell__mobile-account-actions">
+        <div className="app-shell-topbar-actions">
+            <DesktopWindowControls
+                className="app-shell-window-controls"
+                isDesktop={isDesktop}
+                {...(onCloseWindow ? { onCloseWindow } : {})}
+                {...(onMinimizeWindow ? { onMinimizeWindow } : {})}
+            />
+            <div className="app-shell-mobile-account-actions">
                 <ThemePalette controller={themeController} />
                 {!isDemoMode ? (
                     <button
@@ -94,12 +81,12 @@ export const AppShellTopbar: FC<AppShellTopbarProps> = ({
             </div>
             {!isDemoMode && trialStatus && !trialStatus.isFullVersion ? (
                 <button
-                    className={`app-shell__trial-pill${trialStatus.isExpired ? ' button-danger' : ''}`}
+                    className={`app-shell-trial-pill${trialStatus.isExpired ? ' button-danger' : ''}`}
                     onClick={onOpenActivation}
                     type="button"
                 >
                     <KeyRound aria-hidden="true" size={17} />
-                    <span className="app-shell__trial-pill-copy">
+                    <span className="app-shell-trial-pill-copy">
                         <strong>
                             {trialStatus.isExpired
                                 ? 'Trial expired'

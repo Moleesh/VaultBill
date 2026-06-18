@@ -22,10 +22,12 @@ export const SysAdminDashboardCharts: FC<SysAdminDashboardChartsProps> = ({ summ
                         <div>
                             <p className="eyebrow">Formats</p>
                             <h2>Publishing health</h2>
-                            <p className="dashboard-chart-card__summary">{chartData.formatSummary}</p>
+                            <p className="dashboard-chart-card-summary">
+                                {chartData.formatSummary}
+                            </p>
                         </div>
                     </div>
-                    <div className="dashboard-chart-card__body">
+                    <div className="dashboard-chart-card-body">
                         <div
                             className="dashboard-chart-ring"
                             aria-label="Document format health chart"
@@ -50,10 +52,12 @@ export const SysAdminDashboardCharts: FC<SysAdminDashboardChartsProps> = ({ summ
                         <div>
                             <p className="eyebrow">Records</p>
                             <h2>Document mix</h2>
-                            <p className="dashboard-chart-card__summary">{chartData.recordSummary}</p>
+                            <p className="dashboard-chart-card-summary">
+                                {chartData.recordSummary}
+                            </p>
                         </div>
                     </div>
-                    <div className="dashboard-chart-card__body">
+                    <div className="dashboard-chart-card-body">
                         <div
                             className="dashboard-chart-stack"
                             aria-label="Record status distribution"
@@ -92,10 +96,10 @@ export const SysAdminDashboardCharts: FC<SysAdminDashboardChartsProps> = ({ summ
                         <div>
                             <p className="eyebrow">Operations</p>
                             <h2>People and backup</h2>
-                            <p className="dashboard-chart-card__summary">{chartData.userSummary}</p>
+                            <p className="dashboard-chart-card-summary">{chartData.userSummary}</p>
                         </div>
                     </div>
-                    <div className="dashboard-chart-card__body">
+                    <div className="dashboard-chart-card-body">
                         <div
                             className="dashboard-chart-ring dashboard-chart-ring--secondary"
                             aria-label="Account activity chart"
@@ -130,9 +134,7 @@ export const SysAdminDashboardCharts: FC<SysAdminDashboardChartsProps> = ({ summ
                                 </dd>
                             </div>
                         </dl>
-                        <p className="dashboard-chart-card__summary">
-                            {chartData.backupSummary}
-                        </p>
+                        <p className="dashboard-chart-card-summary">{chartData.backupSummary}</p>
                     </div>
                 </article>
             </section>

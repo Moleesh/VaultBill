@@ -5,7 +5,7 @@
 ## Deployment Boundaries
 
 - GitHub Pages is a secret-free demo, not production business hosting.
-- Full data, activation, printing, backup, and integrations belong to Electron.
+- Full data, activation, printing, backup, secrets, and builder/template storage belong to Electron.
 - LAN hosting is disabled by default.
 
 ## Desktop

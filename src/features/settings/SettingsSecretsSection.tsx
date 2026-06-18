@@ -11,19 +11,19 @@ import {
     SecretsSectionCard,
     SecretsTable,
     type SecretsSettings,
-} from './SettingsIntegrationsSectionSupport';
+} from './SettingsSecretsSectionSupport';
 
-/** Owns the shared Secrets table for formula and integration references. */
-export const SettingsIntegrationsSection: FC = () => {
+/** Owns the shared Secrets table for formula and record references. */
+export const SettingsSecretsSection: FC = () => {
     const capabilities = useCapabilities();
     const [settings, setSettings] = useState<SecretsSettings>(defaultSecretsSettings);
     const [message, setMessage] = useState('');
 
     useEffect(() => {
         const secretRequest = window.vaultBillDesktop
-            ? window.vaultBillDesktop.getIntegrationSettings()
+            ? window.vaultBillDesktop.getSecretsSettings()
             : capabilities.isLanBrowser
-              ? requestHostedApi('/settings/integrations')
+              ? requestHostedApi('/settings/secrets')
               : undefined;
         void secretRequest?.then((rawSettings) => {
             setSettings(normalizeSecretsSettings(rawSettings));
@@ -32,9 +32,9 @@ export const SettingsIntegrationsSection: FC = () => {
 
     const saveSecrets = () => {
         const persistence = window.vaultBillDesktop
-            ? window.vaultBillDesktop.saveIntegrationSettings(settings)
+            ? window.vaultBillDesktop.saveSecretsSettings(settings)
             : capabilities.isLanBrowser
-              ? requestHostedApi('/settings/integrations', 'POST', settings)
+              ? requestHostedApi('/settings/secrets', 'POST', settings)
               : Promise.resolve(settings);
         void persistence
             .then(() => {
@@ -58,7 +58,7 @@ export const SettingsIntegrationsSection: FC = () => {
                 </p>
             </header>
             <SecretsSectionCard
-                description="Keep shared values for formulas and integrations in a single table."
+                description="Keep shared values for formulas and builder references in a single table."
                 title="Secrets"
             >
                 <SecretsTable

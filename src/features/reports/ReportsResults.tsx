@@ -21,7 +21,7 @@ type ReportsResultsProps = {
 
 const ReportRow: FC<{ readonly record: AppRecord }> = ({ record }) => (
     <tr>
-        <td>{record.documentNumber ?? 'Draft'}</td>
+        <td>{record.documentNumber ?? 'Draft record'}</td>
         <td>{record.invoiceDate}</td>
         <td>{record.customerName}</td>
         <td>{record.gstin}</td>
@@ -51,7 +51,7 @@ export const ReportsResults: FC<ReportsResultsProps> = ({
             <div className="empty-panel">
                 <Search aria-hidden="true" />
                 <h2>No matching records</h2>
-                <p>Adjust the filters or finalize a document first.</p>
+                <p>Adjust the filters or finalize a record first.</p>
             </div>
         );
     }
@@ -83,10 +83,10 @@ export const ReportsResults: FC<ReportsResultsProps> = ({
                 <table className="product-table">
                     <thead>
                         <tr>
-                            <th>Customer</th>
+                            <th>Customer name</th>
                             <th>GSTIN</th>
-                            <th>Latest document</th>
-                            <th className="numeric-cell">Documents</th>
+                            <th>Latest record date</th>
+                            <th className="numeric-cell">Record count</th>
                             <th className="numeric-cell">Cancelled</th>
                             <th className="numeric-cell">Finalized revenue</th>
                         </tr>
@@ -108,9 +108,9 @@ export const ReportsResults: FC<ReportsResultsProps> = ({
                 <table className="product-table">
                     <thead>
                         <tr>
-                            <th>Document</th>
+                            <th>Record number</th>
                             <th>Date</th>
-                            <th>Customer</th>
+                            <th>Customer name</th>
                             <th>GSTIN</th>
                             <th>Status</th>
                             <th className="numeric-cell">Amount</th>

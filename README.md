@@ -69,7 +69,9 @@ native Android remain future scope.
 
 First-run setup creates only the protected System Administrator. Admin and
 User accounts are added later through Settings. VaultBill allows one active
-Admin and up to five active Users.
+Admin and up to five active Users. SysAdmin always requires a password, while
+Admin and User accounts may be created without one and will prompt for it only
+when a password has been configured.
 
 ## First Run 🌱
 
@@ -85,12 +87,15 @@ until the password is replaced. The default is never displayed in the UI.
 ## Login And Session Flow 🔑
 
 The login page lets the operator choose the account, enter a password only when
-one is configured, and press `Enter` to sign in. A one-time logo animation and
-a compact help popover keep the screen light instead of noisy.
+one is configured, and press `Enter` to sign in. SysAdmin access is hidden
+behind the desktop `F8` unlock path instead of showing a visible hint. A
+one-time logo animation and a compact help popover keep the screen light
+instead of noisy.
 
 ## Document Builder 🧩
 
-Document builder uses eight focused steps:
+Document library opens first, and the Document builder wizard lives inside it
+for new, duplicate, or edited formats. The wizard uses eight focused steps:
 
 1. Format
 2. Layout
@@ -219,6 +224,7 @@ and notes. That keeps the release list tidy instead of collecting stale copies.
 - [Decision log](docs/DecisionLog.md)
 - [Release pipeline](docs/ReleasePipeline.md)
 - [Security guidance](docs/Security.md)
+- [Secrets](docs/Secrets.md)
 - [JSON configuration](docs/JsonConfig.md)
 - [Print templates](docs/PrintTemplate.md)
 - [Known gaps](docs/UnresolvedIssues.md)

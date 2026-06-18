@@ -12,11 +12,22 @@ export {
 
 export const pageSize = 50;
 export const printBatchSize = 10;
+export const reportFieldOptions = [
+    { value: 'customerName', label: 'Customer name' },
+    { value: 'documentNumber', label: 'Record number' },
+    { value: 'gstin', label: 'GSTIN' },
+    { value: 'invoiceDate', label: 'Invoice date' },
+    { value: 'grandTotal', label: 'Grand total' },
+    { value: 'status', label: 'Status' },
+] as const;
 export const reportOptions = [
     { value: 'sales-register', label: 'Sales register' },
     { value: 'tax-summary', label: 'Tax summary' },
     { value: 'customer-ledger', label: 'Customer ledger' },
 ] as const;
+
+export const formatReportFieldLabel = (field: string): string =>
+    reportFieldOptions.find((option) => option.value === field)?.label ?? field;
 
 export type PrintTask = {
     readonly kind: 'report' | 'records';

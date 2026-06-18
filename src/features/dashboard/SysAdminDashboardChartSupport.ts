@@ -52,42 +52,42 @@ export const buildSysAdminDashboardChartData = (
         {
             label: 'Published',
             value: publishedCount,
-            className: 'dashboard-chart__segment--good',
+            className: 'dashboard-chart-segment--good',
         },
         {
             label: 'Needs attention',
             value: summary.incompleteFormatCount,
-            className: 'dashboard-chart__segment--warning',
+            className: 'dashboard-chart-segment--warning',
         },
         {
             label: 'Default',
             value: summary.defaultFormatCount,
-            className: 'dashboard-chart__segment--accent',
+            className: 'dashboard-chart-segment--accent',
         },
     ]);
     const recordSegments = chartSegments([
-        { label: 'Draft', value: summary.draftCount, className: 'dashboard-chart__segment--muted' },
+        { label: 'Draft', value: summary.draftCount, className: 'dashboard-chart-segment--muted' },
         {
             label: 'Finalized',
             value: summary.finalizedCount,
-            className: 'dashboard-chart__segment--good',
+            className: 'dashboard-chart-segment--good',
         },
         {
             label: 'Cancelled',
             value: summary.cancelledCount,
-            className: 'dashboard-chart__segment--danger',
+            className: 'dashboard-chart-segment--danger',
         },
     ]);
     const userSegments = chartSegments([
         {
             label: 'Active',
             value: summary.activeAccountCount,
-            className: 'dashboard-chart__segment--good',
+            className: 'dashboard-chart-segment--good',
         },
         {
             label: 'Inactive',
             value: summary.accountCount - summary.activeAccountCount,
-            className: 'dashboard-chart__segment--muted',
+            className: 'dashboard-chart-segment--muted',
         },
     ]);
     return {

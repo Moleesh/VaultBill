@@ -36,7 +36,7 @@ export const BuilderDocumentLibrary: FC<BuilderDocumentLibraryProps> = ({
                     layout when you want a close variant.
                 </p>
             </div>
-            <div className="builder-document-library__actions">
+            <div className="builder-document-library-actions">
                 <button onClick={onCreateNew} type="button">
                     <FilePlus2 aria-hidden="true" size={18} /> New from default
                 </button>
@@ -50,22 +50,22 @@ export const BuilderDocumentLibrary: FC<BuilderDocumentLibraryProps> = ({
                     }}
                     type="button"
                 >
-                    <RefreshCcw aria-hidden="true" size={18} /> Reload current
+                    <RefreshCcw aria-hidden="true" size={18} /> Edit current
                 </button>
             </div>
         </div>
-        <div className="builder-document-library__current" aria-live="polite">
+        <div className="builder-document-library-current" aria-live="polite">
             <strong>{currentFormatName}</strong>
             <span>Current document</span>
         </div>
-        <div className="builder-document-library__grid">
+        <div className="builder-document-library-grid">
             {inventory.length > 0 ? (
                 inventory.map((item) => (
                     <button
                         className={
                             item.formatId === currentFormatId
-                                ? 'builder-document-library__item is-active'
-                                : 'builder-document-library__item'
+                                ? 'builder-document-library-item is-active'
+                                : 'builder-document-library-item'
                         }
                         key={item.formatId}
                         onClick={() => {
@@ -73,17 +73,17 @@ export const BuilderDocumentLibrary: FC<BuilderDocumentLibraryProps> = ({
                         }}
                         type="button"
                     >
-                        <span className="builder-document-library__item-name">
+                        <span className="builder-document-library-item-name">
                             {item.formatName}
                         </span>
-                        <span className="builder-document-library__item-meta">
+                        <span className="builder-document-library-item-meta">
                             {describeInventoryItem(item)}
                         </span>
                         <small>Document selected</small>
                     </button>
                 ))
             ) : (
-                <div className="helper-card builder-document-library__empty">
+                <div className="helper-card builder-document-library-empty">
                     No saved document formats yet. Publish the current draft to add it here.
                 </div>
             )}

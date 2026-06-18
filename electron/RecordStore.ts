@@ -91,6 +91,7 @@ export class DesktopRecordStore {
         const query = parseReportQuery(rawQuery);
         const customer = query.customer.trim().toLocaleLowerCase();
         const invoiceNumber = query.invoiceNumber.trim().toLocaleLowerCase();
+        const reportFilters = query.reportFilters.filter((filter) => filter.value.trim());
         let records = this.list()
             .filter((record) => query.status === 'All' || record.status === query.status)
             .filter(
@@ -100,6 +101,14 @@ export class DesktopRecordStore {
                 (record) =>
                     !invoiceNumber ||
                     record.documentNumber?.toLocaleLowerCase().includes(invoiceNumber),
+            )
+            .filter((record) =>
+                reportFilters.every((filter) => {
+                    const normalizedValue = filter.value.trim().toLocaleLowerCase();
+                    if (!normalizedValue) return true;
+                    const fieldValue = this.#reportFieldValueFor(record, filter.field);
+                    return fieldValue.toLocaleLowerCase().includes(normalizedValue);
+                }),
             )
             .filter((record) => !query.fromDate || record.invoiceDate >= query.fromDate)
             .filter((record) => !query.toDate || record.invoiceDate <= query.toDate)
@@ -114,6 +123,16 @@ export class DesktopRecordStore {
         const rows = records.slice(offset, offset + query.limit);
         const nextOffset = offset + rows.length;
         return { rows, total, ...(nextOffset < total ? { nextCursor: String(nextOffset) } : {}) };
+    };
+
+    #reportFieldValueFor = (record: StoredRecord, field: string): string => {
+        if (field === 'documentNumber') return record.documentNumber ?? '';
+        if (field === 'customerName') return record.customerName;
+        if (field === 'gstin') return record.gstin;
+        if (field === 'invoiceDate') return record.invoiceDate;
+        if (field === 'status') return record.status;
+        if (field === 'grandTotal') return record.grandTotal;
+        return '';
     };
 
     public saveDraft = (rawRequest: unknown): StoredRecord => {

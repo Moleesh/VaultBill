@@ -74,6 +74,8 @@ describe('app shell', () => {
                 activateLicense: vi.fn(),
                 saveBuilderPackage: vi.fn(),
                 saveBusinessSettings: vi.fn(),
+                getSecretsSettings: vi.fn(),
+                saveSecretsSettings: vi.fn(),
                 saveIntegrationSettings: vi.fn(),
                 createBackup: vi.fn(),
                 restoreBackup: vi.fn(),

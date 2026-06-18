@@ -5,14 +5,14 @@ import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { ReactNode } from 'react';
 
-import { CapabilityProvider } from './capability/CapabilityContext';
-import type { CapabilityRegistry } from './capability/Capability.types';
-import { SearchableDropdown } from './components/SearchableDropdown/SearchableDropdown';
-import { SessionProvider } from './features/auth/SessionContext';
-import { BuilderPage } from './features/builder/BuilderPage';
-import { RecordsPage } from './features/records/RecordsPage';
-import { RecordStoreProvider } from './features/records/RecordStoreContext';
-import { ReportsPage } from './features/reports/ReportsPage';
+import { CapabilityProvider } from '../capability/CapabilityContext';
+import type { CapabilityRegistry } from '../capability/Capability.types';
+import { SearchableDropdown } from '../components/SearchableDropdown/SearchableDropdown';
+import { SessionProvider } from '../features/auth/SessionContext';
+import { BuilderPage } from '../features/builder/BuilderPage';
+import { RecordsPage } from '../features/records/RecordsPage';
+import { RecordStoreProvider } from '../features/records/RecordStoreContext';
+import { ReportsPage } from '../features/reports/ReportsPage';
 
 const webCapabilities: CapabilityRegistry = {
     isDesktop: false,
@@ -72,24 +72,26 @@ describe('product UI', () => {
         );
 
         expect((await screen.findAllByText('Aster Works')).length).toBeGreaterThan(0);
+        fireEvent.click(screen.getByRole('button', { name: /Edit current/u }));
+        expect(await screen.findByRole('heading', { name: 'Document builder' })).toBeVisible();
         fireEvent.click(screen.getByRole('button', { name: /^Print$/u }));
         expect(screen.getByRole('heading', { name: 'Print' })).toBeVisible();
-        expect(
-            screen.getByText(/Upload or choose a reusable template/u),
-        ).toBeVisible();
+        expect(screen.getByText(/Upload or choose a reusable template/u)).toBeVisible();
         expect(screen.getByRole('heading', { name: 'Shared print HTML' })).toBeVisible();
         expect(screen.getByText('{{Asset.CompanyLogo}}')).toBeVisible();
     });
 
-    it('shows the document name field without exposing the internal format ID', () => {
+    it('shows the document name field without exposing the internal format ID', async () => {
         renderPage(<BuilderPage />);
 
+        fireEvent.click(screen.getByRole('button', { name: /Edit current/u }));
+        expect(await screen.findByRole('heading', { name: 'Document builder' })).toBeVisible();
         expect(screen.getByRole('heading', { name: 'Format' })).toBeVisible();
         expect(screen.getByText('Document name')).toBeVisible();
         expect(screen.queryByText('Format ID')).not.toBeInTheDocument();
     });
 
-    it('hides sample value editing in the field drawer', () => {
+    it('hides sample value editing in the field drawer', async () => {
         render(
             <MemoryRouter initialEntries={['/app/builder?step=fields']}>
                 <CapabilityProvider value={webCapabilities}>
@@ -102,6 +104,8 @@ describe('product UI', () => {
             </MemoryRouter>,
         );
 
+        fireEvent.click(screen.getByRole('button', { name: /Edit current/u }));
+        expect(await screen.findByRole('heading', { name: 'Document builder' })).toBeVisible();
         fireEvent.click(screen.getByRole('button', { name: /^Fields$/u }));
         fireEvent.click(screen.getByRole('button', { name: /^Edit Invoice Date$/u }));
 
@@ -110,9 +114,11 @@ describe('product UI', () => {
         expect(screen.queryByText('Sample value')).not.toBeInTheDocument();
     });
 
-    it('shows field and print previews in the builder preview steps', () => {
+    it('shows field and print previews in the builder preview steps', async () => {
         renderPage(<BuilderPage />);
 
+        fireEvent.click(screen.getByRole('button', { name: /Edit current/u }));
+        expect(await screen.findByRole('heading', { name: 'Document builder' })).toBeVisible();
         fireEvent.click(screen.getByRole('button', { name: /Field Preview/u }));
         expect(screen.getByRole('heading', { name: /Field preview/u })).toBeVisible();
         expect(screen.getByLabelText('Invoice Date')).toBeVisible();
@@ -122,7 +128,7 @@ describe('product UI', () => {
         expect(screen.getByRole('heading', { name: /Print preview/u })).toBeVisible();
     });
 
-    it('can open the print preview step directly from the route', () => {
+    it('can open the print preview step directly from the route', async () => {
         render(
             <MemoryRouter initialEntries={['/app/builder?step=preview']}>
                 <CapabilityProvider value={webCapabilities}>
@@ -135,6 +141,8 @@ describe('product UI', () => {
             </MemoryRouter>,
         );
 
+        fireEvent.click(screen.getByRole('button', { name: /Edit current/u }));
+        expect(await screen.findByRole('heading', { name: 'Document builder' })).toBeVisible();
         expect(screen.getByRole('heading', { name: /Print preview/u })).toBeVisible();
     });
 

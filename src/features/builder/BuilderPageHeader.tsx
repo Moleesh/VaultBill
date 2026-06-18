@@ -1,6 +1,6 @@
 /** @format */
 
-import { Check, ChevronRight, Download, Upload } from 'lucide-react';
+import { Check, ChevronRight, Download, Upload, X } from 'lucide-react';
 import type { FC } from 'react';
 
 import { HorizontalProgress } from '../../components/HorizontalProgress/HorizontalProgress';
@@ -11,6 +11,7 @@ type BuilderPageHeaderProps = {
     readonly onStepChange: (index: number) => void;
     readonly onImportJson: (event: React.ChangeEvent<HTMLInputElement>) => void;
     readonly onExportJson: () => void;
+    readonly onClose?: () => void;
 };
 
 /** Renders the builder title, file actions, and step navigation. */
@@ -19,6 +20,7 @@ export const BuilderPageHeader: FC<BuilderPageHeaderProps> = ({
     onStepChange,
     onImportJson,
     onExportJson,
+    onClose,
 }) => (
     <>
         <div className="operational-header">
@@ -28,6 +30,11 @@ export const BuilderPageHeader: FC<BuilderPageHeaderProps> = ({
                 <p>Build the document structure, preview it, and publish when it is ready.</p>
             </div>
             <div className="builder-header-actions">
+                {onClose ? (
+                    <button className="button-secondary" onClick={onClose} type="button">
+                        <X aria-hidden="true" size={18} /> Close
+                    </button>
+                ) : null}
                 <label className="button-file">
                     <Upload aria-hidden="true" size={18} /> Import JSON
                     <input accept=".json,application/json" onChange={onImportJson} type="file" />
@@ -59,7 +66,7 @@ export const BuilderPageHeader: FC<BuilderPageHeaderProps> = ({
                     }}
                     type="button"
                 >
-                    <span aria-hidden="true" className="builder-step__icon">
+                    <span aria-hidden="true" className="builder-step-icon">
                         {index < activeStepIndex ? <Check size={14} /> : <ChevronRight size={14} />}
                     </span>
                     {step}

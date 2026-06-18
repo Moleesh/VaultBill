@@ -1,0 +1,215 @@
+/** @format */
+
+@use '../Breakpoints' as *;
+
+.searchable-dropdown-menu input {
+    min-width: 0;
+    min-height: 2.5rem;
+    border-color: var(--color-border);
+    padding-block: var(--space-2);
+}
+
+.searchable-dropdown-menu [role='listbox'] {
+    display: grid;
+    gap: var(--space-1);
+}
+
+.searchable-dropdown-menu [role='option'] {
+    display: grid;
+    height: auto;
+    gap: 0.12rem;
+    border-color: transparent;
+    text-align: left;
+    white-space: normal;
+    padding-block: 0.64rem;
+}
+
+.searchable-dropdown-menu [role='option'] strong {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+}
+
+.searchable-dropdown-menu [role='option']:hover:not(:disabled),
+.searchable-dropdown-menu [role='option']:focus-visible,
+.searchable-dropdown-menu [role='option'].is-active {
+    background: color-mix(in srgb, var(--color-secondary) 18%, white);
+    box-shadow:
+        inset 0 0 0 1px color-mix(in srgb, var(--color-secondary) 40%, transparent),
+        inset 0.28rem 0 0 0 color-mix(in srgb, var(--color-secondary) 34%, transparent);
+}
+
+.searchable-dropdown-menu [role='option'][aria-selected='true'] {
+    background: color-mix(in srgb, var(--color-primary) 16%, white);
+    box-shadow:
+        inset 0 0 0 1px color-mix(in srgb, var(--color-primary) 52%, transparent),
+        inset 0.32rem 0 0 0 color-mix(in srgb, var(--color-primary) 52%, transparent);
+    font-weight: var(--font-weight-bold);
+}
+
+.searchable-dropdown-menu [role='option'][aria-selected='true'].is-active,
+.searchable-dropdown-menu [role='option'][aria-selected='true']:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--color-primary) 22%, white);
+    box-shadow:
+        inset 0 0 0 1px color-mix(in srgb, var(--color-primary) 72%, transparent),
+        inset 0.32rem 0 0 0 color-mix(in srgb, var(--color-primary) 66%, transparent);
+}
+
+.searchable-dropdown-menu [role='option'][aria-selected='true']:focus-visible {
+    outline: 0.12rem solid color-mix(in srgb, var(--color-primary) 52%, transparent);
+    outline-offset: -0.12rem;
+}
+
+.app-date-picker-label {
+    color: var(--color-label);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-bold);
+    letter-spacing: var(--letter-spacing-label);
+    text-transform: uppercase;
+}
+
+.app-date-picker-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-width: 12rem;
+    background: var(--color-surface-raised);
+}
+
+.app-date-picker-popup {
+    position: fixed;
+    z-index: 130;
+    top: auto;
+    right: auto;
+    bottom: auto;
+    left: auto;
+    display: grid;
+    width: min(22rem, calc(100vw - 1.5rem));
+    max-height: min(28rem, calc(100vh - 2rem));
+    gap: var(--space-3);
+    overflow: auto;
+    border: var(--line-width) solid var(--color-border-strong);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+    padding: var(--space-4);
+    box-shadow: var(--shadow-popover);
+}
+
+.app-date-picker-popup header button,
+.app-date-picker-popup footer button {
+    min-width: 2.75rem;
+}
+
+.app-date-picker-popup header,
+.app-date-picker-popup footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+}
+
+.app-date-picker-popup[data-open-direction='below'] {
+    transform-origin: top center;
+}
+
+.app-date-picker-popup[data-open-direction='above'] {
+    transform-origin: bottom center;
+}
+
+.app-date-picker-popup [aria-pressed='true'] {
+    font-weight: var(--font-weight-bold);
+}
+
+.app-date-picker-weekdays,
+.app-date-picker-days {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: var(--space-1);
+    text-align: center;
+}
+
+.app-date-picker-weekdays {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-xs);
+}
+
+.app-date-picker-days button {
+    min-height: 2.4rem;
+    padding: 0;
+}
+
+.app-date-picker-days button:hover:not(:disabled),
+.app-date-picker-days button:focus-visible {
+    background: color-mix(in srgb, var(--color-secondary) 42%, white);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-secondary) 38%, transparent);
+}
+
+.app-date-picker-days button[aria-pressed='true'] {
+    background: color-mix(in srgb, var(--color-primary) 88%, white);
+    color: var(--color-primary-text);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-primary) 44%, transparent);
+}
+
+.app-date-picker-days button[aria-pressed='true']:hover:not(:disabled),
+.app-date-picker-days button[aria-pressed='true']:focus-visible {
+    background: color-mix(in srgb, var(--color-primary) 82%, white);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-primary) 58%, transparent);
+}
+
+.setup-page {
+    display: grid;
+    min-height: 100vh;
+    place-items: center;
+    background: var(--gradient-page);
+    padding: var(--space-4);
+}
+
+.setup-card {
+    display: grid;
+    width: min(62rem, 100%);
+    gap: var(--space-5);
+    border: var(--line-width) solid var(--color-border);
+    border-radius: var(--radius-xl);
+    background: var(--color-card);
+    padding: clamp(var(--space-5), 5vw, var(--space-10));
+    box-shadow: var(--shadow-card-hover);
+}
+
+.setup-card-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+}
+
+.setup-card-content {
+    display: grid;
+    min-height: 15rem;
+    align-content: start;
+    gap: var(--space-5);
+    border: var(--line-width) solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface-muted);
+    padding: var(--space-6);
+}
+
+.popup-backdrop {
+    position: fixed;
+    z-index: 110;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: color-mix(in srgb, var(--color-text-heading) 42%, transparent);
+    padding: var(--space-4);
+}
+
+.popup-frame {
+    width: min(36rem, 100%);
+    max-height: calc(100vh - 2rem);
+    overflow: auto;
+    border: var(--line-width) solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+    color: var(--color-text-body);
+    box-shadow: var(--shadow-popover);
+}

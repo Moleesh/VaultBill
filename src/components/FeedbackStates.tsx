@@ -29,10 +29,10 @@ export const FeedbackStates: FC = () => (
             <p className="eyebrow">Interaction states</p>
             <h2 id="feedback-states-title">Every slow or empty path gets a voice.</h2>
         </div>
-        <div className="feedback-states__grid">
+        <div className="feedback-states-grid">
             {states.map((state) => (
                 <article className="feedback-state" key={state.label}>
-                    <span aria-hidden="true" className="feedback-state__dot" />
+                    <span aria-hidden="true" className="feedback-state-dot" />
                     <h3>{state.label}</h3>
                     <p>{state.message}</p>
                 </article>

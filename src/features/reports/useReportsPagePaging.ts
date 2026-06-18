@@ -6,11 +6,11 @@ import { useCapabilities } from '../../capability/CapabilityContext';
 import { requestHostedApi } from '../../runtime/HostedApi';
 import type { AppRecord } from '../records/RecordStoreSupport';
 import { pageSize, requestReportPage, type PrintTask } from './ReportsPageSupport';
+import type { ReportFieldFilter } from './ReportsPageTypes';
 
 type ReportQueryState = Readonly<{
     reportId: string;
-    customer: string;
-    invoiceNumber: string;
+    reportFilters: readonly ReportFieldFilter[];
     fromDate: string;
     toDate: string;
     status: string;

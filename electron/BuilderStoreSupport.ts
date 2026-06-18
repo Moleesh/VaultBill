@@ -68,13 +68,6 @@ export type TemplateRow = {
     readonly template_html: unknown;
 };
 
-/** Raw asset row returned from SQLite. */
-export type AssetRow = {
-    readonly asset_name: unknown;
-    readonly mime_type: unknown;
-    readonly asset_blob: unknown;
-};
-
 /** Rejects unsafe HTML before it is saved as a print template. */
 export const sanitizeTemplateHtml = (html: string): string => {
     if (/<\s*\/?\s*(script|iframe|object|embed|form|meta|link)\b/iu.test(html)) {
@@ -112,10 +105,12 @@ export const toBuffer = (value: unknown): Buffer => {
 };
 
 /** Maps SQLite asset rows into normalized builder assets. */
-export const mapBuilderAssetRows = (rows: readonly AssetRow[]): readonly BuilderAsset[] =>
+export const mapBuilderAssetRows = (
+    rows: readonly Record<string, unknown>[],
+): readonly BuilderAsset[] =>
     rows.map((row) => ({
         name: String(row.asset_name),
-        type: String(row.mime_type),
+        type: BuilderAssetSchema.shape.type.parse(String(row.mime_type)),
         dataBase64: toBuffer(row.asset_blob).toString('base64'),
     }));
 

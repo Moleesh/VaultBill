@@ -1,6 +1,6 @@
 /** @format */
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import type { RefObject } from 'react';
 
 export const usePopupFocus = (
@@ -8,6 +8,10 @@ export const usePopupFocus = (
     containerRef: RefObject<HTMLElement | null>,
     onClose: () => void,
 ): void => {
+    const onCloseRef = useRef(onClose);
+
+    onCloseRef.current = onClose;
+
     useEffect(() => {
         if (!isOpen) {
             return undefined;
@@ -22,7 +26,7 @@ export const usePopupFocus = (
 
         const handleKeyDown = (event: KeyboardEvent) => {
             if (event.key === 'Escape') {
-                onClose();
+                onCloseRef.current();
             }
         };
 
@@ -33,5 +37,5 @@ export const usePopupFocus = (
                 previousFocus.focus();
             }
         };
-    }, [containerRef, isOpen, onClose]);
+    }, [containerRef, isOpen]);
 };

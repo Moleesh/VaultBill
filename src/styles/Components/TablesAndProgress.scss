@@ -51,17 +51,17 @@
     min-width: 0;
 }
 
-.horizontal-progress__track {
+.horizontal-progress-track {
     overflow-x: auto;
     overscroll-behavior-inline: contain;
     scrollbar-width: none;
 }
 
-.horizontal-progress__track::-webkit-scrollbar {
+.horizontal-progress-track::-webkit-scrollbar {
     display: none;
 }
 
-.horizontal-progress__controls {
+.horizontal-progress-controls {
     display: grid;
     grid-template-columns: auto 1fr auto;
     gap: var(--space-2);
@@ -69,19 +69,19 @@
     margin-top: var(--space-2);
 }
 
-.horizontal-progress__controls button {
+.horizontal-progress-controls button {
     min-height: 2rem;
     padding: 0 var(--space-3);
 }
 
-.horizontal-progress__bar {
+.horizontal-progress-bar {
     overflow: hidden;
     height: 0.22rem;
     border-radius: 1rem;
     background: var(--color-border);
 }
 
-.horizontal-progress__bar span {
+.horizontal-progress-bar span {
     display: block;
     width: var(--scroll-progress);
     height: 100%;
@@ -89,7 +89,7 @@
     transition: width var(--motion-fast);
 }
 
-.page-tabs .horizontal-progress__track {
+.page-tabs .horizontal-progress-track {
     display: flex;
     gap: var(--space-2);
     scroll-padding-inline: var(--space-4);
@@ -120,7 +120,7 @@
     color: var(--color-primary-strong);
 }
 
-.builder-step__icon {
+.builder-step-icon {
     display: inline-grid;
     place-items: center;
     width: 1rem;
@@ -148,7 +148,7 @@
 .form-grid textarea,
 .report-filters input,
 .help-search input,
-.searchable-dropdown__menu input,
+.searchable-dropdown-menu input,
 .record-search input,
 .builder-field-list input,
 .setup-card input {

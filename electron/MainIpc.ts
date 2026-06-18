@@ -106,6 +106,11 @@ export const registerMainIpcHandlers = () => {
         if (!mainState.settingsStore) throw new Error('Settings are not ready.');
         return mainState.settingsStore.saveBusiness(request);
     });
+    ipcMain.handle('vaultbill:settings:secrets:get', () => mainState.settingsStore?.getSecrets());
+    ipcMain.handle('vaultbill:settings:secrets:save', (_event, request: unknown) => {
+        if (!mainState.settingsStore) throw new Error('Settings are not ready.');
+        return mainState.settingsStore.saveSecrets(request);
+    });
     ipcMain.handle('vaultbill:settings:integrations:get', () =>
         mainState.settingsStore?.getIntegrations(),
     );

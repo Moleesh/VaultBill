@@ -1,8 +1,6 @@
 /** @format */
-
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-
 import { useCapabilities } from '../../capability/CapabilityContext';
 import { builtInDefaultFormat } from '../../db/startup/BuiltInDefaultFormat';
 import { builtInDefaultPrintTemplateHtml } from '../../db/startup/BuiltInDefaultPrintTemplate';
@@ -11,7 +9,7 @@ import { requestHostedApi } from '../../runtime/HostedApi';
 import {
     normalizeSecretsSettings,
     secretValuesFromSettings,
-} from '../settings/SettingsIntegrationsSectionSupport';
+} from '../settings/SettingsSecretsSectionSupport';
 import {
     builtInSampleAsset,
     steps,
@@ -41,16 +39,19 @@ import { useBuilderPageActions } from './useBuilderPageActions';
 /** Keeps the builder state, loading, and rendering actions in a compact hook. */
 export const useBuilderPageController = () => {
     const capabilities = useCapabilities();
-    const [searchParams] = useSearchParams();
+    const [searchParams, setSearchParams] = useSearchParams();
     const [stepIndex, setStepIndex] = useState(() =>
         searchParams.get('step') === 'preview' ? steps.length - 1 : 0,
     );
-    const [config, setConfig] = useState<DocumentFormatConfig>(() =>
-        JSON.parse(JSON.stringify(builtInDefaultFormat)) as DocumentFormatConfig,
+    const [viewMode, setViewMode] = useState<'library' | 'builder'>(() =>
+        searchParams.get('format') ? 'builder' : 'library',
+    );
+    const [config, setConfig] = useState<DocumentFormatConfig>(
+        () => JSON.parse(JSON.stringify(builtInDefaultFormat)) as DocumentFormatConfig,
     );
     const [templateHtml, setTemplateHtml] = useState(builtInDefaultPrintTemplateHtml);
-    const [savedTemplates, setSavedTemplates] = useState<readonly SavedPrintTemplate[]>(
-        () => defaultSavedPrintTemplates(),
+    const [savedTemplates, setSavedTemplates] = useState<readonly SavedPrintTemplate[]>(() =>
+        defaultSavedPrintTemplates(),
     );
     const [assets, setAssets] = useState<readonly AssetSummary[]>(() => [builtInSampleAsset]);
     const [editing, setEditing] = useState<EditingState>();
@@ -61,6 +62,7 @@ export const useBuilderPageController = () => {
     const activeStep: BuilderStep = steps[stepIndex] ?? 'Format';
     const lineSection: DocumentFormatConfig['LineItemSections'][number] | undefined =
         config.LineItemSections[0];
+    const lineSectionEnabled = lineSection?.Enabled !== false;
     const editingField =
         editing?.kind === 'document'
             ? config.Fields[editing.index]
@@ -68,8 +70,8 @@ export const useBuilderPageController = () => {
               ? lineSection?.Fields[editing.index]
               : undefined;
     const allFields: readonly FieldConfig[] = useMemo(
-        () => [...config.Fields, ...(lineSection?.Fields ?? [])],
-        [config.Fields, lineSection?.Fields],
+        () => [...config.Fields, ...(lineSectionEnabled ? (lineSection?.Fields ?? []) : [])],
+        [config.Fields, lineSection?.Fields, lineSectionEnabled],
     );
     const activeTemplateName =
         findSavedPrintTemplate(savedTemplates, templateHtml)?.name ?? savedTemplates[0]?.name;
@@ -101,9 +103,9 @@ export const useBuilderPageController = () => {
 
     useEffect(() => {
         const request = window.vaultBillDesktop
-            ? window.vaultBillDesktop.getIntegrationSettings()
+            ? window.vaultBillDesktop.getSecretsSettings()
             : capabilities.isLanBrowser
-              ? requestHostedApi('/settings/integrations')
+              ? requestHostedApi('/settings/secrets')
               : undefined;
         void request?.then((rawSettings) => {
             const normalized = normalizeSecretsSettings(rawSettings);
@@ -120,6 +122,7 @@ export const useBuilderPageController = () => {
         setMessage,
         setSavedTemplates,
         setTemplateHtml,
+        setViewMode,
     });
 
     const actions = useBuilderPageActions({
@@ -143,6 +146,10 @@ export const useBuilderPageController = () => {
             await actions.publish();
             await documentLibrary.refreshInventory();
         },
+        openBuilder: () => {
+            setViewMode('builder');
+            setStepIndex(0);
+        },
         activeStep,
         allFields,
         assets,
@@ -165,9 +172,20 @@ export const useBuilderPageController = () => {
         setTemplateHtml,
         stepIndex,
         templateHtml,
+        viewMode,
+        closeBuilder: () => {
+            setViewMode('library');
+            setSearchParams((current) => {
+                const next = new URLSearchParams(current);
+                next.delete('step');
+                next.delete('format');
+                return next;
+            });
+        },
         updateCalculationOrder: (orderedFieldIds: readonly string[]) => {
             setConfig(updateBuilderCalculationOrder(config, orderedFieldIds));
         },
+        lineSectionEnabled,
         setActiveTemplateName: (templateName: string) => {
             const selected = findSavedPrintTemplate(savedTemplates, templateName);
             if (!selected) return;
@@ -186,5 +204,4 @@ export const useBuilderPageController = () => {
         validation,
     };
 };
-
 export type BuilderPageController = ReturnType<typeof useBuilderPageController>;

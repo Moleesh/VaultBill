@@ -30,7 +30,7 @@
     font-weight: 800;
 }
 
-.action-bar .action-bar__unavailable {
+.action-bar .action-bar-unavailable {
     border-style: dashed;
     border-color: var(--color-border);
     background: var(--color-surface-muted);
@@ -39,7 +39,7 @@
     cursor: help;
 }
 
-.action-bar .action-bar__unavailable:hover {
+.action-bar .action-bar-unavailable:hover {
     border-color: var(--color-border);
     transform: none;
 }
@@ -53,7 +53,7 @@
     font-size: 0.72rem;
 }
 
-.action-bar .action-bar__primary {
+.action-bar .action-bar-primary {
     background: var(--color-primary);
     color: var(--color-primary-text);
 }

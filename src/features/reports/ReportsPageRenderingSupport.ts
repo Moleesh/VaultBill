@@ -20,7 +20,14 @@ export const buildReportCsv = (reportId: string, records: readonly AppRecord[]):
         ];
     } else if (reportId === 'customer-ledger') {
         rows = [
-            ['Customer', 'GSTIN', 'Latest document', 'Documents', 'Cancelled', 'Finalized revenue'],
+            [
+                'Customer name',
+                'GSTIN',
+                'Latest record date',
+                'Record count',
+                'Cancelled',
+                'Finalized revenue',
+            ],
             ...buildCustomerLedger(records).map((row) => [
                 row.customer,
                 row.gstin,
@@ -32,7 +39,7 @@ export const buildReportCsv = (reportId: string, records: readonly AppRecord[]):
         ];
     } else {
         rows = [
-            ['Document', 'Date', 'Customer', 'GSTIN', 'Status', 'Amount'],
+            ['Record number', 'Date', 'Customer name', 'GSTIN', 'Status', 'Amount'],
             ...records.map((record) => [
                 record.documentNumber ?? '',
                 record.invoiceDate,
@@ -163,7 +170,7 @@ const renderReportTable = (reportId: string, records: readonly AppRecord[]): str
             .join('')}</tbody></table>`;
     }
     if (reportId === 'customer-ledger') {
-        return `<table><thead><tr><th>Customer</th><th>GSTIN</th><th>Documents</th><th>Cancelled</th><th>Revenue</th></tr></thead><tbody>${buildCustomerLedger(
+        return `<table><thead><tr><th>Customer name</th><th>GSTIN</th><th>Record count</th><th>Cancelled</th><th>Revenue</th></tr></thead><tbody>${buildCustomerLedger(
             records,
         )
             .map(
@@ -172,7 +179,7 @@ const renderReportTable = (reportId: string, records: readonly AppRecord[]): str
             )
             .join('')}</tbody></table>`;
     }
-    return `<table><thead><tr><th>Document</th><th>Date</th><th>Customer</th><th>Status</th><th>Amount</th></tr></thead><tbody>${records
+    return `<table><thead><tr><th>Record number</th><th>Date</th><th>Customer name</th><th>Status</th><th>Amount</th></tr></thead><tbody>${records
         .map(
             (record) =>
                 `<tr><td>${escapePrintHtml(record.documentNumber ?? 'Draft')}</td><td>${escapePrintHtml(record.invoiceDate)}</td><td>${escapePrintHtml(record.customerName)}</td><td>${record.status}</td><td>${record.status === 'Cancelled' ? 'Excluded' : escapePrintHtml(record.grandTotal)}</td></tr>`,

@@ -1,20 +1,16 @@
 /** @format */
-
 @use '../Breakpoints' as *;
-
-.app-shell__operator-actions {
+.app-shell-operator-actions {
     display: flex;
     align-items: center;
     justify-content: flex-start;
     gap: var(--space-2);
     flex-wrap: wrap;
 }
-
-.app-shell.is-sidebar-expanded .app-shell__operator-actions {
+.app-shell.is-sidebar-expanded .app-shell-operator-actions {
     justify-content: flex-start;
 }
-
-.app-shell__body {
+.app-shell-body {
     position: relative;
     z-index: 1;
     display: grid;
@@ -25,8 +21,7 @@
     isolation: isolate;
     background: transparent;
 }
-
-.app-shell__body::before {
+.app-shell-body::before {
     position: absolute;
     inset: 0;
     z-index: 0;
@@ -38,14 +33,13 @@
         ),
         linear-gradient(
             180deg,
-            color-mix(in srgb, var(--color-surface) 16%, transparent),
+            color-mix(in srgb, var(--color-surface) 42%, transparent),
             transparent 13rem
         );
     content: '';
     pointer-events: none;
 }
-
-.app-shell__body::after {
+.app-shell-body::after {
     position: absolute;
     inset: 0;
     z-index: 0;
@@ -53,12 +47,11 @@
     pointer-events: none;
     background: radial-gradient(
         circle at 80% 0%,
-        color-mix(in srgb, var(--color-secondary) 8%, transparent),
+        color-mix(in srgb, var(--color-secondary) 9%, transparent),
         transparent 30rem
     );
 }
-
-.app-shell__topbar {
+.app-shell-topbar {
     position: relative;
     z-index: 30;
     display: flex;
@@ -67,65 +60,67 @@
     gap: var(--space-4);
     min-height: 5rem;
     padding: var(--space-3) clamp(var(--space-4), 4vw, var(--space-8));
-    border-bottom: var(--line-width) solid var(--color-border);
+    border-bottom: var(--line-width) solid
+        color-mix(in srgb, var(--color-border-strong) 58%, transparent);
     background: linear-gradient(
         180deg,
-        color-mix(in srgb, var(--color-surface) 98%, transparent),
-        color-mix(in srgb, var(--color-surface) 92%, transparent)
+        color-mix(in srgb, var(--color-text-heading) 24%, var(--color-primary) 76%),
+        color-mix(in srgb, var(--color-text-heading) 36%, var(--color-primary) 64%)
     );
-    backdrop-filter: blur(72px) saturate(180%);
+    backdrop-filter: blur(88px) saturate(185%);
     box-shadow:
-        0 0.45rem 2rem color-mix(in srgb, var(--color-panel-shadow) 18%, transparent),
-        inset 0 -1px 0 color-mix(in srgb, var(--color-border) 48%, transparent);
+        0 0.55rem 2.2rem color-mix(in srgb, var(--color-panel-shadow) 20%, transparent),
+        inset 0 -1px 0 color-mix(in srgb, var(--color-border-strong) 58%, transparent);
 }
-
-.app-shell__topbar-actions {
+.app-shell-topbar-actions {
     display: flex;
     align-items: center;
     gap: var(--space-3);
 }
-
-.app-shell__window-controls {
+.desktop-window-controls,
+.app-shell-window-controls {
     display: inline-flex;
     align-items: center;
     gap: var(--space-2);
+    border: var(--line-width) solid color-mix(in srgb, var(--color-border) 60%, transparent);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--color-surface) 86%, transparent);
+    padding: var(--space-1);
+    backdrop-filter: blur(20px) saturate(150%);
 }
-
-.app-shell__trial-pill {
+.app-shell-window-controls {
+    background: color-mix(in srgb, var(--color-surface) 82%, white);
+}
+.app-shell-trial-pill {
     display: inline-flex;
     align-items: center;
     gap: var(--space-2);
     min-width: 0;
     white-space: nowrap;
 }
-
-.app-shell__trial-pill-copy {
+.app-shell-trial-pill-copy {
     display: inline-grid;
     gap: 0.05rem;
     align-items: start;
     text-align: left;
     line-height: 1;
 }
-
-.app-shell__trial-pill-copy strong {
+.app-shell-trial-pill-copy strong {
     font-size: var(--font-size-md);
 }
-
-.app-shell__trial-pill-copy small {
+.app-shell-trial-pill-copy small {
     color: color-mix(in srgb, currentColor 72%, transparent);
     font-size: var(--font-size-xs);
     font-weight: var(--font-weight-semibold);
     letter-spacing: 0.08em;
     text-transform: uppercase;
 }
-
-.app-shell__mobile-account-actions {
+.app-shell-mobile-account-actions {
     display: none;
     align-items: center;
     gap: var(--space-1);
 }
-
-.app-shell__content {
+.app-shell-content {
     position: relative;
     z-index: 1;
     width: 100%;
@@ -133,28 +128,30 @@
     overscroll-behavior: contain;
     scrollbar-width: none;
     scrollbar-color: transparent transparent;
-    background: transparent;
+    background:
+        linear-gradient(
+            180deg,
+            color-mix(in srgb, var(--color-surface-raised) 18%, transparent),
+            transparent 18rem
+        ),
+        transparent;
     padding: clamp(var(--space-5), 4vw, var(--space-10));
 }
-
-.app-shell__content::-webkit-scrollbar {
+.app-shell-content::-webkit-scrollbar {
     width: 0;
     height: 0;
 }
-
-.app-shell__content > * {
+.app-shell-content > * {
     width: min(100%, var(--content-max-width));
     margin-inline: auto;
 }
-
-.app-shell__nav-label {
+.app-shell-nav-label {
     min-width: 0;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
-
-.app-shell__scroll-rail {
+.app-shell-scroll-rail {
     position: absolute;
     z-index: 40;
     top: 5rem;
@@ -163,18 +160,16 @@
     width: 0.25rem;
     overflow: hidden;
     border-radius: 1rem;
-    background: color-mix(in srgb, var(--color-border) 55%, transparent);
+    background: color-mix(in srgb, var(--color-border-strong) 48%, transparent);
     pointer-events: none;
 }
-
-.app-shell__scroll-rail span {
+.app-shell-scroll-rail span {
     display: block;
     width: 100%;
     min-height: 0.75rem;
     border-radius: inherit;
     background: var(--color-primary);
 }
-
 .icon-button {
     display: inline-grid;
     width: 2.75rem;
@@ -183,13 +178,19 @@
     padding: 0;
     place-items: center;
 }
-
+.desktop-window-controls .icon-button,
+.app-shell-window-controls .icon-button {
+    width: 2.35rem;
+    min-width: 2.35rem;
+    height: 2.35rem;
+    border: 0;
+    background: transparent;
+}
 .theme-palette {
     position: relative;
     z-index: 260;
 }
-
-.theme-palette__popover {
+.theme-palette-popover {
     position: absolute;
     z-index: 270;
     bottom: calc(100% + var(--space-2));
@@ -204,8 +205,7 @@
     padding: var(--space-2);
     box-shadow: var(--shadow-popover);
 }
-
-.theme-palette__popover button {
+.theme-palette-popover button {
     display: grid;
     grid-template-columns: 1.5rem 1fr auto;
     align-items: center;
@@ -214,7 +214,6 @@
     text-align: left;
     min-height: 3rem;
 }
-
-.theme-palette__popover button.is-selected {
+.theme-palette-popover button.is-selected {
     background: var(--color-secondary);
 }

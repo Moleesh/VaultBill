@@ -12,7 +12,6 @@ type LoginPageFormProps = {
     readonly capabilities: CapabilityRegistry;
     readonly error: string;
     readonly hostedConnectionState: 'connecting' | 'connected' | 'unavailable';
-    readonly isSysAdminUnlocked: boolean;
     readonly isLoginDisabled: boolean;
     readonly accountOptions: readonly DropdownOption[];
     readonly selectedAccount: OperatorAccount | undefined;
@@ -30,7 +29,6 @@ export const LoginPageForm: FC<LoginPageFormProps> = ({
     capabilities,
     error,
     hostedConnectionState,
-    isSysAdminUnlocked,
     isLoginDisabled,
     accountOptions,
     selectedAccount,
@@ -68,7 +66,7 @@ export const LoginPageForm: FC<LoginPageFormProps> = ({
             </div>
         ) : null}
         <form
-            className="login-card__auth"
+            className="login-card-auth"
             onSubmit={(event) => {
                 event.preventDefault();
                 onSubmit();
@@ -87,16 +85,6 @@ export const LoginPageForm: FC<LoginPageFormProps> = ({
                     value={selectedAccountId}
                 />
             )}
-            {!capabilities.isDemoMode ? (
-                <p className="login-card__hint" role="note">
-                    Press <kbd>F8</kbd> to unlock SysAdmin access.
-                </p>
-            ) : null}
-            {isSysAdminUnlocked && !capabilities.isDemoMode ? (
-                <p className="login-card__hint login-card__hint--success" role="status">
-                    SysAdmin access unlocked.
-                </p>
-            ) : null}
             {!capabilities.isDemoMode &&
             (selectedAccount?.passwordHash || selectedAccount?.passwordConfigured) ? (
                 <label className="login-password">

@@ -6,7 +6,7 @@ import { useCapabilities } from '../../capability/CapabilityContext';
 import { useSession } from '../auth/SessionContext';
 import { SettingsBackupSection } from './SettingsBackupSection';
 import { SettingsBusinessSection } from './SettingsBusinessSection';
-import { SettingsIntegrationsSection } from './SettingsIntegrationsSection';
+import { SettingsSecretsSection } from './SettingsSecretsSection';
 import { SettingsSecuritySection } from './SettingsSecuritySection';
 
 /** Routes the current operator to the settings sessions they can use. */
@@ -42,7 +42,7 @@ export const SettingsPage: FC = () => {
             {isSysAdmin && (capabilities.isDesktop || capabilities.isLanBrowser) ? (
                 <SettingsBackupSection />
             ) : null}
-            {isSysAdmin ? <SettingsIntegrationsSection /> : null}
+            {isSysAdmin ? <SettingsSecretsSection /> : null}
         </div>
     );
 };

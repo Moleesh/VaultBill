@@ -121,7 +121,7 @@ export const AppShell: FC = () => {
                 sections={sections}
                 themeController={themeController}
             />
-            <div className="app-shell__body">
+            <div className="app-shell-body">
                 <AppShellTopbar
                     isDesktop={capabilities.isDesktop}
                     isDemoMode={capabilities.isDemoMode}
@@ -136,7 +136,7 @@ export const AppShell: FC = () => {
                     trialStatus={trialStatus}
                 />
                 <main
-                    className="app-shell__content"
+                    className="app-shell-content"
                     id="main-content"
                     onScroll={(event) => {
                         const target = event.currentTarget;
@@ -147,7 +147,7 @@ export const AppShell: FC = () => {
                 >
                     <Outlet />
                 </main>
-                <div className="app-shell__scroll-rail" aria-hidden="true">
+                <div className="app-shell-scroll-rail" aria-hidden="true">
                     <span style={{ height: `${String(scrollProgress)}%` }} />
                 </div>
                 <AppShellMobileNav sections={sections} />

@@ -53,8 +53,10 @@ export type LocalApiDataOperations = {
     };
     readonly getBusinessSettings: () => unknown;
     readonly saveBusinessSettings: (input: unknown) => unknown;
-    readonly getIntegrationSettings: () => unknown;
-    readonly saveIntegrationSettings: (input: unknown) => unknown;
+    readonly getSecretsSettings: () => unknown;
+    readonly saveSecretsSettings: (input: unknown) => unknown;
+    readonly getIntegrationSettings?: () => unknown;
+    readonly saveIntegrationSettings?: (input: unknown) => unknown;
     readonly printHtml?: (input: unknown) => Promise<{
         readonly success: boolean;
         readonly warning?: string;

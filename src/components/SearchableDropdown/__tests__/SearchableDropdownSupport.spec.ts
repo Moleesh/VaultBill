@@ -2,7 +2,7 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { getDropdownMenuPlacement, normalizeDropdownSearch } from './SearchableDropdownSupport';
+import { getDropdownMenuPlacement, normalizeDropdownSearch } from '../SearchableDropdownSupport';
 
 describe('SearchableDropdownSupport', () => {
     it('normalizes whitespace and case for searches', () => {
@@ -22,11 +22,11 @@ describe('SearchableDropdownSupport', () => {
         );
 
         expect(placement.openDirection).toBe('below');
-        expect(placement.top).toBe('164px');
+        expect(placement.top).toBe('161px');
         expect(placement.width).toBe('320px');
     });
 
-    it('opens the dropdown above the trigger when space below is tight', () => {
+    it('opens above the trigger when there is more room there', () => {
         const placement = getDropdownMenuPlacement(
             {
                 top: 760,
@@ -39,7 +39,8 @@ describe('SearchableDropdownSupport', () => {
         );
 
         expect(placement.openDirection).toBe('above');
-        expect(Number.parseInt(placement.top, 10)).toBeLessThan(760);
+        expect(placement.bottom).not.toBe('auto');
+        expect(placement.top).toBe('auto');
         expect(placement.width).toBe('280px');
     });
 
@@ -51,7 +52,7 @@ describe('SearchableDropdownSupport', () => {
                 left: 24,
                 width: 240,
             } as DOMRect,
-            760,
+            900,
             1280,
         );
 

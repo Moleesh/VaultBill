@@ -10,7 +10,7 @@ type BuilderPageFooterProps = {
     readonly message: string;
     readonly onBack: () => void;
     readonly onContinue: () => void;
-    readonly onPublish: () => void;
+    readonly onPublish: () => Promise<void> | void;
 };
 
 /** Renders the builder status messages and step actions. */
@@ -47,7 +47,9 @@ export const BuilderPageFooter: FC<BuilderPageFooterProps> = ({
                 <button
                     className="button-primary"
                     disabled={validation.length > 0}
-                    onClick={onPublish}
+                    onClick={() => {
+                        void onPublish();
+                    }}
                     type="button"
                 >
                     Publish format

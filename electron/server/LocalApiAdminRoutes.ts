@@ -122,24 +122,28 @@ export const handleLocalApiAdminRoutes = async (
         );
         return true;
     }
-    if (request.method === 'GET' && request.url === '/settings/integrations') {
+    if (
+        request.method === 'GET' &&
+        (request.url === '/settings/secrets' || request.url === '/settings/integrations')
+    ) {
         requireSysAdminAccess(account);
-        sendJson(response, 200, getDataOperations(state).getIntegrationSettings());
+        sendJson(response, 200, getDataOperations(state).getSecretsSettings());
         return true;
     }
-    if (request.method === 'POST' && request.url === '/settings/integrations') {
+    if (
+        request.method === 'POST' &&
+        (request.url === '/settings/secrets' || request.url === '/settings/integrations')
+    ) {
         requireSysAdminAccess(account);
         if (state.recordStore.getTrialStatus().isExpired) {
             throw new ApiError(
                 403,
-                'The trial is read-only. Enter a license key to configure integrations.',
+                'The trial is read-only. Enter a license key to configure secrets.',
             );
         }
-        sendJson(
-            response,
-            200,
-            getDataOperations(state).saveIntegrationSettings(await readBody(request)),
-        );
+        const dataOperations = getDataOperations(state);
+        const requestBody = await readBody(request);
+        sendJson(response, 200, dataOperations.saveSecretsSettings(requestBody));
         return true;
     }
 

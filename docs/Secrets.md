@@ -2,7 +2,7 @@
 
 # Secrets
 
-VaultBill keeps shared integration values in a JSON-backed key/value model.
+VaultBill keeps shared service values in a JSON-backed key/value model.
 The Settings screen exposes one `Secrets` table with these fields:
 
 - `key`
@@ -34,5 +34,5 @@ Example persisted data:
 }
 ```
 
-The repository keeps the storage flexible so GST, SMS, and future integrations
+The repository keeps the storage flexible so GST, SMS, and future shared services
 can share the same settings surface without introducing extra schema splits.

@@ -9,7 +9,7 @@ export const SetupWelcomeStep: FC = () => (
         <ul>
             <li>Add the business identity shown on documents.</li>
             <li>Create the first Admin account for the team.</li>
-            <li>Manage operators, themes, backups, and integrations later in Settings.</li>
+            <li>Manage operators, themes, backups, and secrets later in Settings.</li>
         </ul>
     </div>
 );

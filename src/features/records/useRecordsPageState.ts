@@ -11,7 +11,7 @@ import { useSession } from '../auth/SessionContext';
 import {
     normalizeSecretsSettings,
     secretValuesFromSettings,
-} from '../settings/SettingsIntegrationsSectionSupport';
+} from '../settings/SettingsSecretsSectionSupport';
 import { loadRecordPrintPackage, type RecordPrintPackage } from './RecordPrintHtml';
 import {
     createEmptyRecord,
@@ -112,9 +112,9 @@ export const useRecordsPageState = () => {
 
     useEffect(() => {
         const request = window.vaultBillDesktop
-            ? window.vaultBillDesktop.getIntegrationSettings()
+            ? window.vaultBillDesktop.getSecretsSettings()
             : capabilities.isLanBrowser
-              ? requestHostedApi('/settings/integrations')
+              ? requestHostedApi('/settings/secrets')
               : undefined;
         void request?.then((rawSettings) => {
             const normalized = normalizeSecretsSettings(rawSettings);

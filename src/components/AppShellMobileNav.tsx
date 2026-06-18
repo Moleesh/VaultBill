@@ -11,7 +11,7 @@ type AppShellMobileNavProps = {
 };
 
 export const AppShellMobileNav: FC<AppShellMobileNavProps> = ({ sections }) => (
-    <nav aria-label="Mobile primary" className="app-shell__mobile-nav">
+    <nav aria-label="Mobile primary" className="app-shell-mobile-nav">
         {sections.map((section) => {
             const Icon = appShellIcons[section.id as keyof typeof appShellIcons];
             return (

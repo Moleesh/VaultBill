@@ -48,6 +48,11 @@ export const SearchableDropdown: FC<SearchableDropdownProps> = ({
         const searchText = [option.label, option.value, ...(option.keywords ?? [])].join(' ');
         return normalizeDropdownSearch(searchText).includes(normalizedQuery);
     });
+    const closeDropdown = () => {
+        setIsOpen(false);
+        setQuery('');
+        setActiveIndex(-1);
+    };
 
     const syncMenuPosition = () => {
         const rect = triggerRef.current?.getBoundingClientRect();
@@ -56,10 +61,11 @@ export const SearchableDropdown: FC<SearchableDropdownProps> = ({
         if (!rect || !menu) return;
 
         const placement = getDropdownMenuPlacement(rect, window.innerHeight, window.innerWidth);
-        menu.style.setProperty('--dropdown-left', placement.left);
-        menu.style.setProperty('--dropdown-width', placement.width);
-        menu.style.setProperty('--dropdown-top', placement.top);
-        menu.style.setProperty('--dropdown-max-height', placement.maxHeight);
+        menu.style.left = placement.left;
+        menu.style.width = placement.width;
+        menu.style.top = placement.top;
+        menu.style.bottom = placement.bottom;
+        menu.style.maxHeight = placement.maxHeight;
         menu.dataset.openDirection = placement.openDirection;
     };
 
@@ -77,7 +83,7 @@ export const SearchableDropdown: FC<SearchableDropdownProps> = ({
                 !menuRef.current?.contains(target) &&
                 !triggerRef.current?.contains(target)
             ) {
-                setIsOpen(false);
+                closeDropdown();
             }
         };
         const handleScroll = (event: Event) => {
@@ -89,7 +95,7 @@ export const SearchableDropdown: FC<SearchableDropdownProps> = ({
                 return;
             }
 
-            setIsOpen(false);
+            closeDropdown();
         };
         const handleResize = () => {
             syncMenuPosition();
@@ -111,8 +117,7 @@ export const SearchableDropdown: FC<SearchableDropdownProps> = ({
         }
 
         onChange(option.value);
-        setIsOpen(false);
-        setQuery('');
+        closeDropdown();
         triggerRef.current?.focus();
     };
 
@@ -120,14 +125,14 @@ export const SearchableDropdown: FC<SearchableDropdownProps> = ({
 
     return (
         <div className="searchable-dropdown">
-            <span className="searchable-dropdown__label" id={`${id}-label`}>
+            <span className="searchable-dropdown-label" id={`${id}-label`}>
                 {label}
             </span>
             <button
                 aria-expanded={isOpen}
                 aria-haspopup="listbox"
                 aria-labelledby={`${id}-label ${id}-value`}
-                className="searchable-dropdown__trigger"
+                className="searchable-dropdown-trigger"
                 disabled={loading}
                 onClick={() => {
                     setIsOpen((current) => {
@@ -139,6 +144,9 @@ export const SearchableDropdown: FC<SearchableDropdownProps> = ({
                                     filteredOptions.findIndex((option) => !option.disabled),
                                 ),
                             );
+                        } else {
+                            setQuery('');
+                            setActiveIndex(-1);
                         }
                         return next;
                     });
@@ -149,7 +157,7 @@ export const SearchableDropdown: FC<SearchableDropdownProps> = ({
                 <span id={`${id}-value`}>
                     {loading ? 'Loading…' : (selectedOption?.label ?? 'Choose')}
                 </span>
-                <ChevronDown aria-hidden="true" className="searchable-dropdown__caret" size={16} />
+                <ChevronDown aria-hidden="true" className="searchable-dropdown-caret" size={16} />
             </button>
             {isOpen ? (
                 <SearchableDropdownMenu
@@ -164,7 +172,7 @@ export const SearchableDropdown: FC<SearchableDropdownProps> = ({
                         filteredOptions,
                         onChoose: chooseOption,
                         onClose: () => {
-                            setIsOpen(false);
+                            closeDropdown();
                         },
                         setActiveIndex,
                         triggerRef,

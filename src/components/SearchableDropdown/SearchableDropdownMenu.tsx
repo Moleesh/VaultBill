@@ -47,10 +47,18 @@ export const SearchableDropdownMenu: FC<SearchableDropdownMenuProps> = ({
     if (!portalRoot) return null;
 
     return createPortal(
-        <div className="searchable-dropdown__menu" onKeyDown={onKeyDown} ref={menuRef}>
+        <div
+            className="searchable-dropdown-menu"
+            onKeyDown={onKeyDown}
+            onMouseLeave={() => {
+                setActiveIndex(-1);
+            }}
+            ref={menuRef}
+        >
             {options.length > 7 ? (
                 <input
                     aria-label={`Search ${label}`}
+                    autoFocus
                     onChange={onQueryChange}
                     placeholder="Search options"
                     value={query}
@@ -58,7 +66,7 @@ export const SearchableDropdownMenu: FC<SearchableDropdownMenuProps> = ({
             ) : null}
             <div aria-labelledby={`${id}-label`} role="listbox">
                 {filteredOptions.length === 0 ? (
-                    <p className="searchable-dropdown__empty">No matching options.</p>
+                    <p className="searchable-dropdown-empty">No matching options.</p>
                 ) : (
                     filteredOptions.slice(0, 100).map((option, index) => (
                         <button

@@ -73,7 +73,7 @@ export const ThemePalette: FC<ThemePaletteProps> = ({ controller }) => {
                 <Palette aria-hidden="true" size={20} />
             </button>
             {isOpen ? (
-                <div className="theme-palette__popover" role="dialog" aria-label="Theme palette">
+                <div className="theme-palette-popover" role="dialog" aria-label="Theme palette">
                     {controller.availableThemes.map((theme) => (
                         <button
                             aria-label={theme.label}
@@ -93,7 +93,7 @@ export const ThemePalette: FC<ThemePaletteProps> = ({ controller }) => {
                             type="button"
                         >
                             <span
-                                className="theme-palette__swatch"
+                                className="theme-palette-swatch"
                                 style={{
                                     background: `linear-gradient(135deg, ${swatches[theme.id][0]} 50%, ${swatches[theme.id][1]} 50%)`,
                                 }}

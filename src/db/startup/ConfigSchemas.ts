@@ -133,6 +133,7 @@ export const LineItemSectionConfigSchema = z
     .object({
         SectionId: z.string().min(1),
         Label: z.string().min(1),
+        Enabled: z.boolean().optional(),
         MinRows: z.number().int().nonnegative(),
         MaxRows: z.number().int().positive(),
         EssentialColumns: z.array(z.string().min(1)),
