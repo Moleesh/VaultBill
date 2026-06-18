@@ -227,7 +227,6 @@ and notes. That keeps the release list tidy instead of collecting stale copies.
 - [Secrets](docs/Secrets.md)
 - [JSON configuration](docs/JsonConfig.md)
 - [Print templates](docs/PrintTemplate.md)
-- [Known gaps](docs/UnresolvedIssues.md)
 
 ## Troubleshooting 🧯
 
