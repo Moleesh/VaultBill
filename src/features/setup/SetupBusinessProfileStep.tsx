@@ -30,7 +30,7 @@ export const SetupBusinessProfileStep: FC<SetupBusinessProfileStepProps> = ({
                 onChange={(event) => {
                     onCompanyNameChange(event.currentTarget.value);
                 }}
-                placeholder="Registered business name"
+                placeholder="Registered business name for invoices"
                 required
                 value={companyName}
             />
@@ -45,7 +45,7 @@ export const SetupBusinessProfileStep: FC<SetupBusinessProfileStepProps> = ({
                 onChange={(event) => {
                     onAddressChange(event.currentTarget.value);
                 }}
-                placeholder="Address shown on invoices and reports"
+                placeholder="Full business address shown on invoices and reports"
                 required
                 value={address}
             />

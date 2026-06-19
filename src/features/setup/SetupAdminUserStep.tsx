@@ -30,7 +30,7 @@ export const SetupAdminUserStep: FC<SetupAdminUserStepProps> = ({
                 onChange={(event) => {
                     onUsernameChange(event.currentTarget.value);
                 }}
-                placeholder="admin"
+                placeholder="Short sign-in name for the first admin"
                 required
                 value={username}
             />
@@ -45,7 +45,7 @@ export const SetupAdminUserStep: FC<SetupAdminUserStepProps> = ({
                 onChange={(event) => {
                     onDisplayNameChange(event.currentTarget.value);
                 }}
-                placeholder="Operations Admin"
+                placeholder="Friendly name shown across the workspace"
                 required
                 value={displayName}
             />

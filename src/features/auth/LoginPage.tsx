@@ -12,8 +12,7 @@ import type { FC } from 'react';
 import { AppBrandIcon } from '../../components/AppBrandIcon/AppBrandIcon';
 import { DesktopWindowControls } from '../../components/DesktopWindowControls';
 import { useCapabilities } from '../../capability/CapabilityContext';
-import { defaultRuntimeBranding } from '../../constants/PhaseOneSeed';
-import { VENDOR } from '../../constants/Vendor';
+import { defaultRuntimeBranding } from '../../constants/RuntimeDefaults';
 import { LoginActivationModal } from './LoginActivationModal';
 import { LoginHelpModal } from './LoginHelpModal';
 import { buildLoginAccountOptions, findLoginAccount, getLoginAccountId } from './LoginPageSupport';
@@ -126,7 +125,7 @@ export const LoginPage: FC = () => {
                     />
                 </div>
                 <footer>
-                    <span>Version {VENDOR.version}</span>
+                    <span>Desktop-ready local billing workspace</span>
                     <span>Built for focused business work</span>
                 </footer>
             </section>

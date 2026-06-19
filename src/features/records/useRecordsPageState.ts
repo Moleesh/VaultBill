@@ -5,7 +5,7 @@ import { useSearchParams } from 'react-router-dom';
 
 import { useCapabilities } from '../../capability/CapabilityContext';
 import { builtInDefaultFormat } from '../../db/startup/BuiltInDefaultFormat';
-import { documentFormatSummaries } from '../../constants/PhaseFourFormats';
+import { builtInDocumentFormatSummaries } from '../../constants/BuiltInDocumentFormats';
 import { requestHostedApi } from '../../runtime/HostedApi';
 import {
     defaultWorkspaceSettings,
@@ -59,12 +59,13 @@ export const useRecordsPageState = () => {
         searchParams.get('tab') === 'reprint' ? 'reprint' : 'create';
     const selectedStoredRecord = records.find((item) => item.recordId === record.recordId);
     const isReadOnly = actionState === 'Finalized' || actionState === 'Reprint';
+    // Fall back to bundled document formats until the desktop or hosted inventory is available.
     const formatOptions = (
         publishedFormats.length > 0
             ? publishedFormats
             : capabilities.isDemoMode
-              ? documentFormatSummaries.slice(0, 1)
-              : documentFormatSummaries
+              ? builtInDocumentFormatSummaries.slice(0, 1)
+              : builtInDocumentFormatSummaries
     ).map((format) => ({
         value: format.formatId,
         label: format.formatName,

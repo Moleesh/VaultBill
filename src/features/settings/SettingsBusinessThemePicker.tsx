@@ -3,7 +3,7 @@
 import { Palette } from 'lucide-react';
 import type { FC } from 'react';
 
-import { themeOptions } from '../../constants/PhaseOneSeed';
+import { themeOptions } from '../../constants/RuntimeDefaults';
 
 const themeSwatches = {
     'teal-flow': ['#0f7f75', '#dff4ef'],

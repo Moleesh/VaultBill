@@ -10,7 +10,6 @@ import type { FC } from 'react';
 import { useCapabilities } from '../../capability/CapabilityContext';
 import { AppBrandIcon } from '../../components/AppBrandIcon/AppBrandIcon';
 import { HorizontalProgress } from '../../components/HorizontalProgress/HorizontalProgress';
-import { VENDOR } from '../../constants/Vendor';
 import { requestHostedApi } from '../../runtime/HostedApi';
 import { SetupAdminUserStep } from './SetupAdminUserStep';
 import { SetupBusinessProfileStep } from './SetupBusinessProfileStep';
@@ -24,6 +23,7 @@ const steps = [
     { label: 'Admin User', icon: UserRoundCog },
 ] as const;
 
+/** Removes Electron IPC framing so setup failures read clearly in the wizard. */
 const setupErrorMessage = (reason: unknown): string => {
     const message = reason instanceof Error ? reason.message : 'Setup could not be completed.';
     return message
@@ -35,6 +35,7 @@ type SetupPageProps = {
     readonly onComplete?: () => void;
 };
 
+/** Runs the first-launch setup wizard for business identity and admin access. */
 export const SetupPage: FC<SetupPageProps> = ({ onComplete }) => {
     const capabilities = useCapabilities();
     const navigate = useNavigate();
@@ -199,7 +200,6 @@ export const SetupPage: FC<SetupPageProps> = ({ onComplete }) => {
                         </button>
                     )}
                 </footer>
-                <p className="setup-card-version">Version {VENDOR.version}</p>
             </section>
             <SetupPageMessageModal
                 message={message}

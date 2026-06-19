@@ -42,12 +42,6 @@ select:disabled {
     gap: var(--space-3);
 }
 
-.setup-card-version {
-    margin: 0;
-    font-size: var(--font-size-sm);
-    color: var(--color-text-muted);
-}
-
 .record-summary {
     display: grid;
     justify-content: flex-end;

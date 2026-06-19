@@ -9,11 +9,13 @@ type SetupPageMessageModalProps = {
     readonly onClose: () => void;
 };
 
+/** Validation messages that should be framed as a gentle nudge instead of a system failure. */
 const setupValidationMessages = new Set([
     'Business name and address are required.',
     'Admin username and display name are required.',
 ]);
 
+/** Shows setup validation and completion issues in a consistent modal surface. */
 export const SetupPageMessageModal: FC<SetupPageMessageModalProps> = ({ message, onClose }) => (
     <AppModal
         isOpen={message.length > 0}

@@ -3,7 +3,7 @@
 import { BarChart3, BookOpenText, FileText, Settings, SlidersHorizontal } from 'lucide-react';
 
 import type { AppRouteId, Role } from '../types/AppTypes';
-import { shellSections } from '../constants/PhaseOneSeed';
+import { shellSections } from '../constants/RuntimeDefaults';
 
 export const appShellIcons = {
     dashboard: BarChart3,

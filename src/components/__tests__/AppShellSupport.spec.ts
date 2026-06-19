@@ -2,7 +2,7 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { shellSections } from '../../constants/PhaseOneSeed';
+import { shellSections } from '../../constants/RuntimeDefaults';
 import type { AppRouteId } from '../../types/AppTypes';
 import { appShellIcons, getAllowedSectionIds, getPageId } from '../AppShellSupport';
 

@@ -1,6 +1,6 @@
 /** @format */
 
-import { createDataUrl } from './Base64';
+import { createDataUrl } from './DataUrlEncoding';
 import { renderUnknownPrintValue } from './LineItemRenderer';
 import type { PrintCompileWarning, PrintTemplateAsset } from './PrintTemplateTypes';
 import { sanitizeTemplateHtml } from './TemplateHtmlSanitizer';

@@ -1,7 +1,9 @@
 /** @format */
 
+/** Base64 alphabet used for client-side asset encoding. */
 const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 
+/** Encodes bytes into a Base64 string without relying on Node globals. */
 export const encodeBase64 = (bytes: Uint8Array): string => {
     let output = '';
 
@@ -20,5 +22,6 @@ export const encodeBase64 = (bytes: Uint8Array): string => {
     return output;
 };
 
+/** Converts raw bytes into an embeddable data URL for print-template assets. */
 export const createDataUrl = (mimeType: string, bytes: Uint8Array): string =>
     `data:${mimeType};base64,${encodeBase64(bytes)}`;

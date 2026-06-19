@@ -5,7 +5,7 @@ import type { FC } from 'react';
 
 import { ThemePalette } from './ThemePalette';
 import { appShellIcons } from './AppShellSupport';
-import { shellSections } from '../constants/PhaseOneSeed';
+import { shellSections } from '../constants/RuntimeDefaults';
 import { formatTrialCountdownParts } from '../features/dashboard/SysAdminDashboardTrialSupport';
 import type { AppRouteId, ThemeController } from '../types/AppTypes';
 

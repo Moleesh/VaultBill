@@ -10,7 +10,7 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import type { FC } from 'react';
 
 import { useCapabilities } from '../capability/CapabilityContext';
-import { defaultRuntimeBranding, shellSections } from '../constants/PhaseOneSeed';
+import { defaultRuntimeBranding, shellSections } from '../constants/RuntimeDefaults';
 import { useSession } from '../features/auth/SessionContext';
 import { useRecordStore } from '../features/records/RecordStoreContext';
 import { useThemeController } from '../hooks/useThemeController';

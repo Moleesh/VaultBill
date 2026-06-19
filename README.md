@@ -15,7 +15,6 @@ Nice and tidy. 🙂
 
 [![Demo Pages](https://img.shields.io/github/actions/workflow/status/Moleesh/VaultBill/demo-pages.yml?branch=main&label=demo%20pages)](https://github.com/Moleesh/VaultBill/actions/workflows/demo-pages.yml)
 [![Release App](https://img.shields.io/github/actions/workflow/status/Moleesh/VaultBill/release-app.yml?branch=main&label=release%20app)](https://github.com/Moleesh/VaultBill/actions/workflows/release-app.yml)
-[![Latest Release](https://img.shields.io/github/v/release/Moleesh/VaultBill?display_name=tag&label=latest)](https://github.com/Moleesh/VaultBill/releases)
 [![Platforms](https://img.shields.io/badge/platforms-Windows%20%7C%20Linux-167d73)](https://github.com/Moleesh/VaultBill/actions/workflows/release-app.yml)
 [![Tests](https://img.shields.io/badge/tests-Vitest%20%2B%20Playwright-f0a202)](https://github.com/Moleesh/VaultBill/actions)
 
@@ -106,7 +105,7 @@ for new, duplicate, or edited formats. The wizard uses eight focused steps:
 7. Field Preview
 8. Print Preview
 
-Document configuration imports and exports as versioned JSON. Print templates
+Document configuration imports and exports as portable JSON packages. Print templates
 stay separate as one sanitized HTML file plus shared PNG, JPEG, WebP, SVG,
 WOFF, and WOFF2 assets. Templates reference assets with `{{Asset.Name}}`.
 
@@ -227,6 +226,13 @@ and notes. That keeps the release list tidy instead of collecting stale copies.
 - [Secrets](docs/Secrets.md)
 - [JSON configuration](docs/JsonConfig.md)
 - [Print templates](docs/PrintTemplate.md)
+
+## Naming And Maintenance 🧹
+
+- intent-based source filenames over milestone or numbered names
+- kebab-case DOM class names so JSX and SCSS stay predictable together
+- focused utility comments where behavior is easy to misuse or drift over time
+- README and inline docs updated alongside product-facing cleanup
 
 ## Troubleshooting 🧯
 

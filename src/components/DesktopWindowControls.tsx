@@ -15,6 +15,7 @@ type DesktopWindowControlsProps = {
     readonly className?: string;
 };
 
+/** Renders minimize and close controls when the desktop runtime exposes them. */
 export const DesktopWindowControls: FC<DesktopWindowControlsProps> = ({
     className,
     isDesktop = false,

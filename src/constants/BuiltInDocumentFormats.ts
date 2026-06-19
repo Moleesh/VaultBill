@@ -4,6 +4,7 @@ import { builtInDefaultFormat } from '../db/startup/BuiltInDefaultFormat';
 import type { StoredDocumentFormat } from '../engines/schemaEngine/DocumentFormatTypes';
 import type { DocumentFormatSummary } from '../types/AppTypes';
 
+/** Creates a stored document-format payload with updated identity fields. */
 const createFormatJson = (formatId: string, formatName: string, description: string): string =>
     JSON.stringify({
         ...builtInDefaultFormat,
@@ -12,7 +13,8 @@ const createFormatJson = (formatId: string, formatName: string, description: str
         Description: description,
     });
 
-export const phaseFourStoredFormats: readonly StoredDocumentFormat[] = [
+/** Built-in document formats available before a business publishes custom ones. */
+export const builtInStoredFormats: readonly StoredDocumentFormat[] = [
     {
         formatId: builtInDefaultFormat.FormatId,
         formatName: builtInDefaultFormat.FormatName,
@@ -37,8 +39,9 @@ export const phaseFourStoredFormats: readonly StoredDocumentFormat[] = [
     },
 ];
 
-export const documentFormatSummaries: readonly DocumentFormatSummary[] = phaseFourStoredFormats.map(
-    (format) => {
+/** Lightweight summaries used by records when no published inventory is available. */
+export const builtInDocumentFormatSummaries: readonly DocumentFormatSummary[] =
+    builtInStoredFormats.map((format) => {
         const parsed: unknown = JSON.parse(format.formatJson);
         const description =
             typeof parsed === 'object' &&
@@ -54,5 +57,4 @@ export const documentFormatSummaries: readonly DocumentFormatSummary[] = phaseFo
             description,
             isDefault: format.isDefault,
         };
-    },
-);
+    });

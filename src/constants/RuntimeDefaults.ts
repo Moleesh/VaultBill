@@ -3,6 +3,7 @@
 import { defaultTagline } from './AppIdentity';
 import type { RuntimeBranding, ShellSection, ThemeOption } from '../types/AppTypes';
 
+/** Default product branding used before operators customize workspace identity. */
 export const defaultRuntimeBranding: RuntimeBranding = {
     applicationName: 'VaultBill',
     companyName: '',
@@ -12,6 +13,7 @@ export const defaultRuntimeBranding: RuntimeBranding = {
     faviconAssetId: '',
 };
 
+/** Theme choices available across the desktop and hosted workspaces. */
 export const themeOptions: readonly ThemeOption[] = [
     { id: 'teal-flow', label: 'Teal Flow' },
     { id: 'slate-pro', label: 'Slate Pro' },
@@ -20,6 +22,7 @@ export const themeOptions: readonly ThemeOption[] = [
     { id: 'indigo-mint', label: 'Indigo Mint' },
 ];
 
+/** Sidebar destinations shown in the main application shell. */
 export const shellSections: readonly ShellSection[] = [
     {
         id: 'dashboard',

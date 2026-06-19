@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
-import { themeOptions } from '../constants/PhaseOneSeed';
+import { themeOptions } from '../constants/RuntimeDefaults';
 import type { ThemeController, ThemeId } from '../types/AppTypes';
 
 const themeStorageKey = 'vaultbill.theme';
