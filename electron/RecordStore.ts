@@ -35,6 +35,7 @@ export type {
     TrialStatus,
 } from './RecordStoreSupport.js';
 
+/** Persists records, report queries, and trial state in the desktop SQLite database. */
 export class DesktopRecordStore {
     readonly #database: DatabaseSync;
     readonly #licenseVerifier: string;
@@ -46,6 +47,7 @@ export class DesktopRecordStore {
         createRecordStoreTables(this.#database);
     }
 
+    /** Adds elapsed runtime to the accumulated desktop trial clock. */
     public checkpointTrial = (): TrialStatus => {
         const now = Date.now();
         const elapsedSeconds = Math.max(0, Math.floor((now - this.#lastTrialCheckpoint) / 1000));
@@ -60,6 +62,7 @@ export class DesktopRecordStore {
         return this.getTrialStatus();
     };
 
+    /** Reports whether the build is activated and how much trial time remains. */
     public getTrialStatus = (): TrialStatus => {
         const accumulatedSeconds = getTrialSeconds(this.#database);
         const trialSeconds = 24 * 60 * 60;
@@ -74,6 +77,7 @@ export class DesktopRecordStore {
         };
     };
 
+    /** Validates a license key against the packaged verifier and activates the workspace. */
     public activateLicense = (licenseKey: string): TrialStatus => {
         if (!this.#licenseVerifier)
             throw new Error('This build does not contain a license verifier.');
@@ -85,8 +89,10 @@ export class DesktopRecordStore {
         return this.getTrialStatus();
     };
 
+    /** Lists all stored records ordered by most recent updates first. */
     public list = (): readonly StoredRecord[] => listStoredRecords(this.#database);
 
+    /** Applies report filters and returns one paged result set. */
     public queryReport = (rawQuery: unknown): ReportQueryResult => {
         const query = parseReportQuery(rawQuery);
         const customer = query.customer.trim().toLocaleLowerCase();
@@ -126,6 +132,7 @@ export class DesktopRecordStore {
         return { rows, total, ...(nextOffset < total ? { nextCursor: String(nextOffset) } : {}) };
     };
 
+    /** Maps one report filter field to its comparable stored record value. */
     #reportFieldValueFor = (record: StoredRecord, field: string): string => {
         if (field === 'documentNumber') return record.documentNumber ?? '';
         if (field === 'customerName') return record.customerName;
@@ -136,6 +143,7 @@ export class DesktopRecordStore {
         return '';
     };
 
+    /** Saves or updates a draft record while finalized and cancelled records stay read-only. */
     public saveDraft = (rawRequest: unknown): StoredRecord => {
         const request = RecordWriteRequestSchema.parse(rawRequest);
         const existing = this.#find(request.record.recordId);
@@ -147,6 +155,7 @@ export class DesktopRecordStore {
         return record;
     };
 
+    /** Finalizes a draft record and allocates the next GST document number transactionally. */
     public finalize = (rawRequest: unknown): StoredRecord => {
         const request = RecordWriteRequestSchema.parse(rawRequest);
         const existing = this.#find(request.record.recordId);
@@ -174,6 +183,7 @@ export class DesktopRecordStore {
         }
     };
 
+    /** Cancels one finalized record when the operator role has permission. */
     public cancel = (rawRequest: unknown): StoredRecord => {
         const request = RecordCancelRequestSchema.parse(rawRequest);
         if (request.operatorContext.role === 'User') {
@@ -193,13 +203,16 @@ export class DesktopRecordStore {
         return record;
     };
 
+    /** Flushes the current trial checkpoint and closes the SQLite connection. */
     public close = () => {
         this.checkpointTrial();
         this.#database.close();
     };
 
+    /** Returns whether the workspace has already been activated. */
     #isActivated = (): boolean => isActivated(this.#database);
 
+    /** Loads one stored record from SQLite by id. */
     #find = (recordId: string): StoredRecord | undefined =>
         getStoredRecord(this.#database, recordId);
 }

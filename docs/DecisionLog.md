@@ -134,9 +134,9 @@
 - Used Prettier's native SCSS formatter because a maintained `prettier-plugin-scss` package does not exist.
 - Added strict ESLint rules, Husky/lint-staged/commitlint hooks, coverage thresholds, and Playwright role, help, routing, and responsive overflow gates.
 
-## 2026-06-07 Consolidated baseline v24
+## 2026-06-07 Consolidated baseline
 
-- Replaced fragmented v20-v23 plans with the live v24 implementation baseline and synchronized the repo docs to match it.
+- Replaced fragmented earlier phase plans with the live implementation baseline and synchronized the repo docs to match it.
 - Limited current desktop releases to Windows and Linux; macOS and native Android moved to future scope.
 - Reduced first-run setup to Welcome, required Business Profile, and SysAdmin security. Admin/User creation moved to authorized Settings.
 - Defined role-based navigation and account limits: one Admin and five Users.
@@ -149,11 +149,11 @@
 - Implemented hosted HttpOnly/CSRF sessions, SQLite operator persistence, scrypt/safeStorage credentials, cancellable native output jobs, checksummed encrypted ZIP backup/restore/reset, and session invalidation on data reset.
 - Connected published Document builder formats to record entry and printing, including custom values, configured calculations, HTML assets, cancellation values, and deterministic ten-record batches.
 - Persisted business, integration, and hosted-web settings in SQLite and exposed live LAN state through the tray and fixed application shell.
-- Set the v24 unit-coverage floor to 70% statements/lines, 60% functions, and 50% branches for domain logic, SQLite stores, API security, engines, and reusable workflows. React page composition and Electron entry/bridge glue are instead exercised through the mobile/tablet/desktop/wide Playwright matrix and desktop package smoke gates.
+- Set the current unit-coverage floor to 70% statements/lines, 60% functions, and 50% branches for domain logic, SQLite stores, API security, engines, and reusable workflows. React page composition and Electron entry/bridge glue are instead exercised through the mobile/tablet/desktop/wide Playwright matrix and desktop package smoke gates.
 
 ## 2026-06-11 UI cleanup and docs simplification
 
-- Reworked the desktop shell, login, settings, builder, help copy, and version footer behavior to match the latest UI cleanup decisions.
-- Kept the close icon, tray-close behavior, fixed blurred shell, hidden shell scrollbar, compact dropdowns, and pinned `1.0.0` version as the current UI baseline.
+- Reworked the desktop shell, login, settings, builder, help copy, and app-footer behavior to match the latest UI cleanup decisions.
+- Kept the close icon, tray-close behavior, fixed blurred shell, hidden shell scrollbar, and compact dropdowns as the current UI baseline.
 - Superseded the old legacy integration settings with the single Secrets surface and `Secrets.Key` formula syntax.
 - Removed the central spec file and rewrote the README/docs copy so the practical documentation stands on its own.

@@ -44,7 +44,7 @@ export const BuilderPackageSchema = z.object({
 export type BuilderAsset = z.infer<typeof BuilderAssetSchema>;
 /** Represents one saved HTML template shared with the builder package. */
 export type SavedPrintTemplate = z.infer<typeof SavedPrintTemplateSchema>;
-/** Represents the versioned JSON package persisted by the Builder. */
+/** Represents the portable document package persisted by the Builder. */
 export type BuilderPackage = z.infer<typeof BuilderPackageSchema>;
 
 /** Summarizes a stored format for inventory and sidebar listings. */

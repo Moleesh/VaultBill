@@ -13,6 +13,8 @@ import {
     isDefaultCredentialsActive,
 } from './SettingsSecuritySectionHelpers';
 
+const defaultHostedWebPort = 80;
+
 type TrialStatus = {
     readonly isFullVersion: boolean;
     readonly isExpired: boolean;
@@ -162,7 +164,7 @@ export const useSettingsSecuritySectionState = () => {
             void window.vaultBillDesktop?.configureLocalApi({
                 lanEnabled: value,
                 passwordRequired: true,
-                port: 4317,
+                port: defaultHostedWebPort,
             });
         },
         onIncludeDraftsInReportsChange: (value: boolean) => {

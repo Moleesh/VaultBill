@@ -19,6 +19,7 @@ import path from 'node:path';
 
 import { mainState, hostedAppUrl } from './MainState.js';
 
+/** Reads the packaged license verifier embedded into the desktop build. */
 export const readLicenseVerifier = (): string => {
     try {
         const packageJson = JSON.parse(
@@ -32,6 +33,7 @@ export const readLicenseVerifier = (): string => {
     }
 };
 
+/** Creates the main fullscreen workspace window and loads the active app URL. */
 export const createWindow = async () => {
     mainState.mainWindow = new BrowserWindow({
         width: 1440,
@@ -52,7 +54,7 @@ export const createWindow = async () => {
             contextIsolation: true,
             nodeIntegration: false,
             preload: path.join(mainState.currentDirectory, 'Preload.js'),
-            sandbox: false,
+            sandbox: true,
         },
     });
     mainState.mainWindow.on('close', (event) => {
@@ -76,6 +78,7 @@ export const createWindow = async () => {
     else await mainState.mainWindow.loadURL(hostedAppUrl());
 };
 
+/** Creates the tray icon and menu used while VaultBill continues running in the background. */
 export const createTray = () => {
     const icon = nativeImage.createFromPath(
         path.join(mainState.currentDirectory, '../build/icon.png'),
@@ -111,12 +114,14 @@ export const createTray = () => {
     mainState.tray.on('double-click', () => mainState.mainWindow?.show());
 };
 
+/** Rebuilds the tray so hosted-web status text stays in sync after settings changes. */
 export const refreshTray = () => {
     mainState.tray?.destroy();
     mainState.tray = undefined;
     createTray();
 };
 
+/** Closes background services and stores exactly once during runtime shutdown. */
 export const closeRuntime = async () => {
     if (mainState.runtimeClosePromise) return mainState.runtimeClosePromise;
     mainState.runtimeClosePromise = (async () => {
@@ -137,6 +142,7 @@ export const closeRuntime = async () => {
     return mainState.runtimeClosePromise;
 };
 
+/** Relaunches the Electron application after a short delay. */
 export const restartApplication = () => {
     setTimeout(() => {
         app.relaunch();
@@ -144,6 +150,7 @@ export const restartApplication = () => {
     }, 150);
 };
 
+/** Runs a destructive runtime mutation, then restarts the application once cleanup finishes. */
 export const scheduleRuntimeMutation = (mutation: () => Promise<void> | void) => {
     setTimeout(() => {
         void closeRuntime()
@@ -157,11 +164,13 @@ export const scheduleRuntimeMutation = (mutation: () => Promise<void> | void) =>
     }, 250);
 };
 
+/** Creates the save-dialog options used for desktop backup exports. */
 export const createDialogOptions = (defaultFileName: string): SaveDialogOptions => ({
     defaultPath: defaultFileName,
     filters: [{ name: 'VaultBill backup', extensions: ['zip'] }],
 });
 
+/** Creates the open-dialog options used for desktop backup restore imports. */
 export const createRestoreOptions = (): OpenDialogOptions => ({
     properties: ['openFile'],
     filters: [{ name: 'VaultBill backup', extensions: ['zip'] }],

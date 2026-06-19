@@ -13,6 +13,59 @@ import {
     type LocalApiState,
 } from './LocalApiContext.js';
 
+type RecordRouteAction = 'saveDraft' | 'finalize' | 'cancel';
+
+/** Restricts Builder routes to the protected System Administrator account. */
+const requireBuilderAccess = (account: DesktopOperatorAccount, message: string) => {
+    if (account.role !== 'SysAdmin') {
+        throw new ApiError(403, message);
+    }
+};
+
+/** Resolves the format identifier from a local route query string. */
+const readFormatId = (requestUrl: string): string | undefined =>
+    new URL(requestUrl, 'http://local').searchParams.get('formatId') ?? undefined;
+
+/** Sends one Builder package response or an empty success when nothing was found. */
+const sendBuilderPackage = (
+    state: LocalApiState,
+    response: ServerResponse,
+    formatId?: string,
+): boolean => {
+    const builderPackage = state.builderStore.load(formatId);
+    if (!builderPackage) {
+        response.writeHead(204);
+        response.end();
+        return true;
+    }
+    sendJson(response, 200, builderPackage);
+    return true;
+};
+
+/** Resolves the record mutation represented by the current route, if any. */
+const getRecordRouteAction = (requestUrl?: string): RecordRouteAction | undefined => {
+    if (requestUrl === '/records/draft') return 'saveDraft';
+    if (requestUrl === '/records/finalize') return 'finalize';
+    if (requestUrl === '/records/cancel') return 'cancel';
+    return undefined;
+};
+
+/** Adds the authenticated operator context required by record mutations. */
+const withOperatorContext = (
+    account: DesktopOperatorAccount,
+    requestBody: Record<string, unknown>,
+) => ({
+    ...requestBody,
+    operatorContext: {
+        account,
+        role: account.role,
+        CreatedBy: account.userId,
+        CreatedByName: account.displayName,
+        LastActionBy: account.userId,
+        LastActionByName: account.displayName,
+    },
+});
+
 /** Handles builder, print, report, and record routes. */
 export const handleLocalApiContentRoutes = async (
     state: LocalApiState,
@@ -21,43 +74,22 @@ export const handleLocalApiContentRoutes = async (
     response: ServerResponse,
 ): Promise<boolean> => {
     if (request.method === 'GET' && request.url?.startsWith('/builder/package')) {
-        if (account.role !== 'SysAdmin')
-            throw new ApiError(403, 'Only the System Administrator can use Builder.');
-        const formatId = new URL(request.url, 'http://local').searchParams.get('formatId');
-        const builderPackage = state.builderStore.load(formatId ?? undefined);
-        if (!builderPackage) {
-            response.writeHead(204);
-            response.end();
-            return true;
-        }
-        sendJson(response, 200, builderPackage);
-        return true;
+        requireBuilderAccess(account, 'Only the System Administrator can use Builder.');
+        return sendBuilderPackage(state, response, readFormatId(request.url));
     }
     if (request.method === 'GET' && request.url === '/builder/inventory') {
-        if (account.role !== 'SysAdmin') {
-            throw new ApiError(403, 'Only the System Administrator can view Builder inventory.');
-        }
+        requireBuilderAccess(account, 'Only the System Administrator can view Builder inventory.');
         sendJson(response, 200, state.builderStore.listInventory());
         return true;
     }
     if (request.method === 'POST' && request.url === '/builder/package') {
-        if (account.role !== 'SysAdmin') {
-            throw new ApiError(403, 'Only the System Administrator can publish Builder formats.');
-        }
+        requireBuilderAccess(account, 'Only the System Administrator can publish Builder formats.');
         assertWritableTrial(state, 'use Builder');
         sendJson(response, 200, state.builderStore.save(await readBody(request)));
         return true;
     }
     if (request.method === 'GET' && request.url?.startsWith('/print/template')) {
-        const formatId = new URL(request.url, 'http://local').searchParams.get('formatId');
-        const builderPackage = state.builderStore.load(formatId ?? undefined);
-        if (!builderPackage) {
-            response.writeHead(204);
-            response.end();
-            return true;
-        }
-        sendJson(response, 200, builderPackage);
-        return true;
+        return sendBuilderPackage(state, response, readFormatId(request.url));
     }
     if (request.method === 'GET' && request.url === '/print/formats') {
         sendJson(response, 200, state.builderStore.listInventory());
@@ -92,30 +124,14 @@ export const handleLocalApiContentRoutes = async (
         return true;
     }
 
-    const body = await readBody(request);
-    const action =
-        request.url === '/records/draft'
-            ? 'saveDraft'
-            : request.url === '/records/finalize'
-              ? 'finalize'
-              : request.url === '/records/cancel'
-                ? 'cancel'
-                : undefined;
+    const action = getRecordRouteAction(request.url);
     if (!action) return false;
     if (!canUseLocalApiAction(account.role, action)) {
         throw new ApiError(403, 'Action is not allowed.');
     }
     assertWritableTrial(state, 'continue');
-    const requestBody = body as Record<string, unknown>;
-    const operatorContext = {
-        account,
-        role: account.role,
-        CreatedBy: account.userId,
-        CreatedByName: account.displayName,
-        LastActionBy: account.userId,
-        LastActionByName: account.displayName,
-    };
-    const securedBody = { ...requestBody, operatorContext };
+    const requestBody = (await readBody(request)) as Record<string, unknown>;
+    const securedBody = withOperatorContext(account, requestBody);
     const result =
         action === 'saveDraft'
             ? state.recordStore.saveDraft(securedBody)

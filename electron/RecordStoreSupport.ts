@@ -27,6 +27,7 @@ export {
     type TrialStatus,
 } from './RecordStoreSchemas.js';
 
+/** Creates the SQLite tables and baseline runtime rows used by the desktop record store. */
 export const createRecordStoreTables = (database: DatabaseSync) => {
     database.exec(`
       PRAGMA foreign_keys = ON;
@@ -52,6 +53,7 @@ export const createRecordStoreTables = (database: DatabaseSync) => {
     `);
 };
 
+/** Loads one stored record by id and validates its serialized JSON shape. */
 export const getStoredRecord = (
     database: DatabaseSync,
     recordId: string,
@@ -62,12 +64,14 @@ export const getStoredRecord = (
     return row ? parseStoredRecord(JSON.parse(String(row.record_json))) : undefined;
 };
 
+/** Lists every stored record with newest updates first. */
 export const listStoredRecords = (database: DatabaseSync): readonly StoredRecord[] =>
     database
         .prepare('SELECT record_json FROM app_records ORDER BY updated_at DESC;')
         .all()
         .map((row) => parseStoredRecord(JSON.parse(String(row.record_json))));
 
+/** Upserts one stored record back into SQLite, preserving the JSON source of truth. */
 export const writeStoredRecord = (database: DatabaseSync, record: StoredRecord) => {
     database
         .prepare(
@@ -90,6 +94,7 @@ export const writeStoredRecord = (database: DatabaseSync, record: StoredRecord) 
         );
 };
 
+/** Reads accumulated desktop trial seconds from the runtime table. */
 export const getTrialSeconds = (database: DatabaseSync): number => {
     const row = database
         .prepare("SELECT runtime_value FROM app_runtime WHERE runtime_key = 'trial_seconds';")
@@ -97,6 +102,7 @@ export const getTrialSeconds = (database: DatabaseSync): number => {
     return Number.parseInt(String(row?.runtime_value ?? '0'), 10) || 0;
 };
 
+/** Reads whether this desktop workspace has been activated with a valid license. */
 export const isActivated = (database: DatabaseSync): boolean => {
     const row = database
         .prepare("SELECT runtime_value FROM app_runtime WHERE runtime_key = 'activated';")
@@ -104,6 +110,7 @@ export const isActivated = (database: DatabaseSync): boolean => {
     return String(row?.runtime_value ?? 'false') === 'true';
 };
 
+/** Writes one runtime key/value pair back into SQLite. */
 export const writeRuntime = (database: DatabaseSync, key: string, value: string) => {
     database
         .prepare(
@@ -112,6 +119,7 @@ export const writeRuntime = (database: DatabaseSync, key: string, value: string)
         .run(key, value);
 };
 
+/** Builds the normalized record payload shared by draft and finalized save flows. */
 export const buildStoredRecord = (
     request: RecordWriteRequest,
     existing: StoredRecord | undefined,
@@ -130,6 +138,7 @@ export const buildStoredRecord = (
     };
 };
 
+/** Compares two strings in constant time to reduce key-verifier timing leaks. */
 export const safeBufferEqual = (left: string, right: string): boolean => {
     const leftBytes = Buffer.from(left);
     const rightBytes = Buffer.from(right);

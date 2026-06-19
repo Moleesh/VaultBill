@@ -81,7 +81,7 @@ describe('MainRuntime createWindow', () => {
             webPreferences: {
                 contextIsolation: true,
                 nodeIntegration: false,
-                sandbox: false,
+                sandbox: true,
             },
         });
         expect(mainState.mainWindow).toBeDefined();

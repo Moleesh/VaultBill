@@ -19,8 +19,8 @@ describe('Local API security', () => {
     });
 
     it('accepts only known development or same-host origins', () => {
-        expect(isAllowedLocalApiOrigin('http://127.0.0.1:4317', '127.0.0.1:4317')).toBe(true);
-        expect(isAllowedLocalApiOrigin('https://evil.example', '127.0.0.1:4317')).toBe(false);
+        expect(isAllowedLocalApiOrigin('http://127.0.0.1:80', '127.0.0.1:80')).toBe(true);
+        expect(isAllowedLocalApiOrigin('https://evil.example', '127.0.0.1:80')).toBe(false);
     });
 
     it('enforces privileged actions and a bounded request size', () => {

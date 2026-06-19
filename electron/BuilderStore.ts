@@ -15,13 +15,17 @@ import {
 import { createBuilderStoreTables } from './BuilderStoreTables.js';
 
 export type { BuilderAsset, BuilderInventoryItem, BuilderPackage } from './BuilderStoreSupport.js';
+
+/** Persists builder formats, print templates, and shared assets in SQLite. */
 export class BuilderStore {
     readonly #database: DatabaseSync;
+
     public constructor(databasePath: string) {
         this.#database = new DatabaseSync(databasePath);
         createBuilderStoreTables(this.#database);
     }
 
+    /** Loads the requested format package, or the default package when no id is provided. */
     public load = (formatId?: string): BuilderPackage | undefined => {
         const format = (
             formatId
@@ -68,8 +72,10 @@ export class BuilderStore {
         });
     };
 
+    /** Loads the default builder package for first-open or fallback flows. */
     public loadDefault = (): BuilderPackage | undefined => this.load();
 
+    /** Saves a builder package, sanitizes HTML and SVG assets, and refreshes shared templates. */
     public save = (rawPackage: unknown): BuilderPackage => {
         const builderPackage = BuilderPackageSchema.parse(rawPackage);
         const templateHtml = sanitizeTemplateHtml(builderPackage.templateHtml);
@@ -177,6 +183,7 @@ export class BuilderStore {
         }
     };
 
+    /** Lists stored formats with validation and asset counts for the document library. */
     public listInventory = (): readonly BuilderInventoryItem[] =>
         mapBuilderInventoryRows(
             this.#database
@@ -194,6 +201,7 @@ export class BuilderStore {
                 .all(),
         );
 
+    /** Closes the SQLite connection when the desktop runtime shuts down. */
     public close = () => {
         this.#database.close();
     };

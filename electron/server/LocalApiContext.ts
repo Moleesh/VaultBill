@@ -11,6 +11,7 @@ import { ApiError, parseCookies, safeEqual } from './LocalApiHttp.js';
 
 export { ApiError } from './LocalApiHttp.js';
 
+/** One authenticated hosted-web session tracked in server memory. */
 export type HostedSession = {
     readonly sessionId: string;
     readonly csrfToken: string;
@@ -18,12 +19,14 @@ export type HostedSession = {
     expiresAt: number;
 };
 
+/** Rolling login-attempt counters used for basic local brute-force throttling. */
 export type LoginAttempts = {
     count: number;
     firstAttemptAt: number;
     blockedUntil: number;
 };
 
+/** Desktop-only data operations exposed to hosted authenticated routes. */
 export type LocalApiDataOperations = {
     readonly createBackup: (
         encrypted: boolean,
@@ -64,6 +67,7 @@ export type LocalApiDataOperations = {
     readonly cancelPrint?: (jobId: string) => boolean;
 };
 
+/** Shared request context assembled for each hosted API request. */
 export type LocalApiState = {
     readonly recordStore: DesktopRecordStore;
     readonly credentialStore: CredentialStore;
@@ -81,29 +85,37 @@ const sessionLifetimeMs = 8 * 60 * 60 * 1000;
 const loginWindowMs = 5 * 60 * 1000;
 const maxLoginAttempts = 5;
 
+/** Requires the desktop data-operations bridge before calling backup or reset flows. */
 export const requireDataOperations = (state: LocalApiState): LocalApiDataOperations => {
     if (!state.dataOperations)
         throw new ApiError(503, 'Desktop data operations are not available.');
     return state.dataOperations;
 };
 
+/** Cookie name used for hosted authenticated sessions. */
 export const sessionCookie = sessionCookieName;
+/** Sliding hosted session lifetime in milliseconds. */
 export const sessionLifetime = sessionLifetimeMs;
+/** Login-attempt rolling window in milliseconds. */
 export const loginWindow = loginWindowMs;
+/** Maximum failed logins allowed inside one rolling window. */
 export const maxLoginAttemptsPerWindow = maxLoginAttempts;
 
+/** Rejects write operations once the desktop trial has become read-only. */
 export const assertWritableTrial = (state: LocalApiState, operation: string) => {
     if (state.recordStore.getTrialStatus().isExpired) {
         throw new ApiError(403, `The trial is read-only. Enter a license key to ${operation}.`);
     }
 };
 
+/** Restricts an operation to the protected System Administrator account. */
 export const requireSysAdmin = (account: DesktopOperatorAccount) => {
     if (account.role !== 'SysAdmin') {
         throw new ApiError(403, 'Only the System Administrator can perform this operation.');
     }
 };
 
+/** Verifies the hosted CSRF token header against the current session. */
 export const requireCsrf = (request: IncomingMessage, session: HostedSession) => {
     const supplied = request.headers['x-vaultbill-csrf'];
     if (typeof supplied !== 'string' || !safeEqual(supplied, session.csrfToken)) {
@@ -111,6 +123,7 @@ export const requireCsrf = (request: IncomingMessage, session: HostedSession) =>
     }
 };
 
+/** Resolves the current hosted session from cookies and refreshes its sliding expiry. */
 export const getSession = (
     state: LocalApiState,
     request: IncomingMessage,
@@ -127,6 +140,7 @@ export const getSession = (
     return session;
 };
 
+/** Records one failed login attempt and applies temporary blocking when needed. */
 export const recordFailedLogin = (state: LocalApiState, key: string) => {
     const now = Date.now();
     const current = state.loginAttempts.get(key);
@@ -138,6 +152,7 @@ export const recordFailedLogin = (state: LocalApiState, key: string) => {
     state.loginAttempts.set(key, attempts);
 };
 
+/** Rejects login attempts that are currently inside the temporary block window. */
 export const assertLoginAllowed = (state: LocalApiState, key: string) => {
     const attempts = state.loginAttempts.get(key);
     if (!attempts) return;

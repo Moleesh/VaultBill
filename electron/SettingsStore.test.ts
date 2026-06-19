@@ -8,6 +8,7 @@ import path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { SettingsStore } from './SettingsStore.js';
+import { defaultHostedWebPort } from './server/LocalApiSecurity.js';
 
 let directory = '';
 let store: SettingsStore | undefined;
@@ -38,7 +39,11 @@ describe('SettingsStore', () => {
                 { key: 'SmsApiKey', value: 'sms-api-key', description: 'SMS gateway' },
             ],
         });
-        store.saveHostedWeb({ lanEnabled: true, passwordRequired: true, port: 4317 });
+        store.saveHostedWeb({
+            lanEnabled: true,
+            passwordRequired: true,
+            port: defaultHostedWebPort,
+        });
         store.close();
 
         store = new SettingsStore(databasePath);
@@ -53,7 +58,7 @@ describe('SettingsStore', () => {
         expect(store.getHostedWeb()).toEqual({
             lanEnabled: true,
             passwordRequired: true,
-            port: 4317,
+            port: defaultHostedWebPort,
         });
     });
 });

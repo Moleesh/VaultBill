@@ -4,7 +4,7 @@ import { createServer } from 'node:http';
 import type { IncomingMessage, Server, ServerResponse } from 'node:http';
 
 import type { BuilderStore } from '../BuilderStore.js';
-import type { CredentialStore, DesktopOperatorAccount } from '../CredentialStore.js';
+import type { CredentialStore } from '../CredentialStore.js';
 import type { DesktopRecordStore } from '../RecordStore.js';
 import type { SettingsStore } from '../SettingsStore.js';
 import {
@@ -26,9 +26,18 @@ import {
 } from './LocalApiContext.js';
 import { handleLocalApiAdminRoutes } from './LocalApiAdminRoutes.js';
 import { handleLocalApiAuthRoutes } from './LocalApiAuthRoutes.js';
+import { accountForSession } from './LocalApiAuthRoutesSupport.js';
 import { handleLocalApiContentRoutes } from './LocalApiContentRoutes.js';
 
 export { getLocalApiHealth } from './LocalApiAuthRoutes.js';
+
+const localApiCorsHeaders = [
+    'content-type',
+    'x-vaultbill-csrf',
+    'x-vaultbill-sysadmin-password',
+    'x-vaultbill-backup-password',
+    'x-vaultbill-recovery-key',
+].join(', ');
 
 /** Hosts the authenticated local API and the static app bundle. */
 export class LocalApiServer {
@@ -61,6 +70,7 @@ export class LocalApiServer {
         this.#dataOperations = dataOperations;
     }
 
+    /** Starts the hosted API server and falls back to the backup port when the primary port is busy. */
     public start = async (): Promise<void> => {
         if (this.#server) return;
         const requestedPort = this.#configuration.port;
@@ -90,6 +100,7 @@ export class LocalApiServer {
         });
     };
 
+    /** Applies new hosted-web settings and restarts the server when host or port changes. */
     public configure = async (configuration: unknown): Promise<LocalApiConfiguration> => {
         const next = LocalApiConfigurationSchema.parse(configuration);
         const needsRestart =
@@ -106,8 +117,10 @@ export class LocalApiServer {
         return next;
     };
 
+    /** Returns the currently active hosted API configuration. */
     public getConfiguration = (): LocalApiConfiguration => this.#configuration;
 
+    /** Stops the hosted API server without clearing the persisted configuration. */
     public stop = async (): Promise<void> => {
         const server = this.#server;
         this.#server = undefined;
@@ -120,6 +133,7 @@ export class LocalApiServer {
         });
     };
 
+    /** Collects the current server dependencies for one request cycle. */
     #state = (): LocalApiState => ({
         recordStore: this.#recordStore,
         credentialStore: this.#credentialStore,
@@ -132,6 +146,16 @@ export class LocalApiServer {
         configuration: this.#configuration,
     });
 
+    /** Applies hosted-web CORS headers for a trusted browser origin. */
+    #applyCorsHeaders = (response: ServerResponse, requestOrigin: string) => {
+        response.setHeader('access-control-allow-origin', requestOrigin);
+        response.setHeader('access-control-allow-credentials', 'true');
+        response.setHeader('access-control-allow-headers', localApiCorsHeaders);
+        response.setHeader('access-control-allow-methods', 'GET, POST, OPTIONS');
+        response.setHeader('vary', 'Origin');
+    };
+
+    /** Handles one hosted API or static-app request end to end. */
     async #handle(request: IncomingMessage, response: ServerResponse): Promise<void> {
         response.setHeader('content-type', 'application/json');
         response.setHeader('x-content-type-options', 'nosniff');
@@ -141,16 +165,7 @@ export class LocalApiServer {
             this.#send(response, 403, { error: 'Origin is not allowed.' });
             return;
         }
-        if (requestOrigin) {
-            response.setHeader('access-control-allow-origin', requestOrigin);
-            response.setHeader('access-control-allow-credentials', 'true');
-            response.setHeader(
-                'access-control-allow-headers',
-                'content-type, x-vaultbill-csrf, x-vaultbill-sysadmin-password, x-vaultbill-backup-password, x-vaultbill-recovery-key',
-            );
-            response.setHeader('access-control-allow-methods', 'GET, POST, OPTIONS');
-            response.setHeader('vary', 'Origin');
-        }
+        if (requestOrigin) this.#applyCorsHeaders(response, requestOrigin);
         if (request.method === 'OPTIONS') {
             response.writeHead(204);
             response.end();
@@ -164,30 +179,19 @@ export class LocalApiServer {
             throw new ApiError(401, 'Log in to use the hosted VaultBill application.');
         }
         if (request.method === 'POST') requireCsrf(request, session);
-        const account = this.#accountForSession(state, session);
+        const account = accountForSession(state, session);
         if (await handleLocalApiAdminRoutes(state, account, request, response)) return;
         if (await handleLocalApiContentRoutes(state, account, request, response)) return;
         throw new ApiError(404, 'The hosted API route was not found.');
     }
 
-    #accountForSession = (
-        state: LocalApiState,
-        session: NonNullable<ReturnType<typeof getSession>>,
-    ) => this.#findAccount(state, session.userId);
-
-    #findAccount = (state: LocalApiState, userId: string): DesktopOperatorAccount => {
-        const account = state.credentialStore
-            .listAccounts()
-            .find((candidate) => candidate.userId === userId && candidate.isActive);
-        if (!account) throw new ApiError(401, 'The operator session is no longer active.');
-        return account;
-    };
-
+    /** Sends one JSON response with the provided status code. */
     #send = (response: ServerResponse, status: number, payload: unknown) => {
         response.writeHead(status);
         response.end(JSON.stringify(payload));
     };
 
+    /** Converts thrown request errors into consistent hosted API responses. */
     #sendError = (response: ServerResponse, error: unknown) => {
         if (response.headersSent || response.writableEnded) return;
         if (error instanceof ApiError) {

@@ -3,6 +3,7 @@
 import { ApiError, type HostedSession, type LocalApiState } from './LocalApiContext.js';
 import type { DesktopOperatorAccount } from '../CredentialStore.js';
 
+/** Loads one active operator account by id or rejects the hosted session. */
 export const findAccount = (state: LocalApiState, userId: string): DesktopOperatorAccount => {
     const account = state.credentialStore
         .listAccounts()
@@ -11,11 +12,13 @@ export const findAccount = (state: LocalApiState, userId: string): DesktopOperat
     return account;
 };
 
+/** Resolves the visible account for an existing hosted session. */
 export const accountForSession = (
     state: LocalApiState,
     session: HostedSession,
 ): DesktopOperatorAccount => findAccount(state, session.userId);
 
+/** Returns the operator accounts visible to the current actor. */
 export const accountsVisibleTo = (state: LocalApiState, account: DesktopOperatorAccount) => {
     const accounts = state.credentialStore.listAccounts();
     if (account.role === 'SysAdmin') return accounts;
@@ -27,6 +30,7 @@ export const accountsVisibleTo = (state: LocalApiState, account: DesktopOperator
     return accounts.filter((candidate) => candidate.userId === account.userId);
 };
 
+/** Verifies whether one operator may manage another operator account. */
 export const assertCanManage = (
     actor: DesktopOperatorAccount,
     targetRole: DesktopOperatorAccount['role'],
@@ -40,6 +44,7 @@ export const assertCanManage = (
     throw new ApiError(403, 'You cannot manage this operator account.');
 };
 
+/** Verifies whether one operator may reset the target operator password. */
 export const assertCanResetPassword = (
     actor: DesktopOperatorAccount,
     target: DesktopOperatorAccount,

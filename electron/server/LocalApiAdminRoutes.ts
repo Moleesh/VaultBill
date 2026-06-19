@@ -19,10 +19,12 @@ import {
     requireSysAdmin,
 } from './LocalApiContext.js';
 
+/** Restricts an admin route to the protected System Administrator account. */
 const requireSysAdminAccess = (account: DesktopOperatorAccount) => {
     requireSysAdmin(account);
 };
 
+/** Resolves the desktop-only data bridge used by admin routes. */
 const getDataOperations = (state: LocalApiState): LocalApiDataOperations =>
     requireDataOperations(state);
 
