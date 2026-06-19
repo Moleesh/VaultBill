@@ -52,7 +52,7 @@ export const createWindow = async () => {
             contextIsolation: true,
             nodeIntegration: false,
             preload: path.join(mainState.currentDirectory, 'Preload.js'),
-            sandbox: true,
+            sandbox: false,
         },
     });
     mainState.mainWindow.on('close', (event) => {
@@ -68,12 +68,12 @@ export const createWindow = async () => {
     mainState.mainWindow.webContents.on('will-navigate', (event, url) => {
         const allowedOrigin = process.env.VITE_DEV_SERVER_URL
             ? new URL(process.env.VITE_DEV_SERVER_URL).origin
-            : new URL(hostedAppUrl).origin;
+            : new URL(hostedAppUrl()).origin;
         if (!url.startsWith(allowedOrigin)) event.preventDefault();
     });
     if (process.env.VITE_DEV_SERVER_URL)
         await mainState.mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL);
-    else await mainState.mainWindow.loadURL(hostedAppUrl);
+    else await mainState.mainWindow.loadURL(hostedAppUrl());
 };
 
 export const createTray = () => {
@@ -91,7 +91,7 @@ export const createTray = () => {
                     mainState.mainWindow?.focus();
                 },
             },
-            { label: `Hosted web: ${hostedAppUrl}`, enabled: false },
+            { label: `Hosted web: ${hostedAppUrl()}`, enabled: false },
             {
                 label: mainState.hostedWebSettings.lanEnabled
                     ? `LAN access: enabled on port ${String(mainState.hostedWebSettings.port)}`

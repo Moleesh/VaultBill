@@ -125,7 +125,12 @@ export const useReportsPageActions = (input: ReportsPageActionInput) => {
                     message: `Printing records ${String(startAt + 1)}-${String(nextCompleted)} in report order.`,
                 });
                 return loadPrintPackages(batch, input.capabilities.isLanBrowser)
-                    .then((packages) => runOutput(combineRecordHtml(batch, packages), jobId))
+                    .then((packages) =>
+                        runOutput(
+                            combineRecordHtml(batch, packages, input.workspaceSettings),
+                            jobId,
+                        ),
+                    )
                     .then(() => ({ nextCompleted, printable }));
             })
             .then(({ nextCompleted, printable }) => {

@@ -6,6 +6,7 @@
  */
 
 import type { DocumentFormatConfig } from '../../db/startup/ConfigSchemas';
+import type { WorkspaceSettings } from '../../runtime/WorkspaceSettings';
 import { requestHostedApi } from '../../runtime/HostedApi';
 import type { AppRecord, EditableRecord } from './RecordStoreContext';
 import { extractDocumentFragment } from './RecordPrintHtmlSupport';
@@ -45,12 +46,22 @@ export const renderRecordHtml = (
     record: EditableRecord,
     stored: AppRecord | undefined,
     printPackage?: RecordPrintPackage,
-): string => renderRecordDocumentHtml(record, stored, printPackage);
+    business: Pick<WorkspaceSettings, 'companyName' | 'address' | 'gstin'> = {
+        companyName: '',
+        address: '',
+        gstin: '',
+    },
+): string => renderRecordDocumentHtml(record, stored, printPackage, business);
 
 /** Concatenates multiple rendered record documents in stable order. */
 export const combineRecordHtml = (
     records: readonly AppRecord[],
     packages: ReadonlyMap<string, RecordPrintPackage> = new Map(),
+    business: Pick<WorkspaceSettings, 'companyName' | 'address' | 'gstin'> = {
+        companyName: '',
+        address: '',
+        gstin: '',
+    },
 ): string => `<!doctype html>
 <html>
   <head>
@@ -64,7 +75,12 @@ export const combineRecordHtml = (
   <body>
     ${records
         .map((record) => {
-            const document = renderRecordHtml(record, record, packages.get(record.formatId));
+            const document = renderRecordHtml(
+                record,
+                record,
+                packages.get(record.formatId),
+                business,
+            );
             return `<section class="vaultbill-print-page">${extractDocumentFragment(document)}</section>`;
         })
         .join('')}

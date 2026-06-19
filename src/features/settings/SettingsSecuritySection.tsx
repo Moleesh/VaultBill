@@ -71,7 +71,7 @@ export const SettingsSecuritySection: FC = () => {
             {state.operatorRole === 'SysAdmin' ? (
                 <SettingsSecurityReportsSection
                     includeDraftsInReports={state.includeDraftsInReports}
-                    onIncludeDraftsInReportsChange={state.setIncludeDraftsInReports}
+                    onIncludeDraftsInReportsChange={state.onIncludeDraftsInReportsChange}
                 />
             ) : null}
             {state.message ? (

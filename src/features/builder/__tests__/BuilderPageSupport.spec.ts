@@ -5,7 +5,7 @@
  * file import affordances aligned with the wizard UI.
  */
 
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import {
     base64ByteLength,
@@ -15,24 +15,18 @@ import {
     confirmLargeFile,
     formatBytes,
     helperFor,
-    legacyStorageKey,
     mimeTypeFromName,
     move,
     newField,
     readConfig,
-    storageKey,
     steps,
+    writeBuilderPackage,
 } from '../BuilderPageSupport';
 import {
     defaultSavedPrintTemplates,
     normalizeSavedPrintTemplates,
     templateNameFromFile,
 } from '../BuilderSavedTemplatesSupport';
-
-afterEach(() => {
-    window.localStorage.clear();
-    vi.restoreAllMocks();
-});
 
 describe('BuilderPageSupport', () => {
     it('keeps the wizard steps and helper copy aligned', () => {
@@ -69,19 +63,21 @@ describe('BuilderPageSupport', () => {
         expect(builtInSampleAsset.size).toBeGreaterThan(0);
     });
 
-    it('reads stored builder config and confirms unusually large imports', () => {
+    it('reads and writes the browser builder package in memory', () => {
         const saved = cloneDefault();
         saved.FormatName = 'Updated format';
-        window.localStorage.setItem(storageKey, JSON.stringify(saved));
+
+        writeBuilderPackage({
+            config: saved,
+            templateHtml: '<main>Updated</main>',
+            assets: [builtInSampleAsset],
+            savedTemplates: defaultSavedPrintTemplates(),
+        });
+
         expect(readConfig().FormatName).toBe('Updated format');
+    });
 
-        window.localStorage.clear();
-        window.localStorage.setItem(legacyStorageKey, JSON.stringify(cloneDefault()));
-        expect(readConfig()).toEqual(cloneDefault());
-
-        window.localStorage.setItem(storageKey, '{not-json');
-        expect(readConfig()).toEqual(cloneDefault());
-
+    it('confirms unusually large imports', () => {
         vi.spyOn(window, 'confirm').mockReturnValueOnce(true).mockReturnValueOnce(false);
         expect(confirmLargeFile('template.html', 5 * 1024 * 1024)).toBe(true);
         expect(confirmLargeFile('template.html', 5 * 1024 * 1024)).toBe(false);

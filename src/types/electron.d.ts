@@ -17,6 +17,8 @@ type DesktopOperatorAccount = {
 
 type VaultBillDesktopBridge = {
     readonly getAppIdentity: () => Promise<DesktopBuildIdentity>;
+    readonly getHostedWebUrl: () => Promise<string>;
+    readonly openHostedWeb: () => Promise<void>;
     readonly minimizeWindow: () => Promise<void>;
     readonly closeWindow: () => Promise<void>;
     readonly listAccounts: () => Promise<readonly DesktopOperatorAccount[]>;
@@ -151,6 +153,7 @@ type VaultBillDesktopBridge = {
 
 declare global {
     interface Window {
+        readonly vaultBillRuntime?: 'desktop';
         readonly vaultBillDesktop?: VaultBillDesktopBridge;
     }
 }

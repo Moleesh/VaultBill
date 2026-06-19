@@ -5,11 +5,11 @@ import type { FC, PropsWithChildren } from 'react';
 
 import { useCapabilities } from '../../capability/CapabilityContext';
 import { requestHostedApi, setHostedCsrfToken } from '../../runtime/HostedApi';
-import { createOperatorContext } from './AccountBootstrap';
+import { bootstrapOperatorAccounts, createOperatorContext } from './AccountBootstrap';
 import type { OperatorAccount } from './AccountTypes';
 import { createSessionActions } from './SessionActions';
 import { SessionContext } from './SessionContextBase';
-import { demoAccount, readStoredAccounts, sessionStorageKey } from './SessionSupport';
+import { demoAccount } from './SessionSupport';
 import type { SessionContextValue } from './SessionTypes';
 
 /**
@@ -25,17 +25,11 @@ export const SessionProvider: FC<PropsWithChildren> = ({ children }) => {
             ? [demoAccount]
             : capabilities.isLanBrowser
               ? []
-              : readStoredAccounts(),
+              : window.vaultBillDesktop
+                ? []
+                : bootstrapOperatorAccounts,
     );
-    const [account, setAccount] = useState<OperatorAccount | undefined>(() =>
-        capabilities.isLanBrowser
-            ? undefined
-            : accounts.find(
-                  (candidate) =>
-                      candidate.userId === window.localStorage.getItem(sessionStorageKey) &&
-                      candidate.isActive,
-              ),
-    );
+    const [account, setAccount] = useState<OperatorAccount | undefined>();
 
     useEffect(() => {
         const bridge = window.vaultBillDesktop;
@@ -43,12 +37,7 @@ export const SessionProvider: FC<PropsWithChildren> = ({ children }) => {
 
         void bridge.listAccounts().then((desktopAccounts) => {
             setAccounts(desktopAccounts);
-            const currentId = window.localStorage.getItem(sessionStorageKey);
-            setAccount(
-                desktopAccounts.find(
-                    (candidate) => candidate.userId === currentId && candidate.isActive,
-                ),
-            );
+            setAccount(undefined);
         });
     }, [capabilities.isDemoMode]);
 

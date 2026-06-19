@@ -15,6 +15,7 @@ type ReportQueryState = Readonly<{
     toDate: string;
     status: string;
     preset: string;
+    includeDraftsInReports: boolean;
     limit: number;
 }>;
 

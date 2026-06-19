@@ -1,15 +1,28 @@
 /** @format */
+
 import { useEffect, useState } from 'react';
 import type { Role } from '../../types/AppTypes';
 import { useCapabilities } from '../../capability/CapabilityContext';
 import { requestHostedApi } from '../../runtime/HostedApi';
-import { hashPassword, defaultPasswordHash } from '../auth/SessionSupport';
+import { loadWorkspaceSettings } from '../../runtime/WorkspaceSettings';
+import { defaultPasswordHash, hashPassword } from '../auth/SessionSupport';
 import type { OperatorAccount } from '../auth/AccountTypes';
 import { useSession } from '../auth/SessionContext';
 import {
     getManageableSecurityAccounts,
     isDefaultCredentialsActive,
 } from './SettingsSecuritySectionHelpers';
+
+type TrialStatus = {
+    readonly isFullVersion: boolean;
+    readonly isExpired: boolean;
+    readonly remainingSeconds: number;
+};
+
+type CredentialStatus = {
+    readonly sysAdminUsesDefaultPassword: boolean;
+    readonly backupUsesDefaultPassword: boolean;
+};
 
 export const useSettingsSecuritySectionState = () => {
     const capabilities = useCapabilities();
@@ -21,25 +34,11 @@ export const useSettingsSecuritySectionState = () => {
     const [passwordUserId, setPasswordUserId] = useState(operatorContext?.account.userId ?? '');
     const [newPassword, setNewPassword] = useState('');
     const [licenseKey, setLicenseKey] = useState('');
-    const [lanEnabled, setLanEnabled] = useState(
-        () => window.localStorage.getItem('vaultbill.lan.enabled') === 'true',
-    );
-    const [trialStatus, setTrialStatus] = useState<
-        | {
-              readonly isFullVersion: boolean;
-              readonly isExpired: boolean;
-              readonly remainingSeconds: number;
-          }
-        | undefined
-    >();
-    const [credentialStatus, setCredentialStatus] = useState<{
-        readonly sysAdminUsesDefaultPassword: boolean;
-        readonly backupUsesDefaultPassword: boolean;
-    }>();
+    const [lanEnabled, setLanEnabled] = useState(false);
+    const [trialStatus, setTrialStatus] = useState<TrialStatus>();
+    const [credentialStatus, setCredentialStatus] = useState<CredentialStatus>();
     const [message, setMessage] = useState('');
-    const [includeDraftsInReports, setIncludeDraftsInReports] = useState(
-        () => window.localStorage.getItem('vaultbill.reports.include-drafts') === 'true',
-    );
+    const [includeDraftsInReports, setIncludeDraftsInReports] = useState(false);
 
     useEffect(() => {
         if (window.vaultBillDesktop) {
@@ -51,31 +50,22 @@ export const useSettingsSecuritySectionState = () => {
             });
             void window.vaultBillDesktop.getHostedWebSettings().then((settings) => {
                 setLanEnabled(settings.lanEnabled);
-                window.localStorage.setItem('vaultbill.lan.enabled', String(settings.lanEnabled));
             });
         } else if (capabilities.isLanBrowser) {
-            void requestHostedApi<{
-                readonly sysAdminUsesDefaultPassword: boolean;
-                readonly backupUsesDefaultPassword: boolean;
-            }>('/credentials/status').then((status) => {
+            void requestHostedApi<CredentialStatus>('/credentials/status').then((status) => {
                 setCredentialStatus(status);
             });
-            void requestHostedApi<{
-                readonly isFullVersion: boolean;
-                readonly isExpired: boolean;
-                readonly remainingSeconds: number;
-            }>('/trial/status').then((status) => {
+            void requestHostedApi<TrialStatus>('/trial/status').then((status) => {
                 setTrialStatus(status);
             });
         }
     }, [capabilities.isLanBrowser]);
 
     useEffect(() => {
-        window.localStorage.setItem(
-            'vaultbill.reports.include-drafts',
-            String(includeDraftsInReports),
-        );
-    }, [includeDraftsInReports]);
+        void loadWorkspaceSettings(capabilities.isLanBrowser).then((settings) => {
+            setIncludeDraftsInReports(settings.includeDraftsInReports);
+        });
+    }, [capabilities.isLanBrowser]);
 
     const createOperator = async () => {
         const username = newUsername.trim();
@@ -169,11 +159,33 @@ export const useSettingsSecuritySectionState = () => {
         onChangePassword: changePassword,
         onLanEnabledChange: (value: boolean) => {
             setLanEnabled(value);
-            window.localStorage.setItem('vaultbill.lan.enabled', String(value));
             void window.vaultBillDesktop?.configureLocalApi({
                 lanEnabled: value,
                 passwordRequired: true,
                 port: 4317,
+            });
+        },
+        onIncludeDraftsInReportsChange: (value: boolean) => {
+            const previousValue = includeDraftsInReports;
+            setIncludeDraftsInReports(value);
+            const save = async () => {
+                const current = await loadWorkspaceSettings(capabilities.isLanBrowser);
+                const nextSettings = { ...current, includeDraftsInReports: value };
+                if (window.vaultBillDesktop) {
+                    await window.vaultBillDesktop.saveBusinessSettings(nextSettings);
+                    return;
+                }
+                if (capabilities.isLanBrowser) {
+                    await requestHostedApi('/settings/business', 'POST', nextSettings);
+                }
+            };
+            void save().catch((reason: unknown) => {
+                setIncludeDraftsInReports(previousValue);
+                setMessage(
+                    reason instanceof Error
+                        ? reason.message
+                        : 'Report settings could not be saved.',
+                );
             });
         },
         onLicenseKeyChange: setLicenseKey,
@@ -189,7 +201,6 @@ export const useSettingsSecuritySectionState = () => {
         operatorContext,
         operatorRole: operatorContext?.role ?? 'User',
         passwordUserId,
-        setIncludeDraftsInReports,
         onActivateLicense: activateLicense,
         trialStatus,
     };

@@ -60,9 +60,17 @@
 
 @media (max-width: 640px) {
     .action-bar {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        right: var(--space-2);
-        bottom: 5.25rem;
-        left: var(--space-2);
+        position: static;
+        grid-template-columns: 1fr;
+        width: 100%;
+        margin-top: var(--space-4);
+        padding: var(--space-2);
+        border-radius: var(--radius-md);
+        box-shadow: 0 0.7rem 1.8rem color-mix(in srgb, var(--color-panel-shadow) 10%, transparent);
+    }
+
+    .action-bar button {
+        width: 100%;
+        min-width: 0;
     }
 }

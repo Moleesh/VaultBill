@@ -1,6 +1,7 @@
 /** @format */
 
 import { requestHostedApi } from '../../runtime/HostedApi';
+import type { WorkspaceSettings } from '../../runtime/WorkspaceSettings';
 import { renderRecordHtml, type RecordPrintPackage } from './RecordPrintHtml';
 import type { AppRecord, EditableRecord } from './RecordStoreContext';
 import type { OutputTask } from './RecordsPageOutputTypes';
@@ -18,6 +19,7 @@ type OutputState = {
     readonly selectedStoredRecord: AppRecord | undefined;
     readonly setNotice: (value: string) => void;
     readonly setOutputTask: (value: OutputTask | undefined) => void;
+    readonly workspaceSettings: Pick<WorkspaceSettings, 'companyName' | 'address' | 'gstin'>;
 };
 
 /** Handles record printing, export, and output cancellation. */
@@ -44,6 +46,7 @@ export const useRecordsPageOutput = (state: OutputState) => {
                 state.record,
                 state.selectedStoredRecord,
                 state.activePrintPackage,
+                state.workspaceSettings,
             );
             if (window.vaultBillDesktop && state.outputTarget === 'DownloadPdf') {
                 const result = await window.vaultBillDesktop.downloadPdf({

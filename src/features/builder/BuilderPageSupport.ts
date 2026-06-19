@@ -1,7 +1,10 @@
 /** @format */
 
 import { builtInDefaultFormat } from '../../db/startup/BuiltInDefaultFormat';
-import { builtInDefaultPrintAsset } from '../../db/startup/BuiltInDefaultPrintTemplate';
+import {
+    builtInDefaultPrintAsset,
+    builtInDefaultPrintTemplateHtml,
+} from '../../db/startup/BuiltInDefaultPrintTemplate';
 import {
     DocumentFormatConfigSchema,
     type DocumentFormatConfig,
@@ -50,11 +53,6 @@ export type SavedPrintTemplate = {
     readonly updatedAt: string;
 };
 
-export const storageKey = 'vaultbill.builder';
-export const legacyStorageKey = 'vaultbill.builder.v24';
-export const htmlStorageKey = 'vaultbill.builder.template-html';
-export const savedTemplatesStorageKey = 'vaultbill.builder.saved-print-templates';
-
 export const cloneDefault = (): DocumentFormatConfig =>
     DocumentFormatConfigSchema.parse(JSON.parse(JSON.stringify(builtInDefaultFormat)) as unknown);
 
@@ -65,18 +63,33 @@ export const builtInSampleAsset: AssetSummary = {
     dataBase64: window.btoa(builtInDefaultPrintAsset.svg),
 };
 
+let browserBuilderConfig = cloneDefault();
+let browserBuilderTemplateHtml = builtInDefaultPrintTemplateHtml;
+let browserBuilderAssets: readonly AssetSummary[] = [builtInSampleAsset];
+let browserSavedTemplates: readonly SavedPrintTemplate[] = [];
+
 export const readConfig = (): DocumentFormatConfig => {
-    try {
-        return DocumentFormatConfigSchema.parse(
-            JSON.parse(
-                window.localStorage.getItem(storageKey) ??
-                    window.localStorage.getItem(legacyStorageKey) ??
-                    'null',
-            ) as unknown,
-        );
-    } catch {
-        return cloneDefault();
-    }
+    return DocumentFormatConfigSchema.parse(browserBuilderConfig);
+};
+
+export const readTemplateHtml = (): string => browserBuilderTemplateHtml;
+
+export const readSavedTemplates = (): readonly SavedPrintTemplate[] => browserSavedTemplates;
+
+export const readBuilderAssets = (): readonly AssetSummary[] => browserBuilderAssets;
+
+export const writeBuilderPackage = (builderPackage: {
+    readonly config: DocumentFormatConfig;
+    readonly templateHtml: string;
+    readonly assets: readonly AssetSummary[];
+    readonly savedTemplates: readonly SavedPrintTemplate[];
+}) => {
+    browserBuilderConfig = DocumentFormatConfigSchema.parse(
+        JSON.parse(JSON.stringify(builderPackage.config)) as unknown,
+    );
+    browserBuilderTemplateHtml = builderPackage.templateHtml;
+    browserBuilderAssets = [...builderPackage.assets];
+    browserSavedTemplates = [...builderPackage.savedTemplates];
 };
 
 export const newField = (index: number): FieldConfig => ({

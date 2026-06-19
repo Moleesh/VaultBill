@@ -25,7 +25,4 @@ export const getOperatorCreationMessage = (role: Role): string =>
 export const isDefaultCredentialsActive = (
     sysAdminUsesDefaultPassword?: boolean,
     backupUsesDefaultPassword?: boolean,
-): boolean =>
-    sysAdminUsesDefaultPassword === true ||
-    backupUsesDefaultPassword === true ||
-    window.localStorage.getItem('vaultbill.default-credentials-active') !== 'false';
+): boolean => sysAdminUsesDefaultPassword === true || backupUsesDefaultPassword === true;

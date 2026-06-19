@@ -2,15 +2,16 @@
 
 import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ReactNode } from 'react';
 
 import type { CapabilityRegistry } from '../../../capability/Capability.types';
 import { CapabilityProvider } from '../../../capability/CapabilityContext';
 import { ContextualHelp } from '../../../components/ContextualHelp';
-import { SessionProvider } from '../../auth/SessionContext';
+import { SessionContext } from '../../auth/SessionContext';
 import { SettingsPage } from '../SettingsPage';
 import { RecordStoreProvider } from '../../records/RecordStoreContext';
+import { createTestSession } from '../../../test/TestSession';
 
 const webCapabilities: CapabilityRegistry = {
     isDesktop: false,
@@ -44,13 +45,33 @@ const desktopCapabilities: CapabilityRegistry = {
     hasLocalDb: true,
 };
 
-const renderPage = (children: ReactNode, capabilities = webCapabilities) =>
+const adminAccount = {
+    userId: 'admin_1',
+    username: 'admin',
+    displayName: 'Operations Admin',
+    role: 'Admin',
+    isActive: true,
+} as const;
+
+const sysAdminAccount = {
+    userId: 'sysadmin_1',
+    username: 'sysadmin',
+    displayName: 'System Administrator',
+    role: 'SysAdmin',
+    isActive: true,
+} as const;
+
+const renderPage = (
+    children: ReactNode,
+    session = createTestSession(adminAccount),
+    capabilities = webCapabilities,
+) =>
     render(
         <MemoryRouter>
             <CapabilityProvider value={capabilities}>
-                <SessionProvider>
+                <SessionContext.Provider value={session}>
                     <RecordStoreProvider>{children}</RecordStoreProvider>
-                </SessionProvider>
+                </SessionContext.Provider>
             </CapabilityProvider>
         </MemoryRouter>,
     );
@@ -59,23 +80,13 @@ describe('settings UI', () => {
     beforeEach(() => {
         document.body.innerHTML = '<div id="portal-root"></div>';
         window.localStorage.clear();
-        window.localStorage.setItem('vaultbill.operator', 'demo_user');
+    });
+
+    afterEach(() => {
+        delete (window as Partial<Window> & { vaultBillDesktop?: unknown }).vaultBillDesktop;
     });
 
     it('shows capability-aware settings and help', () => {
-        window.localStorage.setItem(
-            'vaultbill.accounts',
-            JSON.stringify([
-                {
-                    userId: 'admin_1',
-                    username: 'admin',
-                    displayName: 'Operations Admin',
-                    role: 'Admin',
-                    isActive: true,
-                },
-            ]),
-        );
-        window.localStorage.setItem('vaultbill.operator', 'admin_1');
         const fullWebCapabilities = {
             ...webCapabilities,
             isDemoMode: false,
@@ -94,6 +105,7 @@ describe('settings UI', () => {
                     role="SysAdmin"
                 />
             </>,
+            createTestSession(adminAccount),
             fullWebCapabilities,
         );
 
@@ -106,24 +118,51 @@ describe('settings UI', () => {
         expect(screen.getByText('PDF output')).toBeVisible();
     });
 
-    it('shows desktop printer and backup sections in settings', () => {
-        window.localStorage.setItem(
-            'vaultbill.accounts',
-            JSON.stringify([
-                {
-                    userId: 'sysadmin_1',
-                    username: 'sysadmin',
-                    displayName: 'System Administrator',
-                    role: 'SysAdmin',
-                    isActive: true,
-                },
-            ]),
+    it('shows desktop printer and backup sections in settings', async () => {
+        Object.defineProperty(window, 'vaultBillDesktop', {
+            configurable: true,
+            value: {
+                activateLicense: vi.fn().mockResolvedValue(undefined),
+                configureLocalApi: vi.fn().mockResolvedValue(undefined),
+                getBusinessSettings: vi.fn().mockResolvedValue({
+                    companyName: 'VaultBill',
+                    address: 'Chennai',
+                    gstin: '',
+                    theme: 'teal-flow',
+                    outputTarget: 'SystemPrinter',
+                    preferredPrinterName: 'Front Desk Printer',
+                    includeDraftsInReports: false,
+                }),
+                getCredentialStatus: vi.fn().mockResolvedValue({
+                    sysAdminUsesDefaultPassword: false,
+                    backupUsesDefaultPassword: false,
+                }),
+                getHostedWebSettings: vi.fn().mockResolvedValue({ lanEnabled: true }),
+                getSecretsSettings: vi.fn().mockResolvedValue({ secrets: [] }),
+                getTrialStatus: vi.fn().mockResolvedValue({
+                    isFullVersion: true,
+                    isExpired: false,
+                    remainingSeconds: 0,
+                }),
+                listPrinters: vi.fn().mockResolvedValue([
+                    {
+                        id: 'front-desk',
+                        name: 'Front Desk Printer',
+                        isDefault: true,
+                    },
+                ]),
+                saveBusinessSettings: vi.fn().mockResolvedValue(undefined),
+                saveSecretsSettings: vi.fn().mockResolvedValue(undefined),
+            } as const,
+        });
+
+        renderPage(
+            <SettingsPage />,
+            createTestSession(sysAdminAccount, [sysAdminAccount]),
+            desktopCapabilities,
         );
-        window.localStorage.setItem('vaultbill.operator', 'sysadmin_1');
 
-        renderPage(<SettingsPage />, desktopCapabilities);
-
-        expect(screen.getByText('Preferred printer')).toBeVisible();
+        expect(await screen.findByText('Preferred printer')).toBeVisible();
         expect(screen.getByText(/Store shared keys and values here/i)).toBeVisible();
         expect(screen.getByText('Key')).toBeVisible();
         expect(screen.getByRole('heading', { name: 'Backup and restore' })).toBeVisible();

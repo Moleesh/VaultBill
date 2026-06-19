@@ -11,6 +11,8 @@ export const BusinessSettingsSchema = z.object({
     gstin: z.string().trim(),
     theme: z.string().trim().min(1),
     outputTarget: z.enum(['PreviewOnly', 'DownloadPdf', 'SystemPrinter']),
+    preferredPrinterName: z.string().trim().default(''),
+    includeDraftsInReports: z.boolean().default(false),
 });
 
 const SecretEntrySchema = z.object({
@@ -28,7 +30,7 @@ export const HostedWebSettingsSchema = z.object({
     port: z.number().int().min(1024).max(65_535),
 });
 
-export type BusinessSettings = z.infer<typeof BusinessSettingsSchema>;
+export type BusinessSettings = z.output<typeof BusinessSettingsSchema>;
 export type SecretsSettings = z.infer<typeof SecretsSettingsSchema>;
 export type HostedWebSettings = z.infer<typeof HostedWebSettingsSchema>;
 
@@ -38,6 +40,8 @@ const defaultBusinessSettings: BusinessSettings = {
     gstin: '',
     theme: 'teal-flow',
     outputTarget: 'PreviewOnly',
+    preferredPrinterName: '',
+    includeDraftsInReports: false,
 };
 
 const defaultSecretsSettings: SecretsSettings = {
@@ -74,11 +78,16 @@ export class SettingsStore {
     `);
     }
 
-    public getBusiness = (): BusinessSettings =>
-        this.#read('business', BusinessSettingsSchema, defaultBusinessSettings);
+    public getBusiness = (): BusinessSettings => {
+        const row = this.#database
+            .prepare('SELECT setting_json FROM app_settings WHERE setting_key = ?;')
+            .get('business');
+        if (!row) return defaultBusinessSettings;
+        return BusinessSettingsSchema.parse(JSON.parse(String(row.setting_json)));
+    };
 
     public saveBusiness = (input: unknown): BusinessSettings => {
-        const business = BusinessSettingsSchema.parse(input);
+        const business: BusinessSettings = BusinessSettingsSchema.parse(input);
         this.#write('business', business);
         return business;
     };

@@ -1,62 +1,50 @@
 /** @format */
 
-import { z } from 'zod';
-
 import { demoSeedRecords } from './RecordStoreDemoSeed';
-import { AppRecordSchema } from './RecordStoreSchema';
-import type { AppRecord, EditableRecord } from './RecordStoreSchema';
+import { AppRecordSchema, type AppRecord, type EditableRecord } from './RecordStoreSchema';
 import type { OperatorContext } from '../auth/AccountTypes';
 
 /**
- * Browser-storage keys and helpers for the demo records store.
+ * In-memory helpers for the browser-only demo records store.
  */
 
-/** Primary storage key for browser-backed records. */
-export const browserStorageKey = 'vaultbill.records';
-/** Legacy storage key kept for browser data migrations. */
-export const legacyBrowserStorageKey = 'vaultbill.records.v23';
-/** Primary storage key for the record sequence counter. */
-export const sequenceStorageKey = 'vaultbill.sequence';
-/** Legacy storage key kept for sequence migrations. */
-export const legacySequenceStorageKey = 'vaultbill.sequence.v24';
 /** Custom event name fired when browser records change. */
 export const recordStoreEventName = 'vaultbill-record-store-change';
+
+let browserRecordsCache: readonly AppRecord[] | undefined;
+let browserSequenceValue = 5;
 
 /** Sorts records with the newest activity first. */
 export const sortLatestFirst = (records: readonly AppRecord[]): readonly AppRecord[] =>
     [...records].sort((left, right) => right.updatedAt.localeCompare(left.updatedAt));
 
-/** Reads browser records from localStorage and optionally seeds demo data. */
+const cloneRecords = (records: readonly AppRecord[]): readonly AppRecord[] =>
+    JSON.parse(JSON.stringify(records)) as readonly AppRecord[];
+
+/** Reads browser records from the in-memory demo store. */
 export const readBrowserRecords = (seedDemo: boolean): readonly AppRecord[] => {
-    const rawRecords =
-        window.localStorage.getItem(browserStorageKey) ??
-        window.localStorage.getItem(legacyBrowserStorageKey);
+    browserRecordsCache ??= sortLatestFirst(cloneRecords(seedDemo ? demoSeedRecords : []));
 
-    if (!rawRecords) {
-        return seedDemo ? demoSeedRecords : [];
-    }
-
-    const parsed = z.array(AppRecordSchema).safeParse(JSON.parse(rawRecords) as unknown);
-    return parsed.success ? sortLatestFirst(parsed.data) : seedDemo ? demoSeedRecords : [];
+    return browserRecordsCache;
 };
 
-/** Persists browser-backed records into localStorage. */
+/** Persists browser-backed demo records in memory for the active session. */
 export const writeBrowserRecords = (records: readonly AppRecord[]) => {
-    window.localStorage.setItem(browserStorageKey, JSON.stringify(records));
+    browserRecordsCache = sortLatestFirst(cloneRecords(records));
     window.dispatchEvent(new Event(recordStoreEventName));
 };
 
 /** Returns the next browser-side document number and increments the counter. */
 export const nextDocumentNumber = (): string => {
-    const current = Number.parseInt(
-        window.localStorage.getItem(sequenceStorageKey) ??
-            window.localStorage.getItem(legacySequenceStorageKey) ??
-            '1',
-        10,
-    );
-    const next = Number.isFinite(current) && current > 0 ? current : 1;
-    window.localStorage.setItem(sequenceStorageKey, String(next + 1));
+    const next = browserSequenceValue;
+    browserSequenceValue += 1;
     return `GST-${String(next).padStart(6, '0')}`;
+};
+
+/** Resets the browser-only demo dataset for the current session. */
+export const resetBrowserRecords = () => {
+    browserSequenceValue = 5;
+    writeBrowserRecords(demoSeedRecords);
 };
 
 /** Builds a stored record structure from a browser record and metadata. */

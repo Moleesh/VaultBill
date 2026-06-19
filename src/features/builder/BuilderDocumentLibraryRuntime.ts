@@ -1,14 +1,14 @@
 /** @format */
 
 import type { CapabilityRegistry } from '../../capability/Capability.types';
-import { builtInDefaultPrintTemplateHtml } from '../../db/startup/BuiltInDefaultPrintTemplate';
 import { DocumentFormatConfigSchema } from '../../db/startup/ConfigSchemas';
 import { requestHostedApi } from '../../runtime/HostedApi';
 import {
     base64ByteLength,
-    builtInSampleAsset,
-    htmlStorageKey,
+    readBuilderAssets,
     readConfig,
+    readSavedTemplates,
+    readTemplateHtml,
     type AssetSummary,
     type SavedPrintTemplate,
     type StoredBuilderPackage,
@@ -69,9 +69,9 @@ export const loadBuilderPackage = async ({
 
     return {
         config: readConfig(),
-        templateHtml:
-            window.localStorage.getItem(htmlStorageKey) ?? builtInDefaultPrintTemplateHtml,
-        assets: [builtInSampleAsset],
+        templateHtml: readTemplateHtml(),
+        savedTemplates: readSavedTemplates(),
+        assets: readBuilderAssets(),
     } satisfies StoredBuilderPackage;
 };
 

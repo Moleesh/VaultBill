@@ -17,6 +17,7 @@ import { CredentialStore } from './CredentialStore.js';
 import { DesktopRecordStore } from './RecordStore.js';
 import { SettingsStore } from './SettingsStore.js';
 import { LocalApiServer } from './server/LocalApiServer.js';
+import { defaultHostedWebPort } from './server/LocalApiSecurity.js';
 import { registerMainIpcHandlers } from './MainIpc.js';
 import {
     closeRuntime,
@@ -132,7 +133,10 @@ void app
         });
         mainState.builderStore = new BuilderStore(databasePath);
         mainState.settingsStore = new SettingsStore(databasePath);
-        mainState.hostedWebSettings = mainState.settingsStore.getHostedWeb();
+        mainState.hostedWebSettings = {
+            ...mainState.settingsStore.getHostedWeb(),
+            port: defaultHostedWebPort,
+        };
         mainState.backupService = new BackupService(databasePath, {
             chooseBackupDestination: async (defaultFileName) => {
                 const options: SaveDialogOptions = {
@@ -166,6 +170,7 @@ void app
         );
         registerMainIpcHandlers();
         await mainState.localApiServer.start();
+        mainState.hostedWebSettings = mainState.localApiServer.getConfiguration();
         await createWindow();
         createTray();
         mainState.trialTimer = setInterval(() => mainState.recordStore?.checkpointTrial(), 60_000);

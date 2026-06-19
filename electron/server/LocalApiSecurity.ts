@@ -3,11 +3,13 @@
 import { z } from 'zod';
 
 export const MAX_LOCAL_API_BODY_BYTES = 100 * 1024 * 1024;
+export const defaultHostedWebPort = 80;
+export const fallbackHostedWebPort = 8000;
 
 export const LocalApiConfigurationSchema = z.object({
     lanEnabled: z.boolean().default(false),
     passwordRequired: z.boolean().default(true),
-    port: z.number().int().min(1024).max(65_535).default(4317),
+    port: z.number().int().min(1).max(65_535).default(defaultHostedWebPort),
 });
 
 export type LocalApiConfiguration = z.infer<typeof LocalApiConfigurationSchema>;
@@ -23,6 +25,12 @@ export const isAllowedLocalApiOrigin = (
     if (!origin) return true;
     if (requestHost && origin === `http://${requestHost}`) return true;
     const allowedOrigins = new Set([
+        'http://127.0.0.1',
+        'http://localhost',
+        'http://127.0.0.1:80',
+        'http://localhost:80',
+        'http://127.0.0.1:8000',
+        'http://localhost:8000',
         'http://127.0.0.1:5173',
         'http://localhost:5173',
         'http://127.0.0.1:4317',

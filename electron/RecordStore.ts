@@ -93,6 +93,7 @@ export class DesktopRecordStore {
         const invoiceNumber = query.invoiceNumber.trim().toLocaleLowerCase();
         const reportFilters = query.reportFilters.filter((filter) => filter.value.trim());
         let records = this.list()
+            .filter((record) => query.includeDraftsInReports || record.status !== 'Draft')
             .filter((record) => query.status === 'All' || record.status === query.status)
             .filter(
                 (record) => !customer || record.customerName.toLocaleLowerCase().includes(customer),

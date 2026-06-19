@@ -8,11 +8,13 @@ import type { ReactNode } from 'react';
 import { CapabilityProvider } from '../capability/CapabilityContext';
 import type { CapabilityRegistry } from '../capability/Capability.types';
 import { SearchableDropdown } from '../components/SearchableDropdown/SearchableDropdown';
-import { SessionProvider } from '../features/auth/SessionContext';
+import { SessionContext } from '../features/auth/SessionContext';
+import { demoAccount } from '../features/auth/SessionSupport';
 import { BuilderPage } from '../features/builder/BuilderPage';
 import { RecordsPage } from '../features/records/RecordsPage';
 import { RecordStoreProvider } from '../features/records/RecordStoreContext';
 import { ReportsPage } from '../features/reports/ReportsPage';
+import { createTestSession } from '../test/TestSession';
 
 const webCapabilities: CapabilityRegistry = {
     isDesktop: false,
@@ -35,9 +37,9 @@ const renderPage = (children: ReactNode, capabilities = webCapabilities) =>
     render(
         <MemoryRouter>
             <CapabilityProvider value={capabilities}>
-                <SessionProvider>
+                <SessionContext.Provider value={createTestSession(demoAccount)}>
                     <RecordStoreProvider>{children}</RecordStoreProvider>
-                </SessionProvider>
+                </SessionContext.Provider>
             </CapabilityProvider>
         </MemoryRouter>,
     );
@@ -46,7 +48,6 @@ describe('product UI', () => {
     beforeEach(() => {
         document.body.innerHTML = '<div id="portal-root"></div>';
         window.localStorage.clear();
-        window.localStorage.setItem('vaultbill.operator', 'demo_user');
     });
 
     it('moves a new record into the saved Draft state', async () => {
@@ -95,11 +96,11 @@ describe('product UI', () => {
         render(
             <MemoryRouter initialEntries={['/app/builder?step=fields']}>
                 <CapabilityProvider value={webCapabilities}>
-                    <SessionProvider>
+                    <SessionContext.Provider value={createTestSession(demoAccount)}>
                         <RecordStoreProvider>
                             <BuilderPage />
                         </RecordStoreProvider>
-                    </SessionProvider>
+                    </SessionContext.Provider>
                 </CapabilityProvider>
             </MemoryRouter>,
         );
@@ -132,11 +133,11 @@ describe('product UI', () => {
         render(
             <MemoryRouter initialEntries={['/app/builder?step=preview']}>
                 <CapabilityProvider value={webCapabilities}>
-                    <SessionProvider>
+                    <SessionContext.Provider value={createTestSession(demoAccount)}>
                         <RecordStoreProvider>
                             <BuilderPage />
                         </RecordStoreProvider>
-                    </SessionProvider>
+                    </SessionContext.Provider>
                 </CapabilityProvider>
             </MemoryRouter>,
         );

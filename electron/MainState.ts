@@ -8,8 +8,10 @@ import type { CredentialStore } from './CredentialStore.js';
 import type { DesktopRecordStore } from './RecordStore.js';
 import type { SettingsStore } from './SettingsStore.js';
 import type { LocalApiServer } from './server/LocalApiServer.js';
+import { defaultHostedWebPort } from './server/LocalApiSecurity.js';
 
-export const hostedAppUrl = 'http://127.0.0.1:4317';
+export const hostedAppUrl = (): string =>
+    `http://127.0.0.1:${String(mainState.hostedWebSettings.port)}`;
 
 export type MainIdentity = {
     readonly appName: string;
@@ -49,7 +51,7 @@ export const mainState: MainState = {
     localApiServer: undefined,
     mainWindow: undefined,
     tray: undefined,
-    hostedWebSettings: { lanEnabled: false, passwordRequired: true, port: 4317 },
+    hostedWebSettings: { lanEnabled: false, passwordRequired: true, port: defaultHostedWebPort },
     isQuitting: false,
     trialTimer: undefined,
     runtimeClosePromise: undefined,

@@ -3,7 +3,11 @@
 import type { DocumentFormatConfig } from '../../db/startup/ConfigSchemas';
 import type { AppRecord, EditableRecord } from './RecordStoreContext';
 import { calculateRecordTotals } from './RecordTotals';
-import { escapePrintHtml, readBusinessProfile, recordFieldValue } from './RecordPrintHtmlSupport';
+import {
+    escapePrintHtml,
+    recordFieldValue,
+    type PrintBusinessProfile,
+} from './RecordPrintHtmlSupport';
 
 type PrintPackageLike = {
     readonly config: DocumentFormatConfig;
@@ -27,7 +31,7 @@ const renderFallbackRecordHtml = (
     <meta charset="utf-8">
     <title>${escapePrintHtml(stored?.documentNumber ?? 'VaultBill Draft')}</title>
     <style>
-      body { font-family: sans-serif; margin: 32px; color: #102f2b; }
+      body { font-family: 'Trebuchet MS', 'Candara', 'Segoe UI', sans-serif; margin: 32px; color: #102f2b; }
       table { width: 100%; border-collapse: collapse; margin-top: 24px; }
       th, td { border-bottom: 1px solid #c7d9d5; padding: 10px; text-align: left; }
       .summary {
@@ -82,8 +86,8 @@ const renderConfiguredRecordHtml = (
     record: EditableRecord,
     stored: AppRecord | undefined,
     printPackage: PrintPackageLike,
+    business: PrintBusinessProfile,
 ): string => {
-    const business = readBusinessProfile();
     const totals = calculateRecordTotals(record);
     const itemRows = record.lineItems
         .map(
@@ -145,7 +149,8 @@ export const renderRecordHtml = (
     record: EditableRecord,
     stored: AppRecord | undefined,
     printPackage?: PrintPackageLike,
+    business: PrintBusinessProfile = { companyName: '', address: '', gstin: '' },
 ): string =>
     printPackage
-        ? renderConfiguredRecordHtml(record, stored, printPackage)
+        ? renderConfiguredRecordHtml(record, stored, printPackage, business)
         : renderFallbackRecordHtml(record, stored);

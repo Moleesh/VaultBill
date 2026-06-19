@@ -1,6 +1,14 @@
 /** @format */
 
-import { ChevronLeft, ChevronRight, KeyRound, LogOut, RotateCcw, Server } from 'lucide-react';
+import {
+    ChevronLeft,
+    ChevronRight,
+    ExternalLink,
+    KeyRound,
+    LogOut,
+    RotateCcw,
+    Server,
+} from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import type { FC } from 'react';
 
@@ -20,10 +28,12 @@ type AppShellSidebarProps = {
     readonly isLanBrowser: boolean;
     readonly operatorDisplayName: string;
     readonly operatorRole: string;
+    readonly hostedWebUrl?: string;
     readonly themeController: ThemeController;
     readonly onToggleExpanded: () => void;
     readonly onChangePassword: () => void;
     readonly onResetDemo: () => void;
+    readonly onOpenHostedWeb: () => void;
     readonly onLogout: () => void;
 };
 
@@ -37,10 +47,12 @@ export const AppShellSidebar: FC<AppShellSidebarProps> = ({
     isLanBrowser,
     operatorDisplayName,
     operatorRole,
+    hostedWebUrl,
     themeController,
     onToggleExpanded,
     onChangePassword,
     onResetDemo,
+    onOpenHostedWeb,
     onLogout,
 }) => (
     <aside className="app-shell-sidebar">
@@ -81,13 +93,29 @@ export const AppShellSidebar: FC<AppShellSidebarProps> = ({
                 <small>{isDemoMode ? 'Demo mode' : operatorRole}</small>
                 {!isDemoMode && (isDesktop || isLanBrowser) ? (
                     <small className="app-shell-host-status">
-                        <Server aria-hidden="true" size={13} />
+                        {isDesktop ? <Server aria-hidden="true" size={13} /> : null}
                         {isDesktop ? 'Hosted web active' : 'Connected to desktop host'}
+                    </small>
+                ) : null}
+                {hostedWebUrl ? (
+                    <small className="app-shell-host-status app-shell-host-url">
+                        {hostedWebUrl.replace(/^https?:\/\//u, '')}
                     </small>
                 ) : null}
             </div>
             <div className="app-shell-operator-actions">
                 <ThemePalette controller={themeController} />
+                {hostedWebUrl ? (
+                    <button
+                        className="icon-button"
+                        aria-label="Open hosted web"
+                        onClick={onOpenHostedWeb}
+                        title={hostedWebUrl}
+                        type="button"
+                    >
+                        <ExternalLink aria-hidden="true" size={20} />
+                    </button>
+                ) : null}
                 {!isDemoMode ? (
                     <button
                         className="icon-button"

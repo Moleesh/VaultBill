@@ -1,5 +1,6 @@
 /** @format */
 
+import type { WorkspaceSettings } from '../../runtime/WorkspaceSettings';
 import type { EditableRecord } from './RecordStoreContext';
 import { calculateRecordTotals } from './RecordTotals';
 
@@ -42,25 +43,7 @@ export const recordFieldValue = (fieldId: string, record: EditableRecord): strin
     );
 };
 
-/** Reads the business profile used by print templates from browser storage. */
-export const readBusinessProfile = (): {
-    readonly companyName: string;
-    readonly address: string;
-    readonly gstin: string;
-} => {
-    try {
-        const profile = JSON.parse(
-            window.localStorage.getItem('vaultbill.business-profile') ?? '{}',
-        ) as { companyName?: unknown; address?: unknown };
-        return {
-            companyName: typeof profile.companyName === 'string' ? profile.companyName : '',
-            address: typeof profile.address === 'string' ? profile.address : '',
-            gstin: window.localStorage.getItem('vaultbill.company-gstin') ?? '',
-        };
-    } catch {
-        return { companyName: '', address: '', gstin: '' };
-    }
-};
+export type PrintBusinessProfile = Pick<WorkspaceSettings, 'companyName' | 'address' | 'gstin'>;
 
 /** Strips the document wrapper while preserving inline styles for print output. */
 export const extractDocumentFragment = (document: string): string => {

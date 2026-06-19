@@ -1,8 +1,14 @@
 /** @format */
 
+import { fileURLToPath } from 'node:url';
+
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
 
+const desktopBridgeScriptPath = fileURLToPath(
+    new URL('./installDesktopBridge.runtime.js', import.meta.url),
+);
+const desktopRecordsStorageKey = '__vaultbill_e2e_desktop_records__';
 const viewports = [
     { name: 'mobile', width: 390, height: 844 },
     { name: 'tablet', width: 768, height: 1024 },
@@ -11,46 +17,14 @@ const viewports = [
 ] as const;
 
 test.beforeEach(async ({ page }) => {
-    await page.addInitScript(() => {
-        if (!window.sessionStorage.getItem('__vaultbillInitCleared')) {
-            window.localStorage.clear();
-            window.sessionStorage.clear();
-            window.sessionStorage.setItem('__vaultbillInitCleared', 'true');
-        }
-    });
-    await page.goto('login');
-    await page.evaluate(() => {
-        window.localStorage.setItem('vaultbill.setup.complete', 'true');
-        window.localStorage.setItem(
-            'vaultbill.accounts',
-            JSON.stringify([
-                {
-                    userId: 'sysadmin_1',
-                    username: 'sysadmin',
-                    displayName: 'System Administrator',
-                    role: 'SysAdmin',
-                    isActive: true,
-                },
-                {
-                    userId: 'admin_1',
-                    username: 'admin',
-                    displayName: 'Operations Admin',
-                    role: 'Admin',
-                    isActive: true,
-                },
-            ]),
-        );
-    });
-    await page.reload();
+    await page.addInitScript({ path: desktopBridgeScriptPath });
     await page.goto('login');
 });
 
 const loginAsAdmin = async (page: Page) => {
-    if (process.env.VITE_DEMO_MODE !== 'true') {
-        await page.getByRole('button', { name: /Operator account/u }).click();
-        await page.getByRole('option', { name: /Operations Admin/u }).click();
-    }
-    await page.getByRole('button', { name: /Log in|Start demo/u }).click();
+    await page.getByRole('button', { name: /Operator account/u }).click();
+    await page.getByRole('option', { name: /Operations Admin/u }).click();
+    await page.getByRole('button', { name: /Log in/u }).click();
 };
 
 test('operator can log in, create records, and open contextual help', async ({ page }) => {
@@ -66,7 +40,10 @@ test('operator can log in, create records, and open contextual help', async ({ p
 
 test('Admin direct Builder URL is redirected to Records', async ({ page }) => {
     await loginAsAdmin(page);
-    await page.goto(page.url().replace(/\/app\/[^/?]+(?:\?.*)?$/u, '/app/builder'));
+    await page.evaluate(() => {
+        window.history.pushState({}, '', '/app/builder');
+        window.dispatchEvent(new PopStateEvent('popstate'));
+    });
     await expect(page.getByRole('heading', { name: /Create GST Invoice/u })).toBeVisible();
 });
 
@@ -75,36 +52,36 @@ test('mobile help opens as a full-screen sheet', async ({ page }) => {
     await loginAsAdmin(page);
     await page.getByRole('link', { name: /Records/u }).click();
     await page.keyboard.press('F1');
-
     const helpDialog = page.getByRole('dialog', { name: 'records help' });
     await expect(helpDialog).toBeVisible();
     await expect(helpDialog).toHaveClass(/app-sheet/u);
 });
 
-test('demo web saves and reloads a draft in browser storage', async ({ page }) => {
+test('desktop bridge saves and reloads a draft between refreshes', async ({ page }) => {
     const customerName = `Playwright ${Date.now().toString()}`;
-    const startDemoButton = page.getByRole('button', { name: 'Start demo' });
-    if ((await startDemoButton.count()) > 0) {
-        await startDemoButton.click();
-    } else {
-        await loginAsAdmin(page);
-    }
+    await loginAsAdmin(page);
     await page.getByRole('link', { name: /Records/u }).click();
     await page.getByPlaceholder('Business or customer name').fill(customerName);
     await page.getByRole('button', { name: /^Draft(?: Control\+S)?$/u }).click();
     await expect(page.getByText(/Draft saved/u)).toBeVisible();
-
-    const storedRecordsJson = await page.evaluate<string>(
-        () => window.localStorage.getItem('vaultbill.records') ?? '[]',
-    );
-    expect(storedRecordsJson).toContain(customerName);
-    expect(storedRecordsJson).toContain('"status":"Draft"');
-
+    await expect
+        .poll(() =>
+            page.evaluate(
+                (storageKey) => window.localStorage.getItem(storageKey) ?? '[]',
+                desktopRecordsStorageKey,
+            ),
+        )
+        .toContain(customerName);
     await page.reload();
-    const reloadedRecordsJson = await page.evaluate<string>(
-        () => window.localStorage.getItem('vaultbill.records') ?? '[]',
-    );
-    expect(reloadedRecordsJson).toContain(customerName);
+    await loginAsAdmin(page);
+    await expect
+        .poll(() =>
+            page.evaluate(
+                (storageKey) => window.localStorage.getItem(storageKey) ?? '[]',
+                desktopRecordsStorageKey,
+            ),
+        )
+        .toContain(customerName);
 });
 
 for (const viewport of viewports) {
@@ -112,10 +89,11 @@ for (const viewport of viewports) {
         await page.setViewportSize(viewport);
         await loginAsAdmin(page);
         await page.getByRole('link', { name: /Records/u }).click();
-        const hasOverflow = await page.evaluate(
-            () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
-        );
-        expect(hasOverflow).toBe(false);
+        expect(
+            await page.evaluate(
+                () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
+            ),
+        ).toBe(false);
         await expect(page.getByRole('region', { name: 'Record actions' })).toBeVisible();
     });
 }

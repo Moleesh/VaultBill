@@ -2,6 +2,7 @@
 
 import type { Dispatch, SetStateAction } from 'react';
 
+import type { WorkspaceSettings } from '../../runtime/WorkspaceSettings';
 import { firstMissingRequiredField, toEditableRecord } from './RecordsPageSupport';
 import {
     confirmCancelRecord,
@@ -74,6 +75,7 @@ type RecordsPageState = {
     readonly activePrintPackage: RecordPrintPackage | undefined;
     readonly outputTarget: string;
     readonly preferredPrinterName: string;
+    readonly workspaceSettings: Pick<WorkspaceSettings, 'companyName' | 'address' | 'gstin'>;
 };
 
 /**
@@ -91,6 +93,7 @@ export const useRecordsPageActions = (state: RecordsPageState) => {
         selectedStoredRecord: state.selectedStoredRecord,
         setNotice: state.setNotice,
         setOutputTask: state.setOutputTask,
+        workspaceSettings: state.workspaceSettings,
     });
 
     const markChanged = (nextRecord: EditableRecord) => {

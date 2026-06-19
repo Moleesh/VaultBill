@@ -8,6 +8,7 @@ import type { CredentialStore, DesktopOperatorAccount } from '../CredentialStore
 import type { DesktopRecordStore } from '../RecordStore.js';
 import type { SettingsStore } from '../SettingsStore.js';
 import {
+    fallbackHostedWebPort,
     getLocalApiHost,
     isAllowedLocalApiOrigin,
     LocalApiConfigurationSchema,
@@ -62,6 +63,8 @@ export class LocalApiServer {
 
     public start = async (): Promise<void> => {
         if (this.#server) return;
+        const requestedPort = this.#configuration.port;
+        const host = getLocalApiHost(this.#configuration);
         this.#server = createServer((request, response) => {
             void this.#handle(request, response).catch((error: unknown) => {
                 this.#sendError(response, error);
@@ -69,11 +72,21 @@ export class LocalApiServer {
         });
         await new Promise<void>((resolve, reject) => {
             this.#server?.once('error', reject);
-            this.#server?.listen(
-                this.#configuration.port,
-                getLocalApiHost(this.#configuration),
-                resolve,
-            );
+            this.#server?.listen(requestedPort, host, resolve);
+        }).catch(async (error: unknown) => {
+            const errorCode =
+                error instanceof Error && 'code' in error
+                    ? (error as Error & { readonly code?: string }).code
+                    : undefined;
+            if (requestedPort !== fallbackHostedWebPort && errorCode === 'EADDRINUSE') {
+                this.#configuration = { ...this.#configuration, port: fallbackHostedWebPort };
+                this.#server?.removeAllListeners('error');
+                this.#server?.close();
+                this.#server = undefined;
+                await this.start();
+                return;
+            }
+            throw error;
         });
     };
 
@@ -92,6 +105,8 @@ export class LocalApiServer {
         );
         return next;
     };
+
+    public getConfiguration = (): LocalApiConfiguration => this.#configuration;
 
     public stop = async (): Promise<void> => {
         const server = this.#server;
@@ -121,8 +136,24 @@ export class LocalApiServer {
         response.setHeader('content-type', 'application/json');
         response.setHeader('x-content-type-options', 'nosniff');
         response.setHeader('cache-control', 'no-store');
-        if (!isAllowedLocalApiOrigin(request.headers.origin, request.headers.host)) {
+        const requestOrigin = request.headers.origin;
+        if (!isAllowedLocalApiOrigin(requestOrigin, request.headers.host)) {
             this.#send(response, 403, { error: 'Origin is not allowed.' });
+            return;
+        }
+        if (requestOrigin) {
+            response.setHeader('access-control-allow-origin', requestOrigin);
+            response.setHeader('access-control-allow-credentials', 'true');
+            response.setHeader(
+                'access-control-allow-headers',
+                'content-type, x-vaultbill-csrf, x-vaultbill-sysadmin-password, x-vaultbill-backup-password, x-vaultbill-recovery-key',
+            );
+            response.setHeader('access-control-allow-methods', 'GET, POST, OPTIONS');
+            response.setHeader('vary', 'Origin');
+        }
+        if (request.method === 'OPTIONS') {
+            response.writeHead(204);
+            response.end();
             return;
         }
         if (await tryServeStaticApp(request, response, this.#staticDirectory)) return;

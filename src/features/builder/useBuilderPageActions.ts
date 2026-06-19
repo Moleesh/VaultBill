@@ -8,10 +8,8 @@ import { DocumentFormatConfigSchema } from '../../db/startup/ConfigSchemas';
 import { applyCalculationOrder } from './BuilderPageCalculationSupport';
 import {
     confirmLargeFile,
-    htmlStorageKey,
     mimeTypeFromName,
-    savedTemplatesStorageKey,
-    storageKey,
+    writeBuilderPackage,
     type AssetSummary,
     type SavedPrintTemplate,
 } from './BuilderPageSupport';
@@ -157,12 +155,7 @@ export const useBuilderPageActions = ({
             } else if (capabilities.isLanBrowser) {
                 await requestHostedApi<unknown>('/builder/package', 'POST', builderPackage);
             } else {
-                window.localStorage.setItem(storageKey, JSON.stringify(orderedConfig));
-                window.localStorage.setItem(htmlStorageKey, templateHtml);
-                window.localStorage.setItem(
-                    savedTemplatesStorageKey,
-                    JSON.stringify(savedTemplates),
-                );
+                writeBuilderPackage(builderPackage);
             }
             setMessage('Format, print template, and assets published.');
         } catch (reason: unknown) {

@@ -1,27 +1,22 @@
 /** @format */
 
-import { BrowserWindow, ipcMain } from 'electron';
-import { z } from 'zod';
+import { BrowserWindow, ipcMain, shell } from 'electron';
 
 import { cancelOutputJob, printHtmlWithElectron } from './PrintBridge.js';
 import { renderHtmlToPdf } from './PdfBridge.js';
 import { listElectronPrinters } from './PrinterBridge.js';
-import { mainState } from './MainState.js';
+import { hostedAppUrl, mainState } from './MainState.js';
 import { refreshTray } from './MainRuntime.js';
 import { LocalApiConfigurationSchema } from './server/LocalApiSecurity.js';
 import { registerMainIpcBackupHandlers } from './MainIpcBackupHandlers.js';
-
-const SetupCompleteRequestSchema = z.object({
-    companyName: z.string().trim().min(1),
-    address: z.string().trim().min(1),
-    adminUsername: z.string().trim().min(1),
-    adminDisplayName: z.string().trim().min(1),
-});
+import { completeSetup } from './SetupSupport.js';
 
 export const registerMainIpcHandlers = () => {
     ipcMain.handle('vaultbill:get-app-identity', () => mainState.identity);
+    ipcMain.handle('vaultbill:hosted-web:url', () => hostedAppUrl());
+    ipcMain.handle('vaultbill:hosted-web:open', () => shell.openExternal(hostedAppUrl()));
     ipcMain.handle('vaultbill:window:minimize', () => mainState.mainWindow?.minimize());
-    ipcMain.handle('vaultbill:window:close', () => mainState.mainWindow?.close());
+    ipcMain.handle('vaultbill:window:close', () => mainState.mainWindow?.hide());
 
     ipcMain.handle(
         'vaultbill:accounts:list',
@@ -82,19 +77,7 @@ export const registerMainIpcHandlers = () => {
         if (!mainState.credentialStore || !mainState.settingsStore) {
             throw new Error('Setup services are not ready.');
         }
-        const setup = SetupCompleteRequestSchema.parse(request);
-        mainState.settingsStore.saveBusiness({
-            ...mainState.settingsStore.getBusiness(),
-            companyName: setup.companyName,
-            address: setup.address,
-        });
-        mainState.credentialStore.saveAccount({
-            userId: 'admin_1',
-            username: setup.adminUsername,
-            displayName: setup.adminDisplayName,
-            role: 'Admin',
-            isActive: true,
-        });
+        completeSetup(mainState.credentialStore, mainState.settingsStore, request);
         return {
             credentialStatus: mainState.credentialStore.getCredentialStatus(),
             business: mainState.settingsStore.getBusiness(),
@@ -164,7 +147,7 @@ export const registerMainIpcHandlers = () => {
         refreshTray();
         return mainState.hostedWebSettings;
     });
-    ipcMain.handle('vaultbill:local-api:settings', () => mainState.settingsStore?.getHostedWeb());
+    ipcMain.handle('vaultbill:local-api:settings', () => mainState.hostedWebSettings);
     ipcMain.handle('vaultbill:trial:status', () => mainState.recordStore?.checkpointTrial());
     ipcMain.handle('vaultbill:trial:activate', (_event, licenseKey: unknown) => {
         if (!mainState.recordStore || typeof licenseKey !== 'string') {

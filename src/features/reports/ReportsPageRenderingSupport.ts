@@ -63,7 +63,7 @@ export const renderReportHtml = (reportId: string, records: readonly AppRecord[]
     <meta charset="utf-8">
     <title>${escapePrintHtml(reportId)}</title>
     <style>
-      body { font-family: sans-serif; margin: 32px; color: #102f2b; }
+      body { font-family: 'Trebuchet MS', 'Candara', 'Segoe UI', sans-serif; margin: 32px; color: #102f2b; }
       table { width: 100%; border-collapse: collapse; }
       th, td { border-bottom: 1px solid #c7d9d5; padding: 8px; text-align: left; }
       th:last-child, td:last-child { text-align: right; }

@@ -4,10 +4,9 @@ import type { OperatorAccount } from './AccountTypes';
 import type { SessionContextValue } from './SessionTypes';
 import { requestHostedApi } from '../../runtime/HostedApi';
 import {
-    accountStorageKey,
     defaultPasswordHash,
     hashPassword,
-    sessionStorageKey,
+    fallbackBrowserAccounts,
     type HostedSessionPayload,
     validateManagedAccounts,
 } from './SessionSupport';
@@ -27,13 +26,6 @@ type SessionActionDependencies = {
  */
 export const createSessionActions = (dependencies: SessionActionDependencies) => {
     const persistAccounts = (nextAccounts: readonly OperatorAccount[]) => {
-        if (
-            !dependencies.isDemoMode() &&
-            !dependencies.isLanBrowser() &&
-            !window.vaultBillDesktop
-        ) {
-            window.localStorage.setItem(accountStorageKey, JSON.stringify(nextAccounts));
-        }
         dependencies.saveAccounts(nextAccounts);
     };
 
@@ -68,7 +60,6 @@ export const createSessionActions = (dependencies: SessionActionDependencies) =>
             }
         }
 
-        window.localStorage.setItem(sessionStorageKey, selectedAccount.userId);
         dependencies.setAccount(selectedAccount);
     };
 
@@ -78,18 +69,18 @@ export const createSessionActions = (dependencies: SessionActionDependencies) =>
                 dependencies.setHostedCsrfToken(undefined);
             });
         }
-        window.localStorage.removeItem(sessionStorageKey);
         dependencies.setAccount(undefined);
     };
 
     const saveAccount: SessionContextValue['saveAccount'] = async (nextAccount) => {
         const accounts = dependencies.accounts();
         const existing = accounts.find((candidate) => candidate.userId === nextAccount.userId);
+        const baseAccounts = accounts.length > 0 ? accounts : fallbackBrowserAccounts;
         const nextAccounts = existing
-            ? accounts.map((candidate) =>
+            ? baseAccounts.map((candidate) =>
                   candidate.userId === nextAccount.userId ? nextAccount : candidate,
               )
-            : [...accounts, nextAccount];
+            : [...baseAccounts, nextAccount];
         const validation = validateManagedAccounts(nextAccounts);
         if (validation) throw new Error(validation);
         if (window.vaultBillDesktop && !dependencies.isDemoMode()) {

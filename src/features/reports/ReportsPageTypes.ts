@@ -2,6 +2,7 @@
 
 import type { RefObject } from 'react';
 import type { CapabilityRegistry } from '../../capability/Capability.types';
+import type { WorkspaceSettings } from '../../runtime/WorkspaceSettings';
 import type { AppRecord } from '../records/RecordStoreSupport';
 import type { PrintTask } from './ReportsPageSupport';
 
@@ -21,6 +22,7 @@ export type ReportsPageActionInput = {
     readonly setTask: (task: PrintTask | undefined) => void;
     readonly setPrintSource: (records: readonly AppRecord[]) => void;
     readonly printSource: readonly AppRecord[];
+    readonly workspaceSettings: Pick<WorkspaceSettings, 'companyName' | 'address' | 'gstin'>;
 };
 
 export type ReportsPageController = {
@@ -74,4 +76,5 @@ export type ReportsPageController = {
     readonly usesServerPaging: boolean;
     readonly visibleCount: number;
     readonly visibleRecords: readonly AppRecord[];
+    readonly workspaceSettings: WorkspaceSettings;
 };

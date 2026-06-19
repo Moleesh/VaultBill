@@ -1,31 +1,17 @@
 /** @format */
 
 /**
- * Verifies the record print template helpers that format placeholders for both
- * browser printing and the desktop host.
+ * Verifies the record print template helpers that resolve placeholders and
+ * extract the printable HTML fragment.
  */
 
-import { afterEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import { calculateRecordTotals } from '../RecordTotals';
-import {
-    extractDocumentFragment,
-    readBusinessProfile,
-    recordFieldValue,
-} from '../RecordPrintHtmlSupport';
-
-afterEach(() => {
-    window.localStorage.clear();
-});
+import { extractDocumentFragment, recordFieldValue } from '../RecordPrintHtmlSupport';
 
 describe('RecordPrintHtmlSupport', () => {
-    it('reads business profile data and resolves print placeholders', () => {
-        window.localStorage.setItem(
-            'vaultbill.business-profile',
-            JSON.stringify({ companyName: 'VaultBill', address: 'Chennai' }),
-        );
-        window.localStorage.setItem('vaultbill.company-gstin', '33ABCDE1234F1Z5');
-
+    it('resolves print placeholders from records and line items', () => {
         const record = {
             recordId: 'record-1',
             invoiceDate: '2026-06-01',
@@ -49,11 +35,6 @@ describe('RecordPrintHtmlSupport', () => {
             fieldValues: { CustomField: 'Custom value' },
         } as never;
 
-        expect(readBusinessProfile()).toEqual({
-            companyName: 'VaultBill',
-            address: 'Chennai',
-            gstin: '33ABCDE1234F1Z5',
-        });
         expect(recordFieldValue('CustomerName', record)).toBe('Acme');
         expect(recordFieldValue('Amount', record)).toBe('20.00');
         expect(recordFieldValue('CustomField', record)).toBe('Custom value');

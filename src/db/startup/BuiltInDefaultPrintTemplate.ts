@@ -9,7 +9,7 @@ export const builtInDefaultPrintTemplateHtml = `<!doctype html>
     <style>
       :root {
         color-scheme: light;
-        font-family: Inter, Arial, sans-serif;
+        font-family: 'Trebuchet MS', 'Candara', 'Segoe UI', sans-serif;
       }
       body {
         margin: 0;

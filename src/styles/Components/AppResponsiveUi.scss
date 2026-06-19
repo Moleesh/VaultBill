@@ -64,6 +64,36 @@
         flex-direction: column;
     }
 
+    .setup-card {
+        min-height: auto;
+        height: auto;
+        padding: var(--space-4);
+    }
+
+    .setup-card-header {
+        grid-template-columns: minmax(0, 1fr);
+        justify-items: start;
+    }
+
+    .setup-steps .horizontal-progress-track {
+        grid-template-columns: 1fr;
+        overflow: visible;
+    }
+
+    .setup-card-content {
+        padding: var(--space-4);
+    }
+
+    .setup-card-actions {
+        display: grid;
+        grid-template-columns: 1fr;
+        align-items: stretch;
+    }
+
+    .setup-card-actions > * {
+        width: 100%;
+    }
+
     .app-sheet {
         width: 100%;
         height: 100%;
@@ -78,5 +108,81 @@
 
     .record-list article span {
         grid-column: 1 / -1;
+    }
+
+    .records-page,
+    .record-workspace,
+    .record-workspace-form {
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    .record-workspace-form {
+        overflow: hidden;
+        border-inline: 0;
+        border-radius: var(--radius-md);
+        padding: var(--space-4);
+    }
+
+    .records-page .operational-header {
+        display: grid;
+        align-items: start;
+    }
+
+    .records-page .operational-header > *,
+    .records-page .searchable-dropdown,
+    .records-page .searchable-dropdown-button {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .line-item-grid {
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    .line-item-grid .horizontal-progress-track {
+        overflow-x: visible;
+    }
+
+    .line-item-grid-row {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        min-width: 0;
+        overflow: hidden;
+        border: var(--line-width) solid var(--color-border);
+        border-radius: var(--radius-md);
+        background: var(--color-surface-raised);
+    }
+
+    .line-item-grid-header {
+        display: none;
+    }
+
+    .line-item-grid-row > * {
+        width: 100%;
+        min-width: 0;
+        border-width: 0 0 var(--line-width);
+        border-radius: 0;
+    }
+
+    .line-item-grid-row > :nth-child(odd) {
+        border-right: var(--line-width) solid var(--color-border);
+    }
+
+    .line-item-grid-row > :nth-last-child(-n + 2) {
+        border-bottom: 0;
+    }
+
+    .line-item-grid-row > output {
+        display: grid;
+        align-items: center;
+        min-height: 3rem;
+        color: var(--color-text-heading);
+        font-weight: var(--font-weight-bold);
+    }
+
+    .line-item-grid-item + .line-item-grid-item {
+        margin-top: var(--space-3);
     }
 }

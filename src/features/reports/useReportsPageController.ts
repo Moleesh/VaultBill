@@ -14,6 +14,7 @@ export const useReportsPageController = (): ReportsPageController => {
         setPrintSource: data.setPrintSource,
         setTask: data.setTask,
         totalRecords: data.totalRecords,
+        workspaceSettings: data.workspaceSettings,
     });
     return { ...data, ...actions };
 };

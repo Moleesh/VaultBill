@@ -1,12 +1,26 @@
 /** @format */
 
+import { useEffect, useState } from 'react';
+
 import { useReportsPageFilters } from './useReportsPageFilters';
 import { useReportsPagePaging } from './useReportsPagePaging';
 import { useCapabilities } from '../../capability/CapabilityContext';
+import {
+    defaultWorkspaceSettings,
+    loadWorkspaceSettings,
+    type WorkspaceSettings,
+} from '../../runtime/WorkspaceSettings';
 
 export const useReportsPageData = () => {
     const capabilities = useCapabilities();
-    const filters = useReportsPageFilters();
+    const [workspaceSettings, setWorkspaceSettings] =
+        useState<WorkspaceSettings>(defaultWorkspaceSettings);
+    const filters = useReportsPageFilters(workspaceSettings.includeDraftsInReports);
+
+    useEffect(() => {
+        void loadWorkspaceSettings(capabilities.isLanBrowser).then(setWorkspaceSettings);
+    }, [capabilities.isLanBrowser]);
+
     const paging = useReportsPagePaging(
         filters.query,
         filters.browserMatchingRecords,
@@ -22,5 +36,6 @@ export const useReportsPageData = () => {
         error: paging.pageError,
         isLoading: paging.pageLoading,
         toDate: filters.toDate,
+        workspaceSettings,
     } as const;
 };

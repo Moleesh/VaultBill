@@ -3,7 +3,7 @@
 /** Root application entry that wires the router, shell, and mode-specific page stack. */
 
 import { Navigate, Route, Routes } from 'react-router-dom';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { FC } from 'react';
 
 import { CapabilityProvider } from './capability/CapabilityContext';
@@ -19,15 +19,77 @@ import { RecordsPage } from './features/records/RecordsPage';
 import { ReportsPage } from './features/reports/ReportsPage';
 import { SettingsPage } from './features/settings/SettingsPage';
 import { RecordStoreProvider } from './features/records/RecordStoreContext';
-import { isFirstRunSetupRequired, SetupPage } from './features/setup/SetupPage';
+import { SetupPage } from './features/setup/SetupPage';
+import { requestHostedApi } from './runtime/HostedApi';
 
 const AppRoutes: FC = () => {
     const capabilities = useCapabilities();
-    const [, setSetupRevision] = useState(0);
-    const setupRequired = isFirstRunSetupRequired(
-        capabilities.isDemoMode,
-        capabilities.isLanBrowser,
+    const [setupRevision, setSetupRevision] = useState(0);
+    const [desktopSetupRequired, setDesktopSetupRequired] = useState<boolean | null>(
+        !capabilities.isDemoMode && (window.vaultBillDesktop || capabilities.isLanBrowser)
+            ? null
+            : false,
     );
+    const setupRequired = desktopSetupRequired ?? false;
+
+    useEffect(() => {
+        if (capabilities.isDemoMode) {
+            setDesktopSetupRequired(false);
+            return;
+        }
+
+        let isCurrent = true;
+        const desktopRequest = window.vaultBillDesktop
+            ? Promise.all([
+                  window.vaultBillDesktop.listAccounts(),
+                  window.vaultBillDesktop.getBusinessSettings(),
+              ]).then(([accounts, business]) => ({
+                  hasActiveAdmin: accounts.some(
+                      (account) => account.role === 'Admin' && account.isActive,
+                  ),
+                  business,
+              }))
+            : capabilities.isLanBrowser
+              ? requestHostedApi<{
+                    readonly isSetupComplete: boolean;
+                    readonly hasActiveAdmin: boolean;
+                    readonly business: {
+                        readonly companyName: string;
+                        readonly address: string;
+                    };
+                }>('/setup/status').then((status) => ({
+                    hasActiveAdmin: status.hasActiveAdmin,
+                    business: status.business,
+                }))
+              : Promise.resolve({
+                    hasActiveAdmin: false,
+                    business: { companyName: '', address: '' },
+                });
+
+        void desktopRequest
+            .then(({ hasActiveAdmin, business }) => {
+                if (!isCurrent) return;
+                const isConfiguredBusiness =
+                    typeof business === 'object' &&
+                    business !== null &&
+                    typeof (business as { readonly companyName?: unknown }).companyName ===
+                        'string' &&
+                    (business as { readonly companyName: string }).companyName.trim().length > 0 &&
+                    typeof (business as { readonly address?: unknown }).address === 'string' &&
+                    (business as { readonly address: string }).address.trim().length > 0;
+                const isSetupRequired = !hasActiveAdmin || !isConfiguredBusiness;
+                setDesktopSetupRequired(isSetupRequired);
+            })
+            .catch(() => {
+                if (isCurrent) setDesktopSetupRequired(false);
+            });
+
+        return () => {
+            isCurrent = false;
+        };
+    }, [capabilities.isDemoMode, capabilities.isLanBrowser, setupRevision]);
+
+    if (desktopSetupRequired === null) return null;
 
     return (
         <SessionProvider>
@@ -36,7 +98,7 @@ const AppRoutes: FC = () => {
                     <Route
                         path="/setup"
                         element={
-                            capabilities.isDemoMode ? (
+                            capabilities.isDemoMode || !setupRequired ? (
                                 <Navigate replace to="/login" />
                             ) : (
                                 <SetupPage

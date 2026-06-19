@@ -8,7 +8,8 @@ import type { CapabilityRegistry } from '../../capability/Capability.types';
 import { CapabilityProvider } from '../../capability/CapabilityContext';
 import { AppShell } from '../AppShell';
 import { RecordStoreProvider } from '../../features/records/RecordStoreContext';
-import { SessionProvider } from '../../features/auth/SessionContext';
+import { SessionContext } from '../../features/auth/SessionContext';
+import { createTestSession } from '../../test/TestSession';
 
 const desktopCapabilities: CapabilityRegistry = {
     isDesktop: true,
@@ -27,61 +28,31 @@ const desktopCapabilities: CapabilityRegistry = {
     hasLocalDb: true,
 };
 
+const sysAdminAccount = {
+    userId: 'sysadmin_1',
+    username: 'sysadmin',
+    displayName: 'System Administrator',
+    role: 'SysAdmin',
+    isActive: true,
+} as const;
+
 describe('app shell', () => {
     beforeEach(() => {
         document.body.innerHTML = '<div id="portal-root"></div>';
         window.localStorage.clear();
-        window.localStorage.setItem('vaultbill.operator', 'sysadmin_1');
-        window.localStorage.setItem(
-            'vaultbill.accounts',
-            JSON.stringify([
-                {
-                    userId: 'sysadmin_1',
-                    username: 'sysadmin',
-                    displayName: 'System Administrator',
-                    role: 'SysAdmin',
-                    isActive: true,
-                },
-            ]),
-        );
         Object.defineProperty(window, 'vaultBillDesktop', {
             configurable: true,
             value: {
                 closeWindow: vi.fn(),
                 minimizeWindow: vi.fn(),
+                getHostedWebUrl: vi.fn().mockResolvedValue('http://localhost'),
+                openHostedWeb: vi.fn().mockResolvedValue(undefined),
                 getTrialStatus: vi.fn().mockResolvedValue({
                     isFullVersion: true,
                     isExpired: false,
                     accumulatedSeconds: 0,
                     remainingSeconds: 0,
                 }),
-                getCredentialStatus: vi.fn().mockResolvedValue({
-                    sysAdminUsesDefaultPassword: false,
-                    backupUsesDefaultPassword: false,
-                }),
-                listAccounts: vi.fn().mockResolvedValue([
-                    {
-                        userId: 'sysadmin_1',
-                        username: 'sysadmin',
-                        displayName: 'System Administrator',
-                        role: 'SysAdmin',
-                        isActive: true,
-                    },
-                ]),
-                saveAccount: vi.fn(),
-                archiveAccount: vi.fn(),
-                resetPassword: vi.fn(),
-                activateLicense: vi.fn(),
-                saveBuilderPackage: vi.fn(),
-                saveBusinessSettings: vi.fn(),
-                getSecretsSettings: vi.fn(),
-                saveSecretsSettings: vi.fn(),
-                saveIntegrationSettings: vi.fn(),
-                createBackup: vi.fn(),
-                restoreBackup: vi.fn(),
-                resetApplicationData: vi.fn(),
-                configureLocalApi: vi.fn(),
-                listPrinters: vi.fn().mockResolvedValue([]),
                 listRecords: vi.fn().mockResolvedValue([]),
             } as const,
         });
@@ -95,7 +66,7 @@ describe('app shell', () => {
         render(
             <MemoryRouter initialEntries={['/app/dashboard']}>
                 <CapabilityProvider value={desktopCapabilities}>
-                    <SessionProvider>
+                    <SessionContext.Provider value={createTestSession(sysAdminAccount)}>
                         <RecordStoreProvider>
                             <Routes>
                                 <Route path="/app/*" element={<AppShell />}>
@@ -103,13 +74,13 @@ describe('app shell', () => {
                                 </Route>
                             </Routes>
                         </RecordStoreProvider>
-                    </SessionProvider>
+                    </SessionContext.Provider>
                 </CapabilityProvider>
             </MemoryRouter>,
         );
 
         expect(screen.getByRole('navigation', { name: 'Primary' })).toBeVisible();
-        expect(screen.getByRole('button', { name: 'Close window' })).toBeVisible();
-        expect(screen.getByRole('button', { name: 'Minimize window' })).toBeVisible();
+        expect(screen.getByRole('button', { name: 'Close to tray' })).toBeVisible();
+        expect(screen.getByRole('button', { name: 'Minimize to taskbar' })).toBeVisible();
     });
 });

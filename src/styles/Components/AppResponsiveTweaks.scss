@@ -4,13 +4,50 @@
 
 @include respond-to('phone') {
     .dashboard-metrics,
+    .dashboard-grid,
     .operator-create,
     .report-filter-grid {
         grid-template-columns: 1fr;
     }
 
+    .page-hero {
+        display: grid;
+        min-width: 0;
+        min-height: 12rem;
+        align-items: start;
+        gap: var(--space-4);
+        padding: var(--space-5);
+    }
+
+    .page-hero > *,
+    .page-hero .button-primary,
+    .data-panel,
+    .empty-panel,
+    .dashboard-chart,
+    .dashboard-grid,
+    .page-stack,
+    .dashboard-metrics article {
+        min-width: 0;
+        max-width: 100%;
+        overflow-wrap: anywhere;
+    }
+
+    .page-hero .button-primary {
+        width: 100%;
+        justify-self: stretch;
+    }
+
     .dashboard-metrics article {
         min-height: 6.5rem;
+    }
+
+    .dashboard-chart {
+        min-height: 16rem;
+    }
+
+    .bar-chart {
+        gap: var(--space-2);
+        min-width: 0;
     }
 
     .rank-list > div {
@@ -119,6 +156,79 @@
 
     .builder-step-bridge > button {
         width: 100%;
+    }
+
+    .builder-page,
+    .builder-workspace,
+    .builder-workspace.builder-workspace--single {
+        min-width: 0;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .builder-workspace {
+        border-inline: 0;
+        border-radius: var(--radius-md);
+        padding: var(--space-4);
+        overflow: hidden;
+    }
+
+    .builder-step-header {
+        display: grid;
+        gap: var(--space-3);
+        align-items: start;
+    }
+
+    .builder-step-header h2 {
+        white-space: normal;
+    }
+
+    .builder-step-header > p,
+    .helper-card,
+    .form-grid label,
+    .form-grid input,
+    .form-grid textarea,
+    .records-page .horizontal-progress,
+    .records-page .horizontal-progress-track,
+    .records-page .horizontal-progress-track > * {
+        min-width: 0;
+        max-width: 100%;
+        overflow-wrap: anywhere;
+    }
+
+    .records-page {
+        overflow-x: hidden;
+        padding-bottom: calc(var(--app-shell-mobile-nav-height) + var(--space-6));
+    }
+
+    .records-page .page-tabs .horizontal-progress-track {
+        overflow-x: auto;
+    }
+
+    .records-page h1 {
+        font-size: clamp(2rem, 10vw, 2.65rem);
+        line-height: 1;
+        overflow-wrap: anywhere;
+    }
+
+    .record-summary {
+        justify-content: stretch;
+    }
+
+    .record-summary > div {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .wizard-actions {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: var(--space-3);
+    }
+
+    .wizard-actions > button {
+        width: 100%;
+        min-width: 0;
     }
 }
 

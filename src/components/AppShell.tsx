@@ -17,10 +17,12 @@ import { useThemeController } from '../hooks/useThemeController';
 import { requestHostedApi } from '../runtime/HostedApi';
 import { createAppShellActions } from './AppShellActions';
 import { getAllowedSectionIds, getPageId } from './AppShellSupport';
-import { AppShellDialogs } from './AppShellDialogs';
+import { AppShellContentFrame } from './AppShellContentFrame';
+import { AppShellManagedDialogs } from './AppShellManagedDialogs';
 import { AppShellMobileNav } from './AppShellMobileNav';
 import { AppShellSidebar } from './AppShellSidebar';
 import { AppShellTopbar } from './AppShellTopbar';
+import { AppShellWindowChrome } from './AppShellWindowChrome';
 import type { AppRouteId } from '../types/AppTypes';
 import '../styles/Components/AppShell.scss';
 
@@ -42,12 +44,14 @@ export const AppShell: FC = () => {
     const [accountPassword, setAccountPassword] = useState('');
     const [accountPasswordConfirmation, setAccountPasswordConfirmation] = useState('');
     const [accountPasswordMessage, setAccountPasswordMessage] = useState('');
+    const [hostedWebUrl, setHostedWebUrl] = useState('');
     const [trialStatus, setTrialStatus] =
         useState<
             Awaited<ReturnType<NonNullable<typeof window.vaultBillDesktop>['getTrialStatus']>>
         >();
     const [scrollProgress, setScrollProgress] = useState(0);
     const [isExpanded, setIsExpanded] = useState(false);
+    const showWindowControls = capabilities.isDesktop;
     const shellActions = createAppShellActions({
         accountPassword,
         accountUserId: operatorContext?.account.userId ?? '',
@@ -70,7 +74,7 @@ export const AppShell: FC = () => {
 
     useEffect(() => {
         if (typeof contentRef.current?.scrollTo === 'function') {
-            contentRef.current.scrollTo({ top: 0 });
+            contentRef.current.scrollTo({ left: 0, top: 0 });
         }
         setScrollProgress(0);
     }, [location.pathname]);
@@ -85,6 +89,18 @@ export const AppShell: FC = () => {
         }
     }, [capabilities.isLanBrowser]);
 
+    useEffect(() => {
+        if (window.vaultBillDesktop) {
+            void window.vaultBillDesktop.getHostedWebUrl().then(setHostedWebUrl);
+            return;
+        }
+        if (capabilities.isLanBrowser) {
+            setHostedWebUrl(window.location.origin);
+            return;
+        }
+        setHostedWebUrl('');
+    }, [capabilities.isLanBrowser]);
+
     if (!operatorContext) return null;
 
     const allowedSectionIds = getAllowedSectionIds(capabilities.isDemoMode, operatorContext.role);
@@ -95,10 +111,20 @@ export const AppShell: FC = () => {
     const landingRoute = operatorContext.role === 'User' ? '/app/records' : '/app/dashboard';
 
     return (
-        <div className={`app-shell${isExpanded ? ' is-sidebar-expanded' : ''}`}>
+        <div
+            className={`app-shell${isExpanded ? ' is-sidebar-expanded' : ''}${
+                showWindowControls ? ' has-window-controls' : ''
+            }`}
+        >
             <a className="skip-link" href="#main-content">
                 Skip to main content
             </a>
+            {showWindowControls ? (
+                <AppShellWindowChrome
+                    onCloseWindow={shellActions.closeWindow}
+                    onMinimizeWindow={shellActions.minimizeWindow}
+                />
+            ) : null}
             <AppShellSidebar
                 applicationName={defaultRuntimeBranding.applicationName}
                 isDemoMode={capabilities.isDemoMode}
@@ -106,8 +132,16 @@ export const AppShell: FC = () => {
                 isExpanded={isExpanded}
                 isLanBrowser={capabilities.isLanBrowser}
                 landingRoute={landingRoute}
+                hostedWebUrl={hostedWebUrl}
                 onChangePassword={shellActions.openPasswordDialog}
                 onLogout={shellActions.logOut}
+                onOpenHostedWeb={() => {
+                    if (window.vaultBillDesktop) {
+                        void window.vaultBillDesktop.openHostedWeb();
+                        return;
+                    }
+                    if (hostedWebUrl) window.open(hostedWebUrl, '_blank', 'noopener,noreferrer');
+                }}
                 onResetDemo={shellActions.openResetDialog}
                 onToggleExpanded={() => {
                     setIsExpanded((current) => {
@@ -123,11 +157,8 @@ export const AppShell: FC = () => {
             />
             <div className="app-shell-body">
                 <AppShellTopbar
-                    isDesktop={capabilities.isDesktop}
                     isDemoMode={capabilities.isDemoMode}
-                    onCloseWindow={shellActions.closeWindow}
                     onChangePassword={shellActions.openPasswordDialog}
-                    onMinimizeWindow={shellActions.minimizeWindow}
                     onLogout={shellActions.logOut}
                     onOpenActivation={shellActions.openActivationDialog}
                     onResetDemo={shellActions.openResetDialog}
@@ -135,24 +166,20 @@ export const AppShell: FC = () => {
                     themeController={themeController}
                     trialStatus={trialStatus}
                 />
-                <main
-                    className="app-shell-content"
-                    id="main-content"
+                <AppShellContentFrame
+                    contentRef={contentRef}
                     onScroll={(event) => {
                         const target = event.currentTarget;
                         const maximum = target.scrollHeight - target.clientHeight;
                         setScrollProgress(maximum > 0 ? (target.scrollTop / maximum) * 100 : 0);
                     }}
-                    ref={contentRef}
+                    scrollProgress={scrollProgress}
                 >
                     <Outlet />
-                </main>
-                <div className="app-shell-scroll-rail" aria-hidden="true">
-                    <span style={{ height: `${String(scrollProgress)}%` }} />
-                </div>
+                </AppShellContentFrame>
                 <AppShellMobileNav sections={sections} />
             </div>
-            <AppShellDialogs
+            <AppShellManagedDialogs
                 accountPassword={accountPassword}
                 accountPasswordConfirmation={accountPasswordConfirmation}
                 accountPasswordMessage={accountPasswordMessage}
@@ -162,37 +189,19 @@ export const AppShell: FC = () => {
                 isPasswordOpen={isPasswordOpen}
                 isResetOpen={isResetOpen}
                 licenseKey={licenseKey}
-                onAccountPasswordChange={(value) => {
-                    setAccountPassword(value);
-                    setAccountPasswordMessage('');
-                }}
-                onAccountPasswordConfirmationChange={(value) => {
-                    setAccountPasswordConfirmation(value);
-                    setAccountPasswordMessage('');
-                }}
-                onCloseActivation={() => {
-                    setIsActivationOpen(false);
-                }}
-                onCloseHelp={() => {
-                    setIsHelpOpen(false);
-                }}
-                onClosePassword={() => {
-                    setIsPasswordOpen(false);
-                }}
-                onCloseReset={() => {
-                    setIsResetOpen(false);
-                }}
-                onConfirmReset={() => {
-                    shellActions.resetDemo();
-                }}
-                onLicenseKeyChange={setLicenseKey}
-                onOpenHelp={() => {
-                    setIsHelpOpen(true);
-                }}
+                onConfirmReset={shellActions.resetDemo}
                 onSubmitActivation={shellActions.submitActivation}
                 onSubmitPassword={shellActions.submitPassword}
                 pageId={pageId}
                 role={operatorContext.role}
+                setAccountPassword={setAccountPassword}
+                setAccountPasswordConfirmation={setAccountPasswordConfirmation}
+                setAccountPasswordMessage={setAccountPasswordMessage}
+                setIsActivationOpen={setIsActivationOpen}
+                setIsHelpOpen={setIsHelpOpen}
+                setIsPasswordOpen={setIsPasswordOpen}
+                setIsResetOpen={setIsResetOpen}
+                setLicenseKey={setLicenseKey}
             />
         </div>
     );

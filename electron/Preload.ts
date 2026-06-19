@@ -19,6 +19,8 @@ import type {
 
 export type VaultBillDesktopBridge = {
     readonly getAppIdentity: () => Promise<BuildIdentity>;
+    readonly getHostedWebUrl: () => Promise<string>;
+    readonly openHostedWeb: () => Promise<void>;
     readonly minimizeWindow: () => Promise<void>;
     readonly closeWindow: () => Promise<void>;
     readonly listAccounts: () => Promise<readonly DesktopOperatorAccount[]>;
@@ -85,6 +87,10 @@ export type VaultBillDesktopBridge = {
 const desktopBridge: VaultBillDesktopBridge = {
     getAppIdentity: async () =>
         ipcRenderer.invoke('vaultbill:get-app-identity') as Promise<BuildIdentity>,
+    getHostedWebUrl: async () => ipcRenderer.invoke('vaultbill:hosted-web:url') as Promise<string>,
+    openHostedWeb: async () => {
+        await ipcRenderer.invoke('vaultbill:hosted-web:open');
+    },
     minimizeWindow: async () => {
         await ipcRenderer.invoke('vaultbill:window:minimize');
     },
@@ -194,4 +200,5 @@ const desktopBridge: VaultBillDesktopBridge = {
     platform: process.platform,
 };
 
+contextBridge.exposeInMainWorld('vaultBillRuntime', 'desktop');
 contextBridge.exposeInMainWorld('vaultBillDesktop', desktopBridge);

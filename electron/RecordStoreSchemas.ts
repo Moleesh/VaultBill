@@ -78,6 +78,7 @@ const ReportQuerySchema = z.object({
     toDate: z.string().default(''),
     status: z.enum(['All', 'Draft', 'Finalized', 'Cancelled']).default('All'),
     preset: z.enum(['All', 'Today', 'ThisMonth', 'FinancialYear', 'Last100']).default('All'),
+    includeDraftsInReports: z.boolean().default(false),
     cursor: z.string().optional(),
     limit: z.number().int().min(1).max(50).default(50),
 });

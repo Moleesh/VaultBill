@@ -1,17 +1,12 @@
 /** @format */
 
 /**
- * Shared session helpers for browser storage, demo accounts, and hosted login
- * validation.
+ * Shared session helpers for demo accounts and hosted login validation.
  */
 
 import { bootstrapOperatorAccounts } from './AccountBootstrap';
 import type { OperatorAccount } from './AccountTypes';
 
-/** Storage key for the active operator id. */
-export const sessionStorageKey = 'vaultbill.operator';
-/** Storage key for the serialized account list. */
-export const accountStorageKey = 'vaultbill.accounts';
 /** Default password hash used for the seeded desktop accounts. */
 export const defaultPasswordHash =
     '5e800c5e134b84a0d73bd6f0d0f65b768f8a3afeba9c26ce3fe9b8d58fd027f1';
@@ -31,21 +26,8 @@ export type HostedSessionPayload = {
     readonly csrfToken: string;
 };
 
-/** Reads the saved account list or falls back to the seeded bootstrap set. */
-export const readStoredAccounts = (): readonly OperatorAccount[] => {
-    const rawAccounts = window.localStorage.getItem(accountStorageKey);
-
-    if (!rawAccounts) {
-        return bootstrapOperatorAccounts;
-    }
-
-    try {
-        const parsedAccounts = JSON.parse(rawAccounts) as readonly OperatorAccount[];
-        return parsedAccounts.length > 0 ? parsedAccounts : bootstrapOperatorAccounts;
-    } catch {
-        return bootstrapOperatorAccounts;
-    }
-};
+/** Seeded accounts kept only for the plain browser fallback runtime. */
+export const fallbackBrowserAccounts = bootstrapOperatorAccounts;
 
 /** Hashes passwords with SHA-256 for the browser-hosted fallback flow. */
 export const hashPassword = async (password: string): Promise<string> => {

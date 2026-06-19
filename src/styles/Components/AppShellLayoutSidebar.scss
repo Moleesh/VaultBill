@@ -40,6 +40,7 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-4);
+    --app-shell-sidebar-icon-size: 3.25rem;
     height: 100vh;
     padding: var(--space-4) var(--space-3);
     border-right: var(--line-width) solid var(--color-border);
@@ -55,12 +56,41 @@
     color: var(--color-text-heading);
     text-decoration: none;
     justify-content: center;
-    min-height: 3.25rem;
+    min-height: var(--app-shell-sidebar-icon-size);
+}
+.app-shell-sidebar-window-chrome {
+    display: grid;
+    gap: var(--space-2);
+    border: var(--line-width) solid color-mix(in srgb, var(--color-border) 64%, white);
+    border-radius: var(--radius-md);
+    background: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--color-surface-raised) 82%, white),
+        color-mix(in srgb, var(--color-surface) 92%, white)
+    );
+    padding: var(--space-3);
+    box-shadow: var(--shadow-card);
+}
+.app-shell-sidebar-window-chrome-label {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-bold);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+.app-shell-sidebar-window-controls {
+    justify-content: flex-start;
 }
 
 .app-shell:not(.is-sidebar-expanded) .app-shell-nav-label,
-.app-shell:not(.is-sidebar-expanded) .app-shell-operator-copy {
+.app-shell:not(.is-sidebar-expanded) .app-shell-operator-copy,
+.app-shell:not(.is-sidebar-expanded) .app-shell-sidebar-window-chrome-label {
     display: none;
+}
+
+.app-shell:not(.is-sidebar-expanded) .app-shell-sidebar-window-chrome,
+.app-shell:not(.is-sidebar-expanded) .app-shell-sidebar-window-controls {
+    justify-content: center;
 }
 
 .app-shell.is-sidebar-expanded .app-shell-brand {
@@ -73,9 +103,11 @@
     justify-content: center;
     gap: var(--space-2);
     align-self: center;
-    width: 2.8rem;
-    min-width: 2.8rem;
+    width: var(--app-shell-sidebar-icon-size);
+    min-width: var(--app-shell-sidebar-icon-size);
+    height: var(--app-shell-sidebar-icon-size);
     border-radius: 999px;
+    padding: 0;
 }
 
 .app-shell-brand strong {
@@ -97,7 +129,7 @@
     border: var(--line-width) solid transparent;
     border-radius: var(--radius-md);
     color: var(--color-text-body);
-    min-height: 3.25rem;
+    min-height: var(--app-shell-sidebar-icon-size);
     padding: var(--space-2) var(--space-3);
     text-decoration: none;
     transition:
@@ -108,15 +140,20 @@
 }
 
 .app-shell-nav-icon {
+    justify-self: center;
     color: var(--color-primary);
-    transition:
-        transform var(--motion-fast),
-        color var(--motion-fast);
+    transition: color var(--motion-fast);
 }
 
 .app-shell:not(.is-sidebar-expanded) .app-shell-nav-item {
     grid-template-columns: 1fr;
     justify-items: center;
+    width: var(--app-shell-sidebar-icon-size);
+    min-width: var(--app-shell-sidebar-icon-size);
+    min-height: var(--app-shell-sidebar-icon-size);
+    padding: 0;
+    place-self: center;
+    place-items: center;
 }
 
 .app-shell-nav-item:hover,
@@ -129,7 +166,7 @@
 
 .app-shell-nav-item:hover .app-shell-nav-icon,
 .app-shell-nav-item.is-active .app-shell-nav-icon {
-    transform: translateX(0.08rem) scale(1.08);
+    color: var(--color-primary);
 }
 
 .app-shell-nav-item.is-disabled {
@@ -154,6 +191,22 @@
 .app-shell-operator-copy {
     display: grid;
     gap: var(--space-1);
+}
+
+.app-shell:not(.is-sidebar-expanded) .app-shell-brand,
+.app-shell:not(.is-sidebar-expanded) .app-shell-operator-actions .icon-button {
+    width: var(--app-shell-sidebar-icon-size);
+    min-width: var(--app-shell-sidebar-icon-size);
+    height: var(--app-shell-sidebar-icon-size);
+    padding: 0;
+}
+
+.app-shell:not(.is-sidebar-expanded) .app-shell-brand {
+    justify-self: center;
+}
+
+.app-shell:not(.is-sidebar-expanded) .app-shell-operator-actions {
+    justify-content: center;
 }
 
 .app-shell-host-status {

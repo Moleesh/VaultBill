@@ -50,9 +50,5 @@ export const SetupAdminUserStep: FC<SetupAdminUserStepProps> = ({
                 value={displayName}
             />
         </label>
-        <div className="feedback-info span-2">
-            The protected System Administrator account is already built in. This step creates the
-            first Admin account for day-to-day use.
-        </div>
     </div>
 );

@@ -6,8 +6,9 @@ import {
     AppRecordSchema,
     buildStoredRecord,
     demoSeedRecords,
-    recordStoreEventName,
     sortLatestFirst,
+    resetBrowserRecords,
+    writeBrowserRecords,
     type AppRecord,
 } from './RecordStoreSupport';
 import type { RecordStoreContextValue } from './RecordStoreTypes';
@@ -94,10 +95,7 @@ export const createRecordStoreActions = (dependencies: RecordStoreActionDependen
             ...records.filter((current) => current.recordId !== record.recordId),
         ]);
 
-        if (!desktopBridge && !dependencies.isLanBrowser()) {
-            window.localStorage.setItem('vaultbill.records', JSON.stringify(nextRecords));
-            window.dispatchEvent(new Event(recordStoreEventName));
-        }
+        if (!desktopBridge && !dependencies.isLanBrowser()) writeBrowserRecords(nextRecords);
 
         dependencies.setRecords(nextRecords);
         return record;
@@ -127,10 +125,7 @@ export const createRecordStoreActions = (dependencies: RecordStoreActionDependen
             ...records.filter((current) => current.recordId !== record.recordId),
         ]);
 
-        if (!desktopBridge && !dependencies.isLanBrowser()) {
-            window.localStorage.setItem('vaultbill.records', JSON.stringify(nextRecords));
-            window.dispatchEvent(new Event(recordStoreEventName));
-        }
+        if (!desktopBridge && !dependencies.isLanBrowser()) writeBrowserRecords(nextRecords);
 
         dependencies.setRecords(nextRecords);
         return record;
@@ -170,18 +165,14 @@ export const createRecordStoreActions = (dependencies: RecordStoreActionDependen
             ...records.filter((current) => current.recordId !== record.recordId),
         ]);
 
-        if (!desktopBridge && !dependencies.isLanBrowser()) {
-            window.localStorage.setItem('vaultbill.records', JSON.stringify(nextRecords));
-            window.dispatchEvent(new Event(recordStoreEventName));
-        }
+        if (!desktopBridge && !dependencies.isLanBrowser()) writeBrowserRecords(nextRecords);
 
         dependencies.setRecords(nextRecords);
         return record;
     };
 
     const resetDemoData = () => {
-        window.localStorage.setItem('vaultbill.records', JSON.stringify(demoSeedRecords));
-        window.localStorage.setItem('vaultbill.sequence', '2');
+        resetBrowserRecords();
         dependencies.setRecords(demoSeedRecords);
     };
 

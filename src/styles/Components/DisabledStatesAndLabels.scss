@@ -111,7 +111,21 @@ select:disabled {
 
 input::placeholder,
 textarea::placeholder {
-    color: var(--color-placeholder);
+    color: color-mix(in srgb, var(--color-placeholder) 88%, white);
+    font-weight: var(--font-weight-medium);
+    letter-spacing: 0.015em;
+    opacity: 0.95;
+    transition:
+        color var(--motion-fast),
+        opacity var(--motion-fast),
+        transform var(--motion-fast);
+}
+
+input:focus::placeholder,
+textarea:focus::placeholder {
+    color: color-mix(in srgb, var(--color-placeholder) 72%, white);
+    opacity: 0.72;
+    transform: translateX(0.08rem);
 }
 
 .span-2 {

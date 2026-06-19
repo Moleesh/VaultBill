@@ -7,6 +7,11 @@ import { useCapabilities } from '../../capability/CapabilityContext';
 import { builtInDefaultFormat } from '../../db/startup/BuiltInDefaultFormat';
 import { documentFormatSummaries } from '../../constants/PhaseFourFormats';
 import { requestHostedApi } from '../../runtime/HostedApi';
+import {
+    defaultWorkspaceSettings,
+    loadWorkspaceSettings,
+    type WorkspaceSettings,
+} from '../../runtime/WorkspaceSettings';
 import { useSession } from '../auth/SessionContext';
 import {
     normalizeSecretsSettings,
@@ -47,6 +52,8 @@ export const useRecordsPageState = () => {
     const [activePrintPackage, setActivePrintPackage] = useState<RecordPrintPackage>();
     const [publishedFormats, setPublishedFormats] = useState<readonly PublishedFormat[]>([]);
     const [secretValues, setSecretValues] = useState<Readonly<Record<string, string>>>({});
+    const [workspaceSettings, setWorkspaceSettings] =
+        useState<WorkspaceSettings>(defaultWorkspaceSettings);
 
     const activeTab: 'create' | 'reprint' =
         searchParams.get('tab') === 'reprint' ? 'reprint' : 'create';
@@ -88,8 +95,7 @@ export const useRecordsPageState = () => {
                 item.documentNumber?.toLocaleLowerCase().includes(query))
         );
     });
-    const outputTarget = window.localStorage.getItem('vaultbill.output-target') ?? 'PreviewOnly';
-    const preferredPrinterName = window.localStorage.getItem('vaultbill.preferred-printer') ?? '';
+    const { outputTarget, preferredPrinterName } = workspaceSettings;
     const printLabel = outputTarget === 'DownloadPdf' ? 'Print / PDF' : 'Print';
     const showShortcuts =
         !window.matchMedia('(pointer: coarse)').matches &&
@@ -108,6 +114,10 @@ export const useRecordsPageState = () => {
             .catch(() => {
                 setPublishedFormats([]);
             });
+    }, [capabilities.isLanBrowser]);
+
+    useEffect(() => {
+        void loadWorkspaceSettings(capabilities.isLanBrowser).then(setWorkspaceSettings);
     }, [capabilities.isLanBrowser]);
 
     useEffect(() => {
@@ -160,6 +170,7 @@ export const useRecordsPageState = () => {
         record,
         recordTotals,
         secretValues,
+        workspaceSettings,
         records,
         reprintRecords,
         searchParams,

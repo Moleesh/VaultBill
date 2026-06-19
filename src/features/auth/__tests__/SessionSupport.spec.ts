@@ -1,47 +1,27 @@
 /** @format */
 
 /**
- * Covers the browser session helpers that seed accounts, hash passwords, and
- * enforce the small demo-host account limits.
+ * Covers the session helpers that seed browser fallback accounts and enforce
+ * the small managed-account limits.
  */
 
-import { afterEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import { bootstrapOperatorAccounts } from '../AccountBootstrap';
 import type { OperatorAccount } from '../AccountTypes';
 import {
-    accountStorageKey,
     defaultPasswordHash,
     demoAccount,
+    fallbackBrowserAccounts,
     hashPassword,
-    readStoredAccounts,
-    sessionStorageKey,
     validateManagedAccounts,
 } from '../SessionSupport';
 
-afterEach(() => {
-    window.localStorage.clear();
-});
-
 describe('SessionSupport', () => {
-    it('exposes the seeded demo account and storage keys', () => {
-        expect(sessionStorageKey).toBe('vaultbill.operator');
-        expect(accountStorageKey).toBe('vaultbill.accounts');
+    it('exposes the seeded demo and browser fallback accounts', () => {
         expect(defaultPasswordHash).toHaveLength(64);
         expect(demoAccount.displayName).toBe('Demo User');
-    });
-
-    it('reads saved accounts or falls back to the bootstrap set', () => {
-        expect(readStoredAccounts()).toEqual(bootstrapOperatorAccounts);
-
-        window.localStorage.setItem(
-            accountStorageKey,
-            JSON.stringify([{ ...bootstrapOperatorAccounts[0], displayName: 'Updated' }]),
-        );
-        expect(readStoredAccounts()[0]?.displayName).toBe('Updated');
-
-        window.localStorage.setItem(accountStorageKey, '{not-json');
-        expect(readStoredAccounts()).toEqual(bootstrapOperatorAccounts);
+        expect(fallbackBrowserAccounts).toEqual(bootstrapOperatorAccounts);
     });
 
     it('hashes passwords and validates active account limits', async () => {

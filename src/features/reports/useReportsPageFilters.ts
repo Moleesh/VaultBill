@@ -44,11 +44,8 @@ const matchesReportField = (
     return normalizeValue(recordValue).toLocaleLowerCase().includes(normalizedValue);
 };
 
-export const useReportsPageFilters = () => {
+export const useReportsPageFilters = (includeDraftsInReports: boolean) => {
     const { records } = useRecordStore();
-    const includeDraftsInReports =
-        typeof window !== 'undefined' &&
-        window.localStorage.getItem('vaultbill.reports.include-drafts') === 'true';
     const [reportId, setReportId] = useState('sales-register');
     const [reportField, setReportFieldState] = useState(defaultReportField);
     const [reportFieldValue, setReportFieldValueState] = useState('');
@@ -96,9 +93,10 @@ export const useReportsPageFilters = () => {
             toDate,
             status,
             preset,
+            includeDraftsInReports,
             limit: pageSize,
         }),
-        [fromDate, preset, reportFilters, reportId, status, toDate],
+        [fromDate, includeDraftsInReports, preset, reportFilters, reportId, status, toDate],
     );
 
     const customers = [

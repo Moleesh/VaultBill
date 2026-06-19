@@ -157,39 +157,225 @@
 }
 
 .setup-page {
+    --setup-card-width: min(72rem, 100%);
+    --setup-card-height: min(56rem, calc(100dvh - (var(--space-4) * 2)));
+    position: relative;
     display: grid;
     min-height: 100vh;
+    min-height: 100dvh;
     place-items: center;
-    background: var(--gradient-page);
+    background:
+        radial-gradient(
+            circle at 26% 14%,
+            color-mix(in srgb, var(--color-primary) 14%, transparent),
+            transparent 24rem
+        ),
+        radial-gradient(
+            circle at 76% 12%,
+            color-mix(in srgb, var(--color-secondary) 12%, transparent),
+            transparent 22rem
+        ),
+        var(--gradient-page);
     padding: var(--space-4);
 }
 
 .setup-card {
     display: grid;
-    width: min(62rem, 100%);
-    gap: var(--space-5);
+    grid-template-rows: auto auto minmax(0, 1fr) auto auto;
+    width: var(--setup-card-width);
+    min-height: var(--setup-card-height);
+    height: var(--setup-card-height);
+    gap: var(--space-6);
+    overflow: hidden;
     border: var(--line-width) solid var(--color-border);
     border-radius: var(--radius-xl);
-    background: var(--color-card);
-    padding: clamp(var(--space-5), 5vw, var(--space-10));
+    background: linear-gradient(
+        145deg,
+        color-mix(in srgb, var(--color-card) 96%, white),
+        color-mix(in srgb, var(--color-surface-muted) 88%, white)
+    );
+    padding: clamp(var(--space-5), 4vw, var(--space-8));
     box-shadow: var(--shadow-card-hover);
 }
 
 .setup-card-header {
-    display: flex;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
     align-items: center;
     gap: var(--space-4);
 }
 
+.setup-card-brand-mark {
+    display: grid;
+    width: 5rem;
+    height: 5rem;
+    place-items: center;
+    border: var(--line-width) solid color-mix(in srgb, var(--color-primary) 38%, transparent);
+    border-radius: 1.4rem;
+    background:
+        radial-gradient(
+            circle at 28% 20%,
+            color-mix(in srgb, white 60%, transparent),
+            transparent 58%
+        ),
+        color-mix(in srgb, var(--color-secondary) 38%, white);
+    box-shadow:
+        inset 0 1px 0 color-mix(in srgb, white 48%, transparent),
+        0 1rem 2rem color-mix(in srgb, var(--color-panel-shadow) 10%, transparent);
+}
+
+.setup-card-brand-mark .app-brand-icon {
+    width: 3.25rem;
+    height: 3.25rem;
+}
+
+.setup-card-title {
+    display: grid;
+    gap: var(--space-2);
+}
+
+.setup-card-title h1 {
+    max-width: 18ch;
+    line-height: 1;
+}
+
+.setup-card-title p:last-child {
+    max-width: 46rem;
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-md);
+}
+
+.setup-steps .horizontal-progress-track {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-3);
+    overflow: visible;
+    border: 0;
+    border-radius: var(--radius-lg);
+    background: color-mix(in srgb, var(--color-surface-muted) 72%, transparent);
+    padding: var(--space-2);
+}
+
+.setup-steps button {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    min-width: 0;
+    min-height: 4.25rem;
+    border-color: color-mix(in srgb, var(--color-border) 62%, transparent);
+    border-radius: var(--radius-md);
+    background: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--color-surface-raised) 96%, white),
+        color-mix(in srgb, var(--color-surface-muted) 74%, white)
+    );
+    padding: var(--space-3);
+    text-align: left;
+    box-shadow: none;
+}
+
+.setup-steps button:hover:not(:disabled) {
+    border-color: color-mix(in srgb, var(--color-primary) 72%, transparent);
+    background: color-mix(in srgb, var(--color-secondary) 38%, white);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-card);
+}
+
+.setup-steps button[aria-current='step'] {
+    border-color: color-mix(in srgb, var(--color-primary) 74%, transparent);
+    background: linear-gradient(
+        145deg,
+        color-mix(in srgb, var(--color-secondary) 58%, white),
+        color-mix(in srgb, var(--color-surface-raised) 92%, white)
+    );
+    box-shadow:
+        inset 0 0 0 1px color-mix(in srgb, var(--color-primary) 18%, transparent),
+        var(--shadow-card);
+}
+
+.setup-steps button.is-complete {
+    color: var(--color-primary-strong);
+}
+
+.setup-steps button:disabled {
+    opacity: 0.7;
+}
+
+.wizard-step-icon {
+    display: grid;
+    width: 2.35rem;
+    height: 2.35rem;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 0.92rem;
+    background: linear-gradient(
+        145deg,
+        color-mix(in srgb, var(--color-secondary) 28%, white),
+        color-mix(in srgb, var(--color-surface-muted) 94%, white)
+    );
+    color: color-mix(in srgb, var(--color-primary) 84%, white);
+    box-shadow:
+        inset 0 1px 0 color-mix(in srgb, white 45%, transparent),
+        0 0.6rem 1rem color-mix(in srgb, var(--color-panel-shadow) 6%, transparent);
+}
+
+.setup-steps button[aria-current='step'] .wizard-step-icon {
+    background: linear-gradient(
+        145deg,
+        color-mix(in srgb, var(--color-primary) 90%, white),
+        color-mix(in srgb, var(--color-secondary) 60%, white)
+    );
+    color: var(--color-primary-text);
+}
+
+.setup-steps button.is-complete .wizard-step-icon {
+    background: linear-gradient(
+        145deg,
+        color-mix(in srgb, var(--color-primary) 88%, white),
+        color-mix(in srgb, var(--color-primary) 72%, white)
+    );
+    color: var(--color-primary-text);
+}
+
+.wizard-step-label {
+    display: block;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+}
+
 .setup-card-content {
     display: grid;
-    min-height: 15rem;
+    min-height: 0;
     align-content: start;
     gap: var(--space-5);
+    overflow: auto;
+    scrollbar-gutter: stable;
     border: var(--line-width) solid var(--color-border);
     border-radius: var(--radius-lg);
     background: var(--color-surface-muted);
     padding: var(--space-6);
+}
+
+.setup-card-content input:hover:not(:disabled),
+.setup-card-content textarea:hover:not(:disabled) {
+    border-color: color-mix(in srgb, var(--color-primary) 54%, transparent);
+    box-shadow:
+        inset 0 0 0 1px color-mix(in srgb, var(--color-primary) 14%, transparent),
+        0 0.22rem 0.7rem color-mix(in srgb, var(--color-panel-shadow) 6%, transparent);
+}
+
+.setup-card-content input[aria-invalid='true'],
+.setup-card-content textarea[aria-invalid='true'] {
+    border-color: color-mix(in srgb, var(--color-danger) 82%, transparent);
+    background: color-mix(in srgb, var(--color-danger) 5%, var(--color-surface-raised));
+    box-shadow:
+        inset 0 0 0 0.16rem color-mix(in srgb, var(--color-danger) 28%, transparent),
+        0 0.25rem 0.8rem color-mix(in srgb, var(--color-danger) 10%, transparent);
 }
 
 .popup-backdrop {

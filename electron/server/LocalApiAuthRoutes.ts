@@ -25,6 +25,7 @@ import {
     assertCanResetPassword,
     findAccount,
 } from './LocalApiAuthRoutesSupport.js';
+import { completeSetup, readSetupStatus } from '../SetupSupport.js';
 
 const LoginSchema = z.object({
     userId: z.string().min(1),
@@ -76,6 +77,15 @@ export const handleLocalApiAuthRoutes = async (
             200,
             state.credentialStore.listAccounts().filter((account) => account.isActive),
         );
+        return true;
+    }
+    if (request.method === 'GET' && request.url === '/setup/status') {
+        sendJson(response, 200, readSetupStatus(state.credentialStore, state.settingsStore));
+        return true;
+    }
+    if (request.method === 'POST' && request.url === '/setup/complete') {
+        completeSetup(state.credentialStore, state.settingsStore, await readBody(request));
+        sendJson(response, 200, readSetupStatus(state.credentialStore, state.settingsStore));
         return true;
     }
     if (request.method === 'POST' && request.url === '/auth/login') {
@@ -143,6 +153,11 @@ export const handleLocalApiAuthRoutes = async (
     if (!session) return false;
     if (request.method === 'POST') requireCsrf(request, session);
     const account = accountForSession(state, session);
+
+    if (request.method === 'GET' && request.url === '/workspace/settings') {
+        sendJson(response, 200, state.settingsStore.getBusiness());
+        return true;
+    }
 
     if (request.method === 'GET' && request.url === '/accounts') {
         sendJson(response, 200, accountsVisibleTo(state, account));
