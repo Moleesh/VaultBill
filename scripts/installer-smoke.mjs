@@ -59,18 +59,19 @@ const [mainSource, webIndex] = await Promise.all([
     readFile(webIndexPath, 'utf8'),
 ]);
 const runtimeSource = await readFile(runtimePath, 'utf8');
-if (
-    !mainSource.includes('loadURL') &&
-    !runtimeSource.includes('loadURL(hostedAppUrl)') &&
-    !runtimeSource.includes("loadURL('http://127.0.0.1:4317')")
-) {
+const loadsHostedWorkspace =
+    mainSource.includes('loadURL') ||
+    /loadURL\((?:process\.env\.[A-Z0-9_]+|hostedAppUrl\(\)|['"]http:\/\/127\.0\.0\.1:4317['"])\)/u.test(
+        runtimeSource,
+    );
+if (!loadsHostedWorkspace) {
     throw new Error('Desktop runtime does not load the hosted VaultBill web application.');
 }
 if (mainSource.includes('.loadFile(')) {
     throw new Error('Desktop main process must not load the renderer through file://.');
 }
-if (webIndex.includes('/VaultBill/')) {
-    throw new Error('Desktop web assets were built with the GitHub Pages base path.');
+if (/https?:\/\/(?:localhost|127\.0\.0\.1):\d+/u.test(webIndex)) {
+    throw new Error('Desktop web assets must not point at a development server.');
 }
 
 console.log(

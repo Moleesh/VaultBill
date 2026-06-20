@@ -21,7 +21,6 @@ jobs:
         environment:
             name: VaultBill
         env:
-            FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
             VITE_DEMO_MODE: 'true'
 
         steps:

@@ -1,6 +1,6 @@
 /** @format */
 
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { ReactNode } from 'react';
@@ -45,6 +45,12 @@ const renderPage = (children: ReactNode, capabilities = webCapabilities) =>
     );
 
 describe('product UI', () => {
+    const clickAction = (name: RegExp | string) => {
+        act(() => {
+            fireEvent.click(screen.getByRole('button', { name }));
+        });
+    };
+
     beforeEach(() => {
         document.body.innerHTML = '<div id="portal-root"></div>';
         window.localStorage.clear();
@@ -73,9 +79,9 @@ describe('product UI', () => {
         );
 
         expect((await screen.findAllByText('Aster Works')).length).toBeGreaterThan(0);
-        fireEvent.click(screen.getByRole('button', { name: /Edit current/u }));
+        clickAction(/Edit current/u);
         expect(await screen.findByRole('heading', { name: 'Document builder' })).toBeVisible();
-        fireEvent.click(screen.getByRole('button', { name: /^Print$/u }));
+        clickAction(/^Print$/u);
         expect(screen.getByRole('heading', { name: 'Print' })).toBeVisible();
         expect(screen.getByText(/Upload or choose a reusable template/u)).toBeVisible();
         expect(screen.getByRole('heading', { name: 'Shared print HTML' })).toBeVisible();
@@ -85,7 +91,7 @@ describe('product UI', () => {
     it('shows the document name field without exposing the internal format ID', async () => {
         renderPage(<BuilderPage />);
 
-        fireEvent.click(screen.getByRole('button', { name: /Edit current/u }));
+        clickAction(/Edit current/u);
         expect(await screen.findByRole('heading', { name: 'Document builder' })).toBeVisible();
         expect(screen.getByRole('heading', { name: 'Format' })).toBeVisible();
         expect(screen.getByText('Document name')).toBeVisible();
@@ -105,10 +111,10 @@ describe('product UI', () => {
             </MemoryRouter>,
         );
 
-        fireEvent.click(screen.getByRole('button', { name: /Edit current/u }));
+        clickAction(/Edit current/u);
         expect(await screen.findByRole('heading', { name: 'Document builder' })).toBeVisible();
-        fireEvent.click(screen.getByRole('button', { name: /^Fields$/u }));
-        fireEvent.click(screen.getByRole('button', { name: /^Edit Invoice Date$/u }));
+        clickAction(/^Fields$/u);
+        clickAction(/^Edit Invoice Date$/u);
 
         expect(screen.getByRole('dialog', { name: /Edit Invoice Date/u })).toBeVisible();
         expect(screen.getAllByText('Edit Invoice Date').length).toBeGreaterThan(1);
@@ -118,14 +124,14 @@ describe('product UI', () => {
     it('shows field and print previews in the builder preview steps', async () => {
         renderPage(<BuilderPage />);
 
-        fireEvent.click(screen.getByRole('button', { name: /Edit current/u }));
+        clickAction(/Edit current/u);
         expect(await screen.findByRole('heading', { name: 'Document builder' })).toBeVisible();
-        fireEvent.click(screen.getByRole('button', { name: /Field Preview/u }));
+        clickAction(/Field Preview/u);
         expect(screen.getByRole('heading', { name: /Field preview/u })).toBeVisible();
         expect(screen.getByLabelText('Invoice Date')).toBeVisible();
         expect(screen.getAllByText('Item Name').length).toBeGreaterThan(0);
 
-        fireEvent.click(screen.getByRole('button', { name: /Print Preview/u }));
+        clickAction(/Print Preview/u);
         expect(screen.getByRole('heading', { name: /Print preview/u })).toBeVisible();
     });
 
@@ -142,7 +148,7 @@ describe('product UI', () => {
             </MemoryRouter>,
         );
 
-        fireEvent.click(screen.getByRole('button', { name: /Edit current/u }));
+        clickAction(/Edit current/u);
         expect(await screen.findByRole('heading', { name: 'Document builder' })).toBeVisible();
         expect(screen.getByRole('heading', { name: /Print preview/u })).toBeVisible();
     });
