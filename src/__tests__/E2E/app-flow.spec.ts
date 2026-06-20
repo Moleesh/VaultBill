@@ -22,6 +22,12 @@ test.beforeEach(async ({ page }) => {
 });
 
 const loginAsAdmin = async (page: Page) => {
+    const startDemoButton = page.getByRole('button', { name: /Start demo/u });
+    if (await startDemoButton.isVisible()) {
+        await startDemoButton.click();
+        return;
+    }
+
     await page.getByRole('button', { name: /Operator account/u }).click();
     await page.getByRole('option', { name: /Operations Admin/u }).click();
     await page.getByRole('button', { name: /Log in/u }).click();
