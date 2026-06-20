@@ -30,7 +30,7 @@ type BuilderDocumentLibrarySetters = {
 };
 
 type BuilderDocumentLibraryContext = BuilderDocumentLibrarySetters & {
-    readonly capabilities: Pick<CapabilityRegistry, 'isLanBrowser'>;
+    readonly capabilities: Pick<CapabilityRegistry, 'isHostedWeb'>;
 };
 
 const applyStoredBuilderPackage = (
@@ -62,7 +62,7 @@ export const loadBuilderPackage = async ({
     if (window.vaultBillDesktop) {
         return window.vaultBillDesktop.loadBuilderPackage(formatId);
     }
-    if (capabilities.isLanBrowser) {
+    if (capabilities.isHostedWeb) {
         const query = formatId ? `?formatId=${encodeURIComponent(formatId)}` : '';
         return requestHostedApi<StoredBuilderPackage | undefined>(`/builder/package${query}`);
     }
@@ -83,7 +83,7 @@ export const loadBuilderInventory = async ({
     if (window.vaultBillDesktop) {
         return window.vaultBillDesktop.listBuilderInventory();
     }
-    if (capabilities.isLanBrowser) {
+    if (capabilities.isHostedWeb) {
         return requestHostedApi<readonly BuilderInventoryItem[]>('/builder/inventory');
     }
     return [];
@@ -94,11 +94,11 @@ export const loadAndApplyBuilderPackage = async ({
     formatId,
     setters,
 }: {
-    readonly capabilities: Pick<CapabilityRegistry, 'isLanBrowser'>;
+    readonly capabilities: Pick<CapabilityRegistry, 'isHostedWeb'>;
     readonly formatId: string | undefined;
     readonly setters: BuilderDocumentLibrarySetters;
 }) => applyStoredBuilderPackage(await loadBuilderPackage({ capabilities, formatId }), setters);
 
 export const refreshBuilderInventory = async (
-    capabilities: Pick<CapabilityRegistry, 'isLanBrowser'>,
+    capabilities: Pick<CapabilityRegistry, 'isHostedWeb'>,
 ): Promise<readonly BuilderInventoryItem[]> => loadBuilderInventory({ capabilities });

@@ -7,7 +7,7 @@ type SettingsBackupActionsProps = {
     readonly canBackup: boolean;
     readonly canRestore: boolean;
     readonly isSysAdmin: boolean;
-    readonly isLanBrowser: boolean;
+    readonly isHostedWeb: boolean;
     readonly encryptBackup: boolean;
     readonly busyAction: string;
     readonly backupPassword: string;
@@ -26,7 +26,7 @@ export const SettingsBackupActions: FC<SettingsBackupActionsProps> = ({
     canBackup,
     canRestore,
     isSysAdmin,
-    isLanBrowser,
+    isHostedWeb,
     encryptBackup,
     busyAction,
     backupPassword,
@@ -65,7 +65,7 @@ export const SettingsBackupActions: FC<SettingsBackupActionsProps> = ({
                     </button>
                 </div>
             ) : null}
-            {isLanBrowser && (canBackup || canRestore) ? (
+            {isHostedWeb && (canBackup || canRestore) ? (
                 <label>
                     <span>System Administrator password for host operations</span>
                     <input

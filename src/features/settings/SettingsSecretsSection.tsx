@@ -22,18 +22,18 @@ export const SettingsSecretsSection: FC = () => {
     useEffect(() => {
         const secretRequest = window.vaultBillDesktop
             ? window.vaultBillDesktop.getSecretsSettings()
-            : capabilities.isLanBrowser
+            : capabilities.isHostedWeb
               ? requestHostedApi('/settings/secrets')
               : undefined;
         void secretRequest?.then((rawSettings) => {
             setSettings(normalizeSecretsSettings(rawSettings));
         });
-    }, [capabilities.isLanBrowser]);
+    }, [capabilities.isHostedWeb]);
 
     const saveSecrets = () => {
         const persistence = window.vaultBillDesktop
             ? window.vaultBillDesktop.saveSecretsSettings(settings)
-            : capabilities.isLanBrowser
+            : capabilities.isHostedWeb
               ? requestHostedApi('/settings/secrets', 'POST', settings)
               : Promise.resolve(settings);
         void persistence

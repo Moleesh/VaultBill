@@ -40,7 +40,7 @@ export const useSettingsBusinessSection = () => {
     useEffect(() => {
         const businessRequest = window.vaultBillDesktop
             ? loadWorkspaceSettings(false)
-            : capabilities.isLanBrowser
+            : capabilities.isHostedWeb
               ? requestHostedApi('/settings/business').then(normalizeWorkspaceSettings)
               : Promise.resolve(defaultWorkspaceSettings);
         void businessRequest.then((settings) => {
@@ -52,7 +52,7 @@ export const useSettingsBusinessSection = () => {
             setPreferredPrinterName(settings.preferredPrinterName);
             setIncludeDraftsInReports(settings.includeDraftsInReports);
         });
-    }, [capabilities.isLanBrowser]);
+    }, [capabilities.isHostedWeb]);
 
     useEffect(() => {
         if (!window.vaultBillDesktop?.listPrinters) {
@@ -93,7 +93,7 @@ export const useSettingsBusinessSection = () => {
         document.documentElement.dataset.theme = theme;
         const persistence = window.vaultBillDesktop
             ? window.vaultBillDesktop.saveBusinessSettings(nextBusiness)
-            : capabilities.isLanBrowser
+            : capabilities.isHostedWeb
               ? requestHostedApi('/settings/business', 'POST', nextBusiness)
               : Promise.resolve(nextBusiness);
         void persistence

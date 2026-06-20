@@ -56,13 +56,13 @@ export type ReportPagePayload = {
  */
 export const loadPrintPackages = async (
     records: readonly AppRecord[],
-    isLanBrowser: boolean,
+    isHostedWeb: boolean,
 ): Promise<ReadonlyMap<string, RecordPrintPackage>> => {
     const formatIds = [...new Set(records.map((record) => record.formatId))];
     const loaded = await Promise.all(
         formatIds.map(async (formatId) => ({
             formatId,
-            package: await loadRecordPrintPackage(formatId, isLanBrowser).catch(() => undefined),
+            package: await loadRecordPrintPackage(formatId, isHostedWeb).catch(() => undefined),
         })),
     );
     return new Map(

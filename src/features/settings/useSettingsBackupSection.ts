@@ -37,7 +37,7 @@ export const useSettingsBackupSection = () => {
         setBusyAction('Updating backup password');
         void buildBackupPasswordUpdateTask(
             {
-                isLanBrowser: capabilities.isLanBrowser,
+                isHostedWeb: capabilities.isHostedWeb,
                 desktopApi: window.vaultBillDesktop,
             },
             backupPassword,
@@ -64,7 +64,7 @@ export const useSettingsBackupSection = () => {
         setBusyAction('Creating verified backup');
         void buildBackupCreationTask(
             {
-                isLanBrowser: capabilities.isLanBrowser,
+                isHostedWeb: capabilities.isHostedWeb,
                 desktopApi: window.vaultBillDesktop,
             },
             encryptBackup,
@@ -96,7 +96,7 @@ export const useSettingsBackupSection = () => {
         setBusyAction('Validating and restoring backup');
         void buildRestoreTask(
             {
-                isLanBrowser: capabilities.isLanBrowser,
+                isHostedWeb: capabilities.isHostedWeb,
                 desktopApi: window.vaultBillDesktop,
             },
             restoreFile,
@@ -129,7 +129,7 @@ export const useSettingsBackupSection = () => {
         setBusyAction('Resetting application data');
         void buildResetTask(
             {
-                isLanBrowser: capabilities.isLanBrowser,
+                isHostedWeb: capabilities.isHostedWeb,
                 desktopApi: window.vaultBillDesktop,
             },
             resetSysAdminPassword,

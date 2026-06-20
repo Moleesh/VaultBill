@@ -1,0 +1,177 @@
+/** @format */
+
+body.has-animated-cursor,
+body.has-animated-cursor * {
+    cursor: none !important;
+}
+
+.animated-cursor {
+    --cursor-size: 1.2rem;
+    --cursor-ring-size: 2.7rem;
+    --cursor-color: color-mix(in srgb, var(--color-primary) 78%, white 22%);
+    --cursor-ring-color: color-mix(in srgb, var(--color-secondary) 24%, transparent);
+    position: fixed;
+    z-index: 9999;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    opacity: 0;
+    transform: translate3d(-100px, -100px, 0);
+    transition:
+        opacity 180ms ease,
+        filter 220ms ease;
+    filter: drop-shadow(
+        0 0.55rem 1rem color-mix(in srgb, var(--color-panel-shadow) 15%, transparent)
+    );
+}
+
+.animated-cursor[data-visible='true'] {
+    opacity: 1;
+}
+
+.animated-cursor-core,
+.animated-cursor-ring {
+    position: absolute;
+    border-radius: 999px;
+    transform: translate(-50%, -50%);
+    transition:
+        width 180ms ease,
+        height 180ms ease,
+        border-radius 180ms ease,
+        background 180ms ease,
+        border-color 180ms ease,
+        opacity 180ms ease,
+        transform 180ms ease;
+}
+
+.animated-cursor-core {
+    width: var(--cursor-size);
+    height: var(--cursor-size);
+    background: var(--cursor-color);
+    box-shadow: inset 0 1px 0 color-mix(in srgb, white 24%, transparent);
+    animation: animated-cursor-core-pulse 1.9s ease-in-out infinite;
+}
+
+.animated-cursor-ring {
+    width: var(--cursor-ring-size);
+    height: var(--cursor-ring-size);
+    border: 1px solid var(--cursor-ring-color);
+    background: color-mix(in srgb, var(--color-surface-raised) 28%, transparent);
+}
+
+.animated-cursor[data-pressed='true'] .animated-cursor-core,
+.animated-cursor[data-pressed='true'] .animated-cursor-ring {
+    transform: translate(-50%, -50%) scale(0.9);
+}
+
+.animated-cursor[data-variant='hand'] {
+    --cursor-size: 1rem;
+    --cursor-ring-size: 3rem;
+    --cursor-color: color-mix(in srgb, var(--color-primary) 86%, white 14%);
+    --cursor-ring-color: color-mix(in srgb, var(--color-primary) 34%, transparent);
+}
+
+.animated-cursor[data-variant='text'] {
+    --cursor-size: 0.32rem;
+    --cursor-ring-size: 1.35rem;
+    --cursor-color: color-mix(in srgb, var(--color-text-heading) 84%, white 16%);
+    --cursor-ring-color: color-mix(in srgb, var(--color-primary) 16%, transparent);
+}
+
+.animated-cursor[data-variant='text'] .animated-cursor-core,
+.animated-cursor[data-variant='text'] .animated-cursor-ring {
+    border-radius: 0.35rem;
+}
+
+.animated-cursor[data-variant='drag'],
+.animated-cursor[data-variant='dragging'] {
+    --cursor-size: 1.1rem;
+    --cursor-ring-size: 3.2rem;
+    --cursor-color: color-mix(in srgb, var(--color-secondary) 72%, var(--color-primary) 28%);
+    --cursor-ring-color: color-mix(in srgb, var(--color-secondary) 34%, transparent);
+}
+
+.animated-cursor[data-variant='drag'] .animated-cursor-ring,
+.animated-cursor[data-variant='dragging'] .animated-cursor-ring {
+    border-style: dashed;
+}
+
+.animated-cursor[data-variant='dragging'] .animated-cursor-core,
+.animated-cursor[data-variant='dragging'] .animated-cursor-ring {
+    transform: translate(-50%, -50%) scale(0.84) rotate(-14deg);
+}
+
+.animated-cursor[data-variant='disabled'] {
+    --cursor-size: 0.95rem;
+    --cursor-ring-size: 2.55rem;
+    --cursor-color: color-mix(in srgb, var(--color-text-disabled) 84%, white 16%);
+    --cursor-ring-color: color-mix(in srgb, var(--color-danger) 28%, transparent);
+    opacity: 0.82;
+}
+
+.animated-cursor[data-variant='help'] {
+    --cursor-size: 0.9rem;
+    --cursor-ring-size: 2.8rem;
+    --cursor-color: color-mix(in srgb, #e2a33b 80%, white 20%);
+    --cursor-ring-color: color-mix(in srgb, #e2a33b 34%, transparent);
+}
+
+.animated-cursor[data-variant='resize'],
+.animated-cursor[data-variant='move'] {
+    --cursor-size: 0.82rem;
+    --cursor-ring-size: 2.95rem;
+    --cursor-color: color-mix(in srgb, var(--color-secondary) 74%, white 26%);
+    --cursor-ring-color: color-mix(in srgb, var(--color-secondary) 26%, transparent);
+}
+
+.animated-cursor[data-variant='resize'] .animated-cursor-ring,
+.animated-cursor[data-variant='move'] .animated-cursor-ring {
+    border-radius: 0.9rem;
+}
+
+.animated-cursor[data-variant='busy'] {
+    --cursor-size: 1rem;
+    --cursor-ring-size: 3rem;
+    --cursor-color: color-mix(in srgb, var(--color-primary) 66%, white 34%);
+    --cursor-ring-color: color-mix(in srgb, var(--color-primary) 30%, transparent);
+}
+
+.animated-cursor[data-variant='busy'] .animated-cursor-ring {
+    animation: animated-cursor-busy-spin 1s linear infinite;
+}
+
+@keyframes animated-cursor-core-pulse {
+    0%,
+    100% {
+        box-shadow:
+            inset 0 1px 0 color-mix(in srgb, white 24%, transparent),
+            0 0 0 0 color-mix(in srgb, var(--color-primary) 0%, transparent);
+    }
+    50% {
+        box-shadow:
+            inset 0 1px 0 color-mix(in srgb, white 30%, transparent),
+            0 0 0 0.45rem color-mix(in srgb, var(--color-primary) 10%, transparent);
+    }
+}
+
+@keyframes animated-cursor-busy-spin {
+    from {
+        transform: translate(-50%, -50%) rotate(0deg);
+    }
+    to {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+}
+
+@media (pointer: coarse) {
+    .animated-cursor {
+        display: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .animated-cursor-core,
+    .animated-cursor-ring {
+        animation: none !important;
+    }
+}

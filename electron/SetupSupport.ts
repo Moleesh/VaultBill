@@ -8,8 +8,17 @@ import type { SettingsStore } from './SettingsStore.js';
 export const SetupCompleteRequestSchema = z.object({
     companyName: z.string().trim().min(1),
     address: z.string().trim().min(1),
+    theme: z.string().trim().min(1),
     adminUsername: z.string().trim().min(1),
     adminDisplayName: z.string().trim().min(1),
+    adminPassword: z
+        .string()
+        .trim()
+        .optional()
+        .transform((value) => value ?? '')
+        .refine((value) => value.length === 0 || value.length >= 8, {
+            message: 'Passwords must contain at least 8 characters.',
+        }),
 });
 
 export type SetupStatus = {
@@ -51,15 +60,20 @@ export const completeSetup = (
         ...settingsStore.getBusiness(),
         companyName: setup.companyName,
         address: setup.address,
+        theme: setup.theme,
     });
     const existingAdmin = credentialStore
         .listAccounts()
         .find((account) => account.role === 'Admin' && account.isActive);
+    const adminUserId = existingAdmin?.userId ?? 'admin_1';
     credentialStore.saveAccount({
-        userId: existingAdmin?.userId ?? 'admin_1',
+        userId: adminUserId,
         username: setup.adminUsername,
         displayName: setup.adminDisplayName,
         role: 'Admin',
         isActive: true,
     });
+    if (setup.adminPassword.length > 0) {
+        credentialStore.resetPassword(adminUserId, setup.adminPassword);
+    }
 };

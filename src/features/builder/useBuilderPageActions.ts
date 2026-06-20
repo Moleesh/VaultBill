@@ -18,7 +18,7 @@ type DocumentFormatConfig = z.infer<typeof DocumentFormatConfigSchema>;
 
 type BuilderPageActionProps = {
     readonly capabilities: {
-        readonly isLanBrowser: boolean;
+        readonly isHostedWeb: boolean;
     };
     readonly config: DocumentFormatConfig;
     readonly templateHtml: string;
@@ -152,7 +152,7 @@ export const useBuilderPageActions = ({
         try {
             if (window.vaultBillDesktop) {
                 await window.vaultBillDesktop.saveBuilderPackage(builderPackage);
-            } else if (capabilities.isLanBrowser) {
+            } else if (capabilities.isHostedWeb) {
                 await requestHostedApi<unknown>('/builder/package', 'POST', builderPackage);
             } else {
                 writeBuilderPackage(builderPackage);

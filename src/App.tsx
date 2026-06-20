@@ -6,6 +6,7 @@ import { Suspense, useEffect, useState } from 'react';
 import type { FC } from 'react';
 
 import { AppRouteFallback, AppRouteTree } from './AppRoutesSupport';
+import { AnimatedCursor } from './components/AnimatedCursor';
 import { CapabilityProvider } from './capability/CapabilityContext';
 import { useCapabilities } from './capability/CapabilityContext';
 import { SessionProvider } from './features/auth/SessionContext';
@@ -16,7 +17,7 @@ const AppRoutes: FC = () => {
     const capabilities = useCapabilities();
     const [setupRevision, setSetupRevision] = useState(0);
     const [desktopSetupRequired, setDesktopSetupRequired] = useState<boolean | null>(
-        !capabilities.isDemoMode && (window.vaultBillDesktop || capabilities.isLanBrowser)
+        !capabilities.isDemoMode && (window.vaultBillDesktop || capabilities.isHostedWeb)
             ? null
             : false,
     );
@@ -39,7 +40,7 @@ const AppRoutes: FC = () => {
                   ),
                   business,
               }))
-            : capabilities.isLanBrowser
+            : capabilities.isHostedWeb
               ? requestHostedApi<{
                     readonly isSetupComplete: boolean;
                     readonly hasActiveAdmin: boolean;
@@ -77,7 +78,7 @@ const AppRoutes: FC = () => {
         return () => {
             isCurrent = false;
         };
-    }, [capabilities.isDemoMode, capabilities.isLanBrowser, setupRevision]);
+    }, [capabilities.isDemoMode, capabilities.isHostedWeb, setupRevision]);
 
     if (desktopSetupRequired === null) return null;
 
@@ -100,5 +101,6 @@ const AppRoutes: FC = () => {
 export const App: FC = () => (
     <CapabilityProvider>
         <AppRoutes />
+        <AnimatedCursor />
     </CapabilityProvider>
 );

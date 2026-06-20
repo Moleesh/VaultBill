@@ -14,7 +14,7 @@ export const useReportsPageActions = (input: ReportsPageActionInput) => {
             if (!result.success) throw new Error(result.warning ?? 'Printing failed.');
             return;
         }
-        if (input.capabilities.isLanBrowser) {
+        if (input.capabilities.isHostedWeb) {
             const result = await requestHostedApi<{ success: boolean; warning?: string }>(
                 '/print/html',
                 'POST',
@@ -124,7 +124,7 @@ export const useReportsPageActions = (input: ReportsPageActionInput) => {
                     running: true,
                     message: `Printing records ${String(startAt + 1)}-${String(nextCompleted)} in report order.`,
                 });
-                return loadPrintPackages(batch, input.capabilities.isLanBrowser)
+                return loadPrintPackages(batch, input.capabilities.isHostedWeb)
                     .then((packages) =>
                         runOutput(
                             combineRecordHtml(batch, packages, input.workspaceSettings),

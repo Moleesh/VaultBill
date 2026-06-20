@@ -13,7 +13,7 @@ import { createTestSession } from '../../test/TestSession';
 
 const desktopCapabilities: CapabilityRegistry = {
     isDesktop: true,
-    isLanBrowser: false,
+    isHostedWeb: false,
     isDemoMode: false,
     canListPrinters: true,
     canSelectExactPrinter: true,

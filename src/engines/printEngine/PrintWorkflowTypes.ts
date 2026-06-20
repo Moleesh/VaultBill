@@ -13,7 +13,7 @@ export const PrintActionSchema = z.enum(['DraftPrint', 'FinalPrint', 'Reprint', 
 
 export const PrintOutputTargetSchema = z.enum(['PreviewOnly', 'DownloadPdf', 'Printer']);
 
-export const PrintPlatformSchema = z.enum(['DesktopElectron', 'LanBrowser', 'Web']);
+export const PrintPlatformSchema = z.enum(['DesktopElectron', 'HostedWeb', 'Web']);
 
 export type PrintAction = z.infer<typeof PrintActionSchema>;
 export type PrintOutputTarget = z.infer<typeof PrintOutputTargetSchema>;

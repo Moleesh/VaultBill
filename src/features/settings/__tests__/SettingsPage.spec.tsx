@@ -15,7 +15,7 @@ import { createTestSession } from '../../../test/TestSession';
 
 const webCapabilities: CapabilityRegistry = {
     isDesktop: false,
-    isLanBrowser: false,
+    isHostedWeb: false,
     isDemoMode: true,
     canListPrinters: false,
     canSelectExactPrinter: false,
@@ -90,7 +90,7 @@ describe('settings UI', () => {
         const fullWebCapabilities = {
             ...webCapabilities,
             isDemoMode: false,
-            isLanBrowser: false,
+            isHostedWeb: false,
             canSmsIntegration: true,
             canGspIntegration: true,
         };

@@ -100,12 +100,12 @@ export const useRecordsPageState = () => {
     const printLabel = outputTarget === 'DownloadPdf' ? 'Print / PDF' : 'Print';
     const showShortcuts =
         !window.matchMedia('(pointer: coarse)').matches &&
-        (capabilities.isDesktop || capabilities.isLanBrowser || capabilities.isDemoMode);
+        (capabilities.isDesktop || capabilities.isHostedWeb || capabilities.isDemoMode);
 
     useEffect(() => {
         const inventory = window.vaultBillDesktop
             ? window.vaultBillDesktop.listBuilderInventory()
-            : capabilities.isLanBrowser
+            : capabilities.isHostedWeb
               ? requestHostedApi<readonly PublishedFormat[]>('/print/formats')
               : undefined;
         void inventory
@@ -115,32 +115,32 @@ export const useRecordsPageState = () => {
             .catch(() => {
                 setPublishedFormats([]);
             });
-    }, [capabilities.isLanBrowser]);
+    }, [capabilities.isHostedWeb]);
 
     useEffect(() => {
-        void loadWorkspaceSettings(capabilities.isLanBrowser).then(setWorkspaceSettings);
-    }, [capabilities.isLanBrowser]);
+        void loadWorkspaceSettings(capabilities.isHostedWeb).then(setWorkspaceSettings);
+    }, [capabilities.isHostedWeb]);
 
     useEffect(() => {
         const request = window.vaultBillDesktop
             ? window.vaultBillDesktop.getSecretsSettings()
-            : capabilities.isLanBrowser
+            : capabilities.isHostedWeb
               ? requestHostedApi('/settings/secrets')
               : undefined;
         void request?.then((rawSettings) => {
             const normalized = normalizeSecretsSettings(rawSettings);
             setSecretValues(secretValuesFromSettings(normalized.secrets));
         });
-    }, [capabilities.isLanBrowser]);
+    }, [capabilities.isHostedWeb]);
 
     useEffect(() => {
         setActivePrintPackage(undefined);
-        void loadRecordPrintPackage(record.formatId, capabilities.isLanBrowser)
+        void loadRecordPrintPackage(record.formatId, capabilities.isHostedWeb)
             .then(setActivePrintPackage)
             .catch(() => {
                 setActivePrintPackage(undefined);
             });
-    }, [capabilities.isLanBrowser, record.formatId]);
+    }, [capabilities.isHostedWeb, record.formatId]);
 
     return {
         actionState,

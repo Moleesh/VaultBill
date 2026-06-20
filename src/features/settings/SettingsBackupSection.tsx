@@ -52,7 +52,7 @@ export const SettingsBackupSection: FC = () => {
                 canBackup={capabilities.canBackup}
                 canRestore={capabilities.canRestore}
                 encryptBackup={encryptBackup}
-                isLanBrowser={capabilities.isLanBrowser}
+                isHostedWeb={capabilities.isHostedWeb}
                 isSysAdmin={true}
                 onBackupPasswordChange={setBackupPassword}
                 onChangeBackupPassword={changeBackupPassword}
@@ -69,7 +69,7 @@ export const SettingsBackupSection: FC = () => {
             />
             <SettingsDialogs
                 busyAction={busyAction}
-                capabilities={{ isLanBrowser: capabilities.isLanBrowser }}
+                capabilities={{ isHostedWeb: capabilities.isHostedWeb }}
                 onCloseRecoveryKey={() => {
                     setRecoveryKey('');
                 }}

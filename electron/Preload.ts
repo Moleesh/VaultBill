@@ -32,8 +32,10 @@ export type VaultBillDesktopBridge = {
     readonly completeSetup: (request: {
         readonly companyName: string;
         readonly address: string;
+        readonly theme: string;
         readonly adminUsername: string;
         readonly adminDisplayName: string;
+        readonly adminPassword?: string;
     }) => Promise<void>;
     readonly getBusinessSettings: () => Promise<unknown>;
     readonly saveBusinessSettings: (request: unknown) => Promise<unknown>;

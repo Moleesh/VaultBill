@@ -1,36 +1,25 @@
 /** @format */
-
 /** First-run setup flow for business identity, initial security, and starter configuration. */
-
-import { Building2, Check, Sparkles, UserRoundCog } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { FC } from 'react';
-
 import { useCapabilities } from '../../capability/CapabilityContext';
-import { AppBrandIcon } from '../../components/AppBrandIcon/AppBrandIcon';
-import { HorizontalProgress } from '../../components/HorizontalProgress/HorizontalProgress';
 import { requestHostedApi } from '../../runtime/HostedApi';
 import { SetupAdminUserStep } from './SetupAdminUserStep';
 import { SetupBusinessProfileStep } from './SetupBusinessProfileStep';
 import { SetupPageChrome } from './SetupPageChrome';
+import { SetupPageHeader } from './SetupPageHeader';
 import { SetupPageMessageModal } from './SetupPageMessageModal';
+import {
+    getAdminAccessValidationMessage,
+    getBusinessProfileValidationMessage,
+    isThemeId,
+    localHostedOrigins,
+    setupErrorMessage,
+    setupSteps,
+    themeStorageKey,
+} from './SetupPageSupport';
 import { SetupWelcomeStep } from './SetupWelcomeStep';
-
-const steps = [
-    { label: 'Welcome', icon: Sparkles },
-    { label: 'Business Profile', icon: Building2 },
-    { label: 'Admin User', icon: UserRoundCog },
-] as const;
-
-/** Removes Electron IPC framing so setup failures read clearly in the wizard. */
-const setupErrorMessage = (reason: unknown): string => {
-    const message = reason instanceof Error ? reason.message : 'Setup could not be completed.';
-    return message
-        .replace(/^Error invoking remote method '[^']+':\s*/u, '')
-        .replace(/^Error:\s*/u, '');
-};
-
 type SetupPageProps = {
     readonly onComplete?: () => void;
 };
@@ -42,18 +31,24 @@ export const SetupPage: FC<SetupPageProps> = ({ onComplete }) => {
     const [stepIndex, setStepIndex] = useState(0);
     const [companyName, setCompanyName] = useState('');
     const [address, setAddress] = useState('');
-    const [adminUsername, setAdminUsername] = useState('');
     const [adminDisplayName, setAdminDisplayName] = useState('');
+    const [adminUsername, setAdminUsername] = useState('');
+    const [adminPassword, setAdminPassword] = useState('');
+    const [theme, setTheme] = useState(() => {
+        const savedTheme = window.localStorage.getItem(themeStorageKey) ?? 'teal-flow';
+        return isThemeId(savedTheme) ? savedTheme : 'teal-flow';
+    });
     const [message, setMessage] = useState('');
     const [hasAttemptedBusinessProfileContinue, setHasAttemptedBusinessProfileContinue] =
         useState(false);
     const [hasAttemptedAdminUserFinish, setHasAttemptedAdminUserFinish] = useState(false);
-    const activeStep = steps[stepIndex]?.label ?? 'Welcome';
+    const activeStep = setupSteps[stepIndex]?.label ?? 'Welcome';
+    const canUseHostedSetupApi = localHostedOrigins.has(window.location.hostname);
 
     const isBusinessProfileInvalid = companyName.trim().length === 0 || address.trim().length === 0;
     const isAdminUserInvalid =
         adminUsername.trim().length === 0 || adminDisplayName.trim().length === 0;
-    const canContinue = activeStep !== 'Business Profile' || !isBusinessProfileInvalid;
+    const canContinue = stepIndex !== 1 || !isBusinessProfileInvalid;
 
     const completeSetup = () => {
         const finish = async () => {
@@ -61,15 +56,19 @@ export const SetupPage: FC<SetupPageProps> = ({ onComplete }) => {
                 await window.vaultBillDesktop.completeSetup({
                     companyName: companyName.trim(),
                     address: address.trim(),
+                    theme,
                     adminUsername: adminUsername.trim(),
                     adminDisplayName: adminDisplayName.trim(),
+                    adminPassword: adminPassword.trim(),
                 });
-            } else if (capabilities.isLanBrowser) {
+            } else if (capabilities.isHostedWeb || canUseHostedSetupApi) {
                 await requestHostedApi('/setup/complete', 'POST', {
                     companyName: companyName.trim(),
                     address: address.trim(),
+                    theme,
                     adminUsername: adminUsername.trim(),
                     adminDisplayName: adminDisplayName.trim(),
+                    adminPassword: adminPassword.trim(),
                 });
             } else {
                 throw new Error('Setup is only available through VaultBill Desktop.');
@@ -84,68 +83,45 @@ export const SetupPage: FC<SetupPageProps> = ({ onComplete }) => {
 
     return (
         <main className="setup-page">
-            {window.vaultBillDesktop ? <SetupPageChrome /> : null}
+            {capabilities.isDesktop ? <SetupPageChrome /> : null}
             <section className="setup-card">
-                <header className="setup-card-header">
-                    <span className="setup-card-brand-mark">
-                        <AppBrandIcon size="medium" />
-                    </span>
-                    <div className="setup-card-title">
-                        <p className="eyebrow">First-run setup</p>
-                        <h1>Prepare VaultBill for your business</h1>
-                        <p>Complete these steps once, then start billing from the workspace.</p>
-                    </div>
-                </header>
-                <HorizontalProgress
-                    activeIndex={stepIndex}
-                    className="setup-steps wizard-steps"
-                    label="Setup steps"
-                >
-                    {steps.map((step, index) => {
-                        const StepIcon = index < stepIndex ? Check : step.icon;
-
-                        return (
-                            <button
-                                aria-current={index === stepIndex ? 'step' : undefined}
-                                className={index < stepIndex ? 'is-complete' : ''}
-                                disabled={index > stepIndex}
-                                key={step.label}
-                                onClick={() => {
-                                    setStepIndex(index);
-                                    setMessage('');
-                                }}
-                                type="button"
-                            >
-                                <span aria-hidden="true" className="wizard-step-icon">
-                                    <StepIcon size={18} />
-                                </span>
-                                <strong className="wizard-step-label">{step.label}</strong>
-                            </button>
-                        );
-                    })}
-                </HorizontalProgress>
+                <SetupPageHeader
+                    onStepSelect={(index) => {
+                        setStepIndex(index);
+                        setMessage('');
+                    }}
+                    stepIndex={stepIndex}
+                />
                 <section className="setup-card-content" aria-labelledby="setup-step-title">
                     <div>
                         <p className="eyebrow">
-                            Step {stepIndex + 1} of {steps.length}
+                            Step {stepIndex + 1} of {setupSteps.length}
                         </p>
                         <h2 id="setup-step-title">{activeStep}</h2>
                     </div>
                     {activeStep === 'Welcome' ? <SetupWelcomeStep /> : null}
-                    {activeStep === 'Business Profile' ? (
+                    {activeStep === 'Workspace Details' ? (
                         <SetupBusinessProfileStep
                             address={address}
                             companyName={companyName}
                             onAddressChange={setAddress}
                             onCompanyNameChange={setCompanyName}
+                            onThemeChange={(value) => {
+                                setTheme(value);
+                                window.localStorage.setItem(themeStorageKey, value);
+                                document.documentElement.dataset.theme = value;
+                            }}
                             showValidation={hasAttemptedBusinessProfileContinue}
+                            theme={theme}
                         />
                     ) : null}
-                    {activeStep === 'Admin User' ? (
+                    {activeStep === 'Admin Access' ? (
                         <SetupAdminUserStep
                             displayName={adminDisplayName}
                             onDisplayNameChange={setAdminDisplayName}
+                            onPasswordChange={setAdminPassword}
                             onUsernameChange={setAdminUsername}
+                            password={adminPassword}
                             showValidation={hasAttemptedAdminUserFinish}
                             username={adminUsername}
                         />
@@ -164,18 +140,25 @@ export const SetupPage: FC<SetupPageProps> = ({ onComplete }) => {
                     ) : (
                         <span aria-hidden="true" />
                     )}
-                    {stepIndex < steps.length - 1 ? (
+                    {stepIndex < setupSteps.length - 1 ? (
                         <button
                             className="button-primary"
                             onClick={() => {
                                 if (!canContinue) {
                                     setHasAttemptedBusinessProfileContinue(true);
-                                    setMessage('Business name and address are required.');
+                                    setMessage(
+                                        getBusinessProfileValidationMessage({
+                                            companyName,
+                                            address,
+                                        }),
+                                    );
                                     return;
                                 }
                                 setHasAttemptedBusinessProfileContinue(false);
                                 setMessage('');
-                                setStepIndex((current) => Math.min(steps.length - 1, current + 1));
+                                setStepIndex((current) =>
+                                    Math.min(setupSteps.length - 1, current + 1),
+                                );
                             }}
                             type="button"
                         >
@@ -187,7 +170,12 @@ export const SetupPage: FC<SetupPageProps> = ({ onComplete }) => {
                             onClick={() => {
                                 if (isAdminUserInvalid) {
                                     setHasAttemptedAdminUserFinish(true);
-                                    setMessage('Admin username and display name are required.');
+                                    setMessage(
+                                        getAdminAccessValidationMessage({
+                                            adminDisplayName,
+                                            adminUsername,
+                                        }),
+                                    );
                                     return;
                                 }
                                 setHasAttemptedAdminUserFinish(false);

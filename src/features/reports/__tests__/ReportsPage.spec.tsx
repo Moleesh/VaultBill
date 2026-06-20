@@ -12,7 +12,7 @@ import { ReportsPage } from '../ReportsPage';
 
 const demoCapabilities: CapabilityRegistry = {
     isDesktop: false,
-    isLanBrowser: false,
+    isHostedWeb: false,
     isDemoMode: true,
     canListPrinters: false,
     canSelectExactPrinter: false,

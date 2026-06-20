@@ -2,27 +2,30 @@
 
 import type { CapabilityRegistry } from './Capability.types';
 
+const detectRuntimeMode = (): 'demo' | 'desktop' | 'web' => {
+    if (import.meta.env.VITE_DEMO_MODE === 'true') return 'demo';
+    if (window.vaultBillRuntime === 'desktop' || window.vaultBillDesktop) {
+        return 'desktop';
+    }
+    return 'web';
+};
+
 export const buildCapabilities = (): CapabilityRegistry => {
-    const isDesktop =
-        window.vaultBillRuntime === 'desktop' || /Electron/i.test(navigator.userAgent);
-    const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true';
-    const hasHostedApi =
-        window.location.port === '' ||
-        window.location.port === '80' ||
-        window.location.port === '8000' ||
-        window.location.port === '5173';
-    const isLanBrowser = !isDesktop && !isDemoMode && hasHostedApi;
+    const runtimeMode = detectRuntimeMode();
+    const isDesktop = runtimeMode === 'desktop';
+    const isDemoMode = runtimeMode === 'demo';
+    const isHostedWeb = runtimeMode === 'web';
 
     return {
         isDesktop,
-        isLanBrowser,
         isDemoMode,
+        isHostedWeb,
         canListPrinters: isDesktop,
         canSelectExactPrinter: isDesktop,
         canBrowserPrint: true,
         canDownloadPdf: isDesktop,
-        canBackup: isDesktop || isLanBrowser,
-        canRestore: isDesktop || isLanBrowser,
+        canBackup: isDesktop || isHostedWeb,
+        canRestore: isDesktop || isHostedWeb,
         canUsbSignaturePad: isDesktop,
         canLanServer: isDesktop,
         canSmsIntegration: !isDemoMode,

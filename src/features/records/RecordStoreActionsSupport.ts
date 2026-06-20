@@ -15,7 +15,7 @@ import {
 type RecordStoreActionDependencies = {
     readonly accounts: () => readonly AppRecord[];
     readonly isDemoMode: () => boolean;
-    readonly isLanBrowser: () => boolean;
+    readonly isHostedWeb: () => boolean;
     readonly sessionOperator: () => OperatorContext | undefined;
 };
 

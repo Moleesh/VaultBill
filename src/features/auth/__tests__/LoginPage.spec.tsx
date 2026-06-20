@@ -15,7 +15,7 @@ import { SessionProvider } from '../SessionContext';
 
 const nonDemoCapabilities: CapabilityRegistry = {
     isDesktop: false,
-    isLanBrowser: false,
+    isHostedWeb: false,
     isDemoMode: false,
     canListPrinters: false,
     canSelectExactPrinter: false,

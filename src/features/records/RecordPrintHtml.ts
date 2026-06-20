@@ -26,14 +26,14 @@ export type RecordPrintPackage = {
 /** Loads a print package from the desktop bridge or hosted API. */
 export const loadRecordPrintPackage = async (
     formatId: string,
-    isLanBrowser: boolean,
+    isHostedWeb: boolean,
 ): Promise<RecordPrintPackage | undefined> => {
     if (window.vaultBillDesktop) {
         return (await window.vaultBillDesktop.loadBuilderPackage(formatId)) as
             | RecordPrintPackage
             | undefined;
     }
-    if (isLanBrowser) {
+    if (isHostedWeb) {
         return requestHostedApi<RecordPrintPackage | undefined>(
             `/print/template?formatId=${encodeURIComponent(formatId)}`,
         );

@@ -12,18 +12,16 @@ import { SessionContext } from './SessionContextBase';
 import { demoAccount } from './SessionSupport';
 import type { SessionContextValue } from './SessionTypes';
 
-/**
- * Supplies the active operator session for browser, LAN, and desktop modes.
- */
+/** Supplies the active operator session for demo, hosted web, and desktop modes. */
 export const SessionProvider: FC<PropsWithChildren> = ({ children }) => {
     const capabilities = useCapabilities();
     const [hostedConnectionState, setHostedConnectionState] = useState<
         SessionContextValue['hostedConnectionState']
-    >(capabilities.isLanBrowser ? 'connecting' : 'connected');
+    >(capabilities.isHostedWeb ? 'connecting' : 'connected');
     const [accounts, setAccounts] = useState<readonly OperatorAccount[]>(() =>
         capabilities.isDemoMode
             ? [demoAccount]
-            : capabilities.isLanBrowser
+            : capabilities.isHostedWeb
               ? []
               : window.vaultBillDesktop
                 ? []
@@ -42,7 +40,7 @@ export const SessionProvider: FC<PropsWithChildren> = ({ children }) => {
     }, [capabilities.isDemoMode]);
 
     useEffect(() => {
-        if (!capabilities.isLanBrowser) return;
+        if (!capabilities.isHostedWeb) return;
 
         void Promise.all([
             requestHostedApi<readonly OperatorAccount[]>('/auth/accounts'),
@@ -66,7 +64,7 @@ export const SessionProvider: FC<PropsWithChildren> = ({ children }) => {
                 setHostedCsrfToken(undefined);
                 setHostedConnectionState('unavailable');
             });
-    }, [capabilities.isLanBrowser]);
+    }, [capabilities.isHostedWeb]);
 
     const actions = useMemo(
         () =>
@@ -74,12 +72,12 @@ export const SessionProvider: FC<PropsWithChildren> = ({ children }) => {
                 accounts: () => accounts,
                 account: () => account,
                 isDemoMode: () => capabilities.isDemoMode,
-                isLanBrowser: () => capabilities.isLanBrowser,
+                isHostedWeb: () => capabilities.isHostedWeb,
                 saveAccounts: setAccounts,
                 setAccount,
                 setHostedCsrfToken,
             }),
-        [account, accounts, capabilities.isDemoMode, capabilities.isLanBrowser],
+        [account, accounts, capabilities.isDemoMode, capabilities.isHostedWeb],
     );
 
     return (

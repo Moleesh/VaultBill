@@ -25,7 +25,7 @@ type AppShellSidebarProps = {
     readonly isExpanded: boolean;
     readonly isDemoMode: boolean;
     readonly isDesktop: boolean;
-    readonly isLanBrowser: boolean;
+    readonly isHostedWeb: boolean;
     readonly operatorDisplayName: string;
     readonly operatorRole: string;
     readonly hostedWebUrl?: string;
@@ -44,7 +44,7 @@ export const AppShellSidebar: FC<AppShellSidebarProps> = ({
     isExpanded,
     isDemoMode,
     isDesktop,
-    isLanBrowser,
+    isHostedWeb,
     operatorDisplayName,
     operatorRole,
     hostedWebUrl,
@@ -91,7 +91,7 @@ export const AppShellSidebar: FC<AppShellSidebarProps> = ({
             <div className="app-shell-operator-copy app-shell-nav-label">
                 <strong>{operatorDisplayName}</strong>
                 <small>{isDemoMode ? 'Demo mode' : operatorRole}</small>
-                {!isDemoMode && (isDesktop || isLanBrowser) ? (
+                {!isDemoMode && (isDesktop || isHostedWeb) ? (
                     <small className="app-shell-host-status">
                         {isDesktop ? <Server aria-hidden="true" size={13} /> : null}
                         {isDesktop ? 'Hosted web active' : 'Connected to desktop host'}

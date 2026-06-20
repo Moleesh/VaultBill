@@ -10,7 +10,7 @@ type OutputState = {
     readonly actionState: 'New' | 'DraftDirty' | 'DraftSaved' | 'Finalized' | 'Reprint';
     readonly activePrintPackage: RecordPrintPackage | undefined;
     readonly capabilities: {
-        readonly isLanBrowser: boolean;
+        readonly isHostedWeb: boolean;
     };
     readonly outputTask: OutputTask | undefined;
     readonly outputTarget: string;
@@ -79,7 +79,7 @@ export const useRecordsPageOutput = (state: OutputState) => {
                 if (!result.success) throw new Error(result.warning ?? 'Printing failed.');
                 return;
             }
-            if (state.capabilities.isLanBrowser) {
+            if (state.capabilities.isHostedWeb) {
                 const result = await requestHostedApi<{ success: boolean; warning?: string }>(
                     '/print/html',
                     'POST',
@@ -128,7 +128,7 @@ export const useRecordsPageOutput = (state: OutputState) => {
         if (!currentTask) return;
         const cancel = window.vaultBillDesktop
             ? window.vaultBillDesktop.cancelOutput(currentTask.jobId)
-            : state.capabilities.isLanBrowser
+            : state.capabilities.isHostedWeb
               ? requestHostedApi('/print/cancel', 'POST', { jobId: currentTask.jobId })
               : Promise.resolve(false);
         void cancel.finally(() => {

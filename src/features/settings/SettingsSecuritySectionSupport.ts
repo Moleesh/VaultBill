@@ -53,7 +53,7 @@ export const useSettingsSecuritySectionState = () => {
             void window.vaultBillDesktop.getHostedWebSettings().then((settings) => {
                 setLanEnabled(settings.lanEnabled);
             });
-        } else if (capabilities.isLanBrowser) {
+        } else if (capabilities.isHostedWeb) {
             void requestHostedApi<CredentialStatus>('/credentials/status').then((status) => {
                 setCredentialStatus(status);
             });
@@ -61,13 +61,13 @@ export const useSettingsSecuritySectionState = () => {
                 setTrialStatus(status);
             });
         }
-    }, [capabilities.isLanBrowser]);
+    }, [capabilities.isHostedWeb]);
 
     useEffect(() => {
-        void loadWorkspaceSettings(capabilities.isLanBrowser).then((settings) => {
+        void loadWorkspaceSettings(capabilities.isHostedWeb).then((settings) => {
             setIncludeDraftsInReports(settings.includeDraftsInReports);
         });
-    }, [capabilities.isLanBrowser]);
+    }, [capabilities.isHostedWeb]);
 
     const createOperator = async () => {
         const username = newUsername.trim();
@@ -97,7 +97,7 @@ export const useSettingsSecuritySectionState = () => {
             setMessage(
                 newRole === 'Admin'
                     ? 'Operator created. The admin can manage users after a password is set.'
-                    : 'Operator created. Set a password before enabling LAN login.',
+                    : 'Operator created. Set a password before enabling hosted web login.',
             );
         } catch (reason) {
             setMessage(reason instanceof Error ? reason.message : 'Operator could not be created.');
@@ -119,7 +119,7 @@ export const useSettingsSecuritySectionState = () => {
         if (!licenseKey.trim()) return;
         const activation = window.vaultBillDesktop
             ? window.vaultBillDesktop.activateLicense(licenseKey.trim())
-            : capabilities.isLanBrowser
+            : capabilities.isHostedWeb
               ? requestHostedApi('/trial/activate', 'POST', { licenseKey: licenseKey.trim() })
               : Promise.resolve();
         void activation
@@ -171,13 +171,13 @@ export const useSettingsSecuritySectionState = () => {
             const previousValue = includeDraftsInReports;
             setIncludeDraftsInReports(value);
             const save = async () => {
-                const current = await loadWorkspaceSettings(capabilities.isLanBrowser);
+                const current = await loadWorkspaceSettings(capabilities.isHostedWeb);
                 const nextSettings = { ...current, includeDraftsInReports: value };
                 if (window.vaultBillDesktop) {
                     await window.vaultBillDesktop.saveBusinessSettings(nextSettings);
                     return;
                 }
-                if (capabilities.isLanBrowser) {
+                if (capabilities.isHostedWeb) {
                     await requestHostedApi('/settings/business', 'POST', nextSettings);
                 }
             };

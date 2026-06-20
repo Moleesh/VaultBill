@@ -6,7 +6,7 @@ import { AppModal } from '../../components/AppModal/AppModal';
 
 type SettingsDialogsProps = {
     readonly capabilities: {
-        readonly isLanBrowser: boolean;
+        readonly isHostedWeb: boolean;
     };
     readonly busyAction: string;
     readonly restoreOpen: boolean;
@@ -63,7 +63,7 @@ export const SettingsDialogs: FC<SettingsDialogsProps> = ({
                 The backup is checked and staged before the current database is replaced. VaultBill
                 restarts after a successful restore.
             </p>
-            {capabilities.isLanBrowser ? (
+            {capabilities.isHostedWeb ? (
                 <label>
                     <span>VaultBill backup ZIP</span>
                     <input

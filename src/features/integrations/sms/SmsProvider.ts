@@ -3,7 +3,7 @@
 import type { SmsProviderSettings } from '../../../db/startup/ConfigSchemas';
 import { maskSecret } from '../MaskSecret';
 
-export type SmsDeploymentMode = 'Desktop' | 'LanBrowser' | 'WebDemo' | 'ProductionWeb';
+export type SmsDeploymentMode = 'Desktop' | 'HostedWeb' | 'WebDemo' | 'ProductionWeb';
 
 export type SmsSendRequest = {
     readonly to: string;

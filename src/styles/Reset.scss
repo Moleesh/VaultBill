@@ -32,6 +32,28 @@ select {
     cursor: pointer;
 }
 
+input,
+textarea,
+[contenteditable='true'] {
+    cursor: text;
+}
+
+[draggable='true'] {
+    cursor: grab;
+}
+
+[draggable='true']:active {
+    cursor: grabbing;
+}
+
+[aria-busy='true'] {
+    cursor: progress;
+}
+
+[aria-disabled='true'] {
+    cursor: not-allowed;
+}
+
 button:disabled {
     cursor: not-allowed;
     opacity: 0.72;

@@ -1,8 +1,8 @@
 /** @format */
 
+import { X } from 'lucide-react';
+import { useEffect } from 'react';
 import type { FC } from 'react';
-
-import { AppModal } from '../../components/AppModal/AppModal';
 
 type SetupPageMessageModalProps = {
     readonly message: string;
@@ -10,24 +10,51 @@ type SetupPageMessageModalProps = {
 };
 
 /** Validation messages that should be framed as a gentle nudge instead of a system failure. */
-const setupValidationMessages = new Set([
-    'Business name and address are required.',
-    'Admin username and display name are required.',
-]);
+const setupValidationMessages = [
+    'Business name and address are required to continue.',
+    'Business name is required to continue.',
+    'Business address is required to continue.',
+    'Admin display name and username are required.',
+    'Admin display name is required.',
+    'Admin username is required.',
+];
 
-/** Shows setup validation and completion issues in a consistent modal surface. */
-export const SetupPageMessageModal: FC<SetupPageMessageModalProps> = ({ message, onClose }) => (
-    <AppModal
-        isOpen={message.length > 0}
-        onClose={onClose}
-        title={setupValidationMessages.has(message) ? 'Complete required fields' : 'Setup issue'}
-    >
-        <p>{message}</p>
-        <div className="popup-actions">
-            <span aria-hidden="true" />
-            <button className="button-primary" onClick={onClose} type="button">
-                Okay
+/** Shows setup validation and completion issues as a non-blocking toast warning. */
+export const SetupPageMessageModal: FC<SetupPageMessageModalProps> = ({ message, onClose }) => {
+    const isValidationMessage = setupValidationMessages.includes(message);
+
+    useEffect(() => {
+        if (!message) return undefined;
+        const timer = window.setTimeout(onClose, isValidationMessage ? 3200 : 4800);
+        return () => {
+            window.clearTimeout(timer);
+        };
+    }, [isValidationMessage, message, onClose]);
+
+    if (!message) return null;
+
+    return (
+        <aside
+            aria-atomic="true"
+            aria-live="polite"
+            className={`setup-page-toast${isValidationMessage ? ' is-warning' : ' is-error'}`}
+            role="alert"
+        >
+            <div className="setup-page-toast-content">
+                <strong className="setup-page-toast-title">
+                    {isValidationMessage ? 'Complete required fields' : 'Setup issue'}
+                </strong>
+                <p>{message}</p>
+            </div>
+            <button
+                aria-label="Dismiss setup message"
+                className="setup-page-toast-close"
+                onClick={onClose}
+                title="Dismiss message"
+                type="button"
+            >
+                <X aria-hidden="true" size={16} />
             </button>
-        </div>
-    </AppModal>
-);
+        </aside>
+    );
+};

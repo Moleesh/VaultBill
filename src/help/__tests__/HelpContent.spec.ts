@@ -7,7 +7,7 @@ import { getHelpSections } from '../HelpContent';
 
 const desktopCapabilities: CapabilityRegistry = {
     isDesktop: true,
-    isLanBrowser: false,
+    isHostedWeb: false,
     isDemoMode: false,
     canListPrinters: true,
     canSelectExactPrinter: true,

@@ -26,7 +26,7 @@ import {
 } from './BuilderDocumentLibraryRuntime';
 
 type BuilderDocumentLibraryArgs = {
-    readonly capabilities: Pick<CapabilityRegistry, 'isLanBrowser'>;
+    readonly capabilities: Pick<CapabilityRegistry, 'isHostedWeb'>;
     readonly config: DocumentFormatConfig;
     readonly savedTemplates: readonly SavedPrintTemplate[];
     readonly setAssets: (value: readonly AssetSummary[]) => void;
@@ -69,7 +69,7 @@ export const useBuilderDocumentLibrary = ({
         async (formatId?: string) => {
             const shouldOpenBuilder = Boolean(formatId);
             const loaded = await loadAndApplyBuilderPackage({
-                capabilities: { isLanBrowser: capabilities.isLanBrowser },
+                capabilities: { isHostedWeb: capabilities.isHostedWeb },
                 formatId,
                 setters: {
                     setAssets,
@@ -89,7 +89,7 @@ export const useBuilderDocumentLibrary = ({
             setMessage('');
         },
         [
-            capabilities.isLanBrowser,
+            capabilities.isHostedWeb,
             setAssets,
             setConfig,
             setMessage,
@@ -102,13 +102,11 @@ export const useBuilderDocumentLibrary = ({
 
     const refreshInventory = useCallback(async () => {
         try {
-            setInventory(
-                await refreshBuilderInventory({ isLanBrowser: capabilities.isLanBrowser }),
-            );
+            setInventory(await refreshBuilderInventory({ isHostedWeb: capabilities.isHostedWeb }));
         } catch {
             setInventory([]);
         }
-    }, [capabilities.isLanBrowser]);
+    }, [capabilities.isHostedWeb]);
 
     useEffect(() => {
         void loadDocument(requestedFormatId).catch((reason: unknown) => {

@@ -19,7 +19,7 @@ export const getManageableSecurityAccounts = <TAccount extends SecurityAccount>(
 export const getOperatorCreationMessage = (role: Role): string =>
     role === 'Admin'
         ? 'Operator created. The admin can manage users after a password is set.'
-        : 'Operator created. Set a password before enabling LAN login.';
+        : 'Operator created. Set a password before enabling hosted web login.';
 
 /** Returns whether the default system credentials still appear to be active. */
 export const isDefaultCredentialsActive = (

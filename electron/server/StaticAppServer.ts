@@ -21,9 +21,16 @@ export const tryServeStaticApp = async (
     staticDirectory: string,
 ): Promise<boolean> => {
     if (request.method !== 'GET' || isApiPath(request.url)) return false;
-    const requestPath = normalizeStaticRequestPath(
-        decodeURIComponent(new URL(request.url ?? '/', 'http://local').pathname),
-    );
+    const pathname = decodeURIComponent(new URL(request.url ?? '/', 'http://local').pathname);
+    if (pathname === '/') {
+        response.writeHead(302, {
+            location: staticBasePath,
+            'x-content-type-options': 'nosniff',
+        });
+        response.end();
+        return true;
+    }
+    const requestPath = normalizeStaticRequestPath(pathname);
     const relativePath = requestPath === '/' ? 'index.html' : requestPath.replace(/^\/+/u, '');
     const requestedFile = path.resolve(staticDirectory, relativePath);
     const root = path.resolve(staticDirectory);

@@ -12,9 +12,9 @@ import type { StoredDocumentFormat } from '../../engines/schemaEngine/DocumentFo
 import type { AdapterStatus } from '../index';
 
 export const localApiAdapterStatus: AdapterStatus = {
-    mode: 'LanLocalApi',
+    mode: 'HostedWebApi',
     isAvailable: true,
-    message: 'LAN Local API adapter is available for browser clients.',
+    message: 'Hosted web Local API adapter is available for browser clients.',
 };
 
 export type LocalApiClientOptions = {

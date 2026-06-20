@@ -70,7 +70,7 @@ type RecordsPageState = {
           }
         | undefined;
     readonly capabilities: {
-        readonly isLanBrowser: boolean;
+        readonly isHostedWeb: boolean;
     };
     readonly activePrintPackage: RecordPrintPackage | undefined;
     readonly outputTarget: string;

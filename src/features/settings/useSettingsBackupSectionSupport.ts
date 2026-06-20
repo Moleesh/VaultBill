@@ -29,7 +29,7 @@ type BackupDesktopApi = {
 };
 
 type BackupEnvironment = {
-    readonly isLanBrowser: boolean;
+    readonly isHostedWeb: boolean;
     readonly desktopApi: BackupDesktopApi | undefined;
 };
 
@@ -40,7 +40,7 @@ export const buildBackupPasswordUpdateTask = (
 ): Promise<void> =>
     environment.desktopApi
         ? environment.desktopApi.setBackupPassword(backupPassword).then(() => undefined)
-        : environment.isLanBrowser
+        : environment.isHostedWeb
           ? requestHostedApi('/credentials/backup-password', 'POST', {
                 currentPassword: remoteAuthorizationPassword,
                 backupPassword,

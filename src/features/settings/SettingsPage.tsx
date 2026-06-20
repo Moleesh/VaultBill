@@ -32,14 +32,14 @@ export const SettingsPage: FC = () => {
             <nav className="settings-jump-links" aria-label="Settings sections">
                 {isSysAdmin ? <a href="#business">Business</a> : null}
                 <a href="#security">Security</a>
-                {isSysAdmin && (capabilities.isDesktop || capabilities.isLanBrowser) ? (
+                {isSysAdmin && (capabilities.isDesktop || capabilities.isHostedWeb) ? (
                     <a href="#backup">Backup</a>
                 ) : null}
                 {isSysAdmin ? <a href="#secrets">Secrets</a> : null}
             </nav>
             {isSysAdmin ? <SettingsBusinessSection /> : null}
             <SettingsSecuritySection />
-            {isSysAdmin && (capabilities.isDesktop || capabilities.isLanBrowser) ? (
+            {isSysAdmin && (capabilities.isDesktop || capabilities.isHostedWeb) ? (
                 <SettingsBackupSection />
             ) : null}
             {isSysAdmin ? <SettingsSecretsSection /> : null}

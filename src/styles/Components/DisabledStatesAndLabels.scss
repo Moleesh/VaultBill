@@ -25,8 +25,14 @@ select:disabled {
 }
 
 .required-indicator {
+    display: inline-block;
+    margin-inline-start: 0.22rem;
     color: var(--color-danger);
+    font-size: 0.95em;
     font-weight: var(--font-weight-bold);
+    line-height: 1;
+    vertical-align: text-top;
+    text-shadow: 0 0 0.35rem color-mix(in srgb, var(--color-danger) 16%, transparent);
 }
 
 .record-status-row,

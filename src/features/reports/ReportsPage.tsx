@@ -96,7 +96,7 @@ export const ReportsPage: FC = () => {
                         controller.setTask(undefined);
                         return;
                     }
-                    const cancel = controller.capabilities.isLanBrowser
+                    const cancel = controller.capabilities.isHostedWeb
                         ? requestHostedApi<{ readonly cancelled: boolean }>(
                               '/print/cancel',
                               'POST',

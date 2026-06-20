@@ -21,14 +21,14 @@ import {
 type RecordStoreActionDependencies = {
     readonly accounts: () => readonly AppRecord[];
     readonly isDemoMode: () => boolean;
-    readonly isLanBrowser: () => boolean;
+    readonly isHostedWeb: () => boolean;
     readonly sessionOperator: () => OperatorContext | undefined;
     readonly setRecords: (records: readonly AppRecord[]) => void;
     readonly setLoading: (isLoading: boolean) => void;
     readonly setError: (error: string) => void;
 };
 
-/** Creates the record-store mutations that keep browser, LAN, and desktop in sync. */
+/** Creates the record-store mutations that keep demo, hosted web, and desktop data in sync. */
 export const createRecordStoreActions = (dependencies: RecordStoreActionDependencies) => {
     const loadRecords = () => {
         const desktopBridge = window.vaultBillDesktop;
@@ -45,12 +45,12 @@ export const createRecordStoreActions = (dependencies: RecordStoreActionDependen
             return;
         }
 
-        if (dependencies.isLanBrowser()) {
+        if (dependencies.isHostedWeb()) {
             void loadHostedRecords(
                 {
                     accounts: dependencies.accounts,
                     isDemoMode: dependencies.isDemoMode,
-                    isLanBrowser: dependencies.isLanBrowser,
+                    isHostedWeb: dependencies.isHostedWeb,
                     sessionOperator: dependencies.sessionOperator,
                 },
                 {
@@ -86,7 +86,7 @@ export const createRecordStoreActions = (dependencies: RecordStoreActionDependen
         const record = AppRecordSchema.parse(
             desktopBridge
                 ? await desktopBridge.saveDraft({ record: input, operatorContext })
-                : dependencies.isLanBrowser()
+                : dependencies.isHostedWeb()
                   ? await requestHostedApi('/records/draft', 'POST', { record: input })
                   : buildStoredRecord(input, operatorContext, existing, 'Draft'),
         );
@@ -95,7 +95,7 @@ export const createRecordStoreActions = (dependencies: RecordStoreActionDependen
             ...records.filter((current) => current.recordId !== record.recordId),
         ]);
 
-        if (!desktopBridge && !dependencies.isLanBrowser()) writeBrowserRecords(nextRecords);
+        if (!desktopBridge && !dependencies.isHostedWeb()) writeBrowserRecords(nextRecords);
 
         dependencies.setRecords(nextRecords);
         return record;
@@ -116,7 +116,7 @@ export const createRecordStoreActions = (dependencies: RecordStoreActionDependen
         const record = AppRecordSchema.parse(
             desktopBridge
                 ? await desktopBridge.finalizeRecord({ record: input, operatorContext })
-                : dependencies.isLanBrowser()
+                : dependencies.isHostedWeb()
                   ? await requestHostedApi('/records/finalize', 'POST', { record: input })
                   : buildStoredRecord(input, operatorContext, existing, 'Finalized'),
         );
@@ -125,7 +125,7 @@ export const createRecordStoreActions = (dependencies: RecordStoreActionDependen
             ...records.filter((current) => current.recordId !== record.recordId),
         ]);
 
-        if (!desktopBridge && !dependencies.isLanBrowser()) writeBrowserRecords(nextRecords);
+        if (!desktopBridge && !dependencies.isHostedWeb()) writeBrowserRecords(nextRecords);
 
         dependencies.setRecords(nextRecords);
         return record;
@@ -151,7 +151,7 @@ export const createRecordStoreActions = (dependencies: RecordStoreActionDependen
         const record = AppRecordSchema.parse(
             desktopBridge
                 ? await desktopBridge.cancelRecord({ recordId, reason, operatorContext })
-                : dependencies.isLanBrowser()
+                : dependencies.isHostedWeb()
                   ? await requestHostedApi('/records/cancel', 'POST', { recordId, reason })
                   : {
                         ...existing,
@@ -165,7 +165,7 @@ export const createRecordStoreActions = (dependencies: RecordStoreActionDependen
             ...records.filter((current) => current.recordId !== record.recordId),
         ]);
 
-        if (!desktopBridge && !dependencies.isLanBrowser()) writeBrowserRecords(nextRecords);
+        if (!desktopBridge && !dependencies.isHostedWeb()) writeBrowserRecords(nextRecords);
 
         dependencies.setRecords(nextRecords);
         return record;

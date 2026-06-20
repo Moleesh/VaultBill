@@ -32,9 +32,9 @@ const platformHelp = (capabilities: CapabilityRegistry): readonly HelpSection[] 
 
     return [
         {
-            title: 'LAN browser access',
-            body: 'This browser connects to the desktop host through the local API. Use browser print or Save as PDF while the host keeps printer, backup, and activation controls.',
-            keywords: ['lan', 'desktop server', 'printer', 'backup', 'pdf'],
+            title: 'Hosted web access',
+            body: 'This hosted page connects to the desktop host through the local API. Use browser print or Save as PDF while the host keeps printer, backup, and activation controls.',
+            keywords: ['hosted web', 'desktop host', 'printer', 'backup', 'pdf'],
         },
     ];
 };

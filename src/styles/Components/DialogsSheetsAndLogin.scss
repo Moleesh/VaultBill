@@ -80,78 +80,180 @@
 .login-page-chrome .desktop-window-controls {
     display: inline-flex;
     pointer-events: auto;
-    gap: 0.4rem;
-    padding: 0.42rem;
-    border: 1px solid color-mix(in srgb, var(--color-primary) 10%, transparent);
-    border-radius: 1.45rem;
-    background:
-        linear-gradient(
-            145deg,
-            color-mix(in srgb, var(--color-surface-raised) 56%, transparent),
-            color-mix(in srgb, var(--color-secondary) 14%, transparent)
-        ),
-        color-mix(in srgb, white 12%, transparent);
-    box-shadow:
-        inset 0 1px 0 color-mix(in srgb, white 22%, transparent),
-        0 1rem 2rem color-mix(in srgb, var(--color-panel-shadow) 8%, transparent);
-    backdrop-filter: blur(18px) saturate(1.08);
+    gap: 0.55rem;
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+    animation: login-window-controls-float 7.5s ease-in-out infinite;
 }
 
 .login-page-chrome .desktop-window-controls .icon-button {
-    width: 3.2rem;
-    min-width: 3.2rem;
-    height: 3.2rem;
-    border: 1px solid color-mix(in srgb, white 10%, transparent);
-    border-radius: 1rem;
+    width: 3.35rem;
+    min-width: 3.35rem;
+    height: 3.35rem;
+    border: none;
+    border-radius: 1.15rem;
+    color: color-mix(in srgb, #1b1612 88%, var(--color-text-title));
     box-shadow:
-        inset 0 1px 0 color-mix(in srgb, white 20%, transparent),
-        0 0.45rem 0.9rem color-mix(in srgb, var(--color-panel-shadow) 10%, transparent);
+        inset 0 1px 0 color-mix(in srgb, white 24%, transparent),
+        0 0.85rem 1.5rem color-mix(in srgb, var(--color-panel-shadow) 14%, transparent);
+    animation: login-window-control-breathe 4.6s ease-in-out infinite;
 }
 
 .login-page-chrome .desktop-window-controls .icon-button::before {
-    opacity: 0.42;
+    opacity: 0;
 }
 
 .login-page-chrome .desktop-window-controls .desktop-window-control--minimize {
     background: linear-gradient(
-        180deg,
-        color-mix(in srgb, var(--color-primary) 54%, white),
-        color-mix(in srgb, var(--color-secondary) 42%, white)
+        160deg,
+        color-mix(in srgb, #f3dfcc 82%, white),
+        color-mix(in srgb, #cfab88 86%, white 6%)
     );
 }
 
 .login-page-chrome .desktop-window-controls .desktop-window-control--close {
     background: linear-gradient(
-        180deg,
-        color-mix(in srgb, var(--color-danger) 68%, white),
-        color-mix(in srgb, var(--color-danger) 52%, var(--color-secondary) 18%)
+        160deg,
+        color-mix(in srgb, #d68d87 88%, white),
+        color-mix(in srgb, #c86f68 92%, white 4%)
     );
 }
 
 .login-page-chrome .desktop-window-controls .icon-button:hover {
     box-shadow:
-        inset 0 1px 0 color-mix(in srgb, white 24%, transparent),
-        0 0.7rem 1.2rem color-mix(in srgb, var(--color-panel-shadow) 12%, transparent);
+        inset 0 1px 0 color-mix(in srgb, white 30%, transparent),
+        0 1rem 1.8rem color-mix(in srgb, var(--color-panel-shadow) 18%, transparent);
 }
 
 .login-page-chrome .desktop-window-controls .desktop-window-control--minimize:hover {
     background: linear-gradient(
-        180deg,
-        color-mix(in srgb, var(--color-primary) 60%, white),
-        color-mix(in srgb, var(--color-secondary) 48%, white)
+        160deg,
+        color-mix(in srgb, #f6e6d8 88%, white),
+        color-mix(in srgb, #d6b18d 90%, white 8%)
     );
 }
 
 .login-page-chrome .desktop-window-controls .desktop-window-control--close:hover {
     background: linear-gradient(
-        180deg,
-        color-mix(in srgb, var(--color-danger) 74%, white),
-        color-mix(in srgb, var(--color-danger) 58%, var(--color-secondary) 16%)
+        160deg,
+        color-mix(in srgb, #dc9892 92%, white),
+        color-mix(in srgb, #cb756d 96%, white 4%)
     );
 }
 
 .login-page-chrome .desktop-window-controls .icon-button:focus-visible {
     outline-color: color-mix(in srgb, white 56%, transparent);
+    outline-offset: 2px;
+}
+
+.login-page-chrome .desktop-window-controls .desktop-window-control--close {
+    animation-delay: 0.22s;
+}
+
+@keyframes login-window-controls-float {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-0.16rem);
+    }
+}
+
+@keyframes login-window-control-breathe {
+    0%,
+    100% {
+        transform: translateY(0) scale(1);
+        box-shadow:
+            inset 0 1px 0 color-mix(in srgb, white 20%, transparent),
+            0 0.45rem 0.9rem color-mix(in srgb, var(--color-panel-shadow) 10%, transparent);
+    }
+    50% {
+        transform: translateY(-0.08rem) scale(1.015);
+        box-shadow:
+            inset 0 1px 0 color-mix(in srgb, white 24%, transparent),
+            0 0.7rem 1.2rem color-mix(in srgb, var(--color-panel-shadow) 12%, transparent);
+    }
+}
+
+.setup-page-toast {
+    position: fixed;
+    z-index: 45;
+    top: clamp(5.5rem, 10vh, 7rem);
+    right: clamp(var(--space-4), 4vw, var(--space-8));
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: var(--space-3);
+    width: min(28rem, calc(100vw - (var(--space-4) * 2)));
+    padding: var(--space-4);
+    border: 1px solid color-mix(in srgb, var(--color-primary) 18%, transparent);
+    border-radius: var(--radius-lg);
+    background: linear-gradient(
+        145deg,
+        color-mix(in srgb, var(--color-surface-raised) 96%, white 12%),
+        color-mix(in srgb, var(--color-secondary) 8%, transparent)
+    );
+    box-shadow:
+        0 1rem 2rem color-mix(in srgb, var(--color-panel-shadow) 12%, transparent),
+        inset 0 1px 0 color-mix(in srgb, white 18%, transparent);
+    backdrop-filter: blur(12px);
+}
+
+.setup-page-toast.is-warning {
+    border-color: color-mix(in srgb, #d49a24 42%, transparent);
+}
+
+.setup-page-toast.is-error {
+    border-color: color-mix(in srgb, var(--color-danger) 34%, transparent);
+}
+
+.setup-page-toast-content {
+    display: grid;
+    gap: 0.35rem;
+}
+
+.setup-page-toast-title {
+    color: var(--color-text-title);
+    font-size: var(--font-size-sm);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.setup-page-toast-content p {
+    color: var(--color-text-body);
+    font-size: var(--font-size-sm);
+    line-height: 1.5;
+}
+
+.setup-page-toast-close {
+    align-self: start;
+    display: inline-grid;
+    width: 2.4rem;
+    min-width: 2.4rem;
+    height: 2.4rem;
+    place-items: center;
+    padding: 0;
+    border: 1px solid color-mix(in srgb, var(--color-border) 72%, transparent);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--color-surface) 92%, white 8%);
+    color: var(--color-text-body);
+    box-shadow: inset 0 1px 0 color-mix(in srgb, white 20%, transparent);
+}
+
+.setup-page-toast-close svg {
+    display: block;
+}
+
+.setup-page-toast-close:hover {
+    background: color-mix(in srgb, var(--color-surface-raised) 94%, white 10%);
+}
+
+.setup-page-toast-close:focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--color-primary) 45%, transparent);
     outline-offset: 2px;
 }
 
@@ -240,4 +342,18 @@
 .app-brand-icon--large {
     width: 8rem;
     height: 8rem;
+}
+
+@media (max-width: 640px) {
+    .setup-page-toast {
+        top: calc(env(safe-area-inset-top, 0rem) + var(--space-3));
+        right: var(--space-3);
+        left: var(--space-3);
+        width: auto;
+        grid-template-columns: 1fr;
+    }
+
+    .setup-page-toast-close {
+        justify-self: start;
+    }
 }

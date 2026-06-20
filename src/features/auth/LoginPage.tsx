@@ -87,7 +87,7 @@ export const LoginPage: FC = () => {
             <section className="login-card" aria-labelledby="login-title">
                 <div className="login-card-brand">
                     <AppBrandIcon size="large" />
-                    <p className="eyebrow">Secure billing workspace</p>
+                    <p className="eyebrow">Secure workspace</p>
                     <h1 id="login-title">{defaultRuntimeBranding.applicationName}</h1>
                     <p>{defaultRuntimeBranding.tagline}</p>
                     {capabilities.isDemoMode ? (
@@ -125,8 +125,8 @@ export const LoginPage: FC = () => {
                     />
                 </div>
                 <footer>
-                    <span>Desktop-ready local billing workspace</span>
-                    <span>Built for focused business work</span>
+                    <span>Desktop-ready local workspace</span>
+                    <span>Designed for calm, focused operations</span>
                 </footer>
             </section>
             <LoginHelpModal

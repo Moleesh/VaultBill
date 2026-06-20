@@ -6,10 +6,38 @@ import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 
 const applicationBasePath = '/VaultBill/';
+const rootRedirectPlugin = () => ({
+    name: 'vaultbill-root-redirect',
+    configureServer(server: {
+        middlewares: {
+            use: (
+                handler: (
+                    request: { url?: string },
+                    response: {
+                        statusCode: number;
+                        setHeader: (name: string, value: string) => void;
+                        end: () => void;
+                    },
+                    next: () => void,
+                ) => void,
+            ) => void;
+        };
+    }) {
+        server.middlewares.use((request, response, next) => {
+            if (request.url === '/' || request.url?.startsWith('/?') === true) {
+                response.statusCode = 302;
+                response.setHeader('location', applicationBasePath);
+                response.end();
+                return;
+            }
+            next();
+        });
+    },
+});
 
 export default defineConfig({
     base: applicationBasePath,
-    plugins: [react()],
+    plugins: [react(), rootRedirectPlugin()],
     define: {
         __APP_NAME__: JSON.stringify('VaultBill'),
         __APP_SLUG__: JSON.stringify('vaultbill'),

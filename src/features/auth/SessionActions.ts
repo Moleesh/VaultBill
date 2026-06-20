@@ -15,7 +15,7 @@ type SessionActionDependencies = {
     readonly accounts: () => readonly OperatorAccount[];
     readonly account: () => OperatorAccount | undefined;
     readonly isDemoMode: () => boolean;
-    readonly isLanBrowser: () => boolean;
+    readonly isHostedWeb: () => boolean;
     readonly saveAccounts: (accounts: readonly OperatorAccount[]) => void;
     readonly setAccount: (account: OperatorAccount | undefined) => void;
     readonly setHostedCsrfToken: (token: string | undefined) => void;
@@ -42,7 +42,7 @@ export const createSessionActions = (dependencies: SessionActionDependencies) =>
         }
         if (window.vaultBillDesktop && !dependencies.isDemoMode()) {
             selectedAccount = await window.vaultBillDesktop.loginAccount(userId, password);
-        } else if (dependencies.isLanBrowser()) {
+        } else if (dependencies.isHostedWeb()) {
             const hostedSession = await requestHostedApi<HostedSessionPayload>(
                 '/auth/login',
                 'POST',
@@ -64,7 +64,7 @@ export const createSessionActions = (dependencies: SessionActionDependencies) =>
     };
 
     const logout: SessionContextValue['logout'] = () => {
-        if (dependencies.isLanBrowser()) {
+        if (dependencies.isHostedWeb()) {
             void requestHostedApi('/auth/logout', 'POST').finally(() => {
                 dependencies.setHostedCsrfToken(undefined);
             });
@@ -92,7 +92,7 @@ export const createSessionActions = (dependencies: SessionActionDependencies) =>
             );
             return;
         }
-        if (dependencies.isLanBrowser()) {
+        if (dependencies.isHostedWeb()) {
             const saved = await requestHostedApi<OperatorAccount>(
                 '/accounts/save',
                 'POST',
@@ -112,7 +112,7 @@ export const createSessionActions = (dependencies: SessionActionDependencies) =>
         if (userId === 'sysadmin_1') throw new Error('The System Administrator cannot be removed.');
         if (window.vaultBillDesktop && !dependencies.isDemoMode()) {
             await window.vaultBillDesktop.archiveAccount(userId);
-        } else if (dependencies.isLanBrowser()) {
+        } else if (dependencies.isHostedWeb()) {
             await requestHostedApi('/accounts/archive', 'POST', { userId });
         }
         persistAccounts(
@@ -135,7 +135,7 @@ export const createSessionActions = (dependencies: SessionActionDependencies) =>
             );
             return;
         }
-        if (dependencies.isLanBrowser()) {
+        if (dependencies.isHostedWeb()) {
             const saved = await requestHostedApi<OperatorAccount>(
                 '/accounts/reset-password',
                 'POST',

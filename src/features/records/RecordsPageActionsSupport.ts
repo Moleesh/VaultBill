@@ -91,7 +91,7 @@ type RecordActionState = {
     readonly activeConfig: Parameters<typeof applyDocumentCalculations>[1];
     readonly activePrintPackage: RecordPrintPackage | undefined;
     readonly capabilities: {
-        readonly isLanBrowser: boolean;
+        readonly isHostedWeb: boolean;
     };
     readonly outputTask:
         | {

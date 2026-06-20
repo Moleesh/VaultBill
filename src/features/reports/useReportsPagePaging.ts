@@ -38,7 +38,7 @@ export const useReportsPagePaging = (
     const sentinelRef = useRef<HTMLDivElement>(null);
     const usesServerPaging =
         !capabilities.isDemoMode &&
-        (window.vaultBillDesktop !== undefined || capabilities.isLanBrowser);
+        (window.vaultBillDesktop !== undefined || capabilities.isHostedWeb);
 
     const matchingRecords = usesServerPaging ? serverRecords : browserMatchingRecords;
     const totalRecords = usesServerPaging ? serverTotal : browserMatchingRecords.length;
@@ -51,14 +51,14 @@ export const useReportsPagePaging = (
             void window.vaultBillDesktop.getTrialStatus().then((trial) => {
                 setTrialExpired(trial.isExpired);
             });
-        } else if (capabilities.isLanBrowser) {
+        } else if (capabilities.isHostedWeb) {
             void requestHostedApi<{ readonly isExpired: boolean }>('/trial/status').then(
                 (trial) => {
                     setTrialExpired(trial.isExpired);
                 },
             );
         }
-    }, [capabilities.isLanBrowser]);
+    }, [capabilities.isHostedWeb]);
 
     useEffect(() => {
         if (!usesServerPaging) return undefined;

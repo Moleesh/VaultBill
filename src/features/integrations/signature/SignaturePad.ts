@@ -2,7 +2,7 @@
 
 import type { SignaturePadSettings } from '../../../db/startup/ConfigSchemas';
 
-export type SignatureRuntime = 'Desktop' | 'LanBrowser' | 'WebDemo';
+export type SignatureRuntime = 'Desktop' | 'HostedWeb' | 'WebDemo';
 
 export type SignatureDevice = {
     readonly VendorId: string;

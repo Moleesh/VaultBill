@@ -6,7 +6,7 @@ import { createLocalApiClient, localApiAdapterStatus } from '../localApiAdapter'
 import type { LocalApiFetch } from '../localApiAdapter';
 
 describe('localApiAdapter', () => {
-    it('calls typed LAN endpoints with JSON headers and base URL', async () => {
+    it('calls typed hosted web endpoints with JSON headers and base URL', async () => {
         const calls: string[] = [];
         const fetcher: LocalApiFetch = (url, init) => {
             calls.push(`${init.method} ${url} ${init.body ?? ''}`);

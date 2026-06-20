@@ -53,13 +53,13 @@ export const normalizeWorkspaceSettings = (value: unknown): WorkspaceSettings =>
 };
 
 export const loadWorkspaceSettings = async (
-    isLanBrowser: boolean,
+    isHostedWeb: boolean,
     path = '/workspace/settings',
 ): Promise<WorkspaceSettings> => {
     if (window.vaultBillDesktop) {
         return normalizeWorkspaceSettings(await window.vaultBillDesktop.getBusinessSettings());
     }
-    if (isLanBrowser) {
+    if (isHostedWeb) {
         return normalizeWorkspaceSettings(await requestHostedApi(path));
     }
     return defaultWorkspaceSettings;

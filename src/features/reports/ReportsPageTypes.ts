@@ -14,7 +14,7 @@ export type ReportFieldFilter = {
 
 export type ReportsPageActionInput = {
     readonly capabilities: {
-        readonly isLanBrowser: boolean;
+        readonly isHostedWeb: boolean;
     };
     readonly loadCompleteResult: () => Promise<readonly AppRecord[]>;
     readonly reportId: string;

@@ -1,6 +1,6 @@
 /** @format */
 
-export type DataMode = 'DesktopSQLite' | 'LanLocalApi' | 'WebDemo';
+export type DataMode = 'DesktopSQLite' | 'HostedWebApi' | 'WebDemo';
 
 export type AdapterStatus = {
     readonly mode: DataMode;
@@ -15,9 +15,9 @@ export const getAdapterStatus = (): readonly AdapterStatus[] => [
         message: 'SQLite startup checks are available for desktop mode.',
     },
     {
-        mode: 'LanLocalApi',
+        mode: 'HostedWebApi',
         isAvailable: true,
-        message: 'Local API access is available when the desktop host enables LAN access.',
+        message: 'Local API access is available when the desktop host enables hosted web access.',
     },
     {
         mode: 'WebDemo',

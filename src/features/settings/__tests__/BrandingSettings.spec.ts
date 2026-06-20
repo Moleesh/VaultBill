@@ -18,7 +18,7 @@ describe('BrandingSettings', () => {
         ).toEqual({
             applicationName: 'VaultBill',
             companyName: 'Sample Traders',
-            tagline: 'Configure once. Bill, print, and report anywhere.',
+            tagline: 'Configure once. Create, print, and report anywhere.',
             applicationLogoAssetId: 'asset_app',
             printLogoAssetId: 'asset_print',
             faviconAssetId: 'asset_favicon',

@@ -27,8 +27,8 @@ describe('SignaturePad', () => {
         });
     });
 
-    it('does not claim untested USB or LAN browser USB support', () => {
-        expect(getSignatureAvailability(usbSettings, 'LanBrowser')).toMatchObject({
+    it('does not claim untested USB or hosted web USB support', () => {
+        expect(getSignatureAvailability(usbSettings, 'HostedWeb')).toMatchObject({
             available: false,
             userMessage: 'USB signature pads are supported only in tested desktop mode.',
         });

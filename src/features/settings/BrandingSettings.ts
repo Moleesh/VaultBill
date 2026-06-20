@@ -6,7 +6,7 @@ import type { RuntimeBranding } from '../../types/AppTypes';
 export const normalizeRuntimeBranding = (branding: RuntimeBrandingConfig): RuntimeBranding => ({
     applicationName: 'VaultBill',
     companyName: branding.CompanyName,
-    tagline: branding.Tagline.trim() || 'Configure once. Bill, print, and report anywhere.',
+    tagline: branding.Tagline.trim() || 'Configure once. Create, print, and report anywhere.',
     applicationLogoAssetId: branding.ApplicationLogoAssetId,
     printLogoAssetId: branding.PrintLogoAssetId,
     faviconAssetId: branding.FaviconAssetId,

@@ -82,24 +82,24 @@ export const AppShell: FC = () => {
     useEffect(() => {
         if (window.vaultBillDesktop) {
             void window.vaultBillDesktop.getTrialStatus().then(setTrialStatus);
-        } else if (capabilities.isLanBrowser) {
+        } else if (capabilities.isHostedWeb) {
             void requestHostedApi<NonNullable<typeof trialStatus>>('/trial/status').then(
                 setTrialStatus,
             );
         }
-    }, [capabilities.isLanBrowser]);
+    }, [capabilities.isHostedWeb]);
 
     useEffect(() => {
         if (window.vaultBillDesktop) {
             void window.vaultBillDesktop.getHostedWebUrl().then(setHostedWebUrl);
             return;
         }
-        if (capabilities.isLanBrowser) {
+        if (capabilities.isHostedWeb) {
             setHostedWebUrl(window.location.origin);
             return;
         }
         setHostedWebUrl('');
-    }, [capabilities.isLanBrowser]);
+    }, [capabilities.isHostedWeb]);
 
     if (!operatorContext) return null;
 
@@ -130,7 +130,7 @@ export const AppShell: FC = () => {
                 isDemoMode={capabilities.isDemoMode}
                 isDesktop={capabilities.isDesktop}
                 isExpanded={isExpanded}
-                isLanBrowser={capabilities.isLanBrowser}
+                isHostedWeb={capabilities.isHostedWeb}
                 landingRoute={landingRoute}
                 hostedWebUrl={hostedWebUrl}
                 onChangePassword={shellActions.openPasswordDialog}

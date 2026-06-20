@@ -24,26 +24,26 @@ export const RecordStoreProvider: FC<PropsWithChildren> = ({ children }) => {
             createRecordStoreActions({
                 accounts: () => [],
                 isDemoMode: () => capabilities.isDemoMode,
-                isLanBrowser: () => capabilities.isLanBrowser,
+                isHostedWeb: () => capabilities.isHostedWeb,
                 sessionOperator: () => sessionOperator,
                 setRecords,
                 setLoading: setIsLoading,
                 setError,
             }).loadRecords,
-        [capabilities.isDemoMode, capabilities.isLanBrowser, sessionOperator],
+        [capabilities.isDemoMode, capabilities.isHostedWeb, sessionOperator],
     );
     const actions = useMemo(
         () =>
             createRecordStoreActions({
                 accounts: () => records,
                 isDemoMode: () => capabilities.isDemoMode,
-                isLanBrowser: () => capabilities.isLanBrowser,
+                isHostedWeb: () => capabilities.isHostedWeb,
                 sessionOperator: () => sessionOperator,
                 setRecords,
                 setLoading: setIsLoading,
                 setError,
             }),
-        [capabilities.isDemoMode, capabilities.isLanBrowser, records, sessionOperator],
+        [capabilities.isDemoMode, capabilities.isHostedWeb, records, sessionOperator],
     );
 
     useEffect(() => {

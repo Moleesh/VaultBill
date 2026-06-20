@@ -162,7 +162,7 @@ export const useSysAdminDashboardState = (): SysAdminDashboardState => {
             try {
                 const nextState = window.vaultBillDesktop
                     ? await loadDesktopSummary()
-                    : capabilities.isLanBrowser
+                    : capabilities.isHostedWeb
                       ? await loadHostedSummary()
                       : { inventory: [], summary: defaultSummary, message: '' };
                 setState(nextState);
@@ -178,7 +178,7 @@ export const useSysAdminDashboardState = (): SysAdminDashboardState => {
             }
         };
         void load();
-    }, [capabilities.isLanBrowser]);
+    }, [capabilities.isHostedWeb]);
 
     return state;
 };

@@ -5,11 +5,11 @@ import type { FC } from 'react';
 /** Introduces the three-step first-run setup flow. */
 export const SetupWelcomeStep: FC = () => (
     <div className="setup-intro">
-        <p>Three short steps prepare your local billing workspace.</p>
+        <p>A few quick choices get the workspace ready before the first sign-in.</p>
         <ul>
-            <li>Add the business identity shown on documents.</li>
-            <li>Create the first Admin account for the team.</li>
-            <li>Manage operators, themes, backups, and secrets later in Settings.</li>
+            <li>Add the business details the team should work with.</li>
+            <li>Choose the opening theme for the app.</li>
+            <li>Create the first Admin account with the right access.</li>
         </ul>
     </div>
 );

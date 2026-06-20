@@ -41,7 +41,7 @@ export const LoginPageForm: FC<LoginPageFormProps> = ({
     onSubmit,
 }) => (
     <>
-        {capabilities.isLanBrowser && hostedConnectionState !== 'connected' ? (
+        {capabilities.isHostedWeb && hostedConnectionState !== 'connected' ? (
             <div className="host-reconnect" role="status">
                 <strong>
                     {hostedConnectionState === 'connecting'
@@ -109,7 +109,7 @@ export const LoginPageForm: FC<LoginPageFormProps> = ({
             </p>
         ) : null}
         <button className="login-help-link" onClick={onHelpOpen} type="button">
-            Login help
+            Sign-in help
         </button>
         {capabilities.isDesktop ? (
             <button className="login-help-link" onClick={onActivationOpen} type="button">

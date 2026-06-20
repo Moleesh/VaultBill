@@ -104,17 +104,17 @@ export const useBuilderPageController = () => {
     useEffect(() => {
         const request = window.vaultBillDesktop
             ? window.vaultBillDesktop.getSecretsSettings()
-            : capabilities.isLanBrowser
+            : capabilities.isHostedWeb
               ? requestHostedApi('/settings/secrets')
               : undefined;
         void request?.then((rawSettings) => {
             const normalized = normalizeSecretsSettings(rawSettings);
             setSecretValues(secretValuesFromSettings(normalized.secrets));
         });
-    }, [capabilities.isLanBrowser]);
+    }, [capabilities.isHostedWeb]);
 
     const documentLibrary = useBuilderDocumentLibrary({
-        capabilities: { isLanBrowser: capabilities.isLanBrowser },
+        capabilities: { isHostedWeb: capabilities.isHostedWeb },
         config,
         savedTemplates,
         setAssets,
@@ -127,7 +127,7 @@ export const useBuilderPageController = () => {
 
     const actions = useBuilderPageActions({
         assets,
-        capabilities: { isLanBrowser: capabilities.isLanBrowser },
+        capabilities: { isHostedWeb: capabilities.isHostedWeb },
         config,
         savedTemplates,
         setAssets,

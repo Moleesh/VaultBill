@@ -18,8 +18,8 @@ export const useReportsPageData = () => {
     const filters = useReportsPageFilters(workspaceSettings.includeDraftsInReports);
 
     useEffect(() => {
-        void loadWorkspaceSettings(capabilities.isLanBrowser).then(setWorkspaceSettings);
-    }, [capabilities.isLanBrowser]);
+        void loadWorkspaceSettings(capabilities.isHostedWeb).then(setWorkspaceSettings);
+    }, [capabilities.isHostedWeb]);
 
     const paging = useReportsPagePaging(
         filters.query,
