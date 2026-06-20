@@ -18,8 +18,8 @@ export default defineConfig({
     },
     server: {
         host: '0.0.0.0',
-        port: 5173,
-        strictPort: true,
+        port: Number.parseInt(process.env.VITE_WEB_PORT ?? '80', 10),
+        strictPort: false,
     },
     build: {
         outDir: 'dist',

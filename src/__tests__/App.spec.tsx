@@ -12,8 +12,9 @@ vi.mock('../AppRoutesSupport', async () => {
 
     const DashboardStub = () => {
         const { operatorContext } = useSession();
+        const displayName = operatorContext?.account.displayName ?? 'Operator';
 
-        return <h1>{`Welcome back, ${operatorContext?.account.displayName}.`}</h1>;
+        return <h1>{`Welcome back, ${displayName}.`}</h1>;
     };
 
     return {

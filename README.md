@@ -168,7 +168,8 @@ npm install
 npm run dev
 ```
 
-Open `http://127.0.0.1:5173/`.
+Open `http://127.0.0.1/`.
+If port `80` is already in use, VaultBill falls back to `http://127.0.0.1:5173/`.
 
 Run the Electron shell:
 

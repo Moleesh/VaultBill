@@ -4,7 +4,10 @@
 
 const requestedLocalApiBaseUrl = import.meta.env.VITE_LOCAL_API_URL?.trim();
 const hostedDevApiPort =
-    window.location.port === '5173' || window.location.port === '' ? '8000' : '';
+    import.meta.env.DEV &&
+    (window.location.port === '5173' || window.location.port === '80' || window.location.port === '')
+        ? '8000'
+        : '';
 const defaultLocalApiBaseUrl =
     hostedDevApiPort.length > 0 ? `http://127.0.0.1:${hostedDevApiPort}` : window.location.origin;
 const localApiBaseUrl =
