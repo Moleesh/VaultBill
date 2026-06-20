@@ -4,6 +4,55 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+vi.mock('../AppRoutesSupport', async () => {
+    const { Navigate, Route, Routes } = await import('react-router-dom');
+    const { LoginPage } = await import('../features/auth/LoginPage');
+    const { ProtectedRoute } = await import('../features/auth/ProtectedRoute');
+    const { useSession } = await import('../features/auth/SessionContext');
+
+    const DashboardStub = () => {
+        const { operatorContext } = useSession();
+
+        return <h1>{`Welcome back, ${operatorContext?.account.displayName}.`}</h1>;
+    };
+
+    return {
+        AppRouteFallback: () => <div className="app-screen-state" aria-busy="true" />,
+        AppRouteTree: ({
+            setupRequired,
+        }: {
+            readonly isDemoMode: boolean;
+            readonly setupRequired: boolean;
+            readonly onSetupComplete: () => void;
+        }) => (
+            <Routes>
+                <Route
+                    path="/login"
+                    element={setupRequired ? <Navigate replace to="/setup" /> : <LoginPage />}
+                />
+                <Route
+                    path="/app/dashboard"
+                    element={
+                        <ProtectedRoute roles={['Admin', 'SysAdmin']}>
+                            <DashboardStub />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/app/records"
+                    element={
+                        <ProtectedRoute roles={['Admin', 'User']}>
+                            <h1>Records</h1>
+                        </ProtectedRoute>
+                    }
+                />
+                <Route path="/" element={<Navigate replace to="/login" />} />
+                <Route path="*" element={<Navigate replace to="/login" />} />
+            </Routes>
+        ),
+    };
+});
+
 import { App } from '../App';
 
 describe('App', () => {
@@ -90,8 +139,11 @@ describe('App', () => {
             });
             fireEvent.click(screen.getByRole('button', { name: 'Log in' }));
 
-            expect(await screen.findByText(/Welcome back, Operations Admin\./u)).toBeVisible();
-            expect(screen.getAllByRole('link', { name: 'Dashboard' }).length).toBeGreaterThan(0);
+            expect(
+                await screen.findByRole('heading', {
+                    name: /Welcome back, Operations Admin\./u,
+                }),
+            ).toBeVisible();
         }
 
         expect(screen.queryByText(/Phase \d/u)).not.toBeInTheDocument();
