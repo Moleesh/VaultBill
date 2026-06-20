@@ -13,6 +13,7 @@ const contentTypes: Readonly<Record<string, string>> = {
     '.png': 'image/png',
     '.svg': 'image/svg+xml',
 };
+const staticBasePath = '/VaultBill/';
 
 export const tryServeStaticApp = async (
     request: IncomingMessage,
@@ -20,7 +21,9 @@ export const tryServeStaticApp = async (
     staticDirectory: string,
 ): Promise<boolean> => {
     if (request.method !== 'GET' || isApiPath(request.url)) return false;
-    const requestPath = decodeURIComponent(new URL(request.url ?? '/', 'http://local').pathname);
+    const requestPath = normalizeStaticRequestPath(
+        decodeURIComponent(new URL(request.url ?? '/', 'http://local').pathname),
+    );
     const relativePath = requestPath === '/' ? 'index.html' : requestPath.replace(/^\/+/u, '');
     const requestedFile = path.resolve(staticDirectory, relativePath);
     const root = path.resolve(staticDirectory);
@@ -39,6 +42,13 @@ export const tryServeStaticApp = async (
         return false;
     }
 };
+
+const normalizeStaticRequestPath = (requestPath: string): string =>
+    requestPath === staticBasePath.slice(0, -1)
+        ? '/'
+        : requestPath.startsWith(staticBasePath)
+          ? requestPath.slice(staticBasePath.length - 1)
+          : requestPath;
 
 const isApiPath = (url: string | undefined): boolean =>
     url === '/health' ||

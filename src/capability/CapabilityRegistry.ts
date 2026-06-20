@@ -10,8 +10,7 @@ export const buildCapabilities = (): CapabilityRegistry => {
         window.location.port === '' ||
         window.location.port === '80' ||
         window.location.port === '8000' ||
-        window.location.port === '5173' ||
-        Boolean(import.meta.env.VITE_LOCAL_API_URL?.trim());
+        window.location.port === '5173';
     const isLanBrowser = !isDesktop && !isDemoMode && hasHostedApi;
 
     return {

@@ -1,6 +1,8 @@
 /** @format */
 
 import { spawn } from 'node:child_process';
+import { createRequire } from 'node:module';
+import path from 'node:path';
 
 import {
     fallbackDevWebPort,
@@ -8,8 +10,17 @@ import {
     resolveDevWebPort,
 } from './DevServerPortSupport.mjs';
 
-const viteCommand = process.platform === 'win32' ? 'npx.cmd' : 'npx';
-const port = await resolveDevWebPort();
+const require = createRequire(import.meta.url);
+const vitePackagePath = require.resolve('vite/package.json');
+const viteEntrypoint = path.join(path.dirname(vitePackagePath), 'bin', 'vite.js');
+const requestedPortArgument = process.argv.find((argument) => argument.startsWith('--port='));
+const requestedPortValue =
+    requestedPortArgument?.replace('--port=', '') ??
+    process.argv[process.argv.findIndex((argument) => argument === '--port') + 1];
+const port =
+    requestedPortValue && /^\d+$/u.test(requestedPortValue)
+        ? Number.parseInt(requestedPortValue, 10)
+        : await resolveDevWebPort();
 const fallbackNotice =
     port === fallbackDevWebPort
         ? ` Port ${String(preferredDevWebPort)} is unavailable, so Vite is using ${String(fallbackDevWebPort)}.`
@@ -18,8 +29,8 @@ const fallbackNotice =
 console.info(`Starting VaultBill web client on port ${String(port)}.${fallbackNotice}`);
 
 const viteProcess = spawn(
-    viteCommand,
-    ['vite', '--host', '0.0.0.0', '--port', String(port), '--strictPort'],
+    process.execPath,
+    [viteEntrypoint, '--host', '0.0.0.0', '--port', String(port), '--strictPort'],
     {
         stdio: 'inherit',
         env: process.env,

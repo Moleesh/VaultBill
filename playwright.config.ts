@@ -2,11 +2,7 @@
 
 import { defineConfig } from '@playwright/test';
 
-const requestedBasePath = process.env.VITE_BASE_PATH?.trim() ?? '/';
-const normalizedBasePath = `/${requestedBasePath.replace(/^\/+|\/+$/gu, '')}`;
-const applicationUrl = `http://127.0.0.1:4173${
-    normalizedBasePath === '/' ? '/' : `${normalizedBasePath}/`
-}`;
+const applicationUrl = 'http://127.0.0.1:4173/VaultBill/';
 
 export default defineConfig({
     testDir: './src/__tests__/E2E',

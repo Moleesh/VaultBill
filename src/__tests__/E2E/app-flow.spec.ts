@@ -41,7 +41,10 @@ test('operator can log in, create records, and open contextual help', async ({ p
 test('Admin direct Builder URL is redirected to Records', async ({ page }) => {
     await loginAsAdmin(page);
     await page.evaluate(() => {
-        window.history.pushState({}, '', '/app/builder');
+        const currentPath = window.location.pathname;
+        const appPathIndex = currentPath.indexOf('/app/');
+        const basePath = appPathIndex >= 0 ? currentPath.slice(0, appPathIndex) : '';
+        window.history.pushState({}, '', `${basePath}/app/builder`);
         window.dispatchEvent(new PopStateEvent('popstate'));
     });
     await expect(page.getByRole('heading', { name: /Create GST Invoice/u })).toBeVisible();

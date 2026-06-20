@@ -20,7 +20,6 @@ jobs:
         runs-on: ubuntu-latest
         env:
             FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
-            VITE_BASE_PATH: '/'
 
         steps:
             - name: Checkout
@@ -100,7 +99,6 @@ jobs:
         env:
             FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
             VAULTBILL_LICENSE_KEY: ${{ secrets.VAULTBILL_LICENSE_KEY }}
-            VITE_BASE_PATH: '/'
 
         steps:
             - name: Checkout
@@ -143,7 +141,6 @@ jobs:
         env:
             FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
             VAULTBILL_LICENSE_KEY: ${{ secrets.VAULTBILL_LICENSE_KEY }}
-            VITE_BASE_PATH: '/'
 
         steps:
             - name: Checkout

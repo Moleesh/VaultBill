@@ -22,10 +22,5 @@ const isPortAvailable = (port) =>
     });
 
 /** Returns the preferred dev web port, falling back when port 80 is busy. */
-export const resolveDevWebPort = async () => {
-    const requestedPort = Number.parseInt(process.env.VITE_WEB_PORT ?? '', 10);
-    if (Number.isInteger(requestedPort) && requestedPort > 0) return requestedPort;
-    return (await isPortAvailable(preferredDevWebPort))
-        ? preferredDevWebPort
-        : fallbackDevWebPort;
-};
+export const resolveDevWebPort = async () =>
+    (await isPortAvailable(preferredDevWebPort)) ? preferredDevWebPort : fallbackDevWebPort;

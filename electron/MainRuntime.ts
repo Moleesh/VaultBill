@@ -19,6 +19,11 @@ import path from 'node:path';
 
 import { mainState, hostedAppUrl } from './MainState.js';
 
+const getDevServerUrl = (): string | undefined =>
+    process.argv
+        .find((argument) => argument.startsWith('--dev-server-url='))
+        ?.replace('--dev-server-url=', '');
+
 /** Reads the packaged license verifier embedded into the desktop build. */
 export const readLicenseVerifier = (): string => {
     try {
@@ -68,13 +73,14 @@ export const createWindow = async () => {
         return { action: 'deny' };
     });
     mainState.mainWindow.webContents.on('will-navigate', (event, url) => {
-        const allowedOrigin = process.env.VITE_DEV_SERVER_URL
-            ? new URL(process.env.VITE_DEV_SERVER_URL).origin
+        const devServerUrl = getDevServerUrl();
+        const allowedOrigin = devServerUrl
+            ? new URL(devServerUrl).origin
             : new URL(hostedAppUrl()).origin;
         if (!url.startsWith(allowedOrigin)) event.preventDefault();
     });
-    if (process.env.VITE_DEV_SERVER_URL)
-        await mainState.mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL);
+    const devServerUrl = getDevServerUrl();
+    if (devServerUrl) await mainState.mainWindow.loadURL(devServerUrl);
     else await mainState.mainWindow.loadURL(hostedAppUrl());
 };
 

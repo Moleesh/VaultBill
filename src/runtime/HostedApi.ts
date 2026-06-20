@@ -2,18 +2,16 @@
 
 /** Fetch helper that routes browser-hosted calls to the desktop Local API when available. */
 
-const requestedLocalApiBaseUrl = import.meta.env.VITE_LOCAL_API_URL?.trim();
 const hostedDevApiPort =
     import.meta.env.DEV &&
-    (window.location.port === '5173' || window.location.port === '80' || window.location.port === '')
+    (window.location.port === '5173' ||
+        window.location.port === '80' ||
+        window.location.port === '')
         ? '8000'
         : '';
 const defaultLocalApiBaseUrl =
     hostedDevApiPort.length > 0 ? `http://127.0.0.1:${hostedDevApiPort}` : window.location.origin;
-const localApiBaseUrl =
-    requestedLocalApiBaseUrl === undefined || requestedLocalApiBaseUrl.length === 0
-        ? defaultLocalApiBaseUrl
-        : requestedLocalApiBaseUrl;
+const localApiBaseUrl = defaultLocalApiBaseUrl;
 const csrfStorageKey = 'vaultbill.hosted.csrf';
 
 export const setHostedCsrfToken = (token: string | undefined) => {

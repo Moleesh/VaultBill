@@ -10,7 +10,7 @@ import {
 } from '../SecurityPolicy';
 
 describe('release security policy', () => {
-    it('enables backup encryption when BACKUP_PASSWORD is available', () => {
+    it('enables backup encryption when a backup password is available', () => {
         expect(shouldEncryptBackupByDefault('backup-secret')).toBe(true);
         expect(shouldEncryptBackupByDefault('  ')).toBe(false);
         expect(getUnencryptedBackupWarning(false)).toContain('stored secrets');

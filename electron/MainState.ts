@@ -11,7 +11,7 @@ import type { LocalApiServer } from './server/LocalApiServer.js';
 import { defaultHostedWebPort } from './server/LocalApiSecurity.js';
 
 export const hostedAppUrl = (): string =>
-    `http://127.0.0.1:${String(mainState.hostedWebSettings.port)}`;
+    `http://127.0.0.1:${String(mainState.hostedWebSettings.port)}/VaultBill/`;
 
 export type MainIdentity = {
     readonly appName: string;

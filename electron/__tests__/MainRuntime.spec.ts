@@ -54,7 +54,10 @@ describe('MainRuntime createWindow', () => {
         setWindowOpenHandlerMock.mockClear();
         webContentsOnMock.mockClear();
         lastBrowserWindowOptions = undefined;
-        process.env.VITE_DEV_SERVER_URL = 'http://localhost:5173';
+        process.argv = [
+            ...process.argv.filter((argument) => !argument.startsWith('--dev-server-url=')),
+            '--dev-server-url=http://localhost:5173',
+        ];
 
         const { mainState } = await import('../MainState.js');
         mainState.currentDirectory = 'C:/VaultBill/electron';

@@ -5,9 +5,7 @@
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 
-const requestedBasePath = process.env.VITE_BASE_PATH?.trim();
-const applicationBasePath =
-    requestedBasePath === undefined || requestedBasePath.length === 0 ? '/' : requestedBasePath;
+const applicationBasePath = '/VaultBill/';
 
 export default defineConfig({
     base: applicationBasePath,
@@ -18,7 +16,7 @@ export default defineConfig({
     },
     server: {
         host: '0.0.0.0',
-        port: Number.parseInt(process.env.VITE_WEB_PORT ?? '80', 10),
+        port: 80,
         strictPort: false,
     },
     build: {

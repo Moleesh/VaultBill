@@ -1,6 +1,8 @@
 /** @format */
 
 import { spawn } from 'node:child_process';
+import { createRequire } from 'node:module';
+import path from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
 
 import {
@@ -9,8 +11,10 @@ import {
     resolveDevWebPort,
 } from './DevServerPortSupport.mjs';
 
-const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
-const electronCommand = process.platform === 'win32' ? 'npx.cmd' : 'npx';
+const require = createRequire(import.meta.url);
+const npmCliEntrypoint = process.env.npm_execpath;
+const electronPackagePath = require.resolve('electron/package.json');
+const electronEntrypoint = path.join(path.dirname(electronPackagePath), 'cli.js');
 
 const runCommand = (command, args, env = process.env) =>
     new Promise((resolve, reject) => {
@@ -20,7 +24,8 @@ const runCommand = (command, args, env = process.env) =>
         });
         child.on('exit', (code) => {
             if (code === 0) resolve();
-            else reject(new Error(`${command} ${args.join(' ')} exited with code ${String(code)}.`));
+            else
+                reject(new Error(`${command} ${args.join(' ')} exited with code ${String(code)}.`));
         });
         child.on('error', reject);
     });
@@ -38,10 +43,17 @@ const waitForServer = async (url) => {
     throw new Error(`VaultBill dev server did not become ready at ${url}.`);
 };
 
-await runCommand(npmCommand, ['run', 'build:electron']);
+if (!npmCliEntrypoint) {
+    throw new Error(
+        'npm_execpath is unavailable, so the desktop dev runtime cannot start npm tasks.',
+    );
+}
+
+await runCommand(process.execPath, [npmCliEntrypoint, 'run', 'build:electron']);
 
 const port = await resolveDevWebPort();
-const devServerUrl = port === preferredDevWebPort ? 'http://localhost' : `http://localhost:${String(port)}`;
+const devServerUrl =
+    port === preferredDevWebPort ? 'http://localhost' : `http://localhost:${String(port)}`;
 const fallbackNotice =
     port === fallbackDevWebPort
         ? ` Port ${String(preferredDevWebPort)} is unavailable, so the client is using ${String(fallbackDevWebPort)}.`
@@ -50,14 +62,11 @@ const fallbackNotice =
 console.info(`Starting VaultBill desktop against ${devServerUrl}.${fallbackNotice}`);
 
 const viteProcess = spawn(
-    npmCommand,
-    ['run', 'dev'],
+    process.execPath,
+    [npmCliEntrypoint, 'run', 'dev', '--', '--port', String(port)],
     {
         stdio: 'inherit',
-        env: {
-            ...process.env,
-            VITE_WEB_PORT: String(port),
-        },
+        env: process.env,
     },
 );
 
@@ -74,14 +83,11 @@ process.on('SIGTERM', stopProcesses);
 await waitForServer(devServerUrl);
 
 electronProcess = spawn(
-    electronCommand,
-    ['electron', '.'],
+    process.execPath,
+    [electronEntrypoint, '.', `--dev-server-url=${devServerUrl}`],
     {
         stdio: 'inherit',
-        env: {
-            ...process.env,
-            VITE_DEV_SERVER_URL: devServerUrl,
-        },
+        env: process.env,
     },
 );
 
