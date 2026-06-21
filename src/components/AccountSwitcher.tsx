@@ -25,22 +25,18 @@ export const AccountSwitcher: FC<AccountSwitcherProps> = ({
     };
 
     return (
-        <label className="account-switcher">
-            <span>Operator</span>
-            <SearchableDropdown
-                label="Select operator account"
-                onChange={handleChange}
-                options={accounts.map((account) => ({
-                    value: account.userId,
-                    label: account.displayName,
-                    description: account.role,
-                    keywords: [account.username, account.role],
-                }))}
-                value={operatorContext.account.userId}
-            />
-            <small>
-                Acting as {operatorContext.CreatedByName} / {operatorContext.role}
-            </small>
-        </label>
+        <SearchableDropdown
+            label="Operator"
+            note={`Acting as ${operatorContext.CreatedByName} / ${operatorContext.role}`}
+            onChange={handleChange}
+            options={accounts.map((account) => ({
+                value: account.userId,
+                label: account.displayName,
+                description: account.role,
+                keywords: [account.username, account.role],
+            }))}
+            value={operatorContext.account.userId}
+            wrapperClassName="account-switcher"
+        />
     );
 };

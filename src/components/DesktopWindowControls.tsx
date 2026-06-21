@@ -8,6 +8,8 @@
 import { Minus, X } from 'lucide-react';
 import type { FC } from 'react';
 
+import { IconOnlyButton } from './IconOnlyButton';
+
 type DesktopWindowControlsProps = {
     readonly isDesktop?: boolean;
     readonly onMinimizeWindow?: (() => void) | undefined;
@@ -32,26 +34,22 @@ export const DesktopWindowControls: FC<DesktopWindowControlsProps> = ({
             data-runtime={isDesktop ? 'desktop' : 'web'}
         >
             {onMinimizeWindow ? (
-                <button
+                <IconOnlyButton
                     aria-label="Minimize to taskbar"
                     className="icon-button desktop-window-control desktop-window-control--minimize"
-                    title="Minimize to taskbar"
+                    icon={<Minus aria-hidden="true" size={18} />}
                     onClick={onMinimizeWindow}
-                    type="button"
-                >
-                    <Minus aria-hidden="true" size={18} />
-                </button>
+                    title="Minimize to taskbar"
+                />
             ) : null}
             {onCloseWindow ? (
-                <button
+                <IconOnlyButton
                     aria-label="Close to tray"
                     className="icon-button desktop-window-control desktop-window-control--close"
-                    title="Close to tray"
+                    icon={<X aria-hidden="true" size={18} />}
                     onClick={onCloseWindow}
-                    type="button"
-                >
-                    <X aria-hidden="true" size={18} />
-                </button>
+                    title="Close to tray"
+                />
             ) : null}
         </div>
     );

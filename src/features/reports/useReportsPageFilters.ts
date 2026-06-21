@@ -1,61 +1,48 @@
 /** @format */
 
+import { useForm } from '@tanstack/react-form';
 import { useMemo, useState } from 'react';
 
 import { useRecordStore } from '../records/RecordStoreContext';
+import {
+    createReportFilter,
+    defaultReportField,
+    matchesReportField,
+} from './ReportsPageFilterSupport';
 import { pageSize } from './ReportsPageSupport';
 import type { ReportFieldFilter } from './ReportsPageTypes';
 
-const defaultReportField = '';
-
-const createReportFilter = (field: string = defaultReportField, value = ''): ReportFieldFilter => ({
-    id: globalThis.crypto.randomUUID(),
-    field,
-    value,
-});
-
-const normalizeValue = (value: unknown): string =>
-    typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean'
-        ? String(value)
-        : '';
-
-const reportFieldValueFor = (record: Parameters<typeof matchesReportField>[0], field: string) => {
-    if (field === 'documentNumber') return record.documentNumber ?? '';
-    if (field === 'customerName') return record.customerName;
-    if (field === 'gstin') return record.gstin;
-    if (field === 'invoiceDate') return record.invoiceDate;
-    if (field === 'status') return record.status;
-    if (field === 'grandTotal') return record.grandTotal;
-    return '';
+type ReportsFilterFormValues = {
+    readonly fromDate: string;
+    readonly preset: string;
+    readonly reportField: string;
+    readonly reportFieldValue: string;
+    readonly reportId: string;
+    readonly status: string;
+    readonly toDate: string;
 };
 
-const matchesReportField = (
-    record: ReturnType<typeof useRecordStore>['records'][number],
-    filter: ReportFieldFilter,
-): boolean => {
-    const normalizedValue = filter.value.trim().toLocaleLowerCase();
-    if (
-        !filter.field ||
-        !normalizedValue ||
-        (filter.field === 'status' && normalizedValue === 'all')
-    )
-        return true;
-    const recordValue = reportFieldValueFor(record, filter.field);
-    return normalizeValue(recordValue).toLocaleLowerCase().includes(normalizedValue);
-};
+const useReportsFilterForm = () =>
+    useForm({
+        defaultValues: {
+            fromDate: '',
+            preset: 'All',
+            reportField: defaultReportField,
+            reportFieldValue: '',
+            reportId: 'sales-register',
+            status: 'All',
+            toDate: '',
+        } satisfies ReportsFilterFormValues,
+    });
 
+export type ReportsFilterFormApi = ReturnType<typeof useReportsFilterForm>;
 export const useReportsPageFilters = (includeDraftsInReports: boolean) => {
     const { records } = useRecordStore();
-    const [reportId, setReportId] = useState('sales-register');
-    const [reportField, setReportFieldState] = useState(defaultReportField);
-    const [reportFieldValue, setReportFieldValueState] = useState('');
     const [additionalFilters, setAdditionalFilters] = useState<readonly ReportFieldFilter[]>([]);
-    const [fromDate, setFromDate] = useState('');
-    const [toDate, setToDate] = useState('');
-    const [status, setStatus] = useState('All');
-    const [preset, setPreset] = useState('All');
     const [visibleCount, setVisibleCount] = useState(pageSize);
-
+    const form = useReportsFilterForm();
+    const { fromDate, preset, reportField, reportFieldValue, reportId, status, toDate } =
+        form.state.values;
     const reportFilters = useMemo(
         () => [
             { id: 'primary', field: reportField, value: reportFieldValue },
@@ -79,7 +66,6 @@ export const useReportsPageFilters = (includeDraftsInReports: boolean) => {
         if (preset === 'Last100') result = result.slice(0, 100);
         return result;
     }, [fromDate, includeDraftsInReports, preset, records, reportFilters, status, toDate]);
-
     const query = useMemo(
         () => ({
             reportId,
@@ -98,38 +84,35 @@ export const useReportsPageFilters = (includeDraftsInReports: boolean) => {
         }),
         [fromDate, includeDraftsInReports, preset, reportFilters, reportId, status, toDate],
     );
-
     const customers = [
         ...new Set(records.map((record) => record.customerName).filter(Boolean)),
     ].sort();
-
     const reset = () => {
-        setReportFieldState(defaultReportField);
-        setReportFieldValueState('');
+        form.reset({
+            fromDate: '',
+            preset: 'All',
+            reportField: defaultReportField,
+            reportFieldValue: '',
+            reportId,
+            status: 'All',
+            toDate: '',
+        });
         setAdditionalFilters([]);
-        setFromDate('');
-        setToDate('');
-        setStatus('All');
-        setPreset('All');
     };
-
     const setReportField = (value: string) => {
-        setReportFieldState(value);
-        setReportFieldValueState('');
+        form.setFieldValue('reportField', value);
+        form.setFieldValue('reportFieldValue', '');
     };
-
     const setReportFieldValue = (value: string) => {
-        setReportFieldValueState(value);
+        form.setFieldValue('reportFieldValue', value);
     };
-
     const addReportFilter = () => {
         setAdditionalFilters((current) => [...current, createReportFilter()]);
     };
-
     const updateReportFilter = (id: string, next: Partial<ReportFieldFilter>) => {
         if (id === 'primary') {
-            if (typeof next.field === 'string') setReportFieldState(next.field);
-            if (typeof next.value === 'string') setReportFieldValueState(next.value);
+            if (typeof next.field === 'string') form.setFieldValue('reportField', next.field);
+            if (typeof next.value === 'string') form.setFieldValue('reportFieldValue', next.value);
             return;
         }
         setAdditionalFilters((current) =>
@@ -140,36 +123,35 @@ export const useReportsPageFilters = (includeDraftsInReports: boolean) => {
     const removeReportFilter = (id: string) => {
         setAdditionalFilters((current) => current.filter((filter) => filter.id !== id));
     };
-
     const applyPreset = (value: string) => {
-        setPreset(value);
+        form.setFieldValue('preset', value);
         if (value === 'Last100' || value === 'All') {
-            setFromDate('');
-            setToDate('');
+            form.setFieldValue('fromDate', '');
+            form.setFieldValue('toDate', '');
             return;
         }
         const now = new Date();
         const today = now.toISOString().slice(0, 10);
         if (value === 'Today') {
-            setFromDate(today);
-            setToDate(today);
+            form.setFieldValue('fromDate', today);
+            form.setFieldValue('toDate', today);
         }
         if (value === 'ThisMonth') {
-            setFromDate(`${today.slice(0, 7)}-01`);
-            setToDate(today);
+            form.setFieldValue('fromDate', `${today.slice(0, 7)}-01`);
+            form.setFieldValue('toDate', today);
         }
         if (value === 'FinancialYear') {
             const year = now.getMonth() < 3 ? now.getFullYear() - 1 : now.getFullYear();
-            setFromDate(`${String(year)}-04-01`);
-            setToDate(today);
+            form.setFieldValue('fromDate', `${String(year)}-04-01`);
+            form.setFieldValue('toDate', today);
         }
     };
-
     return {
         addReportFilter,
         applyPreset,
         browserMatchingRecords,
         customers,
+        form,
         fromDate,
         query,
         reportId,
@@ -178,13 +160,23 @@ export const useReportsPageFilters = (includeDraftsInReports: boolean) => {
         reportFilters,
         reset,
         removeReportFilter,
-        setFromDate,
-        setPreset,
+        setFromDate: (value: string) => {
+            form.setFieldValue('fromDate', value);
+        },
+        setPreset: (value: string) => {
+            form.setFieldValue('preset', value);
+        },
         setReportField,
         setReportFieldValue,
-        setReportId,
-        setStatus,
-        setToDate,
+        setReportId: (value: string) => {
+            form.setFieldValue('reportId', value);
+        },
+        setStatus: (value: string) => {
+            form.setFieldValue('status', value);
+        },
+        setToDate: (value: string) => {
+            form.setFieldValue('toDate', value);
+        },
         toDate,
         status,
         preset,

@@ -126,7 +126,6 @@ type RecordActionState = {
             | undefined,
     ) => void;
     readonly setRecord: (value: EditableRecord) => void;
-    readonly setSearchQuery: (value: string) => void;
 };
 
 export const confirmFinalizeRecord = (

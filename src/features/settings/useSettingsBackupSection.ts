@@ -1,7 +1,6 @@
 /** @format */
-
+import { useForm } from '@tanstack/react-form';
 import { useState } from 'react';
-
 import { useCapabilities } from '../../capability/CapabilityContext';
 import {
     buildBackupCreationTask,
@@ -9,27 +8,52 @@ import {
     buildResetTask,
     buildRestoreTask,
 } from './useSettingsBackupSectionSupport';
+type BackupActionFormValues = {
+    readonly backupPassword: string;
+    readonly remoteAuthorizationPassword: string;
+};
+type RestoreFormValues = {
+    readonly password: string;
+    readonly recoveryKey: string;
+};
+type ResetFormValues = {
+    readonly confirmation: string;
+    readonly sysAdminPassword: string;
+};
 
-/**
- * Owns backup, restore, and application reset state for the SysAdmin settings panel.
- */
+const useBackupActionForm = () =>
+    useForm({
+        defaultValues: {
+            backupPassword: '',
+            remoteAuthorizationPassword: '',
+        } satisfies BackupActionFormValues,
+    });
+const useRestoreForm = () =>
+    useForm({ defaultValues: { password: '', recoveryKey: '' } satisfies RestoreFormValues });
+const useResetForm = () =>
+    useForm({
+        defaultValues: { confirmation: '', sysAdminPassword: '' } satisfies ResetFormValues,
+    });
+
+export type BackupActionFormApi = ReturnType<typeof useBackupActionForm>;
+export type RestoreFormApi = ReturnType<typeof useRestoreForm>;
+export type ResetFormApi = ReturnType<typeof useResetForm>;
+
 export const useSettingsBackupSection = () => {
     const capabilities = useCapabilities();
-    const [backupPassword, setBackupPassword] = useState('');
     const [encryptBackup, setEncryptBackup] = useState(true);
     const [restoreOpen, setRestoreOpen] = useState(false);
-    const [restorePassword, setRestorePassword] = useState('');
-    const [restoreRecoveryKey, setRestoreRecoveryKey] = useState('');
     const [restoreFile, setRestoreFile] = useState<File>();
-    const [remoteAuthorizationPassword, setRemoteAuthorizationPassword] = useState('');
     const [resetOpen, setResetOpen] = useState(false);
-    const [resetSysAdminPassword, setResetSysAdminPassword] = useState('');
-    const [resetConfirmation, setResetConfirmation] = useState('');
     const [recoveryKey, setRecoveryKey] = useState('');
     const [busyAction, setBusyAction] = useState('');
     const [, setMessage] = useState('');
+    const backupActionForm = useBackupActionForm();
+    const restoreForm = useRestoreForm();
+    const resetForm = useResetForm();
 
     const changeBackupPassword = () => {
+        const { backupPassword, remoteAuthorizationPassword } = backupActionForm.state.values;
         if (!backupPassword.trim()) {
             setMessage('Enter a new backup password.');
             return;
@@ -44,7 +68,7 @@ export const useSettingsBackupSection = () => {
             remoteAuthorizationPassword,
         )
             .then(() => {
-                setBackupPassword('');
+                backupActionForm.setFieldValue('backupPassword', '');
                 setMessage('Backup password updated securely.');
             })
             .catch((reason: unknown) => {
@@ -60,6 +84,7 @@ export const useSettingsBackupSection = () => {
     };
 
     const createBackup = () => {
+        const { remoteAuthorizationPassword } = backupActionForm.state.values;
         if (!encryptBackup && !window.confirm('Create an unencrypted backup?')) return;
         setBusyAction('Creating verified backup');
         void buildBackupCreationTask(
@@ -89,6 +114,8 @@ export const useSettingsBackupSection = () => {
     };
 
     const restoreBackup = () => {
+        const { password, recoveryKey } = restoreForm.state.values;
+        const { remoteAuthorizationPassword } = backupActionForm.state.values;
         if (!restoreFile) {
             setMessage('Choose a VaultBill backup ZIP to restore.');
             return;
@@ -100,15 +127,14 @@ export const useSettingsBackupSection = () => {
                 desktopApi: window.vaultBillDesktop,
             },
             restoreFile,
-            restorePassword,
-            restoreRecoveryKey,
+            password,
+            recoveryKey,
             remoteAuthorizationPassword,
         )
             .then(() => {
                 setMessage('Backup validated. VaultBill is restarting with the restored database.');
                 setRestoreOpen(false);
-                setRestorePassword('');
-                setRestoreRecoveryKey('');
+                restoreForm.reset();
                 setRestoreFile(undefined);
             })
             .catch((reason: unknown) => {
@@ -122,7 +148,8 @@ export const useSettingsBackupSection = () => {
     };
 
     const resetApplication = () => {
-        if (!resetSysAdminPassword.trim() || resetConfirmation !== 'RESET VAULTBILL') {
+        const { confirmation, sysAdminPassword } = resetForm.state.values;
+        if (!sysAdminPassword.trim() || confirmation !== 'RESET VAULTBILL') {
             setMessage('Enter the System Administrator password and confirmation text.');
             return;
         }
@@ -132,14 +159,13 @@ export const useSettingsBackupSection = () => {
                 isHostedWeb: capabilities.isHostedWeb,
                 desktopApi: window.vaultBillDesktop,
             },
-            resetSysAdminPassword,
-            resetConfirmation,
+            sysAdminPassword,
+            confirmation,
         )
             .then(() => {
                 setMessage('VaultBill is restarting with a clean database.');
                 setResetOpen(false);
-                setResetSysAdminPassword('');
-                setResetConfirmation('');
+                resetForm.reset();
             })
             .catch((reason: unknown) => {
                 setMessage(
@@ -153,33 +179,24 @@ export const useSettingsBackupSection = () => {
     };
 
     return {
-        backupPassword,
+        backupActionForm,
         busyAction,
         capabilities,
         changeBackupPassword,
         createBackup,
         encryptBackup,
         recoveryKey,
-        remoteAuthorizationPassword,
+        resetForm,
         resetApplication,
-        resetConfirmation,
         resetOpen,
-        resetSysAdminPassword,
+        restoreForm,
         restoreBackup,
         restoreFile,
         restoreOpen,
-        restorePassword,
-        restoreRecoveryKey,
-        setBackupPassword,
         setEncryptBackup,
         setRecoveryKey,
-        setRemoteAuthorizationPassword,
-        setResetConfirmation,
         setResetOpen,
-        setResetSysAdminPassword,
         setRestoreFile,
         setRestoreOpen,
-        setRestorePassword,
-        setRestoreRecoveryKey,
     };
 };

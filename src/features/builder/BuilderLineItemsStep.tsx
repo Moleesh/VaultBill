@@ -2,6 +2,8 @@
 
 import type { FC } from 'react';
 
+import { ActionButton } from '../../components/ActionButton';
+import { FormField } from '../../components/FormFields';
 import type { FieldConfig } from './BuilderPageSupport';
 import { BuilderFieldEditor } from './BuilderFieldEditor';
 import { BuilderLineItemsPreview } from './BuilderLineItemsStepSupport';
@@ -49,20 +51,18 @@ export const BuilderLineItemsStep: FC<BuilderLineItemsStepProps> = ({
                         Keep subtotal and total formulas in JSON so the row summary stays visible.
                     </p>
                 </div>
-                <button className="button-secondary" onClick={onPrevious} type="button">
+                <ActionButton onClick={onPrevious} variant="secondary">
                     Previous: Fields
-                </button>
+                </ActionButton>
             </div>
-            <label className="checkbox-field builder-line-items-toggle">
-                <input
-                    checked={enabled}
-                    onChange={(event) => {
-                        onEnabledChange(event.currentTarget.checked);
-                    }}
-                    type="checkbox"
-                />
-                <span>Enable line items</span>
-            </label>
+            <FormField.CheckboxField
+                checked={enabled}
+                label="Enable line items"
+                onChange={(event) => {
+                    onEnabledChange(event.currentTarget.checked);
+                }}
+                wrapperClassName="builder-line-items-toggle"
+            />
             {!enabled ? (
                 <p className="field-note">
                     Turn this on to include the repeating row section in the form, previews, and
@@ -70,26 +70,22 @@ export const BuilderLineItemsStep: FC<BuilderLineItemsStepProps> = ({
                 </p>
             ) : null}
             <div className="form-grid">
-                <label>
-                    <span>Section label</span>
-                    <input
-                        value={lineSection.Label}
-                        onChange={(event) => {
-                            onLabelChange(event.currentTarget.value);
-                        }}
-                    />
-                </label>
-                <label>
-                    <span>Maximum rows</span>
-                    <input
-                        min="1"
-                        type="number"
-                        value={lineSection.MaxRows}
-                        onChange={(event) => {
-                            onMaxRowsChange(Number(event.currentTarget.value));
-                        }}
-                    />
-                </label>
+                <FormField.TextField
+                    label="Section label"
+                    onChange={(event) => {
+                        onLabelChange(event.currentTarget.value);
+                    }}
+                    value={lineSection.Label}
+                />
+                <FormField.TextField
+                    label="Maximum rows"
+                    min="1"
+                    onChange={(event) => {
+                        onMaxRowsChange(Number(event.currentTarget.value));
+                    }}
+                    type="number"
+                    value={lineSection.MaxRows}
+                />
             </div>
             {enabled ? (
                 <BuilderFieldEditor

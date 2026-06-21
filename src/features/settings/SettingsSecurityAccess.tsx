@@ -3,14 +3,17 @@
 import { KeyRound, ShieldCheck } from 'lucide-react';
 import type { FC } from 'react';
 
+import { ActionButton } from '../../components/ActionButton';
+import { FormField } from '../../components/FormFields';
 import { formatTrialCountdown } from '../dashboard/SysAdminDashboardTrialSupport';
+import type { SettingsActivationFormApi } from './SettingsSecuritySectionSupport';
 
 type SettingsSecurityAccessProps = {
     readonly isSysAdmin: boolean;
     readonly isDemoMode: boolean;
     readonly canLanServer: boolean;
     readonly lanEnabled: boolean;
-    readonly licenseKey: string;
+    readonly activationForm: SettingsActivationFormApi;
     readonly trialStatus:
         | {
               readonly isFullVersion: boolean;
@@ -19,7 +22,6 @@ type SettingsSecurityAccessProps = {
           }
         | undefined;
     readonly onLanEnabledChange: (value: boolean) => void;
-    readonly onLicenseKeyChange: (value: string) => void;
     readonly onActivateLicense: () => void;
 };
 
@@ -29,10 +31,9 @@ export const SettingsSecurityAccess: FC<SettingsSecurityAccessProps> = ({
     isDemoMode,
     canLanServer,
     lanEnabled,
-    licenseKey,
+    activationForm,
     trialStatus,
     onLanEnabledChange,
-    onLicenseKeyChange,
     onActivateLicense,
 }) => (
     <>
@@ -53,22 +54,24 @@ export const SettingsSecurityAccess: FC<SettingsSecurityAccessProps> = ({
                 </div>
                 {!trialStatus?.isFullVersion ? (
                     <div className="operator-create">
-                        <label>
-                            <span>License key</span>
-                            <input
-                                value={licenseKey}
-                                onChange={(event) => {
-                                    onLicenseKeyChange(event.currentTarget.value);
-                                }}
-                            />
-                        </label>
-                        <button
-                            disabled={!licenseKey.trim()}
+                        <activationForm.Field name="licenseKey">
+                            {(field) => (
+                                <FormField.TextField
+                                    label="License key"
+                                    onChange={(event) => {
+                                        field.handleChange(event.currentTarget.value);
+                                    }}
+                                    value={field.state.value}
+                                />
+                            )}
+                        </activationForm.Field>
+                        <ActionButton
+                            disabled={!activationForm.state.values.licenseKey.trim()}
                             onClick={onActivateLicense}
-                            type="button"
+                            variant="primary"
                         >
                             Activate full version
-                        </button>
+                        </ActionButton>
                     </div>
                 ) : null}
             </div>
@@ -83,20 +86,15 @@ export const SettingsSecurityAccess: FC<SettingsSecurityAccessProps> = ({
                     <ShieldCheck aria-hidden="true" />
                 </div>
                 {canLanServer ? (
-                    <label className="checkbox-field">
-                        <input
-                            checked={lanEnabled}
-                            onChange={(event) => {
-                                onLanEnabledChange(event.currentTarget.checked);
-                            }}
-                            type="checkbox"
-                        />
-                        <span>
-                            {lanEnabled
-                                ? 'Hosted web access enabled'
-                                : 'Hosted web access disabled'}
-                        </span>
-                    </label>
+                    <FormField.CheckboxField
+                        checked={lanEnabled}
+                        label={
+                            lanEnabled ? 'Hosted web access enabled' : 'Hosted web access disabled'
+                        }
+                        onChange={(event) => {
+                            onLanEnabledChange(event.currentTarget.checked);
+                        }}
+                    />
                 ) : (
                     <p className="field-note">
                         Hosted web access is managed from VaultBill Desktop when the local host

@@ -1,12 +1,23 @@
 /** @format */
 
+import { useForm } from '@tanstack/react-form';
 import type { FC } from 'react';
+import { useEffect } from 'react';
 
 import { AppDatePicker } from '../../components/AppDatePicker/AppDatePicker';
+import { FormField } from '../../components/FormFields';
 import { RecordsFieldControl } from './RecordsFieldControl';
 import type { AppRecord, EditableRecord, RecordLineItem } from './RecordStoreContext';
 import type { ConfiguredFieldDefinition } from './RecordsPageSupport';
 import { RecordsLineItemsSection } from './RecordsLineItemsSection';
+
+type RecordsDocumentFormValues = {
+    readonly billingAddress: string;
+    readonly customerName: string;
+    readonly gstin: string;
+    readonly invoiceDate: string;
+    readonly state: string;
+};
 
 type RecordsFormSectionProps = {
     readonly configuredDocumentFields: readonly ConfiguredFieldDefinition[];
@@ -36,93 +47,149 @@ export const RecordsFormSection: FC<RecordsFormSectionProps> = ({
     record,
     recordTotals,
     selectedStoredRecord,
-}) => (
-    <>
-        {selectedStoredRecord?.documentNumber ? (
-            <div className="record-status-row">
-                <span className="status-pill">{selectedStoredRecord.status}</span>
-                <strong>{selectedStoredRecord.documentNumber}</strong>
+}) => {
+    const form = useForm({
+        defaultValues: {
+            billingAddress: record.billingAddress,
+            customerName: record.customerName,
+            gstin: record.gstin,
+            invoiceDate: record.invoiceDate,
+            state: record.state,
+        } satisfies RecordsDocumentFormValues,
+    });
+
+    useEffect(() => {
+        form.reset({
+            billingAddress: record.billingAddress,
+            customerName: record.customerName,
+            gstin: record.gstin,
+            invoiceDate: record.invoiceDate,
+            state: record.state,
+        });
+    }, [
+        form,
+        record.billingAddress,
+        record.customerName,
+        record.gstin,
+        record.invoiceDate,
+        record.state,
+    ]);
+
+    return (
+        <>
+            {selectedStoredRecord?.documentNumber ? (
+                <div className="record-status-row">
+                    <span className="status-pill">{selectedStoredRecord.status}</span>
+                    <strong>{selectedStoredRecord.documentNumber}</strong>
+                </div>
+            ) : null}
+            <div className="form-grid">
+                <form.Field name="invoiceDate">
+                    {(field) => (
+                        <AppDatePicker
+                            disabled={isReadOnly}
+                            label="Invoice date"
+                            onChange={(invoiceDate) => {
+                                field.handleChange(invoiceDate);
+                                onRecordChange({ ...record, invoiceDate });
+                            }}
+                            value={field.state.value}
+                        />
+                    )}
+                </form.Field>
+                <form.Field name="customerName">
+                    {(field) => (
+                        <FormField.TextField
+                            disabled={isReadOnly}
+                            label="Customer name"
+                            onChange={(event) => {
+                                field.handleChange(event.currentTarget.value);
+                                onRecordChange({
+                                    ...record,
+                                    customerName: event.currentTarget.value,
+                                });
+                            }}
+                            placeholder="Business or customer name"
+                            readOnly={isReadOnly}
+                            value={field.state.value}
+                        />
+                    )}
+                </form.Field>
+                <form.Field name="gstin">
+                    {(field) => (
+                        <FormField.TextField
+                            disabled={isReadOnly}
+                            label="GSTIN"
+                            onChange={(event) => {
+                                field.handleChange(event.currentTarget.value);
+                                onRecordChange({ ...record, gstin: event.currentTarget.value });
+                            }}
+                            placeholder="Optional GST number"
+                            readOnly={isReadOnly}
+                            value={field.state.value}
+                        />
+                    )}
+                </form.Field>
+                <form.Field name="state">
+                    {(field) => (
+                        <FormField.TextField
+                            disabled={isReadOnly}
+                            label="State"
+                            onChange={(event) => {
+                                field.handleChange(event.currentTarget.value);
+                                onRecordChange({ ...record, state: event.currentTarget.value });
+                            }}
+                            placeholder="State"
+                            readOnly={isReadOnly}
+                            value={field.state.value}
+                        />
+                    )}
+                </form.Field>
+                <form.Field name="billingAddress">
+                    {(field) => (
+                        <FormField.TextAreaField
+                            disabled={isReadOnly}
+                            label="Billing address"
+                            onChange={(event) => {
+                                field.handleChange(event.currentTarget.value);
+                                onRecordChange({
+                                    ...record,
+                                    billingAddress: event.currentTarget.value,
+                                });
+                            }}
+                            placeholder="Address shown on the document"
+                            readOnly={isReadOnly}
+                            wrapperClassName="span-2"
+                            value={field.state.value}
+                        />
+                    )}
+                </form.Field>
+                {configuredDocumentFields.map((field) => (
+                    <RecordsFieldControl
+                        disabled={isReadOnly}
+                        field={field}
+                        key={field.FieldId}
+                        onChange={(value) => {
+                            onRecordChange({
+                                ...record,
+                                fieldValues: {
+                                    ...(record.fieldValues ?? {}),
+                                    [field.FieldId]: value,
+                                },
+                            });
+                        }}
+                        value={record.fieldValues?.[field.FieldId] ?? ''}
+                    />
+                ))}
             </div>
-        ) : null}
-        <div className="form-grid">
-            <AppDatePicker
-                disabled={isReadOnly}
-                label="Invoice date"
-                onChange={(invoiceDate) => {
-                    onRecordChange({ ...record, invoiceDate });
-                }}
-                value={record.invoiceDate}
+            <RecordsLineItemsSection
+                configuredLineFields={configuredLineFields}
+                isReadOnly={isReadOnly}
+                onAddLineItem={onAddLineItem}
+                onUpdateLineItem={onUpdateLineItem}
+                record={record}
+                recordTotals={recordTotals}
             />
-            <label>
-                <span>Customer name</span>
-                <input
-                    disabled={isReadOnly}
-                    onChange={(event) => {
-                        onRecordChange({ ...record, customerName: event.currentTarget.value });
-                    }}
-                    placeholder="Business or customer name"
-                    readOnly={isReadOnly}
-                    value={record.customerName}
-                />
-            </label>
-            <label>
-                <span>GSTIN</span>
-                <input
-                    disabled={isReadOnly}
-                    onChange={(event) => {
-                        onRecordChange({ ...record, gstin: event.currentTarget.value });
-                    }}
-                    placeholder="Optional GST number"
-                    readOnly={isReadOnly}
-                    value={record.gstin}
-                />
-            </label>
-            <label>
-                <span>State</span>
-                <input
-                    disabled={isReadOnly}
-                    onChange={(event) => {
-                        onRecordChange({ ...record, state: event.currentTarget.value });
-                    }}
-                    placeholder="State"
-                    readOnly={isReadOnly}
-                    value={record.state}
-                />
-            </label>
-            <label className="span-2">
-                <span>Billing address</span>
-                <textarea
-                    disabled={isReadOnly}
-                    onChange={(event) => {
-                        onRecordChange({ ...record, billingAddress: event.currentTarget.value });
-                    }}
-                    placeholder="Address shown on the document"
-                    readOnly={isReadOnly}
-                    value={record.billingAddress}
-                />
-            </label>
-            {configuredDocumentFields.map((field) => (
-                <RecordsFieldControl
-                    disabled={isReadOnly}
-                    field={field}
-                    key={field.FieldId}
-                    onChange={(value) => {
-                        onRecordChange({
-                            ...record,
-                            fieldValues: { ...(record.fieldValues ?? {}), [field.FieldId]: value },
-                        });
-                    }}
-                    value={record.fieldValues?.[field.FieldId] ?? ''}
-                />
-            ))}
-        </div>
-        <RecordsLineItemsSection
-            configuredLineFields={configuredLineFields}
-            isReadOnly={isReadOnly}
-            onAddLineItem={onAddLineItem}
-            onUpdateLineItem={onUpdateLineItem}
-            record={record}
-            recordTotals={recordTotals}
-        />
-    </>
-);
+        </>
+    );
+};

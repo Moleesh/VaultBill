@@ -127,6 +127,13 @@
     height: 1rem;
 }
 
+.form-field {
+    display: grid;
+    gap: 0.18rem;
+    color: var(--color-label);
+    font-weight: var(--font-weight-semibold);
+}
+
 .form-grid,
 .report-filters {
     display: grid;
@@ -146,6 +153,8 @@
 
 .form-grid input,
 .form-grid textarea,
+.form-grid .form-field input,
+.form-grid .form-field textarea,
 .report-filters input,
 .help-search input,
 .searchable-dropdown-menu input,

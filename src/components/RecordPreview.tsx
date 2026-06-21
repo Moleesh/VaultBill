@@ -4,6 +4,7 @@
 
 import type { FC } from 'react';
 
+import { FormField } from './FormFields';
 import type { OperatorContext } from '../features/auth/AccountTypes';
 import type { DocumentFormatSummary } from '../types/AppTypes';
 
@@ -25,18 +26,14 @@ export const RecordPreview: FC<RecordPreviewProps> = ({ activeFormat, operatorCo
         </div>
 
         <div className="form-preview-grid" aria-label="Preview fields">
-            <label>
-                <span>Invoice date</span>
-                <input readOnly value="2026-06-04" />
-            </label>
-            <label>
-                <span>Customer name</span>
-                <input readOnly value="Sample Customer" />
-            </label>
-            <label className="span-2">
-                <span>Billing address</span>
-                <textarea readOnly value="Sample Traders, Main Road" />
-            </label>
+            <FormField.TextField label="Invoice date" readOnly value="2026-06-04" />
+            <FormField.TextField label="Customer name" readOnly value="Sample Customer" />
+            <FormField.TextAreaField
+                label="Billing address"
+                readOnly
+                value="Sample Traders, Main Road"
+                wrapperClassName="span-2"
+            />
         </div>
 
         <div className="line-item-preview" role="region" aria-label="Line items">

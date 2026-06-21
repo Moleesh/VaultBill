@@ -47,6 +47,7 @@
         "*.{json,md,scss,yml,yaml,html}": "prettier --write"
     },
     "dependencies": {
+        "@tanstack/react-form": "^1.33.0",
         "date-fns": "^4.4.0",
         "fflate": "^0.8.2",
         "lucide-react": "^0.468.0",

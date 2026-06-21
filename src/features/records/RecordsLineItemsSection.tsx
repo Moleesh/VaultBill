@@ -2,6 +2,8 @@
 
 import type { FC } from 'react';
 
+import { ActionButton } from '../../components/ActionButton';
+import { FormField } from '../../components/FormFields';
 import { HorizontalProgress } from '../../components/HorizontalProgress/HorizontalProgress';
 import { RecordsFieldControl } from './RecordsFieldControl';
 import type { EditableRecord, RecordLineItem } from './RecordStoreContext';
@@ -43,9 +45,10 @@ export const RecordsLineItemsSection: FC<RecordsLineItemsSectionProps> = ({
             {record.lineItems.map((item) => (
                 <div className="line-item-grid-item" key={item.rowId}>
                     <div className="line-item-grid-row">
-                        <input
-                            aria-label="Item name"
+                        <FormField.TextField
                             disabled={isReadOnly}
+                            hideLabel
+                            label="Item name"
                             onChange={(event) => {
                                 onUpdateLineItem(item.rowId, {
                                     itemName: event.currentTarget.value,
@@ -54,49 +57,61 @@ export const RecordsLineItemsSection: FC<RecordsLineItemsSectionProps> = ({
                             placeholder="Item or service"
                             readOnly={isReadOnly}
                             value={item.itemName}
+                            wrapperClassName="line-item-grid-control"
                         />
-                        <input
-                            aria-label="HSN or SAC"
+                        <FormField.TextField
                             disabled={isReadOnly}
+                            hideLabel
+                            label="HSN or SAC"
                             onChange={(event) => {
                                 onUpdateLineItem(item.rowId, { hsnSac: event.currentTarget.value });
                             }}
                             readOnly={isReadOnly}
                             value={item.hsnSac}
+                            wrapperClassName="line-item-grid-control"
                         />
-                        <input
-                            aria-label="Quantity"
+                        <FormField.TextField
                             disabled={isReadOnly}
+                            hideLabel
                             inputMode="decimal"
+                            label="Quantity"
                             onChange={(event) => {
                                 onUpdateLineItem(item.rowId, {
                                     quantity: event.currentTarget.value,
                                 });
                             }}
+                            placeholder="0"
                             readOnly={isReadOnly}
                             value={item.quantity}
+                            wrapperClassName="line-item-grid-control"
                         />
-                        <input
-                            aria-label="Rate"
+                        <FormField.TextField
                             disabled={isReadOnly}
+                            hideLabel
                             inputMode="decimal"
+                            label="Rate"
                             onChange={(event) => {
                                 onUpdateLineItem(item.rowId, { rate: event.currentTarget.value });
                             }}
+                            placeholder="0.00"
                             readOnly={isReadOnly}
                             value={item.rate}
+                            wrapperClassName="line-item-grid-control"
                         />
-                        <input
-                            aria-label="Tax"
+                        <FormField.TextField
                             disabled={isReadOnly}
+                            hideLabel
                             inputMode="decimal"
+                            label="Tax"
                             onChange={(event) => {
                                 onUpdateLineItem(item.rowId, {
                                     taxPercent: event.currentTarget.value,
                                 });
                             }}
+                            placeholder="0"
                             readOnly={isReadOnly}
                             value={item.taxPercent}
+                            wrapperClassName="line-item-grid-control"
                         />
                         <output aria-label="Amount">₹{item.amount}</output>
                     </div>
@@ -123,11 +138,7 @@ export const RecordsLineItemsSection: FC<RecordsLineItemsSectionProps> = ({
                 </div>
             ))}
         </HorizontalProgress>
-        {!isReadOnly ? (
-            <button onClick={onAddLineItem} type="button">
-                Add line item
-            </button>
-        ) : null}
+        {!isReadOnly ? <ActionButton onClick={onAddLineItem}>Add line item</ActionButton> : null}
         <div className="record-summary" aria-label="Record totals">
             <div>
                 <span>Subtotal</span>

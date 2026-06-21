@@ -2,6 +2,7 @@
 
 /** Horizontal progress rail that mirrors task and workflow completion state. */
 
+import { IconOnlyButton } from '../IconOnlyButton';
 import { useEffect, useRef, useState } from 'react';
 import type { FC, PropsWithChildren, UIEvent, WheelEvent } from 'react';
 
@@ -102,15 +103,13 @@ export const HorizontalProgress: FC<HorizontalProgressProps> = ({
             </div>
             {hasOverflow ? (
                 <div className="horizontal-progress-controls">
-                    <button
+                    <IconOnlyButton
                         aria-label={`Previous ${label}`}
+                        icon="←"
                         onClick={() => {
                             scrollByPage(-1);
                         }}
-                        type="button"
-                    >
-                        ←
-                    </button>
+                    />
                     <div
                         aria-label={`${String(Math.round(position * 100))} percent scrolled`}
                         aria-valuemax={100}
@@ -121,15 +120,13 @@ export const HorizontalProgress: FC<HorizontalProgressProps> = ({
                     >
                         <span />
                     </div>
-                    <button
+                    <IconOnlyButton
                         aria-label={`Next ${label}`}
+                        icon="→"
                         onClick={() => {
                             scrollByPage(1);
                         }}
-                        type="button"
-                    >
-                        →
-                    </button>
+                    />
                 </div>
             ) : null}
         </section>

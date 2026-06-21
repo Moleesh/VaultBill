@@ -3,6 +3,10 @@
 import { Plus, ShieldCheck, Trash2 } from 'lucide-react';
 import type { FC, ReactNode } from 'react';
 
+import { FormField } from '../../components/FormFields';
+import { IconButton } from '../../components/IconButton';
+import { IconOnlyButton } from '../../components/IconOnlyButton';
+
 type SecretEntry = {
     readonly key: string;
     readonly value: string;
@@ -57,42 +61,38 @@ type SecretTableRowProps = {
 
 const SecretTableRow: FC<SecretTableRowProps> = ({ entry, index, onChange, onRemove }) => (
     <div className="secrets-key-value-row secrets-key-value-row--secrets">
-        <label>
-            <span>Key</span>
-            <input
-                aria-label={`Secret key ${String(index + 1)}`}
-                onChange={(event) => {
-                    onChange({ ...entry, key: event.currentTarget.value });
-                }}
-                placeholder="SecretKey"
-                value={entry.key}
-            />
-        </label>
-        <label>
-            <span>Value</span>
-            <input
-                aria-label={`Secret value ${String(index + 1)}`}
-                onChange={(event) => {
-                    onChange({ ...entry, value: event.currentTarget.value });
-                }}
-                placeholder="Enter value"
-                value={entry.value}
-            />
-        </label>
-        <label>
-            <span>Description</span>
-            <input
-                aria-label={`Secret description ${String(index + 1)}`}
-                onChange={(event) => {
-                    onChange({ ...entry, description: event.currentTarget.value });
-                }}
-                placeholder="Optional note"
-                value={entry.description}
-            />
-        </label>
-        <button aria-label={`Remove secret ${String(index + 1)}`} onClick={onRemove} type="button">
-            <Trash2 aria-hidden="true" size={16} />
-        </button>
+        <FormField.TextField
+            aria-label={`Secret key ${String(index + 1)}`}
+            label="Key"
+            onChange={(event) => {
+                onChange({ ...entry, key: event.currentTarget.value });
+            }}
+            placeholder="SecretKey"
+            value={entry.key}
+        />
+        <FormField.TextField
+            aria-label={`Secret value ${String(index + 1)}`}
+            label="Value"
+            onChange={(event) => {
+                onChange({ ...entry, value: event.currentTarget.value });
+            }}
+            placeholder="Enter value"
+            value={entry.value}
+        />
+        <FormField.TextField
+            aria-label={`Secret description ${String(index + 1)}`}
+            label="Description"
+            onChange={(event) => {
+                onChange({ ...entry, description: event.currentTarget.value });
+            }}
+            placeholder="Optional note"
+            value={entry.description}
+        />
+        <IconOnlyButton
+            aria-label={`Remove secret ${String(index + 1)}`}
+            icon={<Trash2 aria-hidden="true" size={16} />}
+            onClick={onRemove}
+        />
     </div>
 );
 
@@ -124,15 +124,15 @@ export const SecretsTable: FC<SecretsTableProps> = ({ secrets, onChange }) => (
                 }}
             />
         ))}
-        <button
-            className="button-file"
+        <IconButton
+            icon={<Plus aria-hidden="true" size={18} />}
             onClick={() => {
                 onChange([...secrets, emptySecret()]);
             }}
-            type="button"
+            variant="secondary"
         >
-            <Plus aria-hidden="true" size={18} /> Add secret
-        </button>
+            Add secret
+        </IconButton>
     </div>
 );
 

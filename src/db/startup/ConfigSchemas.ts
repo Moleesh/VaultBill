@@ -194,12 +194,14 @@ export const StartupHealthSettingSchema = z.object({
     SchemaVersion: z.literal(2),
 });
 
-export type DocumentFormatConfig = z.infer<typeof DocumentFormatConfigSchema>;
-export type CompanyProfileConfig = z.infer<typeof CompanyProfileSchema>;
-export type GspIntegrationSettings = z.infer<typeof GspIntegrationSettingsSchema>;
-export type GstIntegrationSettings = z.infer<typeof GstIntegrationSettingsSchema>;
-export type RuntimeBrandingConfig = z.infer<typeof RuntimeBrandingSchema>;
-export type SignaturePadSettings = z.infer<typeof SignaturePadSettingsSchema>;
-export type SecretEntry = z.infer<typeof SecretEntrySchema>;
-export type SecretsSettings = z.infer<typeof SecretsSettingsSchema>;
-export type SmsProviderSettings = z.infer<typeof SmsProviderSettingsSchema>;
+export type {
+    CompanyProfileConfig,
+    DocumentFormatConfig,
+    GspIntegrationSettings,
+    GstIntegrationSettings,
+    RuntimeBrandingConfig,
+    SecretEntry,
+    SecretsSettings,
+    SignaturePadSettings,
+    SmsProviderSettings,
+} from './ConfigSchemaTypes';

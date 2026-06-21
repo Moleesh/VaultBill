@@ -2,7 +2,9 @@
 
 import type { FC } from 'react';
 
+import { ActionButton } from '../../components/ActionButton';
 import { AppModal } from '../../components/AppModal/AppModal';
+import { DialogActions } from '../../components/DialogActions';
 import type { PrintTask } from './ReportsPageSupport';
 
 type ReportsPrintTaskModalProps = {
@@ -38,23 +40,22 @@ export const ReportsPrintTaskModal: FC<ReportsPrintTaskModalProps> = ({
                 <progress max={Math.max(task.total, 1)} value={task.completed} />
                 {task.message ? <p>{task.message}</p> : null}
                 {task.awaitingContinue ? (
-                    <div className="popup-actions">
-                        <button
+                    <DialogActions>
+                        <ActionButton
                             onClick={() => {
                                 onClose();
                             }}
-                            type="button"
                         >
                             Stop
-                        </button>
-                        <button className="button-primary" onClick={onContinue} type="button">
+                        </ActionButton>
+                        <ActionButton onClick={onContinue} variant="primary">
                             Print next 10
-                        </button>
-                    </div>
+                        </ActionButton>
+                    </DialogActions>
                 ) : (
-                    <button onClick={onCancelOutput} type="button">
+                    <ActionButton onClick={onCancelOutput}>
                         {task.running ? 'Cancel output' : 'Close'}
-                    </button>
+                    </ActionButton>
                 )}
             </div>
         ) : null}

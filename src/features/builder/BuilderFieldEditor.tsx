@@ -4,6 +4,10 @@ import { Copy, GripVertical, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import type { DragEvent, FC } from 'react';
 
+import { ActionButton } from '../../components/ActionButton';
+import { DragHandleButton } from '../../components/DragHandleButton';
+import { IconButton } from '../../components/IconButton';
+import { IconOnlyButton } from '../../components/IconOnlyButton';
 import type { FieldConfig } from './BuilderPageSupport';
 import { move } from './BuilderPageSupport';
 
@@ -45,9 +49,13 @@ export const BuilderFieldEditor: FC<BuilderFieldEditorProps> = ({
                     <h3>Configured fields</h3>
                     <p>Order matches the entry form.</p>
                 </div>
-                <button className="button-primary" onClick={onAdd} type="button">
-                    <Plus aria-hidden="true" size={18} /> Add field
-                </button>
+                <IconButton
+                    icon={<Plus aria-hidden="true" size={18} />}
+                    onClick={onAdd}
+                    variant="primary"
+                >
+                    Add field
+                </IconButton>
             </div>
             {fields.map((field, index) => (
                 <article
@@ -69,24 +77,20 @@ export const BuilderFieldEditor: FC<BuilderFieldEditorProps> = ({
                         handleDrop(event, index);
                     }}
                 >
-                    <button
+                    <DragHandleButton
                         aria-label={`Drag ${field.Label}`}
-                        className="builder-field-handle"
+                        icon={<GripVertical aria-hidden="true" size={17} />}
                         onClick={(event) => {
                             event.preventDefault();
                         }}
                         tabIndex={-1}
-                        type="button"
-                    >
-                        <GripVertical aria-hidden="true" size={17} />
-                    </button>
-                    <button
-                        className="builder-fields-main"
+                    />
+                    <ActionButton
                         aria-label={`Edit ${field.Label}`}
+                        className="builder-fields-main"
                         onClick={() => {
                             onEdit(index);
                         }}
-                        type="button"
                     >
                         <span className="builder-fields-main-title">{`Edit ${field.Label}`}</span>
                         <span className="builder-fields-main-type">{field.Type}</span>
@@ -96,11 +100,12 @@ export const BuilderFieldEditor: FC<BuilderFieldEditorProps> = ({
                                 <small className="builder-field-warning">Used in a formula</small>
                             ) : null}
                         </span>
-                    </button>
+                    </ActionButton>
                     <div className="builder-fields-actions">
-                        <button
+                        <IconOnlyButton
                             aria-label={`Duplicate ${field.Label}`}
                             className="builder-fields-action"
+                            icon={<Copy aria-hidden="true" size={17} />}
                             onClick={() => {
                                 onChange([
                                     ...fields.slice(0, index + 1),
@@ -112,13 +117,11 @@ export const BuilderFieldEditor: FC<BuilderFieldEditorProps> = ({
                                     ...fields.slice(index + 1),
                                 ]);
                             }}
-                            type="button"
-                        >
-                            <Copy aria-hidden="true" size={17} />
-                        </button>
-                        <button
+                        />
+                        <IconOnlyButton
                             aria-label={`Delete ${field.Label}`}
                             className="builder-fields-action"
+                            icon={<Trash2 aria-hidden="true" size={17} />}
                             onClick={() => {
                                 onChange(fields.filter((_, fieldIndex) => fieldIndex !== index));
                             }}
@@ -127,10 +130,7 @@ export const BuilderFieldEditor: FC<BuilderFieldEditorProps> = ({
                                     ? 'This field is referenced in a formula, but it can still be deleted.'
                                     : undefined
                             }
-                            type="button"
-                        >
-                            <Trash2 aria-hidden="true" size={17} />
-                        </button>
+                        />
                     </div>
                 </article>
             ))}

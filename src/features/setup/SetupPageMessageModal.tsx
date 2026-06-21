@@ -4,6 +4,8 @@ import { X } from 'lucide-react';
 import { useEffect } from 'react';
 import type { FC } from 'react';
 
+import { IconOnlyButton } from '../../components/IconOnlyButton';
+
 type SetupPageMessageModalProps = {
     readonly message: string;
     readonly onClose: () => void;
@@ -46,15 +48,13 @@ export const SetupPageMessageModal: FC<SetupPageMessageModalProps> = ({ message,
                 </strong>
                 <p>{message}</p>
             </div>
-            <button
+            <IconOnlyButton
                 aria-label="Dismiss setup message"
                 className="setup-page-toast-close"
+                icon={<X aria-hidden="true" size={16} />}
                 onClick={onClose}
                 title="Dismiss message"
-                type="button"
-            >
-                <X aria-hidden="true" size={16} />
-            </button>
+            />
         </aside>
     );
 };

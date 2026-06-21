@@ -13,6 +13,7 @@ import { NavLink } from 'react-router-dom';
 import type { FC } from 'react';
 
 import { AppBrandIcon } from './AppBrandIcon/AppBrandIcon';
+import { IconOnlyButton } from './IconOnlyButton';
 import { ThemePalette } from './ThemePalette';
 import { appShellIcons } from './AppShellSupport';
 import type { ThemeController } from '../types/AppTypes';
@@ -60,14 +61,18 @@ export const AppShellSidebar: FC<AppShellSidebarProps> = ({
             <AppBrandIcon size="small" />
             <strong className="app-shell-nav-label">{applicationName}</strong>
         </NavLink>
-        <button
+        <IconOnlyButton
             aria-label={isExpanded ? 'Collapse sidebar' : 'Expand sidebar'}
             className="app-shell-sidebar-toggle icon-button"
+            icon={
+                isExpanded ? (
+                    <ChevronLeft aria-hidden="true" />
+                ) : (
+                    <ChevronRight aria-hidden="true" />
+                )
+            }
             onClick={onToggleExpanded}
-            type="button"
-        >
-            {isExpanded ? <ChevronLeft aria-hidden="true" /> : <ChevronRight aria-hidden="true" />}
-        </button>
+        />
         <nav aria-label="Primary" className="app-shell-nav">
             {sections.map((section) => {
                 const Icon = appShellIcons[section.id as keyof typeof appShellIcons];
@@ -106,44 +111,32 @@ export const AppShellSidebar: FC<AppShellSidebarProps> = ({
             <div className="app-shell-operator-actions">
                 <ThemePalette controller={themeController} />
                 {hostedWebUrl ? (
-                    <button
-                        className="icon-button"
+                    <IconOnlyButton
                         aria-label="Open hosted web"
+                        icon={<ExternalLink aria-hidden="true" size={20} />}
                         onClick={onOpenHostedWeb}
                         title={hostedWebUrl}
-                        type="button"
-                    >
-                        <ExternalLink aria-hidden="true" size={20} />
-                    </button>
+                    />
                 ) : null}
                 {!isDemoMode ? (
-                    <button
-                        className="icon-button"
+                    <IconOnlyButton
                         aria-label="Change my password"
+                        icon={<KeyRound aria-hidden="true" size={20} />}
                         onClick={onChangePassword}
-                        type="button"
-                    >
-                        <KeyRound aria-hidden="true" size={20} />
-                    </button>
+                    />
                 ) : null}
                 {isDemoMode ? (
-                    <button
-                        className="icon-button"
+                    <IconOnlyButton
                         aria-label="Reset demo data"
+                        icon={<RotateCcw aria-hidden="true" size={20} />}
                         onClick={onResetDemo}
-                        type="button"
-                    >
-                        <RotateCcw aria-hidden="true" size={20} />
-                    </button>
+                    />
                 ) : null}
-                <button
-                    className="icon-button"
+                <IconOnlyButton
                     aria-label="Log out"
+                    icon={<LogOut aria-hidden="true" size={20} />}
                     onClick={onLogout}
-                    type="button"
-                >
-                    <LogOut aria-hidden="true" size={20} />
-                </button>
+                />
             </div>
         </div>
     </aside>

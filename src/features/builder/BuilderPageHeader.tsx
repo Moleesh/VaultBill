@@ -3,7 +3,10 @@
 import { Check, ChevronRight, Download, Upload, X } from 'lucide-react';
 import type { FC } from 'react';
 
+import { ActionButton } from '../../components/ActionButton';
+import { FileSelectButton } from '../../components/FileSelectButton';
 import { HorizontalProgress } from '../../components/HorizontalProgress/HorizontalProgress';
+import { IconButton } from '../../components/IconButton';
 import { steps } from './BuilderPageSupport';
 
 type BuilderPageHeaderProps = {
@@ -31,17 +34,20 @@ export const BuilderPageHeader: FC<BuilderPageHeaderProps> = ({
             </div>
             <div className="builder-header-actions">
                 {onClose ? (
-                    <button className="button-secondary" onClick={onClose} type="button">
-                        <X aria-hidden="true" size={18} /> Close
-                    </button>
+                    <IconButton
+                        icon={<X aria-hidden="true" size={18} />}
+                        onClick={onClose}
+                        variant="secondary"
+                    >
+                        Close
+                    </IconButton>
                 ) : null}
-                <label className="button-file">
+                <FileSelectButton accept=".json,application/json" onChange={onImportJson}>
                     <Upload aria-hidden="true" size={18} /> Import JSON
-                    <input accept=".json,application/json" onChange={onImportJson} type="file" />
-                </label>
-                <button onClick={onExportJson} type="button">
-                    <Download aria-hidden="true" size={18} /> Export JSON
-                </button>
+                </FileSelectButton>
+                <IconButton icon={<Download aria-hidden="true" size={18} />} onClick={onExportJson}>
+                    Export JSON
+                </IconButton>
             </div>
         </div>
         <HorizontalProgress
@@ -50,7 +56,7 @@ export const BuilderPageHeader: FC<BuilderPageHeaderProps> = ({
             label="Builder steps"
         >
             {steps.map((step, index) => (
-                <button
+                <ActionButton
                     className={
                         activeStepIndex === index
                             ? 'is-active'
@@ -64,13 +70,12 @@ export const BuilderPageHeader: FC<BuilderPageHeaderProps> = ({
                     onClick={() => {
                         onStepChange(index);
                     }}
-                    type="button"
                 >
                     <span aria-hidden="true" className="builder-step-icon">
                         {index < activeStepIndex ? <Check size={14} /> : <ChevronRight size={14} />}
                     </span>
                     {step}
-                </button>
+                </ActionButton>
             ))}
         </HorizontalProgress>
     </>

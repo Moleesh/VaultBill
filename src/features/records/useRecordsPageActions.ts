@@ -13,8 +13,9 @@ import {
 } from './RecordsPageActionsSupport';
 import { useRecordsPageOutput } from './useRecordsPageOutput';
 import type { AppRecord, EditableRecord } from './RecordStoreContext';
-import type { OperatorContext } from '../auth/AccountTypes';
 import type { RecordPrintPackage } from './RecordPrintHtml';
+import type { RecordsReprintSearchFormApi } from './useRecordsPageStateSupport';
+import type { OperatorContext } from '../auth/AccountTypes';
 
 type RecordsPageState = {
     readonly actionState: 'New' | 'DraftDirty' | 'DraftSaved' | 'Finalized' | 'Reprint';
@@ -56,9 +57,8 @@ type RecordsPageState = {
             | undefined,
     ) => void;
     readonly setRecord: (value: EditableRecord) => void;
-    readonly setSearchQuery: (value: string) => void;
     readonly selectedStoredRecord: AppRecord | undefined;
-    readonly searchQuery: string;
+    readonly reprintSearchForm: RecordsReprintSearchFormApi;
     readonly outputTask:
         | {
               readonly jobId: string;
@@ -177,12 +177,9 @@ export const useRecordsPageActions = (state: RecordsPageState) => {
             printCurrentRecord(actionId === 'reprint' ? 'Reprint' : 'Print');
         },
         selectReprintRecord: (selected: AppRecord) => {
-            selectRecordForReprint(
-                selected,
-                state.setRecord,
-                state.setActionState,
-                state.setSearchQuery,
-            );
+            selectRecordForReprint(selected, state.setRecord, state.setActionState, (value) => {
+                state.reprintSearchForm.setFieldValue('searchQuery', value);
+            });
         },
         updateLineItem: (rowId: string, changes: Partial<EditableRecord['lineItems'][number]>) => {
             markChanged(

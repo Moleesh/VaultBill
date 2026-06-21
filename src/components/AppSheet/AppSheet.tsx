@@ -4,7 +4,9 @@
 
 import type { FC, PropsWithChildren } from 'react';
 
+import { IconOnlyButton } from '../IconOnlyButton';
 import { PopupBase } from '../PopupBase';
+import { X } from 'lucide-react';
 
 type AppSheetProps = PropsWithChildren<{
     readonly isOpen: boolean;
@@ -16,9 +18,13 @@ export const AppSheet: FC<AppSheetProps> = ({ children, isOpen, onClose, title }
     <PopupBase className="app-sheet" isOpen={isOpen} label={title} onClose={onClose}>
         <header className="popup-header">
             <h2>{title}</h2>
-            <button onClick={onClose} type="button">
-                Close
-            </button>
+            <IconOnlyButton
+                aria-label="Close sheet"
+                className="popup-close-button"
+                icon={<X aria-hidden="true" size={18} />}
+                onClick={onClose}
+                title="Close sheet"
+            />
         </header>
         <div className="popup-content">{children}</div>
     </PopupBase>

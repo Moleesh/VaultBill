@@ -3,6 +3,11 @@
 import { ArchiveRestore, HardDriveDownload, RotateCcw, ShieldCheck } from 'lucide-react';
 import type { FC } from 'react';
 
+import { ActionButton } from '../../components/ActionButton';
+import { FormField } from '../../components/FormFields';
+import { IconButton } from '../../components/IconButton';
+import type { BackupActionFormApi } from './useSettingsBackupSection';
+
 type SettingsBackupActionsProps = {
     readonly canBackup: boolean;
     readonly canRestore: boolean;
@@ -10,11 +15,8 @@ type SettingsBackupActionsProps = {
     readonly isHostedWeb: boolean;
     readonly encryptBackup: boolean;
     readonly busyAction: string;
-    readonly backupPassword: string;
-    readonly remoteAuthorizationPassword: string;
+    readonly form: BackupActionFormApi;
     readonly onEncryptBackupChange: (value: boolean) => void;
-    readonly onBackupPasswordChange: (value: string) => void;
-    readonly onRemoteAuthorizationPasswordChange: (value: string) => void;
     readonly onCreateBackup: () => void;
     readonly onOpenRestore: () => void;
     readonly onChangeBackupPassword: () => void;
@@ -29,11 +31,8 @@ export const SettingsBackupActions: FC<SettingsBackupActionsProps> = ({
     isHostedWeb,
     encryptBackup,
     busyAction,
-    backupPassword,
-    remoteAuthorizationPassword,
+    form,
     onEncryptBackupChange,
-    onBackupPasswordChange,
-    onRemoteAuthorizationPasswordChange,
     onCreateBackup,
     onOpenRestore,
     onChangeBackupPassword,
@@ -50,38 +49,45 @@ export const SettingsBackupActions: FC<SettingsBackupActionsProps> = ({
             </div>
             {canBackup ? (
                 <div className="operator-create">
-                    <label className="checkbox-field">
-                        <input
-                            checked={encryptBackup}
-                            onChange={(event) => {
-                                onEncryptBackupChange(event.currentTarget.checked);
-                            }}
-                            type="checkbox"
-                        />
-                        <span>Encrypt backup</span>
-                    </label>
-                    <button disabled={Boolean(busyAction)} onClick={onCreateBackup} type="button">
-                        <HardDriveDownload aria-hidden="true" size={18} /> Create backup
-                    </button>
+                    <FormField.CheckboxField
+                        checked={encryptBackup}
+                        label="Encrypt backup"
+                        onChange={(event) => {
+                            onEncryptBackupChange(event.currentTarget.checked);
+                        }}
+                    />
+                    <IconButton
+                        disabled={Boolean(busyAction)}
+                        icon={<HardDriveDownload aria-hidden="true" size={18} />}
+                        onClick={onCreateBackup}
+                    >
+                        Create backup
+                    </IconButton>
                 </div>
             ) : null}
             {isHostedWeb && (canBackup || canRestore) ? (
-                <label>
-                    <span>System Administrator password for host operations</span>
-                    <input
-                        autoComplete="current-password"
-                        type="password"
-                        value={remoteAuthorizationPassword}
-                        onChange={(event) => {
-                            onRemoteAuthorizationPasswordChange(event.currentTarget.value);
-                        }}
-                    />
-                </label>
+                <form.Field name="remoteAuthorizationPassword">
+                    {(field) => (
+                        <FormField.TextField
+                            autoComplete="current-password"
+                            label="System Administrator password for host operations"
+                            onChange={(event) => {
+                                field.handleChange(event.currentTarget.value);
+                            }}
+                            type="password"
+                            value={field.state.value}
+                        />
+                    )}
+                </form.Field>
             ) : null}
             {canRestore ? (
-                <button disabled={Boolean(busyAction)} onClick={onOpenRestore} type="button">
-                    <ArchiveRestore aria-hidden="true" size={18} /> Restore backup
-                </button>
+                <IconButton
+                    disabled={Boolean(busyAction)}
+                    icon={<ArchiveRestore aria-hidden="true" size={18} />}
+                    onClick={onOpenRestore}
+                >
+                    Restore backup
+                </IconButton>
             ) : null}
             {!encryptBackup && canBackup ? (
                 <p className="field-note">
@@ -101,24 +107,26 @@ export const SettingsBackupActions: FC<SettingsBackupActionsProps> = ({
                 <ShieldCheck aria-hidden="true" />
             </div>
             <div className="operator-create">
-                <label>
-                    <span>New backup password</span>
-                    <input
-                        autoComplete="new-password"
-                        type="password"
-                        value={backupPassword}
-                        onChange={(event) => {
-                            onBackupPasswordChange(event.currentTarget.value);
-                        }}
-                    />
-                </label>
-                <button
+                <form.Field name="backupPassword">
+                    {(field) => (
+                        <FormField.TextField
+                            autoComplete="new-password"
+                            label="New backup password"
+                            onChange={(event) => {
+                                field.handleChange(event.currentTarget.value);
+                            }}
+                            type="password"
+                            value={field.state.value}
+                        />
+                    )}
+                </form.Field>
+                <IconButton
                     disabled={Boolean(busyAction)}
+                    icon={<ShieldCheck aria-hidden="true" size={18} />}
                     onClick={onChangeBackupPassword}
-                    type="button"
                 >
                     Update backup password
-                </button>
+                </IconButton>
             </div>
         </div>
         {isSysAdmin ? (
@@ -132,9 +140,9 @@ export const SettingsBackupActions: FC<SettingsBackupActionsProps> = ({
                     </div>
                     <RotateCcw aria-hidden="true" />
                 </div>
-                <button disabled={Boolean(busyAction)} onClick={onOpenReset} type="button">
+                <ActionButton disabled={Boolean(busyAction)} onClick={onOpenReset}>
                     Reset application data
-                </button>
+                </ActionButton>
             </div>
         ) : null}
     </>

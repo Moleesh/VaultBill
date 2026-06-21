@@ -3,6 +3,8 @@
 import { Printer, RotateCcw, Sheet } from 'lucide-react';
 import type { FC } from 'react';
 
+import { ActionButton } from '../../components/ActionButton';
+import { IconButton } from '../../components/IconButton';
 import { formatReportFieldLabel } from './ReportsPageSupport';
 import type { ReportFieldFilter } from './ReportsPageTypes';
 
@@ -58,34 +60,33 @@ export const ReportsActionBar: FC<ReportsActionBarProps> = ({
                         !(filter.field === 'status' && filter.value.trim() === 'All'),
                 )
                 .map((filter) => (
-                    <button
+                    <ActionButton
                         key={filter.id}
                         onClick={() => {
                             onClearReportFilter(filter.id);
                         }}
-                        type="button"
                     >
                         {formatReportFieldLabel(filter.field)}: {filter.value} ×
-                    </button>
+                    </ActionButton>
                 ))}
             {fromDate || toDate ? (
-                <button onClick={onClearDateRange} type="button">
-                    Date range ×
-                </button>
+                <ActionButton onClick={onClearDateRange}>Date range ×</ActionButton>
             ) : null}
             {status !== 'All' ? (
-                <button onClick={onClearStatus} type="button">
-                    Status: {status} ×
-                </button>
+                <ActionButton onClick={onClearStatus}>Status: {status} ×</ActionButton>
             ) : null}
             {preset !== 'All' ? (
-                <button onClick={onClearPreset} type="button">
+                <ActionButton onClick={onClearPreset}>
                     Quick filters: {preset === 'Last100' ? 'Last 100' : preset} ×
-                </button>
+                </ActionButton>
             ) : null}
-            <button className="button-secondary" onClick={onReset} type="button">
-                <RotateCcw aria-hidden="true" size={16} /> Reset filters
-            </button>
+            <IconButton
+                icon={<RotateCcw aria-hidden="true" size={16} />}
+                onClick={onReset}
+                variant="secondary"
+            >
+                Reset filters
+            </IconButton>
         </div>
         <div className="report-toolbar">
             <div>
@@ -95,20 +96,28 @@ export const ReportsActionBar: FC<ReportsActionBarProps> = ({
                 <small> Latest records appear first.</small>
             </div>
             <div>
-                <button disabled={!canExport} onClick={onExportAll} type="button">
-                    <Sheet aria-hidden="true" size={17} /> Export
-                </button>
-                <button disabled={!canPrintReport} onClick={onPrintReport} type="button">
-                    <Printer aria-hidden="true" size={17} /> Print report
-                </button>
-                <button
-                    className="button-primary"
-                    disabled={!canPrintRecords}
-                    onClick={onPrintRecords}
-                    type="button"
+                <IconButton
+                    disabled={!canExport}
+                    icon={<Sheet aria-hidden="true" size={17} />}
+                    onClick={onExportAll}
                 >
-                    <Printer aria-hidden="true" size={17} /> Print records
-                </button>
+                    Export
+                </IconButton>
+                <IconButton
+                    disabled={!canPrintReport}
+                    icon={<Printer aria-hidden="true" size={17} />}
+                    onClick={onPrintReport}
+                >
+                    Print report
+                </IconButton>
+                <IconButton
+                    disabled={!canPrintRecords}
+                    icon={<Printer aria-hidden="true" size={17} />}
+                    onClick={onPrintRecords}
+                    variant="primary"
+                >
+                    Print records
+                </IconButton>
             </div>
         </div>
         {trialExpired ? (

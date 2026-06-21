@@ -3,6 +3,9 @@
 import { Download, FileCode2, FileJson2, Plus, Trash2, Upload } from 'lucide-react';
 import type { ChangeEvent, FC } from 'react';
 
+import { FileSelectButton } from '../../components/FileSelectButton';
+import { IconButton } from '../../components/IconButton';
+import { IconOnlyButton } from '../../components/IconOnlyButton';
 import { SearchableDropdown } from '../../components/SearchableDropdown/SearchableDropdown';
 import type { AssetSummary, SavedPrintTemplate } from './BuilderPageSupport';
 import { formatBytes } from './BuilderPageSupport';
@@ -61,20 +64,20 @@ export const BuilderPrintStep: FC<BuilderPrintStepProps> = ({
                 <small>
                     Upload or choose a reusable template. Built-in default stays available.
                 </small>
-                <label className="button-file button-file--wide">
+                <FileSelectButton
+                    accept=".html,text/html"
+                    className="button-file--wide"
+                    onChange={(event) => {
+                        void onImportHtml(event);
+                    }}
+                >
                     <Upload aria-hidden="true" size={18} />
                     <span>{templateHtml ? 'Add or replace HTML' : 'Upload HTML'}</span>
-                    <input
-                        accept=".html,text/html"
-                        onChange={(event) => {
-                            void onImportHtml(event);
-                        }}
-                        type="file"
-                    />
-                </label>
+                </FileSelectButton>
                 {templateHtml ? (
-                    <button
+                    <IconButton
                         className="button-file button-file--wide"
+                        icon={<Download aria-hidden="true" size={18} />}
                         onClick={() => {
                             const blob = new Blob([templateHtml], {
                                 type: 'text/html;charset=utf-8',
@@ -86,23 +89,20 @@ export const BuilderPrintStep: FC<BuilderPrintStepProps> = ({
                             anchor.click();
                             URL.revokeObjectURL(url);
                         }}
-                        type="button"
                     >
-                        <Download aria-hidden="true" size={18} />
-                        <span>Download HTML</span>
-                    </button>
+                        Download HTML
+                    </IconButton>
                 ) : null}
                 {selectedTemplateName && !isBuiltInTemplate(selectedTemplateName) ? (
-                    <button
+                    <IconButton
                         className="button-file button-file--wide"
+                        icon={<Trash2 aria-hidden="true" size={18} />}
                         onClick={() => {
                             onRemoveTemplate(selectedTemplateName);
                         }}
-                        type="button"
                     >
-                        <Trash2 aria-hidden="true" size={18} />
-                        <span>Remove HTML</span>
-                    </button>
+                        Remove HTML
+                    </IconButton>
                 ) : null}
                 {templateHtml ? (
                     <small>{templateHtml.length.toLocaleString()} characters loaded</small>
@@ -121,45 +121,40 @@ export const BuilderPrintStep: FC<BuilderPrintStepProps> = ({
                         </p>
                     </div>
                 </div>
-                <label className="button-file button-file--wide">
+                <FileSelectButton
+                    accept=".png,.jpg,.jpeg,.webp,.svg,.woff,.woff2"
+                    className="button-file--wide"
+                    multiple
+                    onChange={(event) => {
+                        void onImportAssets(event);
+                    }}
+                >
                     <Plus aria-hidden="true" size={18} />
                     <span>Add or replace assets</span>
-                    <input
-                        accept=".png,.jpg,.jpeg,.webp,.svg,.woff,.woff2"
-                        multiple
-                        onChange={(event) => {
-                            void onImportAssets(event);
-                        }}
-                        type="file"
-                    />
-                </label>
+                </FileSelectButton>
             </article>
             <div className="asset-list span-2">
                 {assets.map((asset) => (
                     <article key={asset.name}>
                         <code>{`{{Asset.${asset.name}}}`}</code>
                         <span>{formatBytes(asset.size)}</span>
-                        <button
+                        <IconOnlyButton
                             aria-label={`Download ${asset.name}`}
+                            icon={<Download aria-hidden="true" size={17} />}
                             onClick={() => {
                                 const anchor = document.createElement('a');
                                 anchor.href = `data:${asset.type};base64,${asset.dataBase64}`;
                                 anchor.download = asset.name;
                                 anchor.click();
                             }}
-                            type="button"
-                        >
-                            <Download aria-hidden="true" size={17} />
-                        </button>
-                        <button
+                        />
+                        <IconOnlyButton
                             aria-label={`Remove ${asset.name}`}
+                            icon={<Trash2 aria-hidden="true" size={17} />}
                             onClick={() => {
                                 onRemoveAsset(asset.name);
                             }}
-                            type="button"
-                        >
-                            <Trash2 aria-hidden="true" size={17} />
-                        </button>
+                        />
                     </article>
                 ))}
             </div>

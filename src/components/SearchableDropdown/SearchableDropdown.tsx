@@ -3,38 +3,48 @@
 /** Searchable option picker used for compact form selection across the app. */
 
 import { ChevronDown } from 'lucide-react';
-import { useEffect, useId, useRef, useState } from 'react';
-import type { FC } from 'react';
+import { useId, useRef, useState } from 'react';
+import type { FC, ReactNode } from 'react';
 
+import { ActionButton } from '../ActionButton';
+import { FormField } from '../FormFields';
 import { SearchableDropdownMenu } from './SearchableDropdownMenu';
 import {
     createSearchableDropdownKeyDownHandler,
-    getDropdownMenuPlacement,
-    normalizeDropdownSearch,
+    type DropdownOption,
 } from './SearchableDropdownSupport';
-
-export type DropdownOption = {
-    readonly value: string;
-    readonly label: string;
-    readonly description?: string;
-    readonly keywords?: readonly string[];
-    readonly disabled?: boolean;
-};
+import {
+    getFilteredDropdownOptions,
+    getInitialDropdownActiveIndex,
+    resetSearchableDropdownState,
+    useSyncSearchableDropdownMenu,
+} from './SearchableDropdownStateSupport';
 
 type SearchableDropdownProps = {
+    readonly hideLabel?: boolean;
+    readonly invalid?: boolean;
     readonly label: string;
+    readonly note?: ReactNode;
     readonly options: readonly DropdownOption[];
-    readonly value: string;
     readonly onChange: (value: string) => void;
     readonly loading?: boolean;
+    readonly requiredIndicator?: boolean;
+    readonly value: string;
+    readonly wrapperClassName?: string;
 };
 
+/** Renders a searchable select control with shared form-field labeling and portal menu behavior. */
 export const SearchableDropdown: FC<SearchableDropdownProps> = ({
+    hideLabel = false,
+    invalid = false,
     label,
     loading = false,
+    note,
     onChange,
     options,
+    requiredIndicator = false,
     value,
+    wrapperClassName,
 }) => {
     const id = useId();
     const triggerRef = useRef<HTMLButtonElement>(null);
@@ -43,73 +53,18 @@ export const SearchableDropdown: FC<SearchableDropdownProps> = ({
     const [query, setQuery] = useState('');
     const [activeIndex, setActiveIndex] = useState(-1);
     const selectedOption = options.find((option) => option.value === value);
-    const normalizedQuery = normalizeDropdownSearch(query);
-    const filteredOptions = options.filter((option) => {
-        const searchText = [option.label, option.value, ...(option.keywords ?? [])].join(' ');
-        return normalizeDropdownSearch(searchText).includes(normalizedQuery);
-    });
+    const filteredOptions = getFilteredDropdownOptions(options, query);
     const closeDropdown = () => {
         setIsOpen(false);
-        setQuery('');
-        setActiveIndex(-1);
+        resetSearchableDropdownState(setQuery, setActiveIndex);
     };
 
-    const syncMenuPosition = () => {
-        const rect = triggerRef.current?.getBoundingClientRect();
-        const menu = menuRef.current;
-
-        if (!rect || !menu) return;
-
-        const placement = getDropdownMenuPlacement(rect, window.innerHeight, window.innerWidth);
-        menu.style.left = placement.left;
-        menu.style.width = placement.width;
-        menu.style.top = placement.top;
-        menu.style.bottom = placement.bottom;
-        menu.style.maxHeight = placement.maxHeight;
-        menu.dataset.openDirection = placement.openDirection;
-    };
-
-    useEffect(() => {
-        if (!isOpen) {
-            return undefined;
-        }
-
-        syncMenuPosition();
-
-        const handleOutsideClick = (event: MouseEvent) => {
-            const { target } = event;
-            if (
-                target instanceof Node &&
-                !menuRef.current?.contains(target) &&
-                !triggerRef.current?.contains(target)
-            ) {
-                closeDropdown();
-            }
-        };
-        const handleScroll = (event: Event) => {
-            const { target } = event;
-            if (
-                target instanceof Node &&
-                (menuRef.current?.contains(target) || triggerRef.current?.contains(target))
-            ) {
-                return;
-            }
-
-            closeDropdown();
-        };
-        const handleResize = () => {
-            syncMenuPosition();
-        };
-
-        document.addEventListener('mousedown', handleOutsideClick);
-        window.addEventListener('scroll', handleScroll, true);
-        window.addEventListener('resize', handleResize);
-        return () => {
-            document.removeEventListener('mousedown', handleOutsideClick);
-            window.removeEventListener('scroll', handleScroll, true);
-            window.removeEventListener('resize', handleResize);
-        };
-    }, [isOpen]);
+    useSyncSearchableDropdownMenu({
+        isOpen,
+        menuRef,
+        onClose: closeDropdown,
+        triggerRef,
+    });
 
     const chooseOption = (option: DropdownOption) => {
         if (option.disabled) {
@@ -122,72 +77,78 @@ export const SearchableDropdown: FC<SearchableDropdownProps> = ({
     };
 
     const portalRoot = document.getElementById('portal-root');
+    const selectedLabel = loading ? 'Loading…' : (selectedOption?.label ?? 'Choose');
 
     return (
-        <div className="searchable-dropdown">
-            <span className="searchable-dropdown-label" id={`${id}-label`}>
-                {label}
-            </span>
-            <button
-                aria-expanded={isOpen}
-                aria-haspopup="listbox"
-                aria-labelledby={`${id}-label ${id}-value`}
-                className="searchable-dropdown-trigger"
-                disabled={loading}
-                onClick={() => {
-                    setIsOpen((current) => {
-                        const next = !current;
-                        if (next) {
-                            setActiveIndex(
-                                Math.max(
-                                    filteredOptions.findIndex((option) => option.value === value),
-                                    filteredOptions.findIndex((option) => !option.disabled),
-                                ),
-                            );
-                        } else {
-                            setQuery('');
-                            setActiveIndex(-1);
-                        }
-                        return next;
-                    });
-                }}
-                ref={triggerRef}
-                type="button"
-            >
-                <span id={`${id}-value`}>
-                    {loading ? 'Loading…' : (selectedOption?.label ?? 'Choose')}
-                </span>
-                <ChevronDown aria-hidden="true" className="searchable-dropdown-caret" size={16} />
-            </button>
-            {isOpen ? (
-                <SearchableDropdownMenu
-                    activeIndex={activeIndex}
-                    filteredOptions={filteredOptions}
-                    id={id}
-                    label={label}
-                    menuRef={menuRef}
-                    onChoose={chooseOption}
-                    onKeyDown={createSearchableDropdownKeyDownHandler({
-                        activeIndex,
-                        filteredOptions,
-                        onChoose: chooseOption,
-                        onClose: () => {
-                            closeDropdown();
-                        },
-                        setActiveIndex,
-                        triggerRef,
-                    })}
-                    onQueryChange={(event) => {
-                        setQuery(event.currentTarget.value);
-                        setActiveIndex(-1);
+        <FormField.Wrapper
+            hideLabel={hideLabel}
+            label={label}
+            note={note}
+            requiredIndicator={requiredIndicator}
+            wrapperClassName={wrapperClassName}
+        >
+            <div className="searchable-dropdown">
+                <ActionButton
+                    aria-label={`${label} ${selectedLabel}`}
+                    aria-invalid={invalid}
+                    aria-expanded={isOpen}
+                    aria-haspopup="listbox"
+                    className="searchable-dropdown-trigger"
+                    disabled={loading}
+                    onClick={() => {
+                        setIsOpen((current) => {
+                            const next = !current;
+                            if (next) {
+                                setActiveIndex(
+                                    getInitialDropdownActiveIndex(filteredOptions, value),
+                                );
+                            } else {
+                                resetSearchableDropdownState(setQuery, setActiveIndex);
+                            }
+                            return next;
+                        });
                     }}
-                    options={options}
-                    portalRoot={portalRoot}
-                    query={query}
-                    setActiveIndex={setActiveIndex}
-                    value={value}
-                />
-            ) : null}
-        </div>
+                    ref={triggerRef}
+                >
+                    <span id={`${id}-value`}>{selectedLabel}</span>
+                    <ChevronDown
+                        aria-hidden="true"
+                        className="searchable-dropdown-caret"
+                        size={16}
+                    />
+                </ActionButton>
+                {isOpen ? (
+                    <SearchableDropdownMenu
+                        activeIndex={activeIndex}
+                        filteredOptions={filteredOptions}
+                        id={id}
+                        label={label}
+                        menuRef={menuRef}
+                        onChoose={chooseOption}
+                        onKeyDown={createSearchableDropdownKeyDownHandler({
+                            activeIndex,
+                            filteredOptions,
+                            onChoose: chooseOption,
+                            onClose: () => {
+                                closeDropdown();
+                            },
+                            setActiveIndex,
+                            triggerRef,
+                        })}
+                        onQueryChange={(event) => {
+                            setQuery(event.currentTarget.value);
+                            setActiveIndex(-1);
+                        }}
+                        options={options}
+                        portalRoot={portalRoot}
+                        query={query}
+                        setActiveIndex={setActiveIndex}
+                        value={value}
+                    />
+                ) : null}
+            </div>
+        </FormField.Wrapper>
     );
 };
+
+export type { DropdownOption } from './SearchableDropdownSupport';

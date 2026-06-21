@@ -4,6 +4,8 @@ import { GripVertical } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import type { DragEvent, FC } from 'react';
 
+import { ActionButton } from '../../components/ActionButton';
+import { DragHandleButton } from '../../components/DragHandleButton';
 import type { DocumentFormatConfig } from '../../db/startup/ConfigSchemas';
 import { move } from './BuilderPageSupport';
 import { sampleFormula, type CalculationTarget } from './BuilderPageCalculationSupport';
@@ -80,24 +82,20 @@ export const BuilderCalculationsStep: FC<BuilderCalculationsStepProps> = ({
                                 handleDrop(event, index);
                             }}
                         >
-                            <button
+                            <DragHandleButton
                                 aria-label={`Drag ${field.Label}`}
-                                className="builder-field-handle"
+                                icon={<GripVertical aria-hidden="true" size={17} />}
                                 onClick={(event) => {
                                     event.preventDefault();
                                 }}
                                 tabIndex={-1}
-                                type="button"
-                            >
-                                <GripVertical aria-hidden="true" size={17} />
-                            </button>
-                            <button
+                            />
+                            <ActionButton
                                 aria-label={`Edit ${field.Label}`}
                                 className="builder-calculation-main"
                                 onClick={() => {
                                     onEditFormula(field.FieldId);
                                 }}
-                                type="button"
                             >
                                 <span className="builder-calculation-main-title">{`Edit ${field.Label}`}</span>
                                 <span className="builder-calculation-main-section">
@@ -107,7 +105,7 @@ export const BuilderCalculationsStep: FC<BuilderCalculationsStepProps> = ({
                                     {field.Formula ?? 'No formula yet'}
                                 </small>
                                 <small className="builder-calculation-main-preview">{`Preview: ${preview}`}</small>
-                            </button>
+                            </ActionButton>
                             <small className="builder-calculation-order">
                                 #{String(index + 1)} trigger
                             </small>

@@ -2,25 +2,37 @@
 
 import { addMonths, format, getDay, getDaysInMonth, parseISO, startOfMonth } from 'date-fns';
 import { useEffect, useId, useRef, useState } from 'react';
-import type { FC } from 'react';
+import type { FC, ReactNode } from 'react';
 
+import { FormField } from '../FormFields';
+import { IconOnlyButton } from '../IconOnlyButton';
 import { AppDatePickerPopup } from './AppDatePickerPopup';
 import { getDropdownMenuPlacement } from '../SearchableDropdown/SearchableDropdownSupport';
 
 type AppDatePickerProps = {
-    readonly label: string;
-    readonly value: string;
-    readonly onChange: (value: string) => void;
     readonly disabled?: boolean;
+    readonly label: string;
     readonly displayFormat?: string;
+    readonly hideLabel?: boolean;
+    readonly invalid?: boolean;
+    readonly note?: ReactNode;
+    readonly onChange: (value: string) => void;
+    readonly requiredIndicator?: boolean;
+    readonly value: string;
+    readonly wrapperClassName?: string;
 };
 
 export const AppDatePicker: FC<AppDatePickerProps> = ({
     disabled = false,
     displayFormat = 'dd MMM yyyy',
+    hideLabel = false,
+    invalid = false,
     label,
+    note,
     onChange,
+    requiredIndicator = false,
     value,
+    wrapperClassName,
 }) => {
     const id = useId();
     const triggerRef = useRef<HTMLButtonElement>(null);
@@ -95,54 +107,65 @@ export const AppDatePicker: FC<AppDatePickerProps> = ({
     };
 
     return (
-        <div className="app-date-picker">
-            <span className="app-date-picker-label" id={`${id}-label`}>
-                {label}
-            </span>
-            <button
-                aria-expanded={isOpen}
-                aria-haspopup="dialog"
-                aria-labelledby={`${id}-label ${id}-value`}
-                className="app-date-picker-trigger"
-                disabled={disabled}
-                onClick={() => {
-                    setIsOpen((current) => !current);
-                }}
-                ref={triggerRef}
-                type="button"
-            >
-                <span id={`${id}-value`}>
-                    {value ? format(parseISO(value), displayFormat) : 'Choose date'}
+        <FormField.Wrapper
+            hideLabel={hideLabel}
+            label={label}
+            note={note}
+            requiredIndicator={requiredIndicator}
+            wrapperClassName={wrapperClassName}
+        >
+            <div className="app-date-picker">
+                <span className="form-field-label form-field-label--hidden" id={`${id}-label`}>
+                    {label}
                 </span>
-                <span aria-hidden="true">▣</span>
-            </button>
-            {isOpen ? (
-                <AppDatePickerPopup
-                    daysInMonth={daysInMonth}
-                    label={label}
-                    leadingDays={leadingDays}
-                    onChooseDate={chooseDate}
-                    onClear={() => {
-                        onChange('');
-                        setIsOpen(false);
-                        triggerRef.current?.focus();
+                <IconOnlyButton
+                    aria-expanded={isOpen}
+                    aria-haspopup="dialog"
+                    aria-invalid={invalid}
+                    aria-labelledby={`${id}-label ${id}-value`}
+                    className="app-date-picker-trigger"
+                    disabled={disabled}
+                    icon={
+                        <>
+                            <span id={`${id}-value`}>
+                                {value ? format(parseISO(value), displayFormat) : 'Choose date'}
+                            </span>
+                            <span aria-hidden="true">▣</span>
+                        </>
+                    }
+                    onClick={() => {
+                        setIsOpen((current) => !current);
                     }}
-                    onNextMonth={() => {
-                        setVisibleMonth((current) => addMonths(current, 1));
-                    }}
-                    onPreviousMonth={() => {
-                        setVisibleMonth((current) => addMonths(current, -1));
-                    }}
-                    onToday={() => {
-                        onChange(format(new Date(), 'yyyy-MM-dd'));
-                        setIsOpen(false);
-                        triggerRef.current?.focus();
-                    }}
-                    popupRef={popupRef}
-                    value={value}
-                    visibleMonth={visibleMonth}
+                    ref={triggerRef}
                 />
-            ) : null}
-        </div>
+                {isOpen ? (
+                    <AppDatePickerPopup
+                        daysInMonth={daysInMonth}
+                        label={label}
+                        leadingDays={leadingDays}
+                        onChooseDate={chooseDate}
+                        onClear={() => {
+                            onChange('');
+                            setIsOpen(false);
+                            triggerRef.current?.focus();
+                        }}
+                        onNextMonth={() => {
+                            setVisibleMonth((current) => addMonths(current, 1));
+                        }}
+                        onPreviousMonth={() => {
+                            setVisibleMonth((current) => addMonths(current, -1));
+                        }}
+                        onToday={() => {
+                            onChange(format(new Date(), 'yyyy-MM-dd'));
+                            setIsOpen(false);
+                            triggerRef.current?.focus();
+                        }}
+                        popupRef={popupRef}
+                        value={value}
+                        visibleMonth={visibleMonth}
+                    />
+                ) : null}
+            </div>
+        </FormField.Wrapper>
     );
 };

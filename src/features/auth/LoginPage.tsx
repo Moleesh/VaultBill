@@ -18,6 +18,7 @@ import { LoginHelpModal } from './LoginHelpModal';
 import { buildLoginAccountOptions, findLoginAccount, getLoginAccountId } from './LoginPageSupport';
 import { LoginPageForm } from './LoginPageForm';
 import { useSession } from './SessionContext';
+import { useActivationForm, useLoginForm } from './useLoginForms';
 import { useSysAdminUnlock } from './useSysAdminUnlock';
 
 /** Renders the compact login experience for the current runtime mode. */
@@ -26,44 +27,66 @@ export const LoginPage: FC = () => {
     const { accounts, hostedConnectionState, login, operatorContext } = useSession();
     const navigate = useNavigate();
     const loginSubmissionInFlightRef = useRef(false);
-    const [selectedAccountId, setSelectedAccountId] = useState('');
-    const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [isHelpOpen, setIsHelpOpen] = useState(false);
     const [isActivationOpen, setIsActivationOpen] = useState(false);
-    const [licenseKey, setLicenseKey] = useState('');
     const [activationMessage, setActivationMessage] = useState('');
     const { isUnlocked: isSysAdminUnlocked } = useSysAdminUnlock();
     const accountOptions = buildLoginAccountOptions(accounts, isSysAdminUnlocked);
-    const selectedAccount = findLoginAccount(accounts, selectedAccountId);
-    const isLoginDisabled = !selectedAccountId || hostedConnectionState !== 'connected';
+    const fallbackSelectedAccountId = getLoginAccountId(accounts, isSysAdminUnlocked);
+    const [selectedAccountId, setSelectedAccountId] = useState('');
+    const loginForm = useLoginForm({
+        defaultSelectedAccountId: fallbackSelectedAccountId,
+        onSubmit: async ({ password, selectedAccountId }) => {
+            const accountId = selectedAccountId || effectiveSelectedAccountId;
+            if (!accountId || hostedConnectionState !== 'connected') return;
+            if (loginSubmissionInFlightRef.current) return;
+            loginSubmissionInFlightRef.current = true;
+            try {
+                await login(accountId, password);
+                void navigate('/app/dashboard');
+            } catch (reason) {
+                setError(reason instanceof Error ? reason.message : 'Login failed.');
+            } finally {
+                loginSubmissionInFlightRef.current = false;
+            }
+        },
+    });
+    const activationForm = useActivationForm();
+    const effectiveSelectedAccountId = selectedAccountId || fallbackSelectedAccountId;
+    const selectedAccount = findLoginAccount(accounts, effectiveSelectedAccountId);
+    const isLoginDisabled = !effectiveSelectedAccountId || hostedConnectionState !== 'connected';
 
     const submitLogin = async () => {
         if (isLoginDisabled || loginSubmissionInFlightRef.current) return;
-        loginSubmissionInFlightRef.current = true;
-        try {
-            await login(selectedAccountId, password);
-            void navigate('/app/dashboard');
-        } catch (reason) {
-            setError(reason instanceof Error ? reason.message : 'Login failed.');
-        } finally {
-            loginSubmissionInFlightRef.current = false;
-        }
+        await loginForm.handleSubmit();
     };
 
     useEffect(() => {
-        if (!selectedAccountId) {
-            setSelectedAccountId(getLoginAccountId(accounts, isSysAdminUnlocked));
+        if (!selectedAccountId && fallbackSelectedAccountId) {
+            setSelectedAccountId(fallbackSelectedAccountId);
+            loginForm.setFieldValue('selectedAccountId', fallbackSelectedAccountId);
             return;
         }
 
         if (!isSysAdminUnlocked) {
-            const selected = accounts.find((account) => account.userId === selectedAccountId);
-            if (selected?.role === 'SysAdmin') {
-                setSelectedAccountId(getLoginAccountId(accounts));
+            const selectedRole = accounts.find(
+                (account) => account.userId === effectiveSelectedAccountId,
+            )?.role;
+            if (selectedRole === 'SysAdmin') {
+                const nextSelectedAccountId = getLoginAccountId(accounts);
+                setSelectedAccountId(nextSelectedAccountId);
+                loginForm.setFieldValue('selectedAccountId', nextSelectedAccountId);
             }
         }
-    }, [accounts, isSysAdminUnlocked, selectedAccountId]);
+    }, [
+        accounts,
+        fallbackSelectedAccountId,
+        isSysAdminUnlocked,
+        loginForm,
+        selectedAccountId,
+        effectiveSelectedAccountId,
+    ]);
 
     if (operatorContext) {
         return <Navigate replace to="/app/dashboard" />;
@@ -99,6 +122,7 @@ export const LoginPage: FC = () => {
                         accountOptions={accountOptions}
                         capabilities={capabilities}
                         error={error}
+                        form={loginForm}
                         hostedConnectionState={hostedConnectionState}
                         isLoginDisabled={isLoginDisabled}
                         onActivationOpen={() => {
@@ -107,26 +131,19 @@ export const LoginPage: FC = () => {
                         onHelpOpen={() => {
                             setIsHelpOpen(true);
                         }}
-                        onPasswordChange={(value) => {
-                            setPassword(value);
-                            setError('');
-                        }}
-                        onSelectedAccountChange={(value) => {
-                            setSelectedAccountId(value);
-                            setPassword('');
-                            setError('');
+                        onSelectedAccountIdChange={(nextSelectedAccountId) => {
+                            setSelectedAccountId(nextSelectedAccountId);
                         }}
                         onSubmit={() => {
                             void submitLogin();
                         }}
-                        password={password}
                         selectedAccount={selectedAccount}
-                        selectedAccountId={selectedAccountId}
+                        selectedAccountId={effectiveSelectedAccountId}
                     />
                 </div>
                 <footer>
-                    <span>Desktop-ready local workspace</span>
-                    <span>Designed for calm, focused operations</span>
+                    <span>Local-first desktop workspace</span>
+                    <span>Designed for calm, focused work</span>
                 </footer>
             </section>
             <LoginHelpModal
@@ -137,13 +154,13 @@ export const LoginPage: FC = () => {
             />
             <LoginActivationModal
                 activationMessage={activationMessage}
+                form={activationForm}
                 isOpen={isActivationOpen}
-                licenseKey={licenseKey}
                 onActivate={() => {
                     void window.vaultBillDesktop
-                        ?.activateLicense(licenseKey)
+                        ?.activateLicense(activationForm.state.values.licenseKey)
                         .then(() => {
-                            setLicenseKey('');
+                            activationForm.reset();
                             setActivationMessage('VaultBill is activated. You can now log in.');
                         })
                         .catch((reason: unknown) => {
@@ -155,7 +172,6 @@ export const LoginPage: FC = () => {
                 onClose={() => {
                     setIsActivationOpen(false);
                 }}
-                onLicenseKeyChange={setLicenseKey}
             />
         </main>
     );

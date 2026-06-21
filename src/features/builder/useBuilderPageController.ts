@@ -4,12 +4,6 @@ import { useSearchParams } from 'react-router-dom';
 import { useCapabilities } from '../../capability/CapabilityContext';
 import { builtInDefaultFormat } from '../../db/startup/BuiltInDefaultFormat';
 import { builtInDefaultPrintTemplateHtml } from '../../db/startup/BuiltInDefaultPrintTemplate';
-import { DocumentFormatConfigSchema } from '../../db/startup/ConfigSchemas';
-import { requestHostedApi } from '../../runtime/HostedApi';
-import {
-    normalizeSecretsSettings,
-    secretValuesFromSettings,
-} from '../settings/SettingsSecretsSectionSupport';
 import {
     builtInSampleAsset,
     steps,
@@ -22,10 +16,7 @@ import {
     findSavedPrintTemplate,
     removeSavedPrintTemplate,
 } from './BuilderSavedTemplatesSupport';
-import {
-    collectCalculationTargets,
-    validateCalculationGraph,
-} from './BuilderPageCalculationSupport';
+import { collectCalculationTargets } from './BuilderPageCalculationSupport';
 import {
     type DocumentFormatConfig,
     type EditingState,
@@ -33,6 +24,11 @@ import {
     updateBuilderCalculationOrder,
     updateBuilderFields,
 } from './BuilderPageControllerSupport';
+import {
+    collectReferencedFieldIds,
+    loadBuilderSecretValues,
+    validateBuilderConfig,
+} from './BuilderPageControllerStateSupport';
 import { useBuilderDocumentLibrary } from './useBuilderDocumentLibrary';
 import { useBuilderPageActions } from './useBuilderPageActions';
 
@@ -76,41 +72,20 @@ export const useBuilderPageController = () => {
     const activeTemplateName =
         findSavedPrintTemplate(savedTemplates, templateHtml)?.name ?? savedTemplates[0]?.name;
     const calculationTargets = useMemo(() => collectCalculationTargets(config), [config]);
-    const referencedFieldIds = new Set<string>();
-    for (const field of allFields) {
-        for (const reference of field.Formula?.matchAll(/\b([A-Za-z_][\w]*)\b/gu) ?? []) {
-            const match = reference[1];
-            if (match) referencedFieldIds.add(match);
-        }
-    }
-    const validation = useMemo<readonly string[]>(() => {
-        const result = DocumentFormatConfigSchema.safeParse(config);
-        const errors = result.success ? [] : result.error.issues.map((issue) => issue.message);
-        const ids = [
-            ...config.Fields.map((field) => field.FieldId),
-            ...(lineSection?.Fields.map((field) => field.FieldId) ?? []),
-        ];
-        if (new Set(ids).size !== ids.length) errors.push('Every field ID must be unique.');
-        for (const field of [...config.Fields, ...(lineSection?.Fields ?? [])]) {
-            if (field.Calculated && !field.Formula?.trim()) {
-                errors.push(`${field.Label} is calculated but has no formula.`);
-            }
-        }
-        errors.push(...validateCalculationGraph(allFields));
-        if (!templateHtml.trim()) errors.push('Upload one HTML print template.');
-        return errors;
-    }, [allFields, config, lineSection?.Fields, templateHtml]);
+    const referencedFieldIds = useMemo(() => collectReferencedFieldIds(allFields), [allFields]);
+    const validation = useMemo<readonly string[]>(
+        () =>
+            validateBuilderConfig({
+                allFields,
+                config,
+                lineSection,
+                templateHtml,
+            }),
+        [allFields, config, lineSection, templateHtml],
+    );
 
     useEffect(() => {
-        const request = window.vaultBillDesktop
-            ? window.vaultBillDesktop.getSecretsSettings()
-            : capabilities.isHostedWeb
-              ? requestHostedApi('/settings/secrets')
-              : undefined;
-        void request?.then((rawSettings) => {
-            const normalized = normalizeSecretsSettings(rawSettings);
-            setSecretValues(secretValuesFromSettings(normalized.secrets));
-        });
+        void loadBuilderSecretValues(capabilities.isHostedWeb).then(setSecretValues);
     }, [capabilities.isHostedWeb]);
 
     const documentLibrary = useBuilderDocumentLibrary({

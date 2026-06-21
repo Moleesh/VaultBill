@@ -6,6 +6,7 @@ import type { FC } from 'react';
 import { LockKeyhole } from 'lucide-react';
 
 import { getShortcutForAction } from '../features/settings/accessibility/KeyboardShortcuts';
+import { ActionButton } from './ActionButton';
 
 export type RecordActionState = 'New' | 'DraftSaved' | 'DraftDirty' | 'Finalized' | 'Reprint';
 
@@ -65,7 +66,7 @@ export const ActionBar: FC<ActionBarProps> = ({
             const shortcut = getShortcutForAction(action.id);
 
             return (
-                <button
+                <ActionButton
                     aria-disabled={!action.enabled}
                     aria-keyshortcuts={showShortcuts ? shortcut?.keys : undefined}
                     className={`${action.primary ? 'action-bar-primary' : ''}${
@@ -89,12 +90,11 @@ export const ActionBar: FC<ActionBarProps> = ({
                             ? (shortcut?.description ?? action.label)
                             : (action.unavailableReason ?? 'Action unavailable.')
                     }
-                    type="button"
                 >
                     {!action.enabled ? <LockKeyhole aria-hidden="true" size={16} /> : null}
                     <span>{action.label}</span>
                     {showShortcuts && shortcut ? <kbd>{shortcut.keys}</kbd> : null}
-                </button>
+                </ActionButton>
             );
         })}
     </div>

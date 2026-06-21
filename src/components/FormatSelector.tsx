@@ -23,21 +23,17 @@ export const FormatSelector: FC<FormatSelectorProps> = ({ activeFormatId, format
     };
 
     return (
-        <label className="format-selector">
-            <span>Document format</span>
-            <SearchableDropdown
-                label="Document format"
-                onChange={handleChange}
-                options={formats.map((format) => ({
-                    value: format.formatId,
-                    label: format.formatName,
-                    description: format.description,
-                }))}
-                value={activeFormatId}
-            />
-            <small id="format-selector-help">
-                Same-page format switching keeps VaultBill SPA-first.
-            </small>
-        </label>
+        <SearchableDropdown
+            label="Document format"
+            note="Same-page format switching keeps VaultBill SPA-first."
+            onChange={handleChange}
+            options={formats.map((format) => ({
+                value: format.formatId,
+                label: format.formatName,
+                description: format.description,
+            }))}
+            value={activeFormatId}
+            wrapperClassName="format-selector"
+        />
     );
 };

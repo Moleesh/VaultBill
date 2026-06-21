@@ -41,10 +41,9 @@ export const RecordsPage: FC = () => {
             {controller.activeTab === 'reprint' && !controller.selectedStoredRecord ? (
                 <RecordsReprintPanel
                     error={controller.error}
+                    form={controller.reprintSearchForm}
                     isLoading={controller.isLoading}
-                    onSearchChange={controller.setSearchQuery}
                     onSelect={controller.selectReprintRecord}
-                    query={controller.searchQuery}
                     records={controller.reprintRecords}
                 />
             ) : (

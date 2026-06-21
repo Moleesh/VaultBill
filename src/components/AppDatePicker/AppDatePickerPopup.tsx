@@ -3,6 +3,8 @@
 import { format } from 'date-fns';
 import type { RefObject } from 'react';
 
+import { ActionButton } from '../ActionButton';
+
 type AppDatePickerPopupProps = {
     readonly label: string;
     readonly value: string;
@@ -45,13 +47,13 @@ export const AppDatePickerPopup = ({
         }}
     >
         <header>
-            <button aria-label="Previous month" onClick={onPreviousMonth} type="button">
+            <ActionButton aria-label="Previous month" onClick={onPreviousMonth}>
                 ←
-            </button>
+            </ActionButton>
             <strong>{format(visibleMonth, 'MMMM yyyy')}</strong>
-            <button aria-label="Next month" onClick={onNextMonth} type="button">
+            <ActionButton aria-label="Next month" onClick={onNextMonth}>
                 →
-            </button>
+            </ActionButton>
         </header>
         <div className="app-date-picker-weekdays" aria-hidden="true">
             {weekDays.map((day) => (
@@ -70,37 +72,34 @@ export const AppDatePickerPopup = ({
                 );
 
                 return (
-                    <button
+                    <ActionButton
                         aria-pressed={isoDate === value}
                         key={isoDate}
                         onClick={() => {
                             onChooseDate(day);
                         }}
-                        type="button"
                     >
                         {day}
-                    </button>
+                    </ActionButton>
                 );
             })}
         </div>
         <footer>
-            <button
+            <ActionButton
                 onClick={() => {
                     onClear();
                 }}
-                type="button"
             >
                 Clear
-            </button>
-            <button
-                className="button-primary"
+            </ActionButton>
+            <ActionButton
                 onClick={() => {
                     onToday();
                 }}
-                type="button"
+                variant="primary"
             >
                 Today
-            </button>
+            </ActionButton>
         </footer>
     </div>
 );

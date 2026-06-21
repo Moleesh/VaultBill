@@ -4,15 +4,19 @@ import { Building2, Sparkles, UserRoundCog } from 'lucide-react';
 
 import { themeOptions } from '../../constants/RuntimeDefaults';
 
+/** Ordered first-run setup steps shown in the wizard header and content area. */
 export const setupSteps = [
     { label: 'Welcome', icon: Sparkles },
     { label: 'Workspace Details', icon: Building2 },
     { label: 'Admin Access', icon: UserRoundCog },
 ] as const;
 
+/** Local host names that are allowed to use the hosted setup completion API. */
 export const localHostedOrigins = new Set(['localhost', '127.0.0.1', '[::1]']);
+/** Local storage key used to keep the pre-login theme in sync during setup. */
 export const themeStorageKey = 'vaultbill.theme';
 
+/** Returns whether a stored theme id still matches one of the supported app themes. */
 export const isThemeId = (value: string): boolean =>
     themeOptions.some((option) => option.id === value);
 
@@ -37,6 +41,7 @@ export const getBusinessProfileValidationMessage = (input: {
     return 'Business address is required to continue.';
 };
 
+/** Returns the setup validation message for the first Admin account step. */
 export const getAdminAccessValidationMessage = (input: {
     readonly adminDisplayName: string;
     readonly adminUsername: string;

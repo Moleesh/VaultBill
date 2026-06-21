@@ -3,6 +3,8 @@
 import { Copy, FilePlus2, Library, RefreshCcw } from 'lucide-react';
 import type { FC } from 'react';
 
+import { ActionButton } from '../../components/ActionButton';
+import { IconButton } from '../../components/IconButton';
 import type { BuilderInventoryItem } from './BuilderDocumentLibrarySupport';
 import { describeInventoryItem } from './BuilderDocumentLibrarySupport';
 
@@ -37,21 +39,25 @@ export const BuilderDocumentLibrary: FC<BuilderDocumentLibraryProps> = ({
                 </p>
             </div>
             <div className="builder-document-library-actions">
-                <button onClick={onCreateNew} type="button">
-                    <FilePlus2 aria-hidden="true" size={18} /> New from default
-                </button>
-                <button className="button-secondary" onClick={onDuplicateCurrent} type="button">
-                    <Copy aria-hidden="true" size={18} /> Duplicate current
-                </button>
-                <button
-                    className="button-secondary"
+                <IconButton icon={<FilePlus2 aria-hidden="true" size={18} />} onClick={onCreateNew}>
+                    New from default
+                </IconButton>
+                <IconButton
+                    icon={<Copy aria-hidden="true" size={18} />}
+                    onClick={onDuplicateCurrent}
+                    variant="secondary"
+                >
+                    Duplicate current
+                </IconButton>
+                <IconButton
+                    icon={<RefreshCcw aria-hidden="true" size={18} />}
                     onClick={() => {
                         void onLoadDocument(currentFormatId);
                     }}
-                    type="button"
+                    variant="secondary"
                 >
-                    <RefreshCcw aria-hidden="true" size={18} /> Edit current
-                </button>
+                    Edit current
+                </IconButton>
             </div>
         </div>
         <div className="builder-document-library-current" aria-live="polite">
@@ -61,7 +67,7 @@ export const BuilderDocumentLibrary: FC<BuilderDocumentLibraryProps> = ({
         <div className="builder-document-library-grid">
             {inventory.length > 0 ? (
                 inventory.map((item) => (
-                    <button
+                    <ActionButton
                         className={
                             item.formatId === currentFormatId
                                 ? 'builder-document-library-item is-active'
@@ -71,7 +77,6 @@ export const BuilderDocumentLibrary: FC<BuilderDocumentLibraryProps> = ({
                         onClick={() => {
                             void onLoadDocument(item.formatId);
                         }}
-                        type="button"
                     >
                         <span className="builder-document-library-item-name">
                             {item.formatName}
@@ -80,7 +85,7 @@ export const BuilderDocumentLibrary: FC<BuilderDocumentLibraryProps> = ({
                             {describeInventoryItem(item)}
                         </span>
                         <small>Document selected</small>
-                    </button>
+                    </ActionButton>
                 ))
             ) : (
                 <div className="helper-card builder-document-library-empty">

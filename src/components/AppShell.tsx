@@ -38,11 +38,8 @@ export const AppShell: FC = () => {
     const [isHelpOpen, setIsHelpOpen] = useState(false);
     const [isResetOpen, setIsResetOpen] = useState(false);
     const [isActivationOpen, setIsActivationOpen] = useState(false);
-    const [licenseKey, setLicenseKey] = useState('');
     const [activationMessage, setActivationMessage] = useState('');
     const [isPasswordOpen, setIsPasswordOpen] = useState(false);
-    const [accountPassword, setAccountPassword] = useState('');
-    const [accountPasswordConfirmation, setAccountPasswordConfirmation] = useState('');
     const [accountPasswordMessage, setAccountPasswordMessage] = useState('');
     const [hostedWebUrl, setHostedWebUrl] = useState('');
     const [trialStatus, setTrialStatus] =
@@ -53,22 +50,16 @@ export const AppShell: FC = () => {
     const [isExpanded, setIsExpanded] = useState(false);
     const showWindowControls = capabilities.isDesktop;
     const shellActions = createAppShellActions({
-        accountPassword,
         accountUserId: operatorContext?.account.userId ?? '',
-        licenseKey,
         logout,
         navigate,
         resetDemoData,
         resetPassword,
-        setAccountPassword,
-        setAccountPasswordConfirmation,
         setAccountPasswordMessage,
         setActivationMessage,
         setIsActivationOpen,
         setIsPasswordOpen,
         setIsResetOpen,
-        setLicenseKey,
-        accountPasswordConfirmation,
         setTrialStatus,
     });
 
@@ -180,28 +171,22 @@ export const AppShell: FC = () => {
                 <AppShellMobileNav sections={sections} />
             </div>
             <AppShellManagedDialogs
-                accountPassword={accountPassword}
-                accountPasswordConfirmation={accountPasswordConfirmation}
                 accountPasswordMessage={accountPasswordMessage}
                 activationMessage={activationMessage}
                 isActivationOpen={isActivationOpen}
                 isHelpOpen={isHelpOpen}
                 isPasswordOpen={isPasswordOpen}
                 isResetOpen={isResetOpen}
-                licenseKey={licenseKey}
                 onConfirmReset={shellActions.resetDemo}
                 onSubmitActivation={shellActions.submitActivation}
                 onSubmitPassword={shellActions.submitPassword}
                 pageId={pageId}
                 role={operatorContext.role}
-                setAccountPassword={setAccountPassword}
-                setAccountPasswordConfirmation={setAccountPasswordConfirmation}
                 setAccountPasswordMessage={setAccountPasswordMessage}
                 setIsActivationOpen={setIsActivationOpen}
                 setIsHelpOpen={setIsHelpOpen}
                 setIsPasswordOpen={setIsPasswordOpen}
                 setIsResetOpen={setIsResetOpen}
-                setLicenseKey={setLicenseKey}
             />
         </div>
     );

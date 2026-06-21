@@ -2,6 +2,7 @@
 
 import type { FC, KeyboardEvent, RefObject } from 'react';
 
+import { ActionButton } from '../../components/ActionButton';
 import { ActionBar, type RecordActionState } from '../../components/ActionBar';
 import type { AppRecord, EditableRecord, RecordLineItem } from './RecordStoreContext';
 import type { ConfiguredFieldDefinition } from './RecordsPageSupport';
@@ -64,9 +65,9 @@ export const RecordsWorkspace: FC<RecordsWorkspaceProps> = ({
 }) => (
     <section className="record-workspace">
         {activeTab === 'reprint' ? (
-            <button className="record-back-button" onClick={onBackToSearch} type="button">
+            <ActionButton className="record-back-button" onClick={onBackToSearch}>
                 ← Back to record search
-            </button>
+            </ActionButton>
         ) : null}
         <div className="record-workspace-form" onKeyDown={onEntryNavigation} ref={formRef}>
             {statusLabel ? (
@@ -96,9 +97,9 @@ export const RecordsWorkspace: FC<RecordsWorkspaceProps> = ({
             </p>
         ) : null}
         {showCancelButton ? (
-            <button className="button-danger" onClick={onCancelFinalizeRecord} type="button">
+            <ActionButton onClick={onCancelFinalizeRecord} variant="danger">
                 Cancel finalized record
-            </button>
+            </ActionButton>
         ) : null}
         <ActionBar
             onAction={onAction}

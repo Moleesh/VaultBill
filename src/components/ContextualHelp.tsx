@@ -2,6 +2,7 @@
 
 /** Shared helper card and text patterns for inline guidance across the app. */
 
+import { useForm } from '@tanstack/react-form';
 import { useEffect, useState } from 'react';
 import type { FC } from 'react';
 
@@ -9,6 +10,7 @@ import { useCapabilities } from '../capability/CapabilityContext';
 import { getHelpSections } from '../help/HelpContent';
 import type { Role } from '../types/AppTypes';
 import { AppDrawer } from './AppDrawer/AppDrawer';
+import { FormField } from './FormFields';
 import { AppSheet } from './AppSheet/AppSheet';
 
 type ContextualHelpProps = {
@@ -27,10 +29,14 @@ export const ContextualHelp: FC<ContextualHelpProps> = ({
     role,
 }) => {
     const capabilities = useCapabilities();
-    const [query, setQuery] = useState('');
     const [isMobile, setIsMobile] = useState(() => window.matchMedia('(max-width: 768px)').matches);
+    const form = useForm({
+        defaultValues: {
+            query: '',
+        },
+    });
     const sections = getHelpSections(page, role, capabilities);
-    const normalizedQuery = query.trim().toLocaleLowerCase();
+    const normalizedQuery = form.state.values.query.trim().toLocaleLowerCase();
     const filteredSections = sections.filter((section) =>
         [section.title, section.body, ...section.keywords]
             .join(' ')
@@ -67,16 +73,19 @@ export const ContextualHelp: FC<ContextualHelpProps> = ({
 
     const content = (
         <>
-            <label className="help-search">
-                <span>Search help</span>
-                <input
-                    onChange={(event) => {
-                        setQuery(event.currentTarget.value);
-                    }}
-                    placeholder="Search actions and topics"
-                    value={query}
-                />
-            </label>
+            <form.Field name="query">
+                {(field) => (
+                    <FormField.TextField
+                        label="Search help"
+                        onChange={(event) => {
+                            field.handleChange(event.currentTarget.value);
+                        }}
+                        placeholder="Search actions and topics"
+                        value={field.state.value}
+                        wrapperClassName="help-search"
+                    />
+                )}
+            </form.Field>
             <div className="help-sections">
                 {filteredSections.map((section) => (
                     <section key={section.title}>

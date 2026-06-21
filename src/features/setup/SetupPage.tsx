@@ -1,8 +1,11 @@
 /** @format */
+
 /** First-run setup flow for business identity, initial security, and starter configuration. */
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import type { FC } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+import { ActionButton } from '../../components/ActionButton';
 import { useCapabilities } from '../../capability/CapabilityContext';
 import { requestHostedApi } from '../../runtime/HostedApi';
 import { SetupAdminUserStep } from './SetupAdminUserStep';
@@ -20,6 +23,8 @@ import {
     themeStorageKey,
 } from './SetupPageSupport';
 import { SetupWelcomeStep } from './SetupWelcomeStep';
+import { useSetupForm } from './useSetupForm';
+
 type SetupPageProps = {
     readonly onComplete?: () => void;
 };
@@ -29,12 +34,7 @@ export const SetupPage: FC<SetupPageProps> = ({ onComplete }) => {
     const capabilities = useCapabilities();
     const navigate = useNavigate();
     const [stepIndex, setStepIndex] = useState(0);
-    const [companyName, setCompanyName] = useState('');
-    const [address, setAddress] = useState('');
-    const [adminDisplayName, setAdminDisplayName] = useState('');
-    const [adminUsername, setAdminUsername] = useState('');
-    const [adminPassword, setAdminPassword] = useState('');
-    const [theme, setTheme] = useState(() => {
+    const [initialTheme] = useState(() => {
         const savedTheme = window.localStorage.getItem(themeStorageKey) ?? 'teal-flow';
         return isThemeId(savedTheme) ? savedTheme : 'teal-flow';
     });
@@ -44,41 +44,44 @@ export const SetupPage: FC<SetupPageProps> = ({ onComplete }) => {
     const [hasAttemptedAdminUserFinish, setHasAttemptedAdminUserFinish] = useState(false);
     const activeStep = setupSteps[stepIndex]?.label ?? 'Welcome';
     const canUseHostedSetupApi = localHostedOrigins.has(window.location.hostname);
-
-    const isBusinessProfileInvalid = companyName.trim().length === 0 || address.trim().length === 0;
-    const isAdminUserInvalid =
-        adminUsername.trim().length === 0 || adminDisplayName.trim().length === 0;
-    const canContinue = stepIndex !== 1 || !isBusinessProfileInvalid;
-
-    const completeSetup = () => {
-        const finish = async () => {
+    const form = useSetupForm({
+        defaultTheme: initialTheme,
+        onSubmit: async (value) => {
             if (window.vaultBillDesktop) {
                 await window.vaultBillDesktop.completeSetup({
-                    companyName: companyName.trim(),
-                    address: address.trim(),
-                    theme,
-                    adminUsername: adminUsername.trim(),
-                    adminDisplayName: adminDisplayName.trim(),
-                    adminPassword: adminPassword.trim(),
+                    companyName: value.companyName.trim(),
+                    address: value.address.trim(),
+                    theme: value.theme,
+                    adminUsername: value.adminUsername.trim(),
+                    adminDisplayName: value.adminDisplayName.trim(),
+                    adminPassword: value.adminPassword.trim(),
                 });
             } else if (capabilities.isHostedWeb || canUseHostedSetupApi) {
                 await requestHostedApi('/setup/complete', 'POST', {
-                    companyName: companyName.trim(),
-                    address: address.trim(),
-                    theme,
-                    adminUsername: adminUsername.trim(),
-                    adminDisplayName: adminDisplayName.trim(),
-                    adminPassword: adminPassword.trim(),
+                    companyName: value.companyName.trim(),
+                    address: value.address.trim(),
+                    theme: value.theme,
+                    adminUsername: value.adminUsername.trim(),
+                    adminDisplayName: value.adminDisplayName.trim(),
+                    adminPassword: value.adminPassword.trim(),
                 });
             } else {
                 throw new Error('Setup is only available through VaultBill Desktop.');
             }
             onComplete?.();
             await navigate('/login', { replace: true });
-        };
-        void finish().catch((reason: unknown) => {
-            setMessage(setupErrorMessage(reason));
-        });
+        },
+    });
+    const { address, adminDisplayName, adminUsername, companyName } = form.state.values;
+
+    const isBusinessProfileInvalid = companyName.trim().length === 0 || address.trim().length === 0;
+    const isAdminUserInvalid =
+        adminUsername.trim().length === 0 || adminDisplayName.trim().length === 0;
+    const canContinue = stepIndex !== 1 || !isBusinessProfileInvalid;
+    const handleThemeChange = (value: string) => {
+        form.setFieldValue('theme', value);
+        window.localStorage.setItem(themeStorageKey, value);
+        document.documentElement.dataset.theme = value;
     };
 
     return (
@@ -102,47 +105,32 @@ export const SetupPage: FC<SetupPageProps> = ({ onComplete }) => {
                     {activeStep === 'Welcome' ? <SetupWelcomeStep /> : null}
                     {activeStep === 'Workspace Details' ? (
                         <SetupBusinessProfileStep
-                            address={address}
-                            companyName={companyName}
-                            onAddressChange={setAddress}
-                            onCompanyNameChange={setCompanyName}
-                            onThemeChange={(value) => {
-                                setTheme(value);
-                                window.localStorage.setItem(themeStorageKey, value);
-                                document.documentElement.dataset.theme = value;
-                            }}
+                            form={form}
+                            onThemeChange={handleThemeChange}
                             showValidation={hasAttemptedBusinessProfileContinue}
-                            theme={theme}
                         />
                     ) : null}
                     {activeStep === 'Admin Access' ? (
                         <SetupAdminUserStep
-                            displayName={adminDisplayName}
-                            onDisplayNameChange={setAdminDisplayName}
-                            onPasswordChange={setAdminPassword}
-                            onUsernameChange={setAdminUsername}
-                            password={adminPassword}
+                            form={form}
                             showValidation={hasAttemptedAdminUserFinish}
-                            username={adminUsername}
                         />
                     ) : null}
                 </section>
                 <footer className="setup-card-actions">
                     {stepIndex > 0 ? (
-                        <button
+                        <ActionButton
                             onClick={() => {
                                 setStepIndex((current) => Math.max(0, current - 1));
                             }}
-                            type="button"
                         >
                             Back
-                        </button>
+                        </ActionButton>
                     ) : (
                         <span aria-hidden="true" />
                     )}
                     {stepIndex < setupSteps.length - 1 ? (
-                        <button
-                            className="button-primary"
+                        <ActionButton
                             onClick={() => {
                                 if (!canContinue) {
                                     setHasAttemptedBusinessProfileContinue(true);
@@ -160,13 +148,12 @@ export const SetupPage: FC<SetupPageProps> = ({ onComplete }) => {
                                     Math.min(setupSteps.length - 1, current + 1),
                                 );
                             }}
-                            type="button"
+                            variant="primary"
                         >
                             Continue
-                        </button>
+                        </ActionButton>
                     ) : (
-                        <button
-                            className="button-primary"
+                        <ActionButton
                             onClick={() => {
                                 if (isAdminUserInvalid) {
                                     setHasAttemptedAdminUserFinish(true);
@@ -180,12 +167,14 @@ export const SetupPage: FC<SetupPageProps> = ({ onComplete }) => {
                                 }
                                 setHasAttemptedAdminUserFinish(false);
                                 setMessage('');
-                                completeSetup();
+                                void form.handleSubmit().catch((reason: unknown) => {
+                                    setMessage(setupErrorMessage(reason));
+                                });
                             }}
-                            type="button"
+                            variant="primary"
                         >
                             Start using VaultBill
-                        </button>
+                        </ActionButton>
                     )}
                 </footer>
             </section>

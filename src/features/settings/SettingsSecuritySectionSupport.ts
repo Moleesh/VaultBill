@@ -1,6 +1,7 @@
 /** @format */
 
 import { useEffect, useState } from 'react';
+
 import type { Role } from '../../types/AppTypes';
 import { useCapabilities } from '../../capability/CapabilityContext';
 import { requestHostedApi } from '../../runtime/HostedApi';
@@ -10,57 +11,36 @@ import type { OperatorAccount } from '../auth/AccountTypes';
 import { useSession } from '../auth/SessionContext';
 import {
     getManageableSecurityAccounts,
+    getOperatorCreationMessage,
     isDefaultCredentialsActive,
 } from './SettingsSecuritySectionHelpers';
+import {
+    defaultHostedWebPort,
+    loadSettingsSecurityRuntimeState,
+    useCreateSettingsActivationForm,
+    type CredentialStatus,
+    type TrialStatus,
+} from './SettingsSecuritySectionStateSupport';
 
-const defaultHostedWebPort = 80;
+export type { SettingsActivationFormApi } from './SettingsSecuritySectionStateSupport';
 
-type TrialStatus = {
-    readonly isFullVersion: boolean;
-    readonly isExpired: boolean;
-    readonly remainingSeconds: number;
-};
-
-type CredentialStatus = {
-    readonly sysAdminUsesDefaultPassword: boolean;
-    readonly backupUsesDefaultPassword: boolean;
-};
-
+/** Holds runtime-backed security settings state and actions for the settings screen. */
 export const useSettingsSecuritySectionState = () => {
     const capabilities = useCapabilities();
     const { accounts, archiveAccount, operatorContext, resetPassword, saveAccount } = useSession();
-    const [newUsername, setNewUsername] = useState('');
-    const [newDisplayName, setNewDisplayName] = useState('');
-    const [newOperatorPassword, setNewOperatorPassword] = useState('');
-    const [newRole, setNewRole] = useState<Role>('User');
-    const [passwordUserId, setPasswordUserId] = useState(operatorContext?.account.userId ?? '');
-    const [newPassword, setNewPassword] = useState('');
-    const [licenseKey, setLicenseKey] = useState('');
     const [lanEnabled, setLanEnabled] = useState(false);
     const [trialStatus, setTrialStatus] = useState<TrialStatus>();
     const [credentialStatus, setCredentialStatus] = useState<CredentialStatus>();
     const [message, setMessage] = useState('');
     const [includeDraftsInReports, setIncludeDraftsInReports] = useState(false);
+    const activationForm = useCreateSettingsActivationForm();
 
     useEffect(() => {
-        if (window.vaultBillDesktop) {
-            void window.vaultBillDesktop.getCredentialStatus().then((status) => {
-                setCredentialStatus(status);
-            });
-            void window.vaultBillDesktop.getTrialStatus().then((status) => {
-                setTrialStatus(status);
-            });
-            void window.vaultBillDesktop.getHostedWebSettings().then((settings) => {
-                setLanEnabled(settings.lanEnabled);
-            });
-        } else if (capabilities.isHostedWeb) {
-            void requestHostedApi<CredentialStatus>('/credentials/status').then((status) => {
-                setCredentialStatus(status);
-            });
-            void requestHostedApi<TrialStatus>('/trial/status').then((status) => {
-                setTrialStatus(status);
-            });
-        }
+        void loadSettingsSecurityRuntimeState(capabilities.isHostedWeb).then((runtimeState) => {
+            setCredentialStatus(runtimeState.credentialStatus);
+            setLanEnabled(runtimeState.lanEnabled);
+            setTrialStatus(runtimeState.trialStatus);
+        });
     }, [capabilities.isHostedWeb]);
 
     useEffect(() => {
@@ -69,14 +49,19 @@ export const useSettingsSecuritySectionState = () => {
         });
     }, [capabilities.isHostedWeb]);
 
-    const createOperator = async () => {
-        const username = newUsername.trim();
-        const displayName = newDisplayName.trim();
+    const createOperator = async (input: {
+        readonly username: string;
+        readonly displayName: string;
+        readonly password: string;
+        readonly role: Role;
+    }) => {
+        const username = input.username.trim();
+        const displayName = input.displayName.trim();
         if (!username || !displayName) {
-            setMessage('Username and display name are required.');
+            setMessage('Enter both a username and a display name.');
             return;
         }
-        const optionalPassword = newOperatorPassword.trim();
+        const optionalPassword = input.password.trim();
         try {
             const passwordHash = optionalPassword
                 ? await hashPassword(optionalPassword)
@@ -85,51 +70,48 @@ export const useSettingsSecuritySectionState = () => {
                 userId: crypto.randomUUID(),
                 username,
                 displayName,
-                role: newRole,
+                role: input.role,
                 isActive: true,
                 passwordConfigured: optionalPassword.length > 0,
                 usesDefaultPassword: passwordHash === defaultPasswordHash,
                 ...(passwordHash ? { passwordHash } : {}),
             });
-            setNewUsername('');
-            setNewDisplayName('');
-            setNewOperatorPassword('');
-            setMessage(
-                newRole === 'Admin'
-                    ? 'Operator created. The admin can manage users after a password is set.'
-                    : 'Operator created. Set a password before enabling hosted web login.',
-            );
+            setMessage(getOperatorCreationMessage(input.role));
         } catch (reason) {
             setMessage(reason instanceof Error ? reason.message : 'Operator could not be created.');
         }
     };
 
-    const changePassword = () => {
-        if (!passwordUserId || !newPassword.trim()) {
-            setMessage('Choose an account and enter a new password.');
+    const changePassword = async (input: {
+        readonly password: string;
+        readonly userId: string;
+    }) => {
+        if (!input.userId || !input.password.trim()) {
+            setMessage('Choose an account and enter a password.');
             return;
         }
-        void resetPassword(passwordUserId, newPassword).then(() => {
-            setNewPassword('');
-            setMessage('Password updated.');
-        });
+        await resetPassword(input.userId, input.password);
+        setMessage('Password saved.');
     };
 
     const activateLicense = () => {
-        if (!licenseKey.trim()) return;
+        const licenseKey = activationForm.state.values.licenseKey.trim();
+        if (!licenseKey) return;
         const activation = window.vaultBillDesktop
-            ? window.vaultBillDesktop.activateLicense(licenseKey.trim())
+            ? window.vaultBillDesktop.activateLicense(licenseKey)
             : capabilities.isHostedWeb
-              ? requestHostedApi('/trial/activate', 'POST', { licenseKey: licenseKey.trim() })
+              ? requestHostedApi('/trial/activate', 'POST', { licenseKey })
               : Promise.resolve();
         void activation
             .then(() => {
-                setMessage('License key accepted. Full version activated.');
-                setLicenseKey('');
+                setMessage('License accepted. Full access is now enabled.');
+                activationForm.reset();
             })
             .catch((reason: unknown) => {
                 setMessage(
-                    reason instanceof Error ? reason.message : 'License key could not be used.',
+                    reason instanceof Error
+                        ? reason.message
+                        : 'That license key could not be used.',
                 );
             });
     };
@@ -144,20 +126,15 @@ export const useSettingsSecuritySectionState = () => {
             credentialStatus?.sysAdminUsesDefaultPassword,
             credentialStatus?.backupUsesDefaultPassword,
         ),
+        activationForm,
         isDemoMode: capabilities.isDemoMode,
         includeDraftsInReports,
         lanEnabled,
-        licenseKey,
         manageableAccounts: getManageableSecurityAccounts(
             accounts,
             operatorContext?.role ?? 'User',
         ),
         message,
-        newDisplayName,
-        newOperatorPassword,
-        newPassword,
-        newRole,
-        newUsername,
         onChangePassword: changePassword,
         onLanEnabledChange: (value: boolean) => {
             setLanEnabled(value);
@@ -184,25 +161,15 @@ export const useSettingsSecuritySectionState = () => {
             void save().catch((reason: unknown) => {
                 setIncludeDraftsInReports(previousValue);
                 setMessage(
-                    reason instanceof Error
-                        ? reason.message
-                        : 'Report settings could not be saved.',
+                    reason instanceof Error ? reason.message : 'Could not save the report setting.',
                 );
             });
         },
-        onLicenseKeyChange: setLicenseKey,
-        onNewDisplayNameChange: setNewDisplayName,
-        onNewOperatorPasswordChange: setNewOperatorPassword,
-        onNewPasswordChange: setNewPassword,
-        onNewRoleChange: setNewRole,
-        onNewUsernameChange: setNewUsername,
-        onPasswordUserIdChange: setPasswordUserId,
         onSetAccountActive: (account: OperatorAccount, isActive: boolean) => {
             void saveAccount({ ...account, isActive });
         },
         operatorContext,
         operatorRole: operatorContext?.role ?? 'User',
-        passwordUserId,
         onActivateLicense: activateLicense,
         trialStatus,
     };

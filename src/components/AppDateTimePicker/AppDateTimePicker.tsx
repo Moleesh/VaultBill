@@ -2,46 +2,63 @@
 
 /** Combined date and time picker for hosted operations and scheduled flows. */
 
-import type { FC } from 'react';
+import type { FC, ReactNode } from 'react';
 
+import { FormField } from '../FormFields';
 import { AppDatePicker } from '../AppDatePicker/AppDatePicker';
 
 type AppDateTimePickerProps = {
-    readonly label: string;
-    readonly value: string;
-    readonly onChange: (value: string) => void;
     readonly disabled?: boolean;
+    readonly hideLabel?: boolean;
+    readonly label: string;
+    readonly note?: ReactNode;
+    readonly onChange: (value: string) => void;
+    readonly requiredIndicator?: boolean;
+    readonly value: string;
+    readonly wrapperClassName?: string;
 };
 
 export const AppDateTimePicker: FC<AppDateTimePickerProps> = ({
     disabled = false,
+    hideLabel = false,
     label,
+    note,
     onChange,
+    requiredIndicator = false,
     value,
+    wrapperClassName,
 }) => {
     const [date = '', time = '09:00'] = value.split('T');
 
     return (
-        <div className="app-date-time-picker">
-            <AppDatePicker
-                disabled={disabled}
-                label={label}
-                onChange={(nextDate) => {
-                    onChange(nextDate ? `${nextDate}T${time || '09:00'}` : '');
-                }}
-                value={date}
-            />
-            <label>
-                <span>Time</span>
-                <input
+        <FormField.Wrapper
+            hideLabel={hideLabel}
+            label={label}
+            note={note}
+            requiredIndicator={requiredIndicator}
+            wrapperClassName={wrapperClassName}
+        >
+            <div className="app-date-time-picker">
+                <AppDatePicker
                     disabled={disabled}
+                    hideLabel
+                    label={`${label} date`}
+                    onChange={(nextDate) => {
+                        onChange(nextDate ? `${nextDate}T${time || '09:00'}` : '');
+                    }}
+                    value={date}
+                />
+                <FormField.TextField
+                    disabled={disabled}
+                    hideLabel
+                    label={`${label} time`}
                     onChange={(event) => {
                         onChange(date ? `${date}T${event.currentTarget.value}` : '');
                     }}
                     type="time"
                     value={time}
                 />
-            </label>
-        </div>
+            </div>
+        </FormField.Wrapper>
     );
 };

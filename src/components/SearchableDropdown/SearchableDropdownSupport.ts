@@ -2,11 +2,20 @@
 
 import type { Dispatch, KeyboardEvent, RefObject, SetStateAction } from 'react';
 
-import type { DropdownOption } from './SearchableDropdown';
+/** Shared searchable dropdown option shape used across compact picker inputs. */
+export type DropdownOption = {
+    readonly value: string;
+    readonly label: string;
+    readonly description?: string;
+    readonly keywords?: readonly string[];
+    readonly disabled?: boolean;
+};
 
+/** Normalizes dropdown search text for case-insensitive matching with collapsed spacing. */
 export const normalizeDropdownSearch = (value: string): string =>
     value.trim().toLocaleLowerCase().replace(/\s+/gu, ' ');
 
+/** Pixel-based menu placement returned for the floating searchable dropdown portal. */
 export type DropdownMenuPlacement = {
     readonly left: string;
     readonly top: string;
@@ -16,6 +25,7 @@ export type DropdownMenuPlacement = {
     readonly openDirection: 'above' | 'below';
 };
 
+/** Calculates the best floating menu position for the searchable dropdown trigger. */
 export const getDropdownMenuPlacement = (
     rect: DOMRect,
     viewportHeight: number,
@@ -56,6 +66,7 @@ type SearchableDropdownKeyDownProps = {
     readonly triggerRef: RefObject<HTMLButtonElement | null>;
 };
 
+/** Creates the shared keyboard-navigation handler for the searchable dropdown menu. */
 export const createSearchableDropdownKeyDownHandler = ({
     activeIndex,
     filteredOptions,

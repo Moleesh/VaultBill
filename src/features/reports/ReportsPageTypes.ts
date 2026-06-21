@@ -5,6 +5,7 @@ import type { CapabilityRegistry } from '../../capability/Capability.types';
 import type { WorkspaceSettings } from '../../runtime/WorkspaceSettings';
 import type { AppRecord } from '../records/RecordStoreSupport';
 import type { PrintTask } from './ReportsPageSupport';
+import type { ReportsFilterFormApi } from './useReportsPageFilters';
 
 export type ReportFieldFilter = {
     readonly id: string;
@@ -34,6 +35,7 @@ export type ReportsPageController = {
     readonly customers: readonly string[];
     readonly error: string;
     readonly exportAll: () => void;
+    readonly form: ReportsFilterFormApi;
     readonly fromDate: string;
     readonly reportFilters: readonly ReportFieldFilter[];
     readonly reportField: string;

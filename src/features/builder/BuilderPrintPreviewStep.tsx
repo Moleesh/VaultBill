@@ -4,6 +4,9 @@ import { Printer } from 'lucide-react';
 import { useRef } from 'react';
 import type { FC } from 'react';
 
+import { ActionButton } from '../../components/ActionButton';
+import { FormField } from '../../components/FormFields';
+import { IconButton } from '../../components/IconButton';
 import { SearchableDropdown } from '../../components/SearchableDropdown/SearchableDropdown';
 import type { DocumentFormatConfig } from '../../db/startup/ConfigSchemas';
 import {
@@ -50,17 +53,16 @@ export const BuilderPrintPreviewStep: FC<BuilderPrintPreviewStepProps> = ({
                         <p className="eyebrow">Print settings</p>
                         <h3 id="builder-print-settings-title">Paper and margin</h3>
                     </div>
-                    <button
-                        className="button-secondary"
+                    <ActionButton
                         onClick={() => {
                             onPrintSettingsChange({
                                 ...defaultBuilderPrintSettings,
                             });
                         }}
-                        type="button"
+                        variant="secondary"
                     >
                         Restore defaults
-                    </button>
+                    </ActionButton>
                 </div>
                 <div className="form-grid">
                     <SearchableDropdown
@@ -93,21 +95,19 @@ export const BuilderPrintPreviewStep: FC<BuilderPrintPreviewStepProps> = ({
                         ]}
                         value={printSettings.MarginPreset}
                     />
-                    <label>
-                        <span>Bottom spacing (mm)</span>
-                        <input
-                            min="0"
-                            max="60"
-                            type="number"
-                            value={printSettings.BottomSpacingMm}
-                            onChange={(event) => {
-                                onPrintSettingsChange({
-                                    ...printSettings,
-                                    BottomSpacingMm: Number(event.currentTarget.value) || 0,
-                                });
-                            }}
-                        />
-                    </label>
+                    <FormField.TextField
+                        label="Bottom spacing (mm)"
+                        max="60"
+                        min="0"
+                        onChange={(event) => {
+                            onPrintSettingsChange({
+                                ...printSettings,
+                                BottomSpacingMm: Number(event.currentTarget.value) || 0,
+                            });
+                        }}
+                        type="number"
+                        value={printSettings.BottomSpacingMm}
+                    />
                 </div>
             </section>
             <section
@@ -134,17 +134,17 @@ export const BuilderPrintPreviewStep: FC<BuilderPrintPreviewStepProps> = ({
                         title="Print template preview"
                     />
                 </div>
-                <button
-                    className="button-primary"
+                <IconButton
+                    icon={<Printer aria-hidden="true" size={18} />}
                     onClick={() => {
                         const iframe = iframeRef.current;
                         iframe?.contentWindow?.focus();
                         iframe?.contentWindow?.print();
                     }}
-                    type="button"
+                    variant="primary"
                 >
-                    <Printer aria-hidden="true" size={18} /> Print preview
-                </button>
+                    Print preview
+                </IconButton>
             </section>
             {validation.length > 0 ? (
                 <div className="feedback-info span-2">

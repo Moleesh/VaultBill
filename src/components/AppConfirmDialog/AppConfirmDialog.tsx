@@ -4,6 +4,8 @@
 
 import type { FC } from 'react';
 
+import { ActionButton } from '../ActionButton';
+import { DialogActions } from '../DialogActions';
 import { PopupBase } from '../PopupBase';
 
 type AppConfirmDialogProps = {
@@ -34,14 +36,12 @@ export const AppConfirmDialog: FC<AppConfirmDialogProps> = ({
             <p className="eyebrow">Please confirm</p>
             <h2>{title}</h2>
             <p>{description}</p>
-            <div className="popup-actions">
-                <button onClick={onCancel} type="button">
-                    Cancel
-                </button>
-                <button className="button-danger" onClick={onConfirm} type="button">
+            <DialogActions>
+                <ActionButton onClick={onCancel}>Cancel</ActionButton>
+                <ActionButton onClick={onConfirm} variant="danger">
                     {confirmLabel}
-                </button>
-            </div>
+                </ActionButton>
+            </DialogActions>
         </div>
     </PopupBase>
 );

@@ -6,6 +6,8 @@ import { Check, Palette } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { FC } from 'react';
 
+import { ActionButton } from './ActionButton';
+import { IconOnlyButton } from './IconOnlyButton';
 import type { ThemeController, ThemeId } from '../types/AppTypes';
 
 type ThemePaletteProps = {
@@ -59,23 +61,21 @@ export const ThemePalette: FC<ThemePaletteProps> = ({ controller }) => {
 
     return (
         <div className="theme-palette" ref={rootRef}>
-            <button
+            <IconOnlyButton
                 aria-expanded={isOpen}
                 aria-label="Choose theme"
                 className="icon-button"
+                icon={<Palette aria-hidden="true" size={20} />}
                 ref={triggerRef}
                 onClick={() => {
                     savedTheme.current = controller.themeId;
                     setIsOpen((current) => !current);
                 }}
-                type="button"
-            >
-                <Palette aria-hidden="true" size={20} />
-            </button>
+            />
             {isOpen ? (
                 <div className="theme-palette-popover" role="dialog" aria-label="Theme palette">
                     {controller.availableThemes.map((theme) => (
-                        <button
+                        <ActionButton
                             aria-label={theme.label}
                             className={theme.id === controller.themeId ? 'is-selected' : ''}
                             key={theme.id}
@@ -90,7 +90,6 @@ export const ThemePalette: FC<ThemePaletteProps> = ({ controller }) => {
                             onMouseEnter={() => {
                                 controller.setThemeId(theme.id);
                             }}
-                            type="button"
                         >
                             <span
                                 className="theme-palette-swatch"
@@ -102,7 +101,7 @@ export const ThemePalette: FC<ThemePaletteProps> = ({ controller }) => {
                             {theme.id === savedTheme.current ? (
                                 <Check aria-hidden="true" size={16} />
                             ) : null}
-                        </button>
+                        </ActionButton>
                     ))}
                 </div>
             ) : null}

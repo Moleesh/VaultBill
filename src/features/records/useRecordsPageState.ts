@@ -5,18 +5,12 @@ import { useSearchParams } from 'react-router-dom';
 
 import { useCapabilities } from '../../capability/CapabilityContext';
 import { builtInDefaultFormat } from '../../db/startup/BuiltInDefaultFormat';
-import { builtInDocumentFormatSummaries } from '../../constants/BuiltInDocumentFormats';
-import { requestHostedApi } from '../../runtime/HostedApi';
 import {
     defaultWorkspaceSettings,
     loadWorkspaceSettings,
     type WorkspaceSettings,
 } from '../../runtime/WorkspaceSettings';
 import { useSession } from '../auth/SessionContext';
-import {
-    normalizeSecretsSettings,
-    secretValuesFromSettings,
-} from '../settings/SettingsSecretsSectionSupport';
 import { loadRecordPrintPackage, type RecordPrintPackage } from './RecordPrintHtml';
 import {
     createEmptyRecord,
@@ -28,8 +22,15 @@ import {
 import type { OutputTask } from './RecordsPageOutputTypes';
 import { calculateRecordTotals } from './RecordTotals';
 import { useRecordStore, type EditableRecord } from './RecordStoreContext';
-
-type PublishedFormat = { readonly formatId: string; readonly formatName: string };
+import {
+    filterReprintRecords,
+    findSelectedStoredRecord,
+    loadPublishedFormats,
+    loadRecordsSecretValues,
+    resolveRecordsFormatOptions,
+    useCreateRecordsReprintSearchForm,
+    type PublishedFormat,
+} from './useRecordsPageStateSupport';
 
 /** Holds the record page data, derived values, and server-backed inventory. */
 export const useRecordsPageState = () => {
@@ -47,29 +48,19 @@ export const useRecordsPageState = () => {
     const [isFinalizeOpen, setIsFinalizeOpen] = useState(false);
     const [isCancelOpen, setIsCancelOpen] = useState(false);
     const [cancelReason, setCancelReason] = useState('');
-    const [searchQuery, setSearchQuery] = useState('');
     const [outputTask, setOutputTask] = useState<OutputTask>();
     const [activePrintPackage, setActivePrintPackage] = useState<RecordPrintPackage>();
     const [publishedFormats, setPublishedFormats] = useState<readonly PublishedFormat[]>([]);
     const [secretValues, setSecretValues] = useState<Readonly<Record<string, string>>>({});
     const [workspaceSettings, setWorkspaceSettings] =
         useState<WorkspaceSettings>(defaultWorkspaceSettings);
+    const reprintSearchForm = useCreateRecordsReprintSearchForm();
 
     const activeTab: 'create' | 'reprint' =
         searchParams.get('tab') === 'reprint' ? 'reprint' : 'create';
-    const selectedStoredRecord = records.find((item) => item.recordId === record.recordId);
+    const selectedStoredRecord = findSelectedStoredRecord(records, record);
     const isReadOnly = actionState === 'Finalized' || actionState === 'Reprint';
-    // Fall back to bundled document formats until the desktop or hosted inventory is available.
-    const formatOptions = (
-        publishedFormats.length > 0
-            ? publishedFormats
-            : capabilities.isDemoMode
-              ? builtInDocumentFormatSummaries.slice(0, 1)
-              : builtInDocumentFormatSummaries
-    ).map((format) => ({
-        value: format.formatId,
-        label: format.formatName,
-    }));
+    const formatOptions = resolveRecordsFormatOptions(publishedFormats, capabilities.isDemoMode);
     const activeConfig = activePrintPackage?.config ?? builtInDefaultFormat;
     const recordTotals = useMemo(() => calculateRecordTotals(record), [record]);
     const configuredDocumentFields = useMemo(
@@ -86,16 +77,10 @@ export const useRecordsPageState = () => {
             ),
         [activeConfig],
     );
-    const reprintRecords = records.filter((item) => {
-        const isPrintable = item.status === 'Finalized' || item.status === 'Cancelled';
-        const query = searchQuery.trim().toLocaleLowerCase();
-        return (
-            isPrintable &&
-            (!query ||
-                item.customerName.toLocaleLowerCase().includes(query) ||
-                item.documentNumber?.toLocaleLowerCase().includes(query))
-        );
-    });
+    const reprintRecords = filterReprintRecords(
+        records,
+        reprintSearchForm.state.values.searchQuery,
+    );
     const { outputTarget, preferredPrinterName } = workspaceSettings;
     const printLabel = outputTarget === 'DownloadPdf' ? 'Print / PDF' : 'Print';
     const showShortcuts =
@@ -103,13 +88,8 @@ export const useRecordsPageState = () => {
         (capabilities.isDesktop || capabilities.isHostedWeb || capabilities.isDemoMode);
 
     useEffect(() => {
-        const inventory = window.vaultBillDesktop
-            ? window.vaultBillDesktop.listBuilderInventory()
-            : capabilities.isHostedWeb
-              ? requestHostedApi<readonly PublishedFormat[]>('/print/formats')
-              : undefined;
-        void inventory
-            ?.then((formats) => {
+        void loadPublishedFormats(capabilities.isHostedWeb)
+            .then((formats) => {
                 setPublishedFormats(formats);
             })
             .catch(() => {
@@ -122,15 +102,7 @@ export const useRecordsPageState = () => {
     }, [capabilities.isHostedWeb]);
 
     useEffect(() => {
-        const request = window.vaultBillDesktop
-            ? window.vaultBillDesktop.getSecretsSettings()
-            : capabilities.isHostedWeb
-              ? requestHostedApi('/settings/secrets')
-              : undefined;
-        void request?.then((rawSettings) => {
-            const normalized = normalizeSecretsSettings(rawSettings);
-            setSecretValues(secretValuesFromSettings(normalized.secrets));
-        });
+        void loadRecordsSecretValues(capabilities.isHostedWeb).then(setSecretValues);
     }, [capabilities.isHostedWeb]);
 
     useEffect(() => {
@@ -170,12 +142,12 @@ export const useRecordsPageState = () => {
         publishedFormats,
         record,
         recordTotals,
+        reprintSearchForm,
         secretValues,
         workspaceSettings,
         records,
         reprintRecords,
         searchParams,
-        searchQuery,
         selectedStoredRecord,
         setActionState,
         setCancelReason,
@@ -186,7 +158,6 @@ export const useRecordsPageState = () => {
         setOperationError,
         setRecord,
         setSearchParams,
-        setSearchQuery,
         showShortcuts,
         saveDraft,
         toEditableRecord,

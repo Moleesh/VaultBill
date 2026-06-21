@@ -11,33 +11,24 @@ import { useSettingsBackupSection } from './useSettingsBackupSection';
  */
 export const SettingsBackupSection: FC = () => {
     const {
-        backupPassword,
+        backupActionForm,
         busyAction,
         capabilities,
         changeBackupPassword,
         createBackup,
         encryptBackup,
         recoveryKey,
-        remoteAuthorizationPassword,
+        resetForm,
         resetApplication,
-        resetConfirmation,
         resetOpen,
-        resetSysAdminPassword,
+        restoreForm,
         restoreBackup,
         restoreOpen,
-        restorePassword,
-        restoreRecoveryKey,
-        setBackupPassword,
         setEncryptBackup,
         setRecoveryKey,
-        setRemoteAuthorizationPassword,
-        setResetConfirmation,
         setResetOpen,
-        setResetSysAdminPassword,
         setRestoreFile,
         setRestoreOpen,
-        setRestorePassword,
-        setRestoreRecoveryKey,
     } = useSettingsBackupSection();
 
     return (
@@ -47,14 +38,13 @@ export const SettingsBackupSection: FC = () => {
                 <h2>Backup workspace</h2>
             </header>
             <SettingsBackupActions
-                backupPassword={backupPassword}
                 busyAction={busyAction}
                 canBackup={capabilities.canBackup}
                 canRestore={capabilities.canRestore}
                 encryptBackup={encryptBackup}
+                form={backupActionForm}
                 isHostedWeb={capabilities.isHostedWeb}
                 isSysAdmin={true}
-                onBackupPasswordChange={setBackupPassword}
                 onChangeBackupPassword={changeBackupPassword}
                 onCreateBackup={createBackup}
                 onEncryptBackupChange={setEncryptBackup}
@@ -64,8 +54,6 @@ export const SettingsBackupSection: FC = () => {
                 onOpenRestore={() => {
                     setRestoreOpen(true);
                 }}
-                onRemoteAuthorizationPasswordChange={setRemoteAuthorizationPassword}
-                remoteAuthorizationPassword={remoteAuthorizationPassword}
             />
             <SettingsDialogs
                 busyAction={busyAction}
@@ -84,18 +72,12 @@ export const SettingsBackupSection: FC = () => {
                 }}
                 onResetApplication={resetApplication}
                 onRestoreBackup={restoreBackup}
-                onSetResetConfirmation={setResetConfirmation}
-                onSetResetSysAdminPassword={setResetSysAdminPassword}
                 onSetRestoreFile={setRestoreFile}
-                onSetRestorePassword={setRestorePassword}
-                onSetRestoreRecoveryKey={setRestoreRecoveryKey}
                 recoveryKey={recoveryKey}
-                resetConfirmation={resetConfirmation}
+                resetForm={resetForm}
                 resetOpen={resetOpen}
-                resetSysAdminPassword={resetSysAdminPassword}
+                restoreForm={restoreForm}
                 restoreOpen={restoreOpen}
-                restorePassword={restorePassword}
-                restoreRecoveryKey={restoreRecoveryKey}
             />
         </section>
     );

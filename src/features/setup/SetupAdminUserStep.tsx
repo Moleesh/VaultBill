@@ -2,76 +2,66 @@
 
 import type { FC } from 'react';
 
+import { FormField } from '../../components/FormFields';
+import type { SetupFormApi } from './useSetupForm';
+
 type SetupAdminUserStepProps = {
-    readonly username: string;
-    readonly displayName: string;
-    readonly password: string;
+    readonly form: SetupFormApi;
     readonly showValidation: boolean;
-    readonly onUsernameChange: (value: string) => void;
-    readonly onDisplayNameChange: (value: string) => void;
-    readonly onPasswordChange: (value: string) => void;
 };
 
 /** Collects the first Admin account created during first-run setup. */
-export const SetupAdminUserStep: FC<SetupAdminUserStepProps> = ({
-    username,
-    displayName,
-    password,
-    showValidation,
-    onUsernameChange,
-    onDisplayNameChange,
-    onPasswordChange,
-}) => (
+export const SetupAdminUserStep: FC<SetupAdminUserStepProps> = ({ form, showValidation }) => (
     <div className="form-grid">
-        <label>
-            <span>
-                Admin display name
-                <span aria-hidden="true" className="required-indicator">
-                    *
-                </span>
-            </span>
-            <input
-                autoFocus
-                aria-invalid={showValidation && displayName.trim().length === 0}
-                onChange={(event) => {
-                    onDisplayNameChange(event.currentTarget.value);
-                }}
-                placeholder="Name shown across the workspace"
-                required
-                value={displayName}
-            />
-        </label>
-        <label>
-            <span>
-                Admin username
-                <span aria-hidden="true" className="required-indicator">
-                    *
-                </span>
-            </span>
-            <input
-                aria-invalid={showValidation && username.trim().length === 0}
-                onChange={(event) => {
-                    onUsernameChange(event.currentTarget.value);
-                }}
-                placeholder="Short sign-in name"
-                required
-                value={username}
-            />
-        </label>
-        <label className="span-2">
-            <span>Admin password (optional)</span>
-            <input
-                autoComplete="new-password"
-                onChange={(event) => {
-                    onPasswordChange(event.currentTarget.value);
-                }}
-                placeholder="Leave blank to add a password later"
-                type="password"
-                value={password}
-            />
-        </label>
-        <p className="field-note span-2">
-            Leave this blank for now, or add a password before finishing setup.
-        </p>
+        <form.Field name="adminDisplayName">
+            {(field) => (
+                <FormField.TextField
+                    autoFocus
+                    invalid={showValidation && field.state.value.trim().length === 0}
+                    label="Admin display name"
+                    onBlur={field.handleBlur}
+                    onChange={(event) => {
+                        field.handleChange(event.currentTarget.value);
+                    }}
+                    placeholder="Name people will see in the workspace"
+                    required
+                    requiredIndicator
+                    value={field.state.value}
+                />
+            )}
+        </form.Field>
+        <form.Field name="adminUsername">
+            {(field) => (
+                <FormField.TextField
+                    invalid={showValidation && field.state.value.trim().length === 0}
+                    label="Admin username"
+                    onBlur={field.handleBlur}
+                    onChange={(event) => {
+                        field.handleChange(event.currentTarget.value);
+                    }}
+                    placeholder="Short name used at sign-in"
+                    required
+                    requiredIndicator
+                    value={field.state.value}
+                />
+            )}
+        </form.Field>
+        <form.Field name="adminPassword">
+            {(field) => (
+                <FormField.TextField
+                    autoComplete="new-password"
+                    label="Admin password (optional)"
+                    note="Leave this blank for now, or add a password before you finish setup."
+                    onBlur={field.handleBlur}
+                    onChange={(event) => {
+                        field.handleChange(event.currentTarget.value);
+                    }}
+                    placeholder="Leave blank if you want to add it later"
+                    type="password"
+                    value={field.state.value}
+                    wrapperClassName="span-2"
+                />
+            )}
+        </form.Field>
     </div>
 );

@@ -2,6 +2,7 @@
 
 import type { FC } from 'react';
 
+import { ActionButton } from '../../components/ActionButton';
 import type { AppRecord } from './RecordStoreContext';
 
 type RecordCollectionProps = {
@@ -70,14 +71,13 @@ export const RecordCollection: FC<RecordCollectionProps> = ({
                             </td>
                             <td className="numeric-cell">₹{record.grandTotal}</td>
                             <td>
-                                <button
+                                <ActionButton
                                     onClick={() => {
                                         onSelect(record);
                                     }}
-                                    type="button"
                                 >
                                     Open
-                                </button>
+                                </ActionButton>
                             </td>
                         </tr>
                     ))}

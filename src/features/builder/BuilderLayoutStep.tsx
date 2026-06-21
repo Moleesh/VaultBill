@@ -2,6 +2,7 @@
 
 import type { CSSProperties, FC } from 'react';
 
+import { FormField } from '../../components/FormFields';
 import type { BuilderLayoutConfig } from './BuilderPageSupport';
 
 type BuilderLayoutStepProps = {
@@ -18,38 +19,34 @@ export const BuilderLayoutStep: FC<BuilderLayoutStepProps> = ({ layout, onLayout
     return (
         <div className="builder-layout-step">
             <div className="form-grid">
-                <label>
-                    <span>Columns</span>
-                    <input
-                        min="1"
-                        max="5"
-                        type="number"
-                        value={columns}
-                        onChange={(event) => {
-                            onLayoutChange({
-                                ...layout,
-                                Columns: Math.min(
-                                    5,
-                                    Math.max(1, Number(event.currentTarget.value) || 1),
-                                ),
-                            });
-                        }}
-                    />
-                </label>
-                <label>
-                    <span>Gap</span>
-                    <input
-                        min="0"
-                        type="number"
-                        value={gap}
-                        onChange={(event) => {
-                            onLayoutChange({
-                                ...layout,
-                                Gap: Number(event.currentTarget.value) || 0,
-                            });
-                        }}
-                    />
-                </label>
+                <FormField.TextField
+                    label="Columns"
+                    max="5"
+                    min="1"
+                    onChange={(event) => {
+                        onLayoutChange({
+                            ...layout,
+                            Columns: Math.min(
+                                5,
+                                Math.max(1, Number(event.currentTarget.value) || 1),
+                            ),
+                        });
+                    }}
+                    type="number"
+                    value={columns}
+                />
+                <FormField.TextField
+                    label="Gap"
+                    min="0"
+                    onChange={(event) => {
+                        onLayoutChange({
+                            ...layout,
+                            Gap: Number(event.currentTarget.value) || 0,
+                        });
+                    }}
+                    type="number"
+                    value={gap}
+                />
             </div>
             <article className="builder-layout-preview" data-layout-mode="Flex">
                 <div>

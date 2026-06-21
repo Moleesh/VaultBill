@@ -1,5 +1,6 @@
 /** @format */
 
+import { useForm } from '@tanstack/react-form';
 import { useEffect, useState } from 'react';
 
 import { useCapabilities } from '../../capability/CapabilityContext';
@@ -16,26 +17,67 @@ export type PrinterSummary = {
     readonly isDefault: boolean;
 };
 
+export type SettingsBusinessFormValues = {
+    readonly address: string;
+    readonly companyName: string;
+    readonly gstin: string;
+    readonly includeDraftsInReports: boolean;
+    readonly outputTarget: 'PreviewOnly' | 'DownloadPdf' | 'SystemPrinter';
+    readonly preferredPrinterName: string;
+    readonly theme: string;
+};
+
 /**
  * Loads the business profile, printer defaults, and persistence handlers for the SysAdmin panel.
  */
 export const useSettingsBusinessSection = () => {
     const capabilities = useCapabilities();
-    const [companyName, setCompanyName] = useState(defaultWorkspaceSettings.companyName);
-    const [address, setAddress] = useState(defaultWorkspaceSettings.address);
-    const [gstin, setGstin] = useState(defaultWorkspaceSettings.gstin);
-    const [theme, setTheme] = useState(
-        () => window.localStorage.getItem('vaultbill.theme') ?? 'teal-flow',
-    );
-    const [outputTarget, setOutputTarget] = useState(defaultWorkspaceSettings.outputTarget);
-    const [preferredPrinterName, setPreferredPrinterName] = useState(
-        defaultWorkspaceSettings.preferredPrinterName,
-    );
-    const [includeDraftsInReports, setIncludeDraftsInReports] = useState(
-        defaultWorkspaceSettings.includeDraftsInReports,
-    );
     const [availablePrinters, setAvailablePrinters] = useState<readonly PrinterSummary[]>([]);
     const [message, setMessage] = useState('');
+    const form = useForm({
+        defaultValues: {
+            address: defaultWorkspaceSettings.address,
+            companyName: defaultWorkspaceSettings.companyName,
+            gstin: defaultWorkspaceSettings.gstin,
+            includeDraftsInReports: defaultWorkspaceSettings.includeDraftsInReports,
+            outputTarget: defaultWorkspaceSettings.outputTarget,
+            preferredPrinterName: defaultWorkspaceSettings.preferredPrinterName,
+            theme: window.localStorage.getItem('vaultbill.theme') ?? 'teal-flow',
+        } satisfies SettingsBusinessFormValues,
+        onSubmit: async ({ value }) => {
+            if (!value.companyName.trim() || !value.address.trim()) {
+                setMessage('Business name and address are required.');
+                return;
+            }
+            const nextBusiness = {
+                companyName: value.companyName.trim(),
+                address: value.address.trim(),
+                gstin: value.gstin.trim(),
+                theme: value.theme,
+                outputTarget: value.outputTarget,
+                preferredPrinterName: value.preferredPrinterName.trim(),
+                includeDraftsInReports: value.includeDraftsInReports,
+            };
+            window.localStorage.setItem('vaultbill.theme', value.theme);
+            document.documentElement.dataset.theme = value.theme;
+            const persistence = window.vaultBillDesktop
+                ? window.vaultBillDesktop.saveBusinessSettings(nextBusiness)
+                : capabilities.isHostedWeb
+                  ? requestHostedApi('/settings/business', 'POST', nextBusiness)
+                  : Promise.resolve(nextBusiness);
+            await persistence
+                .then(() => {
+                    setMessage('Business settings saved.');
+                })
+                .catch((reason: unknown) => {
+                    setMessage(
+                        reason instanceof Error
+                            ? reason.message
+                            : 'Business settings could not be saved.',
+                    );
+                });
+        },
+    });
 
     useEffect(() => {
         const businessRequest = window.vaultBillDesktop
@@ -44,15 +86,9 @@ export const useSettingsBusinessSection = () => {
               ? requestHostedApi('/settings/business').then(normalizeWorkspaceSettings)
               : Promise.resolve(defaultWorkspaceSettings);
         void businessRequest.then((settings) => {
-            setCompanyName(settings.companyName);
-            setAddress(settings.address);
-            setGstin(settings.gstin);
-            setTheme(settings.theme);
-            setOutputTarget(settings.outputTarget);
-            setPreferredPrinterName(settings.preferredPrinterName);
-            setIncludeDraftsInReports(settings.includeDraftsInReports);
+            form.reset(settings);
         });
-    }, [capabilities.isHostedWeb]);
+    }, [capabilities.isHostedWeb, form]);
 
     useEffect(() => {
         if (!window.vaultBillDesktop?.listPrinters) {
@@ -61,71 +97,29 @@ export const useSettingsBusinessSection = () => {
         }
         void window.vaultBillDesktop.listPrinters().then((printers) => {
             setAvailablePrinters(printers);
+            const { preferredPrinterName } = form.state.values;
             if (
                 preferredPrinterName &&
                 !printers.some((printer) => printer.name === preferredPrinterName)
             ) {
-                setPreferredPrinterName('');
+                form.setFieldValue('preferredPrinterName', '');
                 return;
             }
             if (!preferredPrinterName) {
-                const defaultPrinter = printers.find((printer) => printer.isDefault)?.name ?? '';
-                if (defaultPrinter) setPreferredPrinterName(defaultPrinter);
+                const { name: defaultPrinter = '' } =
+                    printers.find((printer) => printer.isDefault) ?? {};
+                if (defaultPrinter) form.setFieldValue('preferredPrinterName', defaultPrinter);
             }
         });
-    }, [preferredPrinterName]);
-
-    const saveBusiness = () => {
-        if (!companyName.trim() || !address.trim()) {
-            setMessage('Business name and address are required.');
-            return;
-        }
-        const nextBusiness = {
-            companyName: companyName.trim(),
-            address: address.trim(),
-            gstin: gstin.trim(),
-            theme,
-            outputTarget,
-            preferredPrinterName: preferredPrinterName.trim(),
-            includeDraftsInReports,
-        };
-        window.localStorage.setItem('vaultbill.theme', theme);
-        document.documentElement.dataset.theme = theme;
-        const persistence = window.vaultBillDesktop
-            ? window.vaultBillDesktop.saveBusinessSettings(nextBusiness)
-            : capabilities.isHostedWeb
-              ? requestHostedApi('/settings/business', 'POST', nextBusiness)
-              : Promise.resolve(nextBusiness);
-        void persistence
-            .then(() => {
-                setMessage('Business settings saved.');
-            })
-            .catch((reason: unknown) => {
-                setMessage(
-                    reason instanceof Error
-                        ? reason.message
-                        : 'Business settings could not be saved.',
-                );
-            });
-    };
+    }, [form]);
 
     return {
-        address,
         availablePrinters,
         capabilities,
-        companyName,
-        gstin,
+        form,
         message,
-        outputTarget,
-        preferredPrinterName,
-        saveBusiness,
-        setAddress,
-        setCompanyName,
-        setGstin,
-        setIncludeDraftsInReports,
-        setOutputTarget,
-        setPreferredPrinterName,
-        setTheme,
-        theme,
+        saveBusiness: () => {
+            void form.handleSubmit();
+        },
     };
 };

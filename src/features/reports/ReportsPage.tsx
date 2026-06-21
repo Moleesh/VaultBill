@@ -24,20 +24,12 @@ export const ReportsPage: FC = () => {
         <div className="page-stack reports-page">
             <ReportsFilterPanel
                 customers={controller.customers}
-                fromDate={controller.fromDate}
+                form={controller.form}
                 onAddFilter={controller.addReportFilter}
-                onFromDateChange={controller.setFromDate}
                 onPresetChange={controller.applyPreset}
                 onRemoveFilter={controller.removeReportFilter}
-                onReportIdChange={controller.setReportId}
-                onStatusChange={controller.setStatus}
-                onToDateChange={controller.setToDate}
                 onUpdateFilter={controller.updateReportFilter}
-                preset={controller.preset}
                 reportFilters={controller.reportFilters}
-                reportId={controller.reportId}
-                status={controller.status}
-                toDate={controller.toDate}
             />
             <section className="data-panel">
                 <ReportsActionBar

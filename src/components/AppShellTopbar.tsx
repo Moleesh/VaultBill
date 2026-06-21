@@ -3,6 +3,8 @@
 import { KeyRound, LogOut, RotateCcw } from 'lucide-react';
 import type { FC } from 'react';
 
+import { ActionButton } from './ActionButton';
+import { IconOnlyButton } from './IconOnlyButton';
 import { ThemePalette } from './ThemePalette';
 import { appShellIcons } from './AppShellSupport';
 import { shellSections } from '../constants/RuntimeDefaults';
@@ -22,6 +24,7 @@ type AppShellTopbarProps = {
     readonly onOpenActivation: () => void;
 };
 
+/** Renders the shell title area with theme, account, and trial actions. */
 export const AppShellTopbar: FC<AppShellTopbarProps> = ({
     pageId,
     isDemoMode,
@@ -36,7 +39,9 @@ export const AppShellTopbar: FC<AppShellTopbarProps> = ({
     const section = shellSections.find((entry) => entry.id === routeId);
     const pageLabel = section?.label ?? pageId.toLocaleUpperCase();
     const pageTitle = isDemoMode ? 'VaultBill Demo' : pageLabel;
-    const pageSubtitle = isDemoMode ? 'Browser demo workspace' : (section?.description ?? '');
+    const pageSubtitle = isDemoMode
+        ? 'Guided browser demo workspace'
+        : (section?.description ?? '');
     const PageIcon = appShellIcons[routeId];
 
     return (
@@ -57,38 +62,29 @@ export const AppShellTopbar: FC<AppShellTopbarProps> = ({
                 <div className="app-shell-mobile-account-actions">
                     <ThemePalette controller={themeController} />
                     {!isDemoMode ? (
-                        <button
-                            className="icon-button"
+                        <IconOnlyButton
                             aria-label="Change my password"
+                            icon={<KeyRound aria-hidden="true" size={19} />}
                             onClick={onChangePassword}
-                            type="button"
-                        >
-                            <KeyRound aria-hidden="true" size={19} />
-                        </button>
+                        />
                     ) : (
-                        <button
-                            className="icon-button"
+                        <IconOnlyButton
                             aria-label="Reset demo data"
+                            icon={<RotateCcw aria-hidden="true" size={19} />}
                             onClick={onResetDemo}
-                            type="button"
-                        >
-                            <RotateCcw aria-hidden="true" size={19} />
-                        </button>
+                        />
                     )}
-                    <button
-                        className="icon-button"
+                    <IconOnlyButton
                         aria-label="Log out"
+                        icon={<LogOut aria-hidden="true" size={19} />}
                         onClick={onLogout}
-                        type="button"
-                    >
-                        <LogOut aria-hidden="true" size={19} />
-                    </button>
+                    />
                 </div>
                 {!isDemoMode && trialStatus && !trialStatus.isFullVersion ? (
-                    <button
-                        className={`app-shell-trial-pill${trialStatus.isExpired ? ' button-danger' : ''}`}
+                    <ActionButton
+                        className="app-shell-trial-pill"
                         onClick={onOpenActivation}
-                        type="button"
+                        variant={trialStatus.isExpired ? 'danger' : 'default'}
                     >
                         <KeyRound aria-hidden="true" size={17} />
                         <span className="app-shell-trial-pill-copy">
@@ -104,7 +100,7 @@ export const AppShellTopbar: FC<AppShellTopbarProps> = ({
                                     : formatTrialCountdownParts(trialStatus.remainingSeconds).label}
                             </small>
                         </span>
-                    </button>
+                    </ActionButton>
                 ) : null}
             </div>
         </header>

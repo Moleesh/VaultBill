@@ -2,6 +2,7 @@
 
 import type { FC } from 'react';
 
+import { ActionButton } from '../../components/ActionButton';
 import { HorizontalProgress } from '../../components/HorizontalProgress/HorizontalProgress';
 import { SearchableDropdown } from '../../components/SearchableDropdown/SearchableDropdown';
 
@@ -44,16 +45,15 @@ export const RecordsPageTop: FC<RecordsPageTopProps> = ({
         </div>
         <HorizontalProgress className="page-tabs records-tabs" label="Record tabs">
             {(['create', 'reprint'] as const).map((tab) => (
-                <button
+                <ActionButton
                     aria-pressed={activeTab === tab}
                     key={tab}
                     onClick={() => {
                         onTabChange(tab);
                     }}
-                    type="button"
                 >
                     {tab === 'create' ? 'Create' : 'Reprint'}
-                </button>
+                </ActionButton>
             ))}
         </HorizontalProgress>
     </>

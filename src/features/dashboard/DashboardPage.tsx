@@ -6,9 +6,9 @@
  */
 
 import { format, parseISO } from 'date-fns';
-import { Link } from 'react-router-dom';
 import type { FC } from 'react';
 
+import { ActionLink } from '../../components/ActionLink';
 import { useSession } from '../auth/SessionContext';
 import { useRecordStore } from '../records/RecordStoreContext';
 import { DashboardMetric } from './DashboardMetric';
@@ -58,9 +58,9 @@ export const DashboardPage: FC = () => {
                     <h1>Welcome back, {operatorContext?.account.displayName}.</h1>
                     <p>Invoices, customers, and the numbers worth noticing today.</p>
                 </div>
-                <Link className="button-primary" to="/app/records/new">
+                <ActionLink to="/app/records/new" variant="primary">
                     Create document
-                </Link>
+                </ActionLink>
             </section>
 
             <section className="dashboard-metrics" aria-label="Business summary">
@@ -104,7 +104,7 @@ export const DashboardPage: FC = () => {
                             <p className="eyebrow">Customers</p>
                             <h2>Top revenue</h2>
                         </div>
-                        <Link to="/app/reports">Reports</Link>
+                        <ActionLink to="/app/reports">Reports</ActionLink>
                     </div>
                     {customers.length === 0 ? (
                         <div className="empty-panel">
@@ -136,7 +136,7 @@ export const DashboardPage: FC = () => {
                         <p className="eyebrow">Recent activity</p>
                         <h2>Latest records</h2>
                     </div>
-                    <Link to="/app/records?tab=reprint">View all</Link>
+                    <ActionLink to="/app/records?tab=reprint">View all</ActionLink>
                 </div>
                 <div className="record-list">
                     {records.slice(0, 5).map((record) => (

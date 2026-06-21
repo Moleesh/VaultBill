@@ -2,6 +2,8 @@
 
 import type { FC } from 'react';
 
+import { ActionButton } from '../../components/ActionButton';
+
 type BuilderPageFooterProps = {
     readonly stepIndex: number;
     readonly stepCount: number;
@@ -36,24 +38,23 @@ export const BuilderPageFooter: FC<BuilderPageFooterProps> = ({
             </p>
         ) : null}
         <footer className="wizard-actions">
-            <button disabled={stepIndex === 0} onClick={onBack} type="button">
+            <ActionButton disabled={stepIndex === 0} onClick={onBack}>
                 Back
-            </button>
+            </ActionButton>
             {stepIndex < stepCount - 1 ? (
-                <button className="button-primary" onClick={onContinue} type="button">
+                <ActionButton onClick={onContinue} variant="primary">
                     Continue
-                </button>
+                </ActionButton>
             ) : (
-                <button
-                    className="button-primary"
+                <ActionButton
                     disabled={validation.length > 0}
                     onClick={() => {
                         void onPublish();
                     }}
-                    type="button"
+                    variant="primary"
                 >
                     Publish format
-                </button>
+                </ActionButton>
             )}
         </footer>
     </>

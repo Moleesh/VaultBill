@@ -10,7 +10,9 @@ import type {
     SetStateAction,
 } from 'react';
 
-import type { DropdownOption } from './SearchableDropdown';
+import { ActionButton } from '../ActionButton';
+import { FormField } from '../FormFields';
+import type { DropdownOption } from './SearchableDropdownSupport';
 
 type SearchableDropdownMenuProps = {
     readonly activeIndex: number;
@@ -56,12 +58,14 @@ export const SearchableDropdownMenu: FC<SearchableDropdownMenuProps> = ({
             ref={menuRef}
         >
             {options.length > 7 ? (
-                <input
-                    aria-label={`Search ${label}`}
+                <FormField.TextField
                     autoFocus
+                    hideLabel
+                    label={`Search ${label}`}
                     onChange={onQueryChange}
                     placeholder="Search options"
                     value={query}
+                    wrapperClassName="searchable-dropdown-search"
                 />
             ) : null}
             <div aria-labelledby={`${id}-label`} role="listbox">
@@ -69,7 +73,7 @@ export const SearchableDropdownMenu: FC<SearchableDropdownMenuProps> = ({
                     <p className="searchable-dropdown-empty">No matching options.</p>
                 ) : (
                     filteredOptions.slice(0, 100).map((option, index) => (
-                        <button
+                        <ActionButton
                             aria-selected={option.value === value}
                             className={index === activeIndex ? 'is-active' : ''}
                             disabled={option.disabled}
@@ -81,14 +85,13 @@ export const SearchableDropdownMenu: FC<SearchableDropdownMenuProps> = ({
                                 onChoose(option);
                             }}
                             role="option"
-                            type="button"
                         >
                             <strong>
                                 {option.value === value ? <span aria-hidden="true">✓ </span> : null}
                                 {option.label}
                             </strong>
                             {option.description ? <small>{option.description}</small> : null}
-                        </button>
+                        </ActionButton>
                     ))
                 )}
             </div>

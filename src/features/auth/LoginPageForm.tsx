@@ -3,10 +3,14 @@
 import { KeyRound } from 'lucide-react';
 import type { FC } from 'react';
 
+import { ActionButton } from '../../components/ActionButton';
+import { FormField } from '../../components/FormFields';
+import { IconButton } from '../../components/IconButton';
 import { SearchableDropdown } from '../../components/SearchableDropdown/SearchableDropdown';
 import type { CapabilityRegistry } from '../../capability/Capability.types';
 import type { DropdownOption } from '../../components/SearchableDropdown/SearchableDropdown';
 import type { OperatorAccount } from './AccountTypes';
+import type { LoginFormApi } from './useLoginForms';
 
 type LoginPageFormProps = {
     readonly capabilities: CapabilityRegistry;
@@ -14,13 +18,12 @@ type LoginPageFormProps = {
     readonly hostedConnectionState: 'connecting' | 'connected' | 'unavailable';
     readonly isLoginDisabled: boolean;
     readonly accountOptions: readonly DropdownOption[];
+    readonly form: LoginFormApi;
     readonly selectedAccount: OperatorAccount | undefined;
     readonly selectedAccountId: string;
-    readonly password: string;
     readonly onActivationOpen: () => void;
     readonly onHelpOpen: () => void;
-    readonly onPasswordChange: (value: string) => void;
-    readonly onSelectedAccountChange: (value: string) => void;
+    readonly onSelectedAccountIdChange: (value: string) => void;
     readonly onSubmit: () => void;
 };
 
@@ -31,13 +34,12 @@ export const LoginPageForm: FC<LoginPageFormProps> = ({
     hostedConnectionState,
     isLoginDisabled,
     accountOptions,
+    form,
     selectedAccount,
     selectedAccountId,
-    password,
     onActivationOpen,
     onHelpOpen,
-    onPasswordChange,
-    onSelectedAccountChange,
+    onSelectedAccountIdChange,
     onSubmit,
 }) => (
     <>
@@ -50,18 +52,17 @@ export const LoginPageForm: FC<LoginPageFormProps> = ({
                 </strong>
                 <p>
                     {hostedConnectionState === 'connecting'
-                        ? 'Checking the secure local session.'
-                        : 'Open VaultBill Desktop on the host computer, then reconnect.'}
+                        ? 'Checking the local workspace session.'
+                        : 'Open VaultBill Desktop on the host computer, then try again.'}
                 </p>
                 {hostedConnectionState === 'unavailable' ? (
-                    <button
+                    <ActionButton
                         onClick={() => {
                             window.location.reload();
                         }}
-                        type="button"
                     >
                         Reconnect
-                    </button>
+                    </ActionButton>
                 ) : null}
             </div>
         ) : null}
@@ -75,46 +76,58 @@ export const LoginPageForm: FC<LoginPageFormProps> = ({
             {capabilities.isDemoMode ? (
                 <div className="demo-login-summary">
                     <strong>Demo User</strong>
-                    <p>Create invoices, print records, and explore the demo workspace.</p>
+                    <p>Try records, printing, and the guided demo workspace.</p>
                 </div>
             ) : (
                 <SearchableDropdown
                     label="Operator account"
-                    onChange={onSelectedAccountChange}
+                    onChange={(value) => {
+                        onSelectedAccountIdChange(value);
+                        form.setFieldValue('selectedAccountId', value);
+                        form.setFieldValue('password', '');
+                    }}
                     options={accountOptions}
                     value={selectedAccountId}
                 />
             )}
             {!capabilities.isDemoMode &&
             (selectedAccount?.passwordHash || selectedAccount?.passwordConfigured) ? (
-                <label className="login-password">
-                    <span>Password</span>
-                    <input
-                        autoComplete="current-password"
-                        onChange={(event) => {
-                            onPasswordChange(event.currentTarget.value);
-                        }}
-                        type="password"
-                        value={password}
-                    />
-                </label>
+                <form.Field name="password">
+                    {(field) => (
+                        <FormField.TextField
+                            autoComplete="current-password"
+                            label="Password"
+                            onBlur={field.handleBlur}
+                            onChange={(event) => {
+                                field.handleChange(event.currentTarget.value);
+                            }}
+                            type="password"
+                            value={field.state.value}
+                            wrapperClassName="login-password"
+                        />
+                    )}
+                </form.Field>
             ) : null}
-            <button className="button-primary" disabled={isLoginDisabled} type="submit">
+            <ActionButton disabled={isLoginDisabled} type="submit" variant="primary">
                 {capabilities.isDemoMode ? 'Start demo' : 'Log in'}
-            </button>
+            </ActionButton>
         </form>
         {error ? (
             <p className="feedback-error" role="alert">
                 {error}
             </p>
         ) : null}
-        <button className="login-help-link" onClick={onHelpOpen} type="button">
+        <IconButton className="login-help-link" onClick={onHelpOpen}>
             Sign-in help
-        </button>
+        </IconButton>
         {capabilities.isDesktop ? (
-            <button className="login-help-link" onClick={onActivationOpen} type="button">
-                <KeyRound aria-hidden="true" size={16} /> Enter license key
-            </button>
+            <IconButton
+                className="login-help-link"
+                icon={<KeyRound aria-hidden="true" size={16} />}
+                onClick={onActivationOpen}
+            >
+                Enter license key
+            </IconButton>
         ) : null}
     </>
 );

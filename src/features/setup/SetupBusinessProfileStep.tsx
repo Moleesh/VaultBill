@@ -2,69 +2,62 @@
 
 import type { FC } from 'react';
 
+import { FormField } from '../../components/FormFields';
 import { SettingsBusinessThemePicker } from '../settings/SettingsBusinessThemePicker';
+import type { SetupFormApi } from './useSetupForm';
 
 type SetupBusinessProfileStepProps = {
-    readonly companyName: string;
-    readonly address: string;
-    readonly theme: string;
+    readonly form: SetupFormApi;
     readonly showValidation: boolean;
-    readonly onCompanyNameChange: (value: string) => void;
-    readonly onAddressChange: (value: string) => void;
     readonly onThemeChange: (value: string) => void;
 };
 
 /** Collects the business identity and opening theme used across the workspace. */
 export const SetupBusinessProfileStep: FC<SetupBusinessProfileStepProps> = ({
-    companyName,
-    address,
-    theme,
+    form,
     showValidation,
-    onCompanyNameChange,
-    onAddressChange,
     onThemeChange,
 }) => (
     <div className="form-grid">
-        <label>
-            <span>
-                Business name
-                <span aria-hidden="true" className="required-indicator">
-                    *
-                </span>
-            </span>
-            <input
-                autoFocus
-                aria-invalid={showValidation && companyName.trim().length === 0}
-                onChange={(event) => {
-                    onCompanyNameChange(event.currentTarget.value);
-                }}
-                placeholder="Registered business name"
-                required
-                value={companyName}
-            />
-        </label>
-        <label className="span-2">
-            <span>
-                Business address
-                <span aria-hidden="true" className="required-indicator">
-                    *
-                </span>
-            </span>
-            <textarea
-                aria-invalid={showValidation && address.trim().length === 0}
-                onChange={(event) => {
-                    onAddressChange(event.currentTarget.value);
-                }}
-                placeholder="Primary business address"
-                required
-                value={address}
-            />
-        </label>
-        <div className="span-2">
-            <SettingsBusinessThemePicker onThemeChange={onThemeChange} theme={theme} />
-            <p className="field-note">
-                Pick the theme you want on the sign-in screen and across the workspace.
-            </p>
-        </div>
+        <form.Field name="companyName">
+            {(field) => (
+                <FormField.TextField
+                    autoFocus
+                    invalid={showValidation && field.state.value.trim().length === 0}
+                    label="Business name"
+                    onBlur={field.handleBlur}
+                    onChange={(event) => {
+                        field.handleChange(event.currentTarget.value);
+                    }}
+                    placeholder="Business name shown across the workspace"
+                    required
+                    requiredIndicator
+                    value={field.state.value}
+                />
+            )}
+        </form.Field>
+        <form.Field name="address">
+            {(field) => (
+                <FormField.TextAreaField
+                    invalid={showValidation && field.state.value.trim().length === 0}
+                    label="Business address"
+                    onBlur={field.handleBlur}
+                    onChange={(event) => {
+                        field.handleChange(event.currentTarget.value);
+                    }}
+                    placeholder="Primary business address for documents and reports"
+                    required
+                    requiredIndicator
+                    value={field.state.value}
+                    wrapperClassName="span-2"
+                />
+            )}
+        </form.Field>
+        <SettingsBusinessThemePicker
+            note="Pick the theme you want to open with on the sign-in screen and in the workspace."
+            onThemeChange={onThemeChange}
+            theme={form.state.values.theme}
+            wrapperClassName="span-2"
+        />
     </div>
 );

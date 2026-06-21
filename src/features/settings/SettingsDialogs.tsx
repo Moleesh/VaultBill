@@ -2,7 +2,12 @@
 
 import type { FC } from 'react';
 
+import { ActionButton } from '../../components/ActionButton';
 import { AppModal } from '../../components/AppModal/AppModal';
+import { DialogActions } from '../../components/DialogActions';
+import { FileSelectButton } from '../../components/FileSelectButton';
+import { FormField } from '../../components/FormFields';
+import type { ResetFormApi, RestoreFormApi } from './useSettingsBackupSection';
 
 type SettingsDialogsProps = {
     readonly capabilities: {
@@ -10,20 +15,14 @@ type SettingsDialogsProps = {
     };
     readonly busyAction: string;
     readonly restoreOpen: boolean;
-    readonly restorePassword: string;
-    readonly restoreRecoveryKey: string;
+    readonly restoreForm: RestoreFormApi;
     readonly resetOpen: boolean;
-    readonly resetSysAdminPassword: string;
-    readonly resetConfirmation: string;
+    readonly resetForm: ResetFormApi;
     readonly recoveryKey: string;
     readonly onCloseRestore: () => void;
     readonly onCloseReset: () => void;
     readonly onCloseRecoveryKey: () => void;
     readonly onSetRestoreFile: (file: File | undefined) => void;
-    readonly onSetRestorePassword: (value: string) => void;
-    readonly onSetRestoreRecoveryKey: (value: string) => void;
-    readonly onSetResetSysAdminPassword: (value: string) => void;
-    readonly onSetResetConfirmation: (value: string) => void;
     readonly onCopyRecoveryKey: () => void;
     readonly onRestoreBackup: () => void;
     readonly onResetApplication: () => void;
@@ -33,20 +32,14 @@ export const SettingsDialogs: FC<SettingsDialogsProps> = ({
     capabilities,
     busyAction,
     restoreOpen,
-    restorePassword,
-    restoreRecoveryKey,
+    restoreForm,
     resetOpen,
-    resetSysAdminPassword,
-    resetConfirmation,
+    resetForm,
     recoveryKey,
     onCloseRestore,
     onCloseReset,
     onCloseRecoveryKey,
     onSetRestoreFile,
-    onSetRestorePassword,
-    onSetRestoreRecoveryKey,
-    onSetResetSysAdminPassword,
-    onSetResetConfirmation,
     onCopyRecoveryKey,
     onRestoreBackup,
     onResetApplication,
@@ -64,50 +57,54 @@ export const SettingsDialogs: FC<SettingsDialogsProps> = ({
                 restarts after a successful restore.
             </p>
             {capabilities.isHostedWeb ? (
-                <label>
-                    <span>VaultBill backup ZIP</span>
-                    <input
+                <FormField.Wrapper label="VaultBill backup ZIP">
+                    <FileSelectButton
                         accept=".zip,application/zip"
+                        className="button-file--wide"
                         onChange={(event) => {
                             onSetRestoreFile(event.currentTarget.files?.[0]);
                         }}
-                        type="file"
-                    />
-                </label>
+                    >
+                        Choose backup ZIP
+                    </FileSelectButton>
+                </FormField.Wrapper>
             ) : null}
-            <label>
-                <span>Backup password</span>
-                <input
-                    autoComplete="current-password"
-                    type="password"
-                    value={restorePassword}
-                    onChange={(event) => {
-                        onSetRestorePassword(event.currentTarget.value);
-                    }}
-                />
-            </label>
-            <label>
-                <span>Recovery key (optional)</span>
-                <textarea
-                    value={restoreRecoveryKey}
-                    onChange={(event) => {
-                        onSetRestoreRecoveryKey(event.currentTarget.value);
-                    }}
-                />
-            </label>
-            <div className="popup-actions">
-                <button disabled={Boolean(busyAction)} onClick={onCloseRestore} type="button">
+            <restoreForm.Field name="password">
+                {(field) => (
+                    <FormField.TextField
+                        autoComplete="current-password"
+                        label="Backup password"
+                        onChange={(event) => {
+                            field.handleChange(event.currentTarget.value);
+                        }}
+                        type="password"
+                        value={field.state.value}
+                    />
+                )}
+            </restoreForm.Field>
+            <restoreForm.Field name="recoveryKey">
+                {(field) => (
+                    <FormField.TextAreaField
+                        label="Recovery key (optional)"
+                        onChange={(event) => {
+                            field.handleChange(event.currentTarget.value);
+                        }}
+                        value={field.state.value}
+                    />
+                )}
+            </restoreForm.Field>
+            <DialogActions>
+                <ActionButton disabled={Boolean(busyAction)} onClick={onCloseRestore}>
                     Cancel
-                </button>
-                <button
-                    className="button-primary"
+                </ActionButton>
+                <ActionButton
                     disabled={Boolean(busyAction)}
                     onClick={onRestoreBackup}
-                    type="button"
+                    variant="primary"
                 >
                     Choose and restore
-                </button>
-            </div>
+                </ActionButton>
+            </DialogActions>
         </AppModal>
         <AppModal
             isOpen={resetOpen}
@@ -120,43 +117,46 @@ export const SettingsDialogs: FC<SettingsDialogsProps> = ({
                 This permanently removes records, formats, operators, settings, trial time, and
                 activation from this installation.
             </p>
-            <label>
-                <span>System Administrator password</span>
-                <input
-                    autoComplete="current-password"
-                    type="password"
-                    value={resetSysAdminPassword}
-                    onChange={(event) => {
-                        onSetResetSysAdminPassword(event.currentTarget.value);
-                    }}
-                />
-            </label>
-            <label>
-                <span>Type RESET VAULTBILL</span>
-                <input
-                    value={resetConfirmation}
-                    onChange={(event) => {
-                        onSetResetConfirmation(event.currentTarget.value);
-                    }}
-                />
-            </label>
-            <div className="popup-actions">
-                <button disabled={Boolean(busyAction)} onClick={onCloseReset} type="button">
+            <resetForm.Field name="sysAdminPassword">
+                {(field) => (
+                    <FormField.TextField
+                        autoComplete="current-password"
+                        label="System Administrator password"
+                        onChange={(event) => {
+                            field.handleChange(event.currentTarget.value);
+                        }}
+                        type="password"
+                        value={field.state.value}
+                    />
+                )}
+            </resetForm.Field>
+            <resetForm.Field name="confirmation">
+                {(field) => (
+                    <FormField.TextField
+                        label="Type RESET VAULTBILL"
+                        onChange={(event) => {
+                            field.handleChange(event.currentTarget.value);
+                        }}
+                        value={field.state.value}
+                    />
+                )}
+            </resetForm.Field>
+            <DialogActions>
+                <ActionButton disabled={Boolean(busyAction)} onClick={onCloseReset}>
                     Keep my data
-                </button>
-                <button
-                    className="button-primary"
+                </ActionButton>
+                <ActionButton
                     disabled={
                         Boolean(busyAction) ||
-                        !resetSysAdminPassword ||
-                        resetConfirmation !== 'RESET VAULTBILL'
+                        !resetForm.state.values.sysAdminPassword ||
+                        resetForm.state.values.confirmation !== 'RESET VAULTBILL'
                     }
                     onClick={onResetApplication}
-                    type="button"
+                    variant="primary"
                 >
                     Reset and restart
-                </button>
-            </div>
+                </ActionButton>
+            </DialogActions>
         </AppModal>
         <AppModal
             isOpen={Boolean(recoveryKey)}
@@ -167,10 +167,15 @@ export const SettingsDialogs: FC<SettingsDialogsProps> = ({
                 Store this key separately from the backup. It can restore the backup if its password
                 is unavailable.
             </p>
-            <textarea aria-label="Backup recovery key" readOnly value={recoveryKey} />
-            <button className="button-primary" onClick={onCopyRecoveryKey} type="button">
+            <FormField.TextAreaField
+                aria-label="Backup recovery key"
+                label="Recovery key"
+                readOnly
+                value={recoveryKey}
+            />
+            <ActionButton onClick={onCopyRecoveryKey} variant="primary">
                 Copy recovery key
-            </button>
+            </ActionButton>
         </AppModal>
         <AppModal
             isOpen={Boolean(busyAction)}

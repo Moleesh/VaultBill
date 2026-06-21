@@ -2,15 +2,17 @@
 
 import type { FC } from 'react';
 
+import { ActionButton } from '../../components/ActionButton';
 import { AppModal } from '../../components/AppModal/AppModal';
+import { FormField } from '../../components/FormFields';
+import type { ActivationFormApi } from './useLoginForms';
 
 type LoginActivationModalProps = {
     readonly activationMessage: string;
+    readonly form: ActivationFormApi;
     readonly isOpen: boolean;
-    readonly licenseKey: string;
     readonly onActivate: () => void;
     readonly onClose: () => void;
-    readonly onLicenseKeyChange: (licenseKey: string) => void;
 };
 
 /**
@@ -18,34 +20,35 @@ type LoginActivationModalProps = {
  */
 export const LoginActivationModal: FC<LoginActivationModalProps> = ({
     activationMessage,
+    form,
     isOpen,
-    licenseKey,
     onActivate,
     onClose,
-    onLicenseKeyChange,
 }) => (
     <AppModal isOpen={isOpen} onClose={onClose} title="Activate VaultBill">
-        <label>
-            <span>License key</span>
-            <input
-                value={licenseKey}
-                onChange={(event) => {
-                    onLicenseKeyChange(event.currentTarget.value);
-                }}
-            />
-        </label>
+        <form.Field name="licenseKey">
+            {(field) => (
+                <FormField.TextField
+                    label="License key"
+                    onBlur={field.handleBlur}
+                    onChange={(event) => {
+                        field.handleChange(event.currentTarget.value);
+                    }}
+                    value={field.state.value}
+                />
+            )}
+        </form.Field>
         {activationMessage ? (
             <p className="feedback-info" role="status">
                 {activationMessage}
             </p>
         ) : null}
-        <button
-            className="button-primary"
-            disabled={!licenseKey.trim()}
+        <ActionButton
+            disabled={!form.state.values.licenseKey.trim()}
             onClick={onActivate}
-            type="button"
+            variant="primary"
         >
             Activate full version
-        </button>
+        </ActionButton>
     </AppModal>
 );

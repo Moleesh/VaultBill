@@ -1,8 +1,10 @@
 /** @format */
 
 import { Palette } from 'lucide-react';
-import type { FC } from 'react';
+import type { FC, ReactNode } from 'react';
 
+import { ActionButton } from '../../components/ActionButton';
+import { FormField } from '../../components/FormFields';
 import { themeOptions } from '../../constants/RuntimeDefaults';
 
 const themeSwatches = {
@@ -14,30 +16,42 @@ const themeSwatches = {
 } as const;
 
 type SettingsBusinessThemePickerProps = {
+    readonly note?: ReactNode;
     readonly theme: string;
     readonly onThemeChange: (value: string) => void;
+    readonly wrapperClassName?: string;
 };
 
 /** Renders the theme swatches used by the business settings panel. */
 export const SettingsBusinessThemePicker: FC<SettingsBusinessThemePickerProps> = ({
+    note,
     theme,
     onThemeChange,
+    wrapperClassName,
 }) => (
-    <fieldset className="settings-theme-picker">
-        <legend>
-            <Palette aria-hidden="true" size={17} /> Theme
-        </legend>
-        <div>
+    <FormField.Wrapper
+        label={
+            <>
+                <Palette aria-hidden="true" size={17} /> Theme
+            </>
+        }
+        note={note}
+        wrapperClassName={
+            wrapperClassName ? `settings-theme-picker ${wrapperClassName}` : 'settings-theme-picker'
+        }
+    >
+        <div className="settings-theme-picker-options" role="radiogroup" aria-label="Theme">
             {themeOptions.map((option) => (
-                <button
+                <ActionButton
+                    aria-checked={theme === option.id}
                     aria-pressed={theme === option.id}
                     key={option.id}
                     onClick={() => {
                         onThemeChange(option.id);
                         document.documentElement.dataset.theme = option.id;
                     }}
+                    role="radio"
                     title={option.label}
-                    type="button"
                 >
                     <span
                         aria-hidden="true"
@@ -46,8 +60,8 @@ export const SettingsBusinessThemePicker: FC<SettingsBusinessThemePickerProps> =
                         }}
                     />
                     <small>{option.label}</small>
-                </button>
+                </ActionButton>
             ))}
         </div>
-    </fieldset>
+    </FormField.Wrapper>
 );

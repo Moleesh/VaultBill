@@ -1,8 +1,10 @@
 /** @format */
 
+import { useForm } from '@tanstack/react-form';
 import { useEffect, useState } from 'react';
 import type { FC } from 'react';
 
+import { ActionButton } from '../../components/ActionButton';
 import { useCapabilities } from '../../capability/CapabilityContext';
 import { requestHostedApi } from '../../runtime/HostedApi';
 import {
@@ -18,6 +20,9 @@ export const SettingsSecretsSection: FC = () => {
     const capabilities = useCapabilities();
     const [settings, setSettings] = useState<SecretsSettings>(defaultSecretsSettings);
     const [message, setMessage] = useState('');
+    const form = useForm({
+        defaultValues: settings,
+    });
 
     useEffect(() => {
         const secretRequest = window.vaultBillDesktop
@@ -30,12 +35,17 @@ export const SettingsSecretsSection: FC = () => {
         });
     }, [capabilities.isHostedWeb]);
 
+    useEffect(() => {
+        form.reset(settings);
+    }, [form, settings]);
+
     const saveSecrets = () => {
+        const currentSettings = form.state.values;
         const persistence = window.vaultBillDesktop
-            ? window.vaultBillDesktop.saveSecretsSettings(settings)
+            ? window.vaultBillDesktop.saveSecretsSettings(currentSettings)
             : capabilities.isHostedWeb
-              ? requestHostedApi('/settings/secrets', 'POST', settings)
-              : Promise.resolve(settings);
+              ? requestHostedApi('/settings/secrets', 'POST', currentSettings)
+              : Promise.resolve(currentSettings);
         void persistence
             .then(() => {
                 setMessage('Secrets saved.');
@@ -63,14 +73,14 @@ export const SettingsSecretsSection: FC = () => {
             >
                 <SecretsTable
                     onChange={(secrets) => {
-                        setSettings({ secrets });
+                        form.setFieldValue('secrets', secrets);
                     }}
-                    secrets={settings.secrets}
+                    secrets={form.state.values.secrets}
                 />
             </SecretsSectionCard>
-            <button className="button-primary" onClick={saveSecrets} type="button">
+            <ActionButton onClick={saveSecrets} variant="primary">
                 Save secrets
-            </button>
+            </ActionButton>
             {message ? (
                 <p className="feedback-info" role="status">
                     {message}

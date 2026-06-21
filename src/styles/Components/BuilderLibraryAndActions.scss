@@ -185,24 +185,19 @@
     display: grid;
     gap: var(--space-3);
     min-width: 0;
-    margin: 0;
-    border: 0;
-    padding: 0;
 }
-.settings-theme-picker legend {
-    display: inline-flex;
-    align-items: center;
+
+.settings-theme-picker .form-field-label {
     gap: var(--space-2);
-    margin-bottom: var(--space-2);
-    color: var(--color-label);
-    font-weight: var(--font-weight-semibold);
 }
-.settings-theme-picker > div {
+
+.settings-theme-picker-options {
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-2);
 }
-.settings-theme-picker button {
+
+.settings-theme-picker-options button {
     display: grid;
     width: 3.25rem;
     min-width: 3.25rem;
@@ -211,17 +206,20 @@
     border-color: transparent;
     padding: var(--space-1);
 }
-.settings-theme-picker button[aria-pressed='true'] {
+
+.settings-theme-picker-options button[aria-pressed='true'] {
     border-color: var(--color-primary);
     background: var(--color-secondary);
 }
-.settings-theme-picker button > span {
+
+.settings-theme-picker-options button > span {
     width: 1.65rem;
     height: 1.65rem;
     border: var(--line-width) solid var(--color-border);
     border-radius: 50%;
 }
-.settings-theme-picker button small {
+
+.settings-theme-picker-options button small {
     position: absolute;
     width: 1px;
     height: 1px;
