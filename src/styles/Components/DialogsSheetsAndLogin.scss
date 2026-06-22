@@ -96,7 +96,7 @@
     height: 3.35rem;
     border: none;
     border-radius: 1.15rem;
-    color: color-mix(in srgb, #1b1612 88%, var(--color-text-title));
+    color: color-mix(in srgb, var(--color-text-title) 86%, black 14%);
     box-shadow:
         inset 0 1px 0 color-mix(in srgb, white 24%, transparent),
         0 0.85rem 1.5rem color-mix(in srgb, var(--color-panel-shadow) 14%, transparent);
@@ -108,18 +108,20 @@
 }
 
 .login-page-chrome .desktop-window-controls .desktop-window-control--minimize {
+    color: var(--window-control-minimize-text);
     background: linear-gradient(
         160deg,
-        color-mix(in srgb, #f3dfcc 82%, white),
-        color-mix(in srgb, #cfab88 86%, white 6%)
+        var(--window-control-minimize-start),
+        var(--window-control-minimize-end)
     );
 }
 
 .login-page-chrome .desktop-window-controls .desktop-window-control--close {
+    color: var(--window-control-close-text);
     background: linear-gradient(
         160deg,
-        color-mix(in srgb, #d68d87 88%, white),
-        color-mix(in srgb, #c86f68 92%, white 4%)
+        var(--window-control-close-start),
+        var(--window-control-close-end)
     );
 }
 
@@ -132,16 +134,16 @@
 .login-page-chrome .desktop-window-controls .desktop-window-control--minimize:hover {
     background: linear-gradient(
         160deg,
-        color-mix(in srgb, #f6e6d8 88%, white),
-        color-mix(in srgb, #d6b18d 90%, white 8%)
+        color-mix(in srgb, var(--window-control-minimize-start) 72%, white 28%),
+        color-mix(in srgb, var(--window-control-minimize-end) 88%, white 12%)
     );
 }
 
 .login-page-chrome .desktop-window-controls .desktop-window-control--close:hover {
     background: linear-gradient(
         160deg,
-        color-mix(in srgb, #dc9892 92%, white),
-        color-mix(in srgb, #cb756d 96%, white 4%)
+        color-mix(in srgb, var(--window-control-close-start) 72%, white 28%),
+        color-mix(in srgb, var(--window-control-close-end) 90%, white 10%)
     );
 }
 

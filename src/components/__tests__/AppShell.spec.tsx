@@ -28,6 +28,23 @@ const desktopCapabilities: CapabilityRegistry = {
     hasLocalDb: true,
 };
 
+const hostedCapabilities: CapabilityRegistry = {
+    isDesktop: false,
+    isHostedWeb: true,
+    isDemoMode: false,
+    canListPrinters: false,
+    canSelectExactPrinter: false,
+    canBrowserPrint: true,
+    canDownloadPdf: false,
+    canBackup: true,
+    canRestore: true,
+    canUsbSignaturePad: false,
+    canLanServer: false,
+    canSmsIntegration: true,
+    canGspIntegration: true,
+    hasLocalDb: false,
+};
+
 const sysAdminAccount = {
     userId: 'sysadmin_1',
     username: 'sysadmin',
@@ -56,10 +73,15 @@ describe('app shell', () => {
                 listRecords: vi.fn().mockResolvedValue([]),
             } as const,
         });
+        Object.defineProperty(window, 'vaultBillRuntime', {
+            configurable: true,
+            value: 'desktop',
+        });
     });
 
     afterEach(() => {
         delete (window as Partial<Window> & { vaultBillDesktop?: unknown }).vaultBillDesktop;
+        delete (window as Partial<Window> & { vaultBillRuntime?: unknown }).vaultBillRuntime;
     });
 
     it('shows desktop window controls in the shell top bar', () => {
@@ -80,6 +102,27 @@ describe('app shell', () => {
         );
 
         expect(screen.getByRole('navigation', { name: 'Primary' })).toBeVisible();
+        expect(screen.getByRole('button', { name: 'Close to tray' })).toBeVisible();
+        expect(screen.getByRole('button', { name: 'Minimize to taskbar' })).toBeVisible();
+    });
+
+    it('keeps shell window controls visible when the hosted desktop runtime marker is present', () => {
+        render(
+            <MemoryRouter initialEntries={['/app/dashboard']}>
+                <CapabilityProvider value={hostedCapabilities}>
+                    <SessionContext.Provider value={createTestSession(sysAdminAccount)}>
+                        <RecordStoreProvider>
+                            <Routes>
+                                <Route path="/app/*" element={<AppShell />}>
+                                    <Route index element={<h1>Dashboard</h1>} />
+                                </Route>
+                            </Routes>
+                        </RecordStoreProvider>
+                    </SessionContext.Provider>
+                </CapabilityProvider>
+            </MemoryRouter>,
+        );
+
         expect(screen.getByRole('button', { name: 'Close to tray' })).toBeVisible();
         expect(screen.getByRole('button', { name: 'Minimize to taskbar' })).toBeVisible();
     });

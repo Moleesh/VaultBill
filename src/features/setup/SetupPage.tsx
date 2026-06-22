@@ -8,20 +8,20 @@ import { useNavigate } from 'react-router-dom';
 import { shouldRenderDesktopChrome } from '../../capability/CapabilityRegistry';
 import { useCapabilities } from '../../capability/CapabilityContext';
 import { requestHostedApi } from '../../runtime/HostedApi';
+import { applyTheme, getStoredTheme, loadResolvedTheme } from '../../runtime/WorkspaceTheme';
 import { SetupAdminUserStep } from './SetupAdminUserStep';
 import { SetupPageActions } from './SetupPageActions';
 import { SetupBusinessProfileStep } from './SetupBusinessProfileStep';
 import { SetupPageChrome } from './SetupPageChrome';
+import { SetupPageProvider } from './SetupPageContext';
 import { SetupPageHeader } from './SetupPageHeader';
 import { SetupPageMessageModal } from './SetupPageMessageModal';
 import {
     getAdminAccessValidationMessage,
     getBusinessProfileValidationMessage,
-    isThemeId,
     localHostedOrigins,
     setupErrorMessage,
     setupSteps,
-    themeStorageKey,
 } from './SetupPageSupport';
 import { SetupWelcomeStep } from './SetupWelcomeStep';
 import { useSetupForm } from './useSetupForm';
@@ -36,10 +36,7 @@ export const SetupPage: FC<SetupPageProps> = ({ onComplete }) => {
     const showDesktopChrome = shouldRenderDesktopChrome(capabilities);
     const navigate = useNavigate();
     const [stepIndex, setStepIndex] = useState(0);
-    const [initialTheme] = useState(() => {
-        const savedTheme = window.localStorage.getItem(themeStorageKey) ?? 'teal-flow';
-        return isThemeId(savedTheme) ? savedTheme : 'teal-flow';
-    });
+    const [initialTheme] = useState(() => getStoredTheme() ?? 'teal-flow');
     const [message, setMessage] = useState('');
     const [hasAttemptedBusinessProfileContinue, setHasAttemptedBusinessProfileContinue] =
         useState(false);
@@ -82,6 +79,17 @@ export const SetupPage: FC<SetupPageProps> = ({ onComplete }) => {
     const isFinalStep = stepIndex === setupSteps.length - 1;
 
     useEffect(() => {
+        void loadResolvedTheme(capabilities.isHostedWeb)
+            .then((resolvedTheme) => {
+                form.setFieldValue('theme', resolvedTheme);
+                applyTheme(resolvedTheme);
+            })
+            .catch(() => {
+                applyTheme(form.state.values.theme);
+            });
+    }, [capabilities.isHostedWeb, form]);
+
+    useEffect(() => {
         if (!hasAttemptedBusinessProfileContinue) return;
 
         if (isBusinessProfileInvalid) {
@@ -117,90 +125,80 @@ export const SetupPage: FC<SetupPageProps> = ({ onComplete }) => {
 
     const handleThemeChange = (value: string) => {
         form.setFieldValue('theme', value);
-        window.localStorage.setItem(themeStorageKey, value);
-        document.documentElement.dataset.theme = value;
+        applyTheme(value);
+    };
+
+    const handleContinue = () => {
+        if (stepIndex === 1 && isBusinessProfileInvalid) {
+            setHasAttemptedBusinessProfileContinue(true);
+            setMessage(
+                getBusinessProfileValidationMessage({
+                    companyName,
+                    address,
+                }),
+            );
+            return;
+        }
+        setHasAttemptedBusinessProfileContinue(false);
+        setMessage('');
+        setStepIndex((current) => Math.min(setupSteps.length - 1, current + 1));
+    };
+
+    const handleFinish = () => {
+        if (isAdminUserInvalid) {
+            setHasAttemptedAdminUserFinish(true);
+            setMessage(
+                getAdminAccessValidationMessage({
+                    adminDisplayName,
+                    adminUsername,
+                }),
+            );
+            return;
+        }
+        setHasAttemptedAdminUserFinish(false);
+        setMessage('');
+        void form.handleSubmit().catch((reason: unknown) => {
+            setMessage(setupErrorMessage(reason));
+        });
     };
 
     return (
         <main className="setup-page">
             {showDesktopChrome ? <SetupPageChrome /> : null}
             <section className="setup-card">
-                <SetupPageHeader
-                    onStepSelect={(index) => {
-                        setStepIndex(index);
-                        setMessage('');
+                <SetupPageProvider
+                    value={{
+                        clearMessage: () => {
+                            setMessage('');
+                        },
+                        form,
+                        handleThemeChange,
+                        isAdminUserInvalid,
+                        isBusinessProfileInvalid,
+                        onContinue: handleContinue,
+                        onFinish: handleFinish,
+                        setShowAdminUserValidation: setHasAttemptedAdminUserFinish,
+                        setShowBusinessProfileValidation: setHasAttemptedBusinessProfileContinue,
+                        setStepIndex,
+                        showAdminUserValidation: hasAttemptedAdminUserFinish,
+                        showBusinessProfileValidation: hasAttemptedBusinessProfileContinue,
+                        stepIndex,
                     }}
-                    stepIndex={stepIndex}
-                />
-                <section className="setup-card-content" aria-labelledby="setup-step-title">
-                    <div>
-                        <p className="eyebrow">
-                            Step {stepIndex + 1} of {setupSteps.length}
-                        </p>
-                        <h2 id="setup-step-title">{activeStep}</h2>
-                    </div>
-                    {activeStep === 'Welcome' ? <SetupWelcomeStep /> : null}
-                    {activeStep === 'Workspace Details' ? (
-                        <SetupBusinessProfileStep
-                            form={form}
-                            onThemeChange={handleThemeChange}
-                            onFieldTouched={() => {
-                                setHasAttemptedBusinessProfileContinue(true);
-                            }}
-                            showValidation={hasAttemptedBusinessProfileContinue}
-                        />
-                    ) : null}
-                    {activeStep === 'Admin Access' ? (
-                        <SetupAdminUserStep
-                            form={form}
-                            onFieldTouched={() => {
-                                setHasAttemptedAdminUserFinish(true);
-                            }}
-                            showValidation={hasAttemptedAdminUserFinish}
-                        />
-                    ) : null}
-                </section>
-                <SetupPageActions
-                    isAdminUserInvalid={isAdminUserInvalid}
-                    isBusinessProfileInvalid={stepIndex === 1 && isBusinessProfileInvalid}
-                    isFinalStep={isFinalStep}
-                    onBack={() => {
-                        setStepIndex((current) => Math.max(0, current - 1));
-                    }}
-                    onContinue={() => {
-                        if (stepIndex === 1 && isBusinessProfileInvalid) {
-                            setHasAttemptedBusinessProfileContinue(true);
-                            setMessage(
-                                getBusinessProfileValidationMessage({
-                                    companyName,
-                                    address,
-                                }),
-                            );
-                            return;
-                        }
-                        setHasAttemptedBusinessProfileContinue(false);
-                        setMessage('');
-                        setStepIndex((current) => Math.min(setupSteps.length - 1, current + 1));
-                    }}
-                    onFinish={() => {
-                        if (isAdminUserInvalid) {
-                            setHasAttemptedAdminUserFinish(true);
-                            setMessage(
-                                getAdminAccessValidationMessage({
-                                    adminDisplayName,
-                                    adminUsername,
-                                }),
-                            );
-                            return;
-                        }
-                        setHasAttemptedAdminUserFinish(false);
-                        setMessage('');
-                        void form.handleSubmit().catch((reason: unknown) => {
-                            setMessage(setupErrorMessage(reason));
-                        });
-                    }}
-                    showBack={stepIndex > 0}
-                />
+                >
+                    <SetupPageHeader />
+                    <section className="setup-card-content" aria-labelledby="setup-step-title">
+                        <div>
+                            <p className="eyebrow">
+                                Step {stepIndex + 1} of {setupSteps.length}
+                            </p>
+                            <h2 id="setup-step-title">{activeStep}</h2>
+                        </div>
+                        {activeStep === 'Welcome' ? <SetupWelcomeStep /> : null}
+                        {activeStep === 'Workspace Details' ? <SetupBusinessProfileStep /> : null}
+                        {activeStep === 'Admin Access' ? <SetupAdminUserStep /> : null}
+                    </section>
+                    <SetupPageActions isFinalStep={isFinalStep} showBack={stepIndex > 0} />
+                </SetupPageProvider>
             </section>
             <SetupPageMessageModal
                 message={message}

@@ -2,7 +2,7 @@
 
 import { Building2, Sparkles, UserRoundCog } from 'lucide-react';
 
-import { themeOptions } from '../../constants/RuntimeDefaults';
+export { themeStorageKey, isThemeId } from '../../runtime/WorkspaceTheme';
 
 /** Ordered first-run setup steps shown in the wizard header and content area. */
 export const setupSteps = [
@@ -13,12 +13,6 @@ export const setupSteps = [
 
 /** Local host names that are allowed to use the hosted setup completion API. */
 export const localHostedOrigins = new Set(['localhost', '127.0.0.1', '[::1]']);
-/** Local storage key used to keep the pre-login theme in sync during setup. */
-export const themeStorageKey = 'vaultbill.theme';
-
-/** Returns whether a stored theme id still matches one of the supported app themes. */
-export const isThemeId = (value: string): boolean =>
-    themeOptions.some((option) => option.id === value);
 
 /** Removes Electron IPC framing so setup failures read clearly in the wizard. */
 export const setupErrorMessage = (reason: unknown): string => {

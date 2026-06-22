@@ -6,6 +6,11 @@ import { useEffect, useState } from 'react';
 import { useCapabilities } from '../../capability/CapabilityContext';
 import { requestHostedApi } from '../../runtime/HostedApi';
 import {
+    applyTheme,
+    loadResolvedTheme,
+    resolveThemeFromWorkspaceSettings,
+} from '../../runtime/WorkspaceTheme';
+import {
     defaultWorkspaceSettings,
     loadWorkspaceSettings,
     normalizeWorkspaceSettings,
@@ -42,7 +47,7 @@ export const useSettingsBusinessSection = () => {
             includeDraftsInReports: defaultWorkspaceSettings.includeDraftsInReports,
             outputTarget: defaultWorkspaceSettings.outputTarget,
             preferredPrinterName: defaultWorkspaceSettings.preferredPrinterName,
-            theme: window.localStorage.getItem('vaultbill.theme') ?? 'teal-flow',
+            theme: defaultWorkspaceSettings.theme,
         } satisfies SettingsBusinessFormValues,
         onSubmit: async ({ value }) => {
             if (!value.companyName.trim() || !value.address.trim()) {
@@ -58,8 +63,7 @@ export const useSettingsBusinessSection = () => {
                 preferredPrinterName: value.preferredPrinterName.trim(),
                 includeDraftsInReports: value.includeDraftsInReports,
             };
-            window.localStorage.setItem('vaultbill.theme', value.theme);
-            document.documentElement.dataset.theme = value.theme;
+            applyTheme(value.theme);
             const persistence = window.vaultBillDesktop
                 ? window.vaultBillDesktop.saveBusinessSettings(nextBusiness)
                 : capabilities.isHostedWeb
@@ -80,6 +84,13 @@ export const useSettingsBusinessSection = () => {
     });
 
     useEffect(() => {
+        void loadResolvedTheme(capabilities.isHostedWeb).then((resolvedTheme) => {
+            form.setFieldValue('theme', resolvedTheme);
+            applyTheme(resolvedTheme);
+        });
+    }, [capabilities.isHostedWeb, form]);
+
+    useEffect(() => {
         const businessRequest = window.vaultBillDesktop
             ? loadWorkspaceSettings(false)
             : capabilities.isHostedWeb
@@ -87,6 +98,9 @@ export const useSettingsBusinessSection = () => {
               : Promise.resolve(defaultWorkspaceSettings);
         void businessRequest.then((settings) => {
             form.reset(settings);
+            const resolvedTheme = resolveThemeFromWorkspaceSettings(settings);
+            form.setFieldValue('theme', resolvedTheme);
+            applyTheme(resolvedTheme);
         });
     }, [capabilities.isHostedWeb, form]);
 

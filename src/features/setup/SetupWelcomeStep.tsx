@@ -6,13 +6,13 @@ import type { FC } from 'react';
 export const SetupWelcomeStep: FC = () => (
     <div className="setup-intro">
         <p>
-            Let&apos;s shape the workspace before anyone signs in. In a minute or two, VaultBill
-            will feel ready, familiar, and easy for the team to start using.
+            Let&apos;s prepare the workspace once so the first sign-in already feels settled, clear,
+            and ready for work.
         </p>
         <ul>
-            <li>Add the business details that should appear across the workspace.</li>
-            <li>Pick the theme you want people to see from the very first screen.</li>
-            <li>Create the first Admin account to open the workspace with the right access.</li>
+            <li>Add the business name and address people should see throughout the workspace.</li>
+            <li>Create the first Admin account that will open and manage the workspace.</li>
+            <li>Choose the opening theme before anyone reaches the sign-in screen.</li>
         </ul>
     </div>
 );

@@ -7,11 +7,13 @@ body.has-animated-cursor * {
 
 .animated-cursor {
     --cursor-size: 1rem;
-    --cursor-ring-size: 2.9rem;
-    --cursor-spark-size: 0.42rem;
-    --cursor-color: color-mix(in srgb, var(--color-primary) 74%, white 26%);
-    --cursor-ring-color: color-mix(in srgb, var(--color-primary) 20%, white 10%);
-    --cursor-spark-color: color-mix(in srgb, white 84%, var(--color-primary) 16%);
+    --cursor-ring-size: 2.65rem;
+    --cursor-spark-size: 0.34rem;
+    --cursor-color: color-mix(in srgb, var(--color-primary) 78%, black 22%);
+    --cursor-ring-color: color-mix(in srgb, var(--color-primary) 74%, white 6%);
+    --cursor-spark-color: color-mix(in srgb, white 58%, var(--color-primary) 42%);
+    --cursor-outline-light: rgb(255 255 255 / 86%);
+    --cursor-outline-dark: rgb(8 18 24 / 26%);
     position: fixed;
     z-index: 9999;
     top: 0;
@@ -19,12 +21,14 @@ body.has-animated-cursor * {
     pointer-events: none;
     opacity: 0;
     transform: translate3d(-100px, -100px, 0);
+    will-change: transform, opacity, filter;
     transition:
-        opacity 180ms ease,
-        filter 220ms ease;
+        opacity 60ms linear,
+        filter 80ms linear;
     filter: drop-shadow(
-        0 0.7rem 1.1rem color-mix(in srgb, var(--color-panel-shadow) 16%, transparent)
-    );
+            0 0.5rem 0.95rem color-mix(in srgb, var(--color-panel-shadow) 24%, transparent)
+        )
+        drop-shadow(0 0 0.18rem color-mix(in srgb, black 18%, transparent));
 }
 
 .animated-cursor[data-visible='true'] {
@@ -38,14 +42,15 @@ body.has-animated-cursor * {
     border-radius: 999px;
     transform: translate(-50%, -50%);
     transition:
-        width 180ms ease,
-        height 180ms ease,
-        border-radius 180ms ease,
-        background 180ms ease,
-        border-color 180ms ease,
-        opacity 180ms ease,
-        box-shadow 180ms ease,
-        transform 180ms ease;
+        width 120ms ease-out,
+        height 120ms ease-out,
+        border-radius 120ms ease-out,
+        background 120ms ease-out,
+        border-color 120ms ease-out,
+        opacity 120ms ease-out,
+        box-shadow 120ms ease-out,
+        transform 120ms ease-out;
+    animation: none !important;
 }
 
 .animated-cursor-core {
@@ -54,43 +59,48 @@ body.has-animated-cursor * {
     background:
         radial-gradient(
             circle at 35% 32%,
-            color-mix(in srgb, white 76%, transparent),
+            color-mix(in srgb, white 58%, transparent),
             transparent 46%
         ),
         linear-gradient(
             135deg,
-            color-mix(in srgb, var(--cursor-color) 76%, white 24%),
-            color-mix(in srgb, var(--cursor-color) 92%, black 8%)
+            color-mix(in srgb, var(--cursor-color) 86%, white 14%),
+            color-mix(in srgb, var(--cursor-color) 84%, black 16%)
         );
     box-shadow:
-        inset 0 1px 0 color-mix(in srgb, white 34%, transparent),
-        0 0.12rem 0.5rem color-mix(in srgb, var(--cursor-color) 22%, transparent);
-    animation: animated-cursor-core-breathe 2.4s ease-in-out infinite;
+        inset 0 1px 0 color-mix(in srgb, white 28%, transparent),
+        0 0.18rem 0.46rem color-mix(in srgb, var(--cursor-color) 28%, transparent),
+        0 0 0 2px var(--cursor-outline-light),
+        0 0 0 4px var(--cursor-outline-dark);
 }
 
 .animated-cursor-ring {
     width: var(--cursor-ring-size);
     height: var(--cursor-ring-size);
-    border: 1px solid color-mix(in srgb, var(--cursor-ring-color) 72%, transparent);
+    border: 2px solid color-mix(in srgb, var(--cursor-ring-color) 92%, transparent);
     background:
         radial-gradient(
             circle at 50% 50%,
-            color-mix(in srgb, white 10%, transparent),
-            transparent 60%
+            color-mix(in srgb, white 14%, transparent),
+            transparent 58%
         ),
-        color-mix(in srgb, var(--cursor-ring-color) 14%, transparent);
+        color-mix(in srgb, var(--cursor-ring-color) 24%, transparent);
     box-shadow:
-        inset 0 1px 0 color-mix(in srgb, white 18%, transparent),
-        0 0 0 1px color-mix(in srgb, white 7%, transparent);
-    animation: animated-cursor-halo-float 3.2s ease-in-out infinite;
+        inset 0 1px 0 color-mix(in srgb, white 20%, transparent),
+        0 0 0 1px color-mix(in srgb, white 72%, transparent),
+        0 0 0 3px color-mix(in srgb, black 12%, transparent),
+        0 0 0.75rem color-mix(in srgb, var(--cursor-ring-color) 22%, transparent);
 }
 
 .animated-cursor-spark {
     width: var(--cursor-spark-size);
     height: var(--cursor-spark-size);
     background: var(--cursor-spark-color);
-    box-shadow: 0 0 0.85rem color-mix(in srgb, var(--cursor-spark-color) 32%, transparent);
-    animation: animated-cursor-spark-orbit 1.9s linear infinite;
+    opacity: 0.7;
+    box-shadow:
+        0 0 0 2px color-mix(in srgb, white 72%, transparent),
+        0 0 0.55rem color-mix(in srgb, var(--cursor-spark-color) 40%, transparent);
+    transform: translate(0.58rem, -0.58rem);
 }
 
 .animated-cursor[data-pressed='true'] .animated-cursor-core,
@@ -101,19 +111,19 @@ body.has-animated-cursor * {
 
 .animated-cursor[data-variant='hand'] {
     --cursor-size: 1rem;
-    --cursor-ring-size: 3.2rem;
-    --cursor-spark-size: 0.5rem;
-    --cursor-color: color-mix(in srgb, var(--color-primary) 84%, white 16%);
-    --cursor-ring-color: color-mix(in srgb, var(--color-primary) 28%, white 8%);
+    --cursor-ring-size: 2.6rem;
+    --cursor-spark-size: 0.36rem;
+    --cursor-color: color-mix(in srgb, var(--color-primary) 82%, black 18%);
+    --cursor-ring-color: color-mix(in srgb, var(--color-primary) 76%, white 4%);
 }
 
 .animated-cursor[data-variant='text'] {
-    --cursor-size: 0.22rem;
-    --cursor-ring-size: 1.1rem;
-    --cursor-spark-size: 0.22rem;
-    --cursor-color: color-mix(in srgb, var(--color-text-heading) 84%, white 16%);
-    --cursor-ring-color: color-mix(in srgb, var(--color-primary) 16%, transparent);
-    --cursor-spark-color: color-mix(in srgb, var(--color-text-heading) 78%, white 22%);
+    --cursor-size: 0.24rem;
+    --cursor-ring-size: 1rem;
+    --cursor-spark-size: 0.14rem;
+    --cursor-color: color-mix(in srgb, var(--color-text-heading) 86%, black 14%);
+    --cursor-ring-color: color-mix(in srgb, var(--color-primary) 46%, transparent);
+    --cursor-spark-color: color-mix(in srgb, var(--color-text-heading) 80%, white 20%);
 }
 
 .animated-cursor[data-variant='text'] .animated-cursor-core,
@@ -128,11 +138,11 @@ body.has-animated-cursor * {
 .animated-cursor[data-variant='drag'],
 .animated-cursor[data-variant='dragging'] {
     --cursor-size: 1.1rem;
-    --cursor-ring-size: 3.2rem;
-    --cursor-spark-size: 0.54rem;
-    --cursor-color: color-mix(in srgb, var(--color-secondary) 72%, var(--color-primary) 28%);
-    --cursor-ring-color: color-mix(in srgb, var(--color-secondary) 34%, transparent);
-    --cursor-spark-color: color-mix(in srgb, white 72%, var(--color-secondary) 28%);
+    --cursor-ring-size: 2.7rem;
+    --cursor-spark-size: 0.38rem;
+    --cursor-color: color-mix(in srgb, var(--color-secondary) 78%, var(--color-primary) 22%);
+    --cursor-ring-color: color-mix(in srgb, var(--color-secondary) 64%, transparent);
+    --cursor-spark-color: color-mix(in srgb, white 48%, var(--color-secondary) 52%);
 }
 
 .animated-cursor[data-variant='drag'] .animated-cursor-ring,
@@ -147,31 +157,41 @@ body.has-animated-cursor * {
 
 .animated-cursor[data-variant='disabled'] {
     --cursor-size: 0.95rem;
-    --cursor-ring-size: 2.55rem;
-    --cursor-spark-size: 0.2rem;
-    --cursor-color: color-mix(in srgb, var(--color-text-disabled) 84%, white 16%);
-    --cursor-ring-color: color-mix(in srgb, var(--color-danger) 28%, transparent);
-    --cursor-spark-color: color-mix(in srgb, var(--color-text-disabled) 86%, white 14%);
-    opacity: 0.82;
+    --cursor-ring-size: 2.2rem;
+    --cursor-spark-size: 0.14rem;
+    --cursor-color: color-mix(in srgb, var(--color-text-disabled) 84%, black 16%);
+    --cursor-ring-color: color-mix(in srgb, var(--color-danger) 70%, transparent);
+    --cursor-spark-color: color-mix(in srgb, var(--color-text-disabled) 76%, white 24%);
+    opacity: 0.9;
+}
+
+.animated-cursor[data-variant='hand'] .animated-cursor-core,
+.animated-cursor[data-variant='drag'] .animated-cursor-core,
+.animated-cursor[data-variant='dragging'] .animated-cursor-core {
+    box-shadow:
+        inset 0 1px 0 color-mix(in srgb, white 32%, transparent),
+        0 0.22rem 0.54rem color-mix(in srgb, var(--cursor-color) 30%, transparent),
+        0 0 0 2px rgb(255 255 255 / 90%),
+        0 0 0 4px rgb(8 18 24 / 30%);
 }
 
 .animated-cursor[data-variant='help'] {
     --cursor-size: 0.9rem;
-    --cursor-ring-size: 2.8rem;
-    --cursor-spark-size: 0.48rem;
-    --cursor-color: color-mix(in srgb, #e2a33b 80%, white 20%);
-    --cursor-ring-color: color-mix(in srgb, #e2a33b 34%, transparent);
-    --cursor-spark-color: color-mix(in srgb, white 82%, #e2a33b 18%);
+    --cursor-ring-size: 2.3rem;
+    --cursor-spark-size: 0.3rem;
+    --cursor-color: color-mix(in srgb, #e2a33b 80%, black 20%);
+    --cursor-ring-color: color-mix(in srgb, #e2a33b 70%, transparent);
+    --cursor-spark-color: color-mix(in srgb, white 52%, #e2a33b 48%);
 }
 
 .animated-cursor[data-variant='resize'],
 .animated-cursor[data-variant='move'] {
     --cursor-size: 0.82rem;
-    --cursor-ring-size: 2.95rem;
-    --cursor-spark-size: 0.36rem;
-    --cursor-color: color-mix(in srgb, var(--color-secondary) 74%, white 26%);
-    --cursor-ring-color: color-mix(in srgb, var(--color-secondary) 26%, transparent);
-    --cursor-spark-color: color-mix(in srgb, white 76%, var(--color-secondary) 24%);
+    --cursor-ring-size: 2.35rem;
+    --cursor-spark-size: 0.22rem;
+    --cursor-color: color-mix(in srgb, var(--color-secondary) 78%, black 22%);
+    --cursor-ring-color: color-mix(in srgb, var(--color-secondary) 64%, transparent);
+    --cursor-spark-color: color-mix(in srgb, white 50%, var(--color-secondary) 50%);
 }
 
 .animated-cursor[data-variant='resize'] .animated-cursor-ring,
@@ -181,68 +201,11 @@ body.has-animated-cursor * {
 
 .animated-cursor[data-variant='busy'] {
     --cursor-size: 1rem;
-    --cursor-ring-size: 3rem;
-    --cursor-spark-size: 0.5rem;
-    --cursor-color: color-mix(in srgb, var(--color-primary) 66%, white 34%);
-    --cursor-ring-color: color-mix(in srgb, var(--color-primary) 30%, transparent);
-    --cursor-spark-color: color-mix(in srgb, white 88%, var(--color-primary) 12%);
-}
-
-.animated-cursor[data-variant='busy'] .animated-cursor-ring {
-    animation: animated-cursor-busy-spin 1s linear infinite;
-}
-
-@keyframes animated-cursor-core-breathe {
-    0%,
-    100% {
-        box-shadow:
-            inset 0 1px 0 color-mix(in srgb, white 34%, transparent),
-            0 0.12rem 0.5rem color-mix(in srgb, var(--cursor-color) 18%, transparent);
-        transform: translate(-50%, -50%) scale(1);
-    }
-    50% {
-        box-shadow:
-            inset 0 1px 0 color-mix(in srgb, white 42%, transparent),
-            0 0.22rem 0.7rem color-mix(in srgb, var(--cursor-color) 28%, transparent);
-        transform: translate(-50%, -50%) scale(1.08);
-    }
-}
-
-@keyframes animated-cursor-halo-float {
-    0%,
-    100% {
-        transform: translate(-50%, -50%) scale(1) rotate(0deg);
-        opacity: 0.92;
-    }
-    50% {
-        transform: translate(-50%, -50%) scale(1.06) rotate(12deg);
-        opacity: 1;
-    }
-}
-
-@keyframes animated-cursor-spark-orbit {
-    0% {
-        transform: translate(-50%, -50%) rotate(0deg)
-            translateX(calc(var(--cursor-ring-size) * 0.34)) rotate(0deg);
-        opacity: 0.78;
-    }
-    50% {
-        opacity: 1;
-    }
-    100% {
-        transform: translate(-50%, -50%) rotate(360deg)
-            translateX(calc(var(--cursor-ring-size) * 0.34)) rotate(-360deg);
-        opacity: 0.78;
-    }
-}
-
-@keyframes animated-cursor-busy-spin {
-    from {
-        transform: translate(-50%, -50%) rotate(0deg);
-    }
-    to {
-        transform: translate(-50%, -50%) rotate(360deg);
-    }
+    --cursor-ring-size: 2.4rem;
+    --cursor-spark-size: 0.26rem;
+    --cursor-color: color-mix(in srgb, var(--color-primary) 74%, black 26%);
+    --cursor-ring-color: color-mix(in srgb, var(--color-primary) 66%, transparent);
+    --cursor-spark-color: color-mix(in srgb, white 52%, var(--color-primary) 48%);
 }
 
 @media (pointer: coarse) {

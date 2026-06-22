@@ -10,9 +10,12 @@ const hasDesktopRuntimeMarker = (): boolean =>
 
 const hasElectronUserAgent = (): boolean => navigator.userAgent.includes('Electron');
 
-const readRememberedRuntimeMode = (): string | null => {
+const readRememberedRuntimeMode = (): 'desktop' | 'web' | null => {
     try {
-        return window.sessionStorage.getItem(runtimeStorageKey);
+        const rememberedRuntimeMode = window.sessionStorage.getItem(runtimeStorageKey);
+        return rememberedRuntimeMode === 'desktop' || rememberedRuntimeMode === 'web'
+            ? rememberedRuntimeMode
+            : null;
     } catch {
         return null;
     }
@@ -48,6 +51,7 @@ export const shouldRenderDesktopChrome = (capabilities: CapabilityRegistry): boo
 const detectRuntimeMode = (): 'demo' | 'desktop' | 'web' => {
     if (import.meta.env.VITE_DEMO_MODE === 'true') return 'demo';
     if (isDesktopRuntime()) return 'desktop';
+    if (readRememberedRuntimeMode() === 'desktop') return 'desktop';
     rememberRuntimeMode('web');
     return 'web';
 };

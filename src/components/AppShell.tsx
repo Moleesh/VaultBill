@@ -9,12 +9,14 @@ import { useEffect, useRef, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import type { FC } from 'react';
 
+import { shouldRenderDesktopChrome } from '../capability/CapabilityRegistry';
 import { useCapabilities } from '../capability/CapabilityContext';
 import { defaultRuntimeBranding, shellSections } from '../constants/RuntimeDefaults';
 import { useSession } from '../features/auth/SessionContext';
 import { useRecordStore } from '../features/records/RecordStoreContext';
 import { useThemeController } from '../hooks/useThemeController';
 import { requestHostedApi } from '../runtime/HostedApi';
+import { loadResolvedTheme } from '../runtime/WorkspaceTheme';
 import { createAppShellActions } from './AppShellActions';
 import { getAllowedSectionIds, getPageId } from './AppShellSupport';
 import { AppShellContentFrame } from './AppShellContentFrame';
@@ -34,6 +36,7 @@ export const AppShell: FC = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const themeController = useThemeController('teal-flow');
+    const { setThemeId } = themeController;
     const contentRef = useRef<HTMLElement>(null);
     const [isHelpOpen, setIsHelpOpen] = useState(false);
     const [isResetOpen, setIsResetOpen] = useState(false);
@@ -48,7 +51,7 @@ export const AppShell: FC = () => {
         >();
     const [scrollProgress, setScrollProgress] = useState(0);
     const [isExpanded, setIsExpanded] = useState(false);
-    const showWindowControls = capabilities.isDesktop;
+    const showWindowControls = shouldRenderDesktopChrome(capabilities);
     const shellActions = createAppShellActions({
         accountUserId: operatorContext?.account.userId ?? '',
         logout,
@@ -69,6 +72,14 @@ export const AppShell: FC = () => {
         }
         setScrollProgress(0);
     }, [location.pathname]);
+
+    useEffect(() => {
+        void loadResolvedTheme(capabilities.isHostedWeb)
+            .then((resolvedTheme) => {
+                setThemeId(resolvedTheme);
+            })
+            .catch(() => undefined);
+    }, [capabilities.isHostedWeb, setThemeId]);
 
     useEffect(() => {
         if (window.vaultBillDesktop) {
@@ -119,7 +130,7 @@ export const AppShell: FC = () => {
             <AppShellSidebar
                 applicationName={defaultRuntimeBranding.applicationName}
                 isDemoMode={capabilities.isDemoMode}
-                isDesktop={capabilities.isDesktop}
+                isDesktop={showWindowControls}
                 isExpanded={isExpanded}
                 isHostedWeb={capabilities.isHostedWeb}
                 landingRoute={landingRoute}

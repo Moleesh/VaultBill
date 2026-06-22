@@ -48,7 +48,6 @@ export const SettingsBusinessThemePicker: FC<SettingsBusinessThemePickerProps> =
                     key={option.id}
                     onClick={() => {
                         onThemeChange(option.id);
-                        document.documentElement.dataset.theme = option.id;
                     }}
                     role="radio"
                     title={option.label}

@@ -50,17 +50,10 @@ export const AnimatedCursor: FC = () => {
         const cursor = cursorRef.current;
         if (!cursor) return undefined;
 
-        const targetPoint = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
-        const currentPoint = { ...targetPoint };
-        let frame = 0;
-
         document.body.classList.add('has-animated-cursor');
 
-        const render = () => {
-            currentPoint.x += (targetPoint.x - currentPoint.x) * 0.22;
-            currentPoint.y += (targetPoint.y - currentPoint.y) * 0.22;
-            cursor.style.transform = `translate3d(${String(currentPoint.x)}px, ${String(currentPoint.y)}px, 0)`;
-            frame = window.requestAnimationFrame(render);
+        const positionCursor = (x: number, y: number) => {
+            cursor.style.transform = `translate3d(${String(x)}px, ${String(y)}px, 0)`;
         };
 
         const setVisible = (isVisible: boolean) => {
@@ -68,8 +61,7 @@ export const AnimatedCursor: FC = () => {
         };
 
         const handlePointerMove = (event: PointerEvent) => {
-            targetPoint.x = event.clientX;
-            targetPoint.y = event.clientY;
+            positionCursor(event.clientX, event.clientY);
             cursor.dataset.variant = getCursorVariant(event.target);
             setVisible(true);
         };
@@ -96,7 +88,6 @@ export const AnimatedCursor: FC = () => {
         cursor.dataset.variant = 'default';
         cursor.dataset.visible = 'false';
         cursor.dataset.pressed = 'false';
-        frame = window.requestAnimationFrame(render);
 
         window.addEventListener('pointermove', handlePointerMove);
         window.addEventListener('pointerdown', handlePointerDown);
@@ -106,7 +97,6 @@ export const AnimatedCursor: FC = () => {
         document.addEventListener('pointerover', handlePointerOver);
 
         return () => {
-            window.cancelAnimationFrame(frame);
             document.body.classList.remove('has-animated-cursor');
             window.removeEventListener('pointermove', handlePointerMove);
             window.removeEventListener('pointerdown', handlePointerDown);

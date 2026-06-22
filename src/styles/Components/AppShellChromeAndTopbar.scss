@@ -420,19 +420,19 @@
     padding: 0;
 }
 .desktop-window-control--minimize {
-    color: var(--color-surface);
+    color: var(--window-control-minimize-text);
     background: linear-gradient(
         180deg,
-        color-mix(in srgb, var(--color-primary) 84%, white),
-        color-mix(in srgb, var(--color-primary) 58%, white)
+        var(--window-control-minimize-start),
+        var(--window-control-minimize-end)
     );
 }
 .desktop-window-control--close {
-    color: var(--color-surface);
+    color: var(--window-control-close-text);
     background: linear-gradient(
         180deg,
-        color-mix(in srgb, var(--color-danger) 92%, white),
-        color-mix(in srgb, var(--color-danger) 70%, white)
+        var(--window-control-close-start),
+        var(--window-control-close-end)
     );
 }
 .desktop-window-controls .icon-button:hover,
@@ -457,10 +457,10 @@
 .desktop-window-control--close:hover {
     background: linear-gradient(
         180deg,
-        color-mix(in srgb, var(--color-danger) 100%, white),
-        color-mix(in srgb, var(--color-danger) 84%, white)
+        color-mix(in srgb, var(--window-control-close-start) 76%, white 24%),
+        color-mix(in srgb, var(--window-control-close-end) 90%, white 10%)
     );
-    color: var(--color-surface);
+    color: var(--window-control-close-text);
 }
 @keyframes app-shell-topbar-glow {
     from {

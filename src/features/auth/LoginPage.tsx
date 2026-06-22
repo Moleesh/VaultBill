@@ -15,6 +15,7 @@ import { shouldRenderDesktopChrome } from '../../capability/CapabilityRegistry';
 import { useCapabilities } from '../../capability/CapabilityContext';
 import { defaultRuntimeBranding } from '../../constants/RuntimeDefaults';
 import { canUseLocalHostedApi, requestHostedWindowAction } from '../../runtime/HostedApi';
+import { applyTheme, loadResolvedTheme } from '../../runtime/WorkspaceTheme';
 import { LoginActivationModal } from './LoginActivationModal';
 import { LoginHelpModal } from './LoginHelpModal';
 import { buildLoginAccountOptions, findLoginAccount, getLoginAccountId } from './LoginPageSupport';
@@ -59,6 +60,12 @@ export const LoginPage: FC = () => {
     const effectiveSelectedAccountId = selectedAccountId || fallbackSelectedAccountId;
     const selectedAccount = findLoginAccount(accounts, effectiveSelectedAccountId);
     const isLoginDisabled = !effectiveSelectedAccountId || hostedConnectionState !== 'connected';
+
+    useEffect(() => {
+        void loadResolvedTheme(capabilities.isHostedWeb)
+            .then(applyTheme)
+            .catch(() => undefined);
+    }, [capabilities.isHostedWeb]);
 
     const submitLogin = async () => {
         if (isLoginDisabled || loginSubmissionInFlightRef.current) return;
@@ -150,6 +157,7 @@ export const LoginPage: FC = () => {
                         }}
                         selectedAccount={selectedAccount}
                         selectedAccountId={effectiveSelectedAccountId}
+                        showDesktopActions={showDesktopChrome}
                     />
                 </div>
                 <footer>

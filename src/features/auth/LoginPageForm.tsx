@@ -17,6 +17,7 @@ type LoginPageFormProps = {
     readonly error: string;
     readonly hostedConnectionState: 'connecting' | 'connected' | 'unavailable';
     readonly isLoginDisabled: boolean;
+    readonly showDesktopActions: boolean;
     readonly accountOptions: readonly DropdownOption[];
     readonly form: LoginFormApi;
     readonly selectedAccount: OperatorAccount | undefined;
@@ -33,6 +34,7 @@ export const LoginPageForm: FC<LoginPageFormProps> = ({
     error,
     hostedConnectionState,
     isLoginDisabled,
+    showDesktopActions,
     accountOptions,
     form,
     selectedAccount,
@@ -120,7 +122,7 @@ export const LoginPageForm: FC<LoginPageFormProps> = ({
         <IconButton className="login-help-link" onClick={onHelpOpen}>
             Sign-in help
         </IconButton>
-        {capabilities.isDesktop ? (
+        {showDesktopActions ? (
             <IconButton
                 className="login-help-link"
                 icon={<KeyRound aria-hidden="true" size={16} />}
