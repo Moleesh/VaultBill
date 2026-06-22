@@ -17,12 +17,18 @@ import {
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 
-import { mainState, hostedAppUrl } from './MainState.js';
+import { embeddedDesktopAppUrl, mainState, hostedAppUrl } from './MainState.js';
 
 const getDevServerUrl = (): string | undefined =>
     process.argv
         .find((argument) => argument.startsWith('--dev-server-url='))
         ?.replace('--dev-server-url=', '');
+
+const appendDesktopRuntimeMarker = (urlValue: string): string => {
+    const url = new URL(urlValue);
+    url.searchParams.set('runtime', 'desktop');
+    return url.toString();
+};
 
 /** Reads the packaged license verifier embedded into the desktop build. */
 export const readLicenseVerifier = (): string => {
@@ -80,8 +86,8 @@ export const createWindow = async () => {
         if (!url.startsWith(allowedOrigin)) event.preventDefault();
     });
     const devServerUrl = getDevServerUrl();
-    if (devServerUrl) await mainState.mainWindow.loadURL(devServerUrl);
-    else await mainState.mainWindow.loadURL(hostedAppUrl());
+    if (devServerUrl) await mainState.mainWindow.loadURL(appendDesktopRuntimeMarker(devServerUrl));
+    else await mainState.mainWindow.loadURL(embeddedDesktopAppUrl());
 };
 
 /** Creates the tray icon and menu used while VaultBill continues running in the background. */

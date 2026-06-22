@@ -13,6 +13,12 @@ import { defaultHostedWebPort } from './server/LocalApiSecurity.js';
 export const hostedAppUrl = (): string =>
     `http://127.0.0.1:${String(mainState.hostedWebSettings.port)}/VaultBill/`;
 
+export const embeddedDesktopAppUrl = (): string => {
+    const url = new URL(hostedAppUrl());
+    url.searchParams.set('runtime', 'desktop');
+    return url.toString();
+};
+
 export type MainIdentity = {
     readonly appName: string;
 };

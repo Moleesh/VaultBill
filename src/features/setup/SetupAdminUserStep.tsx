@@ -8,18 +8,29 @@ import type { SetupFormApi } from './useSetupForm';
 type SetupAdminUserStepProps = {
     readonly form: SetupFormApi;
     readonly showValidation: boolean;
+    readonly onFieldTouched: () => void;
 };
 
 /** Collects the first Admin account created during first-run setup. */
-export const SetupAdminUserStep: FC<SetupAdminUserStepProps> = ({ form, showValidation }) => (
+export const SetupAdminUserStep: FC<SetupAdminUserStepProps> = ({
+    form,
+    showValidation,
+    onFieldTouched,
+}) => (
     <div className="form-grid">
         <form.Field name="adminDisplayName">
             {(field) => (
                 <FormField.TextField
                     autoFocus
-                    invalid={showValidation && field.state.value.trim().length === 0}
+                    invalid={
+                        (showValidation || field.state.meta.isTouched) &&
+                        field.state.value.trim().length === 0
+                    }
                     label="Admin display name"
-                    onBlur={field.handleBlur}
+                    onBlur={() => {
+                        field.handleBlur();
+                        onFieldTouched();
+                    }}
                     onChange={(event) => {
                         field.handleChange(event.currentTarget.value);
                     }}
@@ -33,9 +44,15 @@ export const SetupAdminUserStep: FC<SetupAdminUserStepProps> = ({ form, showVali
         <form.Field name="adminUsername">
             {(field) => (
                 <FormField.TextField
-                    invalid={showValidation && field.state.value.trim().length === 0}
+                    invalid={
+                        (showValidation || field.state.meta.isTouched) &&
+                        field.state.value.trim().length === 0
+                    }
                     label="Admin username"
-                    onBlur={field.handleBlur}
+                    onBlur={() => {
+                        field.handleBlur();
+                        onFieldTouched();
+                    }}
                     onChange={(event) => {
                         field.handleChange(event.currentTarget.value);
                     }}
@@ -52,7 +69,10 @@ export const SetupAdminUserStep: FC<SetupAdminUserStepProps> = ({ form, showVali
                     autoComplete="new-password"
                     label="Admin password (optional)"
                     note="Leave this blank for now, or add a password before you finish setup."
-                    onBlur={field.handleBlur}
+                    onBlur={() => {
+                        field.handleBlur();
+                        onFieldTouched();
+                    }}
                     onChange={(event) => {
                         field.handleChange(event.currentTarget.value);
                     }}

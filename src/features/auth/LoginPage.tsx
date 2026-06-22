@@ -11,8 +11,10 @@ import type { FC } from 'react';
 
 import { AppBrandIcon } from '../../components/AppBrandIcon/AppBrandIcon';
 import { DesktopWindowControls } from '../../components/DesktopWindowControls';
+import { shouldRenderDesktopChrome } from '../../capability/CapabilityRegistry';
 import { useCapabilities } from '../../capability/CapabilityContext';
 import { defaultRuntimeBranding } from '../../constants/RuntimeDefaults';
+import { canUseLocalHostedApi, requestHostedWindowAction } from '../../runtime/HostedApi';
 import { LoginActivationModal } from './LoginActivationModal';
 import { LoginHelpModal } from './LoginHelpModal';
 import { buildLoginAccountOptions, findLoginAccount, getLoginAccountId } from './LoginPageSupport';
@@ -24,6 +26,7 @@ import { useSysAdminUnlock } from './useSysAdminUnlock';
 /** Renders the compact login experience for the current runtime mode. */
 export const LoginPage: FC = () => {
     const capabilities = useCapabilities();
+    const showDesktopChrome = shouldRenderDesktopChrome(capabilities);
     const { accounts, hostedConnectionState, login, operatorContext } = useSession();
     const navigate = useNavigate();
     const loginSubmissionInFlightRef = useRef(false);
@@ -94,15 +97,23 @@ export const LoginPage: FC = () => {
 
     return (
         <main className="login-page">
-            {capabilities.isDesktop ? (
+            {showDesktopChrome ? (
                 <div className="login-page-chrome">
                     <DesktopWindowControls
-                        isDesktop={capabilities.isDesktop}
+                        isDesktop={showDesktopChrome}
                         onCloseWindow={() => {
-                            void window.vaultBillDesktop?.closeWindow();
+                            if (window.vaultBillDesktop?.closeWindow) {
+                                void window.vaultBillDesktop.closeWindow();
+                                return;
+                            }
+                            if (canUseLocalHostedApi()) void requestHostedWindowAction('close');
                         }}
                         onMinimizeWindow={() => {
-                            void window.vaultBillDesktop?.minimizeWindow();
+                            if (window.vaultBillDesktop?.minimizeWindow) {
+                                void window.vaultBillDesktop.minimizeWindow();
+                                return;
+                            }
+                            if (canUseLocalHostedApi()) void requestHostedWindowAction('minimize');
                         }}
                     />
                 </div>

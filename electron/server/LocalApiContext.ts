@@ -28,6 +28,8 @@ export type LoginAttempts = {
 
 /** Desktop-only data operations exposed to hosted authenticated routes. */
 export type LocalApiDataOperations = {
+    readonly minimizeWindow?: () => void;
+    readonly closeWindow?: () => void;
     readonly createBackup: (
         encrypted: boolean,
         sysAdminPassword: string,

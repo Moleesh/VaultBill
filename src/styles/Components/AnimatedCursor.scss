@@ -6,10 +6,12 @@ body.has-animated-cursor * {
 }
 
 .animated-cursor {
-    --cursor-size: 1.2rem;
-    --cursor-ring-size: 2.7rem;
-    --cursor-color: color-mix(in srgb, var(--color-primary) 78%, white 22%);
-    --cursor-ring-color: color-mix(in srgb, var(--color-secondary) 24%, transparent);
+    --cursor-size: 1rem;
+    --cursor-ring-size: 2.9rem;
+    --cursor-spark-size: 0.42rem;
+    --cursor-color: color-mix(in srgb, var(--color-primary) 74%, white 26%);
+    --cursor-ring-color: color-mix(in srgb, var(--color-primary) 20%, white 10%);
+    --cursor-spark-color: color-mix(in srgb, white 84%, var(--color-primary) 16%);
     position: fixed;
     z-index: 9999;
     top: 0;
@@ -21,7 +23,7 @@ body.has-animated-cursor * {
         opacity 180ms ease,
         filter 220ms ease;
     filter: drop-shadow(
-        0 0.55rem 1rem color-mix(in srgb, var(--color-panel-shadow) 15%, transparent)
+        0 0.7rem 1.1rem color-mix(in srgb, var(--color-panel-shadow) 16%, transparent)
     );
 }
 
@@ -30,7 +32,8 @@ body.has-animated-cursor * {
 }
 
 .animated-cursor-core,
-.animated-cursor-ring {
+.animated-cursor-ring,
+.animated-cursor-spark {
     position: absolute;
     border-radius: 999px;
     transform: translate(-50%, -50%);
@@ -41,41 +44,76 @@ body.has-animated-cursor * {
         background 180ms ease,
         border-color 180ms ease,
         opacity 180ms ease,
+        box-shadow 180ms ease,
         transform 180ms ease;
 }
 
 .animated-cursor-core {
     width: var(--cursor-size);
     height: var(--cursor-size);
-    background: var(--cursor-color);
-    box-shadow: inset 0 1px 0 color-mix(in srgb, white 24%, transparent);
-    animation: animated-cursor-core-pulse 1.9s ease-in-out infinite;
+    background:
+        radial-gradient(
+            circle at 35% 32%,
+            color-mix(in srgb, white 76%, transparent),
+            transparent 46%
+        ),
+        linear-gradient(
+            135deg,
+            color-mix(in srgb, var(--cursor-color) 76%, white 24%),
+            color-mix(in srgb, var(--cursor-color) 92%, black 8%)
+        );
+    box-shadow:
+        inset 0 1px 0 color-mix(in srgb, white 34%, transparent),
+        0 0.12rem 0.5rem color-mix(in srgb, var(--cursor-color) 22%, transparent);
+    animation: animated-cursor-core-breathe 2.4s ease-in-out infinite;
 }
 
 .animated-cursor-ring {
     width: var(--cursor-ring-size);
     height: var(--cursor-ring-size);
-    border: 1px solid var(--cursor-ring-color);
-    background: color-mix(in srgb, var(--color-surface-raised) 28%, transparent);
+    border: 1px solid color-mix(in srgb, var(--cursor-ring-color) 72%, transparent);
+    background:
+        radial-gradient(
+            circle at 50% 50%,
+            color-mix(in srgb, white 10%, transparent),
+            transparent 60%
+        ),
+        color-mix(in srgb, var(--cursor-ring-color) 14%, transparent);
+    box-shadow:
+        inset 0 1px 0 color-mix(in srgb, white 18%, transparent),
+        0 0 0 1px color-mix(in srgb, white 7%, transparent);
+    animation: animated-cursor-halo-float 3.2s ease-in-out infinite;
+}
+
+.animated-cursor-spark {
+    width: var(--cursor-spark-size);
+    height: var(--cursor-spark-size);
+    background: var(--cursor-spark-color);
+    box-shadow: 0 0 0.85rem color-mix(in srgb, var(--cursor-spark-color) 32%, transparent);
+    animation: animated-cursor-spark-orbit 1.9s linear infinite;
 }
 
 .animated-cursor[data-pressed='true'] .animated-cursor-core,
-.animated-cursor[data-pressed='true'] .animated-cursor-ring {
-    transform: translate(-50%, -50%) scale(0.9);
+.animated-cursor[data-pressed='true'] .animated-cursor-ring,
+.animated-cursor[data-pressed='true'] .animated-cursor-spark {
+    transform: translate(-50%, -50%) scale(0.88);
 }
 
 .animated-cursor[data-variant='hand'] {
     --cursor-size: 1rem;
-    --cursor-ring-size: 3rem;
-    --cursor-color: color-mix(in srgb, var(--color-primary) 86%, white 14%);
-    --cursor-ring-color: color-mix(in srgb, var(--color-primary) 34%, transparent);
+    --cursor-ring-size: 3.2rem;
+    --cursor-spark-size: 0.5rem;
+    --cursor-color: color-mix(in srgb, var(--color-primary) 84%, white 16%);
+    --cursor-ring-color: color-mix(in srgb, var(--color-primary) 28%, white 8%);
 }
 
 .animated-cursor[data-variant='text'] {
-    --cursor-size: 0.32rem;
-    --cursor-ring-size: 1.35rem;
+    --cursor-size: 0.22rem;
+    --cursor-ring-size: 1.1rem;
+    --cursor-spark-size: 0.22rem;
     --cursor-color: color-mix(in srgb, var(--color-text-heading) 84%, white 16%);
     --cursor-ring-color: color-mix(in srgb, var(--color-primary) 16%, transparent);
+    --cursor-spark-color: color-mix(in srgb, var(--color-text-heading) 78%, white 22%);
 }
 
 .animated-cursor[data-variant='text'] .animated-cursor-core,
@@ -83,12 +121,18 @@ body.has-animated-cursor * {
     border-radius: 0.35rem;
 }
 
+.animated-cursor[data-variant='text'] .animated-cursor-spark {
+    opacity: 0.35;
+}
+
 .animated-cursor[data-variant='drag'],
 .animated-cursor[data-variant='dragging'] {
     --cursor-size: 1.1rem;
     --cursor-ring-size: 3.2rem;
+    --cursor-spark-size: 0.54rem;
     --cursor-color: color-mix(in srgb, var(--color-secondary) 72%, var(--color-primary) 28%);
     --cursor-ring-color: color-mix(in srgb, var(--color-secondary) 34%, transparent);
+    --cursor-spark-color: color-mix(in srgb, white 72%, var(--color-secondary) 28%);
 }
 
 .animated-cursor[data-variant='drag'] .animated-cursor-ring,
@@ -104,24 +148,30 @@ body.has-animated-cursor * {
 .animated-cursor[data-variant='disabled'] {
     --cursor-size: 0.95rem;
     --cursor-ring-size: 2.55rem;
+    --cursor-spark-size: 0.2rem;
     --cursor-color: color-mix(in srgb, var(--color-text-disabled) 84%, white 16%);
     --cursor-ring-color: color-mix(in srgb, var(--color-danger) 28%, transparent);
+    --cursor-spark-color: color-mix(in srgb, var(--color-text-disabled) 86%, white 14%);
     opacity: 0.82;
 }
 
 .animated-cursor[data-variant='help'] {
     --cursor-size: 0.9rem;
     --cursor-ring-size: 2.8rem;
+    --cursor-spark-size: 0.48rem;
     --cursor-color: color-mix(in srgb, #e2a33b 80%, white 20%);
     --cursor-ring-color: color-mix(in srgb, #e2a33b 34%, transparent);
+    --cursor-spark-color: color-mix(in srgb, white 82%, #e2a33b 18%);
 }
 
 .animated-cursor[data-variant='resize'],
 .animated-cursor[data-variant='move'] {
     --cursor-size: 0.82rem;
     --cursor-ring-size: 2.95rem;
+    --cursor-spark-size: 0.36rem;
     --cursor-color: color-mix(in srgb, var(--color-secondary) 74%, white 26%);
     --cursor-ring-color: color-mix(in srgb, var(--color-secondary) 26%, transparent);
+    --cursor-spark-color: color-mix(in srgb, white 76%, var(--color-secondary) 24%);
 }
 
 .animated-cursor[data-variant='resize'] .animated-cursor-ring,
@@ -132,25 +182,57 @@ body.has-animated-cursor * {
 .animated-cursor[data-variant='busy'] {
     --cursor-size: 1rem;
     --cursor-ring-size: 3rem;
+    --cursor-spark-size: 0.5rem;
     --cursor-color: color-mix(in srgb, var(--color-primary) 66%, white 34%);
     --cursor-ring-color: color-mix(in srgb, var(--color-primary) 30%, transparent);
+    --cursor-spark-color: color-mix(in srgb, white 88%, var(--color-primary) 12%);
 }
 
 .animated-cursor[data-variant='busy'] .animated-cursor-ring {
     animation: animated-cursor-busy-spin 1s linear infinite;
 }
 
-@keyframes animated-cursor-core-pulse {
+@keyframes animated-cursor-core-breathe {
     0%,
     100% {
         box-shadow:
-            inset 0 1px 0 color-mix(in srgb, white 24%, transparent),
-            0 0 0 0 color-mix(in srgb, var(--color-primary) 0%, transparent);
+            inset 0 1px 0 color-mix(in srgb, white 34%, transparent),
+            0 0.12rem 0.5rem color-mix(in srgb, var(--cursor-color) 18%, transparent);
+        transform: translate(-50%, -50%) scale(1);
     }
     50% {
         box-shadow:
-            inset 0 1px 0 color-mix(in srgb, white 30%, transparent),
-            0 0 0 0.45rem color-mix(in srgb, var(--color-primary) 10%, transparent);
+            inset 0 1px 0 color-mix(in srgb, white 42%, transparent),
+            0 0.22rem 0.7rem color-mix(in srgb, var(--cursor-color) 28%, transparent);
+        transform: translate(-50%, -50%) scale(1.08);
+    }
+}
+
+@keyframes animated-cursor-halo-float {
+    0%,
+    100% {
+        transform: translate(-50%, -50%) scale(1) rotate(0deg);
+        opacity: 0.92;
+    }
+    50% {
+        transform: translate(-50%, -50%) scale(1.06) rotate(12deg);
+        opacity: 1;
+    }
+}
+
+@keyframes animated-cursor-spark-orbit {
+    0% {
+        transform: translate(-50%, -50%) rotate(0deg)
+            translateX(calc(var(--cursor-ring-size) * 0.34)) rotate(0deg);
+        opacity: 0.78;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, -50%) rotate(360deg)
+            translateX(calc(var(--cursor-ring-size) * 0.34)) rotate(-360deg);
+        opacity: 0.78;
     }
 }
 
@@ -171,7 +253,8 @@ body.has-animated-cursor * {
 
 @media (prefers-reduced-motion: reduce) {
     .animated-cursor-core,
-    .animated-cursor-ring {
+    .animated-cursor-ring,
+    .animated-cursor-spark {
         animation: none !important;
     }
 }

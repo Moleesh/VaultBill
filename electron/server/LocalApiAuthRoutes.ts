@@ -11,6 +11,7 @@ import {
     assertLoginAllowed,
     getSession,
     recordFailedLogin,
+    requireDataOperations,
     requireCsrf,
     sessionCookie,
     sessionLifetime,
@@ -86,6 +87,18 @@ export const handleLocalApiAuthRoutes = async (
     if (request.method === 'POST' && request.url === '/setup/complete') {
         completeSetup(state.credentialStore, state.settingsStore, await readBody(request));
         sendJson(response, 200, readSetupStatus(state.credentialStore, state.settingsStore));
+        return true;
+    }
+    if (request.method === 'POST' && request.url === '/window/minimize') {
+        requireDataOperations(state).minimizeWindow?.();
+        response.writeHead(204);
+        response.end();
+        return true;
+    }
+    if (request.method === 'POST' && request.url === '/window/close') {
+        requireDataOperations(state).closeWindow?.();
+        response.writeHead(204);
+        response.end();
         return true;
     }
     if (request.method === 'POST' && request.url === '/auth/login') {

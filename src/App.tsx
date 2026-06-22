@@ -11,13 +11,17 @@ import { CapabilityProvider } from './capability/CapabilityContext';
 import { useCapabilities } from './capability/CapabilityContext';
 import { SessionProvider } from './features/auth/SessionContext';
 import { RecordStoreProvider } from './features/records/RecordStoreContext';
-import { requestHostedApi } from './runtime/HostedApi';
+import { canUseLocalHostedApi, requestHostedApi } from './runtime/HostedApi';
 
 const AppRoutes: FC = () => {
     const capabilities = useCapabilities();
     const [setupRevision, setSetupRevision] = useState(0);
     const [desktopSetupRequired, setDesktopSetupRequired] = useState<boolean | null>(
-        !capabilities.isDemoMode && (window.vaultBillDesktop || capabilities.isHostedWeb)
+        !capabilities.isDemoMode &&
+            (window.vaultBillDesktop ||
+                capabilities.isDesktop ||
+                capabilities.isHostedWeb ||
+                canUseLocalHostedApi())
             ? null
             : false,
     );
@@ -30,6 +34,7 @@ const AppRoutes: FC = () => {
         }
 
         let isCurrent = true;
+        const canUseHostedSetupStatus = capabilities.isHostedWeb || canUseLocalHostedApi();
         const desktopRequest = window.vaultBillDesktop
             ? Promise.all([
                   window.vaultBillDesktop.listAccounts(),
@@ -40,7 +45,7 @@ const AppRoutes: FC = () => {
                   ),
                   business,
               }))
-            : capabilities.isHostedWeb
+            : canUseHostedSetupStatus
               ? requestHostedApi<{
                     readonly isSetupComplete: boolean;
                     readonly hasActiveAdmin: boolean;

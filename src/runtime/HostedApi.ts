@@ -2,17 +2,14 @@
 
 /** Fetch helper that routes browser-hosted calls to the desktop Local API when available. */
 
-const hostedDevApiPort =
-    import.meta.env.DEV &&
-    (window.location.port === '5173' ||
-        window.location.port === '80' ||
-        window.location.port === '')
-        ? '8000'
-        : '';
+const hostedDevApiPort = import.meta.env.DEV && window.location.port === '5173' ? '8000' : '';
 const defaultLocalApiBaseUrl =
     hostedDevApiPort.length > 0 ? `http://127.0.0.1:${hostedDevApiPort}` : window.location.origin;
 const localApiBaseUrl = defaultLocalApiBaseUrl;
 const csrfStorageKey = 'vaultbill.hosted.csrf';
+const localHostedOrigins = new Set(['localhost', '127.0.0.1', '[::1]']);
+
+export const canUseLocalHostedApi = (): boolean => localHostedOrigins.has(window.location.hostname);
 
 export const setHostedCsrfToken = (token: string | undefined) => {
     if (token) window.sessionStorage.setItem(csrfStorageKey, token);
@@ -50,6 +47,10 @@ export const requestHostedApi = async <T>(
     }
 
     return payload as T;
+};
+
+export const requestHostedWindowAction = async (action: 'close' | 'minimize'): Promise<void> => {
+    await requestHostedApi(`/window/${action}`, 'POST');
 };
 
 export const createHostedBackup = async (

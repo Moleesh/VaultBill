@@ -61,11 +61,13 @@ const isApiPath = (url: string | undefined): boolean =>
     url === '/health' ||
     [
         '/auth',
+        '/setup',
         '/accounts',
         '/records',
         '/builder',
         '/document-formats',
         '/reports',
+        '/window',
         '/print',
         '/backup',
         '/credentials',

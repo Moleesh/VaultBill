@@ -2,6 +2,8 @@
 
 import type { NavigateFunction } from 'react-router-dom';
 
+import { canUseLocalHostedApi, requestHostedWindowAction } from '../runtime/HostedApi';
+
 type AppShellActionDependencies = {
     readonly navigate: NavigateFunction;
     readonly logout: () => void;
@@ -42,10 +44,18 @@ export const createAppShellActions = ({
         setIsActivationOpen(true);
     };
     const closeWindow = () => {
-        void window.vaultBillDesktop?.closeWindow();
+        if (window.vaultBillDesktop?.closeWindow) {
+            void window.vaultBillDesktop.closeWindow();
+            return;
+        }
+        if (canUseLocalHostedApi()) void requestHostedWindowAction('close');
     };
     const minimizeWindow = () => {
-        void window.vaultBillDesktop?.minimizeWindow();
+        if (window.vaultBillDesktop?.minimizeWindow) {
+            void window.vaultBillDesktop.minimizeWindow();
+            return;
+        }
+        if (canUseLocalHostedApi()) void requestHostedWindowAction('minimize');
     };
     const logOut = () => {
         logout();

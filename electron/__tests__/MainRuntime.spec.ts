@@ -88,7 +88,7 @@ describe('MainRuntime createWindow', () => {
             },
         });
         expect(mainState.mainWindow).toBeDefined();
-        expect(loadURLMock).toHaveBeenCalledWith('http://localhost:5173');
+        expect(loadURLMock).toHaveBeenCalledWith('http://localhost:5173/?runtime=desktop');
         expect(windowOnMock).toHaveBeenCalledWith('close', expect.any(Function));
         expect(setWindowOpenHandlerMock).toHaveBeenCalledTimes(1);
         expect(webContentsOnMock).toHaveBeenCalledWith('will-navigate', expect.any(Function));

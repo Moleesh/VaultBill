@@ -95,6 +95,7 @@ describe('login UI', () => {
 
     afterEach(() => {
         delete (window as Partial<Window> & { vaultBillDesktop?: unknown }).vaultBillDesktop;
+        delete (window as Partial<Window> & { vaultBillRuntime?: unknown }).vaultBillRuntime;
     });
 
     it('submits the login form when Enter is pressed', async () => {
@@ -174,5 +175,21 @@ describe('login UI', () => {
             }),
         ).toBeVisible();
         expect(await screen.findByLabelText('Password')).toBeVisible();
+    });
+
+    it('shows working desktop chrome when the runtime marker is present even before desktop capabilities resolve', async () => {
+        setDesktopBridge([adminAccount]);
+        Object.defineProperty(window, 'vaultBillRuntime', {
+            configurable: true,
+            value: 'desktop',
+        });
+
+        renderPage(<LoginPage />, nonDemoCapabilities);
+
+        fireEvent.click(await screen.findByRole('button', { name: 'Minimize to taskbar' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Close to tray' }));
+
+        expect(window.vaultBillDesktop?.minimizeWindow).toHaveBeenCalledTimes(1);
+        expect(window.vaultBillDesktop?.closeWindow).toHaveBeenCalledTimes(1);
     });
 });

@@ -128,6 +128,7 @@ export const AnimatedCursor: FC = () => {
         >
             <span className="animated-cursor-core" />
             <span className="animated-cursor-ring" />
+            <span className="animated-cursor-spark" />
         </div>
     );
 };

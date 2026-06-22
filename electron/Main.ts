@@ -34,6 +34,12 @@ mainState.currentDirectory = path.dirname(fileURLToPath(import.meta.url));
 mainState.identity = getBuildIdentity();
 
 const createBackupHandlers = () => ({
+    minimizeWindow: () => {
+        mainState.mainWindow?.minimize();
+    },
+    closeWindow: () => {
+        mainState.mainWindow?.hide();
+    },
     createBackup: (encrypted: boolean, sysAdminPassword: string) => {
         if (!mainState.credentialStore || !mainState.backupService) {
             throw new Error('Backup services are not ready.');

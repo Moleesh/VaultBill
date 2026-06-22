@@ -10,6 +10,7 @@ type SetupBusinessProfileStepProps = {
     readonly form: SetupFormApi;
     readonly showValidation: boolean;
     readonly onThemeChange: (value: string) => void;
+    readonly onFieldTouched: () => void;
 };
 
 /** Collects the business identity and opening theme used across the workspace. */
@@ -17,15 +18,22 @@ export const SetupBusinessProfileStep: FC<SetupBusinessProfileStepProps> = ({
     form,
     showValidation,
     onThemeChange,
+    onFieldTouched,
 }) => (
     <div className="form-grid">
         <form.Field name="companyName">
             {(field) => (
                 <FormField.TextField
                     autoFocus
-                    invalid={showValidation && field.state.value.trim().length === 0}
+                    invalid={
+                        (showValidation || field.state.meta.isTouched) &&
+                        field.state.value.trim().length === 0
+                    }
                     label="Business name"
-                    onBlur={field.handleBlur}
+                    onBlur={() => {
+                        field.handleBlur();
+                        onFieldTouched();
+                    }}
                     onChange={(event) => {
                         field.handleChange(event.currentTarget.value);
                     }}
@@ -39,9 +47,15 @@ export const SetupBusinessProfileStep: FC<SetupBusinessProfileStepProps> = ({
         <form.Field name="address">
             {(field) => (
                 <FormField.TextAreaField
-                    invalid={showValidation && field.state.value.trim().length === 0}
+                    invalid={
+                        (showValidation || field.state.meta.isTouched) &&
+                        field.state.value.trim().length === 0
+                    }
                     label="Business address"
-                    onBlur={field.handleBlur}
+                    onBlur={() => {
+                        field.handleBlur();
+                        onFieldTouched();
+                    }}
                     onChange={(event) => {
                         field.handleChange(event.currentTarget.value);
                     }}
