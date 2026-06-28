@@ -45,9 +45,10 @@ const renderPage = (children: ReactNode, capabilities = webCapabilities) =>
     );
 
 describe('product UI', () => {
-    const clickAction = (name: RegExp | string) => {
-        act(() => {
+    const clickAction = async (name: RegExp | string) => {
+        await act(async () => {
             fireEvent.click(screen.getByRole('button', { name }));
+            await Promise.resolve();
         });
     };
 
@@ -79,9 +80,9 @@ describe('product UI', () => {
         );
 
         expect((await screen.findAllByText('Aster Works')).length).toBeGreaterThan(0);
-        clickAction(/Edit current/u);
+        await clickAction(/Edit current/u);
         expect(await screen.findByRole('heading', { name: 'Document builder' })).toBeVisible();
-        clickAction(/^Print$/u);
+        await clickAction(/^Print$/u);
         expect(screen.getByRole('heading', { name: 'Print' })).toBeVisible();
         expect(screen.getByText(/Upload or choose a reusable template/u)).toBeVisible();
         expect(screen.getByRole('heading', { name: 'Shared print HTML' })).toBeVisible();
@@ -91,7 +92,7 @@ describe('product UI', () => {
     it('shows the document name field without exposing the internal format ID', async () => {
         renderPage(<BuilderPage />);
 
-        clickAction(/Edit current/u);
+        await clickAction(/Edit current/u);
         expect(await screen.findByRole('heading', { name: 'Document builder' })).toBeVisible();
         expect(screen.getByRole('heading', { name: 'Format' })).toBeVisible();
         expect(screen.getByText('Document name')).toBeVisible();
@@ -111,10 +112,10 @@ describe('product UI', () => {
             </MemoryRouter>,
         );
 
-        clickAction(/Edit current/u);
+        await clickAction(/Edit current/u);
         expect(await screen.findByRole('heading', { name: 'Document builder' })).toBeVisible();
-        clickAction(/^Fields$/u);
-        clickAction(/^Edit Invoice Date$/u);
+        await clickAction(/^Fields$/u);
+        await clickAction(/^Edit Invoice Date$/u);
 
         expect(screen.getByRole('dialog', { name: /Edit Invoice Date/u })).toBeVisible();
         expect(screen.getAllByText('Edit Invoice Date').length).toBeGreaterThan(1);
@@ -124,14 +125,14 @@ describe('product UI', () => {
     it('shows field and print previews in the builder preview steps', async () => {
         renderPage(<BuilderPage />);
 
-        clickAction(/Edit current/u);
+        await clickAction(/Edit current/u);
         expect(await screen.findByRole('heading', { name: 'Document builder' })).toBeVisible();
-        clickAction(/Field Preview/u);
+        await clickAction(/Field Preview/u);
         expect(screen.getByRole('heading', { name: /Field preview/u })).toBeVisible();
         expect(screen.getByLabelText('Invoice Date')).toBeVisible();
         expect(screen.getAllByText('Item Name').length).toBeGreaterThan(0);
 
-        clickAction(/Print Preview/u);
+        await clickAction(/Print Preview/u);
         expect(screen.getByRole('heading', { name: /Print preview/u })).toBeVisible();
     });
 
@@ -148,7 +149,7 @@ describe('product UI', () => {
             </MemoryRouter>,
         );
 
-        clickAction(/Edit current/u);
+        await clickAction(/Edit current/u);
         expect(await screen.findByRole('heading', { name: 'Document builder' })).toBeVisible();
         expect(screen.getByRole('heading', { name: /Print preview/u })).toBeVisible();
     });
