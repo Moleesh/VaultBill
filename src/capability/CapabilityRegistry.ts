@@ -65,8 +65,8 @@ export const shouldRenderDesktopChrome = (capabilities: CapabilityRegistry): boo
     capabilities.isDesktop || isDesktopRuntime();
 
 const detectRuntimeMode = (): 'demo' | 'desktop' | 'web' => {
-    if (import.meta.env.VITE_DEMO_MODE === 'true') return 'demo';
     if (isDesktopRuntime()) return 'desktop';
+    if (import.meta.env.VITE_DEMO_MODE === 'true') return 'demo';
     rememberRuntimeMode('web');
     return 'web';
 };
