@@ -295,6 +295,25 @@
     gap: var(--space-4);
 }
 
+.login-help-actions {
+    display: grid;
+    gap: var(--space-3);
+    justify-items: stretch;
+}
+
+.login-help-link {
+    justify-content: flex-start;
+    width: 100%;
+    min-width: 0;
+    white-space: nowrap;
+    text-align: left;
+}
+
+.login-help-link span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .login-password {
     display: grid;
     gap: 0.35rem;

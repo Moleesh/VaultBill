@@ -177,6 +177,15 @@ Run the Electron shell:
 npm run dev:electron
 ```
 
+`npm run dev:electron` now keeps development aligned with production:
+
+- Electron serves the app from its own hosted local server
+- renderer changes rebuild into `dist/`
+- open the hosted workspace at `http://localhost/VaultBill/` while the desktop app is running
+
+This flow intentionally avoids pointing Electron at a separate Vite dev server,
+so stopping the desktop runtime also stops the live hosted workspace.
+
 Useful packaging and smoke commands:
 
 | Command                             | Purpose                                  |

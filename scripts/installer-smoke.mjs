@@ -61,7 +61,9 @@ const [mainSource, webIndex] = await Promise.all([
 const runtimeSource = await readFile(runtimePath, 'utf8');
 const loadsHostedWorkspace =
     mainSource.includes('loadURL') ||
-    /loadURL\((?:process\.env\.[A-Z0-9_]+|hostedAppUrl\(\)|['"]http:\/\/127\.0\.0\.1:4317['"])\)/u.test(
+    runtimeSource.includes('loadURL(appendDesktopRuntimeMarker(devServerUrl))') ||
+    runtimeSource.includes('loadURL(embeddedDesktopAppUrl())') ||
+    /loadURL\((?:process\.env\.[A-Z0-9_]+|hostedAppUrl\(\)|embeddedDesktopAppUrl\(\)|['"]http:\/\/127\.0\.0\.1:4317['"])\)/u.test(
         runtimeSource,
     );
 if (!loadsHostedWorkspace) {

@@ -6,14 +6,17 @@ import type { Role } from '../../types/AppTypes';
 import { useCapabilities } from '../../capability/CapabilityContext';
 import { requestHostedApi } from '../../runtime/HostedApi';
 import { loadWorkspaceSettings } from '../../runtime/WorkspaceSettings';
-import { defaultPasswordHash, hashPassword } from '../auth/SessionSupport';
 import type { OperatorAccount } from '../auth/AccountTypes';
 import { useSession } from '../auth/SessionContext';
 import {
     getManageableSecurityAccounts,
-    getOperatorCreationMessage,
     isDefaultCredentialsActive,
 } from './SettingsSecuritySectionHelpers';
+import {
+    activateSecurityLicense,
+    changeSecurityPassword,
+    createSecurityOperator,
+} from './SettingsSecuritySectionActions';
 import {
     defaultHostedWebPort,
     loadSettingsSecurityRuntimeState,
@@ -21,6 +24,11 @@ import {
     type CredentialStatus,
     type TrialStatus,
 } from './SettingsSecuritySectionStateSupport';
+import {
+    runHostedWebServerAction,
+    saveHostedWebConfiguration,
+    saveIncludeDraftsInReportsSetting,
+} from './SettingsSecuritySectionRuntimeSupport';
 
 export type { SettingsActivationFormApi } from './SettingsSecuritySectionStateSupport';
 
@@ -29,6 +37,8 @@ export const useSettingsSecuritySectionState = () => {
     const capabilities = useCapabilities();
     const { accounts, archiveAccount, operatorContext, resetPassword, saveAccount } = useSession();
     const [lanEnabled, setLanEnabled] = useState(false);
+    const [hostedWebAutoStart, setHostedWebAutoStart] = useState(true);
+    const [hostedWebServerRunning, setHostedWebServerRunning] = useState(false);
     const [trialStatus, setTrialStatus] = useState<TrialStatus>();
     const [credentialStatus, setCredentialStatus] = useState<CredentialStatus>();
     const [message, setMessage] = useState('');
@@ -39,6 +49,8 @@ export const useSettingsSecuritySectionState = () => {
         void loadSettingsSecurityRuntimeState(capabilities.isHostedWeb).then((runtimeState) => {
             setCredentialStatus(runtimeState.credentialStatus);
             setLanEnabled(runtimeState.lanEnabled);
+            setHostedWebAutoStart(runtimeState.hostedWebAutoStart);
+            setHostedWebServerRunning(runtimeState.hostedWebServerRunning);
             setTrialStatus(runtimeState.trialStatus);
         });
     }, [capabilities.isHostedWeb]);
@@ -49,83 +61,31 @@ export const useSettingsSecuritySectionState = () => {
         });
     }, [capabilities.isHostedWeb]);
 
-    const createOperator = async (input: {
-        readonly username: string;
-        readonly displayName: string;
-        readonly password: string;
-        readonly role: Role;
-    }) => {
-        const username = input.username.trim();
-        const displayName = input.displayName.trim();
-        if (!username || !displayName) {
-            setMessage('Enter both a username and a display name.');
-            return;
-        }
-        const optionalPassword = input.password.trim();
-        try {
-            const passwordHash = optionalPassword
-                ? await hashPassword(optionalPassword)
-                : undefined;
-            await saveAccount({
-                userId: crypto.randomUUID(),
-                username,
-                displayName,
-                role: input.role,
-                isActive: true,
-                passwordConfigured: optionalPassword.length > 0,
-                usesDefaultPassword: passwordHash === defaultPasswordHash,
-                ...(passwordHash ? { passwordHash } : {}),
-            });
-            setMessage(getOperatorCreationMessage(input.role));
-        } catch (reason) {
-            setMessage(reason instanceof Error ? reason.message : 'Operator could not be created.');
-        }
-    };
-
-    const changePassword = async (input: {
-        readonly password: string;
-        readonly userId: string;
-    }) => {
-        if (!input.userId || !input.password.trim()) {
-            setMessage('Choose an account and enter a password.');
-            return;
-        }
-        await resetPassword(input.userId, input.password);
-        setMessage('Password saved.');
-    };
-
-    const activateLicense = () => {
-        const licenseKey = activationForm.state.values.licenseKey.trim();
-        if (!licenseKey) return;
-        const activation = window.vaultBillDesktop
-            ? window.vaultBillDesktop.activateLicense(licenseKey)
-            : capabilities.isHostedWeb
-              ? requestHostedApi('/trial/activate', 'POST', { licenseKey })
-              : Promise.resolve();
-        void activation
-            .then(() => {
-                setMessage('License accepted. Full access is now enabled.');
-                activationForm.reset();
-            })
-            .catch((reason: unknown) => {
-                setMessage(
-                    reason instanceof Error
-                        ? reason.message
-                        : 'That license key could not be used.',
-                );
-            });
-    };
-
     return {
         activeUserCount: accounts.filter((account) => account.role === 'User' && account.isActive)
             .length,
         archiveAccount,
         canLanServer: capabilities.canLanServer,
-        createOperator,
+        createOperator: (input: {
+            readonly username: string;
+            readonly displayName: string;
+            readonly password: string;
+            readonly role: Role;
+        }) =>
+            createSecurityOperator({
+                displayName: input.displayName,
+                password: input.password,
+                role: input.role,
+                saveAccount,
+                setMessage,
+                username: input.username,
+            }),
         defaultCredentialsActive: isDefaultCredentialsActive(
             credentialStatus?.sysAdminUsesDefaultPassword,
             credentialStatus?.backupUsesDefaultPassword,
         ),
+        hostedWebAutoStart,
+        hostedWebServerRunning,
         activationForm,
         isDemoMode: capabilities.isDemoMode,
         includeDraftsInReports,
@@ -135,30 +95,90 @@ export const useSettingsSecuritySectionState = () => {
             operatorContext?.role ?? 'User',
         ),
         message,
-        onChangePassword: changePassword,
+        onChangePassword: (input: { readonly password: string; readonly userId: string }) => {
+            void changeSecurityPassword({
+                password: input.password,
+                resetPassword,
+                setMessage,
+                userId: input.userId,
+            });
+        },
         onLanEnabledChange: (value: boolean) => {
             setLanEnabled(value);
-            void window.vaultBillDesktop?.configureLocalApi({
+            void saveHostedWebConfiguration({
+                autoStart: hostedWebAutoStart,
+                desktopBridge: window.vaultBillDesktop,
                 lanEnabled: value,
-                passwordRequired: true,
                 port: defaultHostedWebPort,
             });
+        },
+        onHostedWebAutoStartChange: (value: boolean) => {
+            setHostedWebAutoStart(value);
+            void saveHostedWebConfiguration({
+                autoStart: value,
+                desktopBridge: window.vaultBillDesktop,
+                lanEnabled,
+                port: defaultHostedWebPort,
+            })
+                .then(() => {
+                    setMessage(
+                        value
+                            ? 'Hosted web will start automatically when VaultBill opens.'
+                            : 'Hosted web will stay stopped on launch until a System Administrator starts it.',
+                    );
+                })
+                .catch((reason: unknown) => {
+                    setHostedWebAutoStart(!value);
+                    setMessage(
+                        reason instanceof Error
+                            ? reason.message
+                            : 'Could not update the hosted web startup setting.',
+                    );
+                });
+        },
+        onStartHostedWebServer: () => {
+            void runHostedWebServerAction('startHostedWebServer', window.vaultBillDesktop)
+                .then((isRunning) => {
+                    setHostedWebServerRunning(isRunning);
+                    setMessage('Hosted web started.');
+                })
+                .catch((reason: unknown) => {
+                    setMessage(
+                        reason instanceof Error ? reason.message : 'Could not start hosted web.',
+                    );
+                });
+        },
+        onStopHostedWebServer: () => {
+            void runHostedWebServerAction('stopHostedWebServer', window.vaultBillDesktop)
+                .then((isRunning) => {
+                    setHostedWebServerRunning(isRunning);
+                    setMessage('Hosted web stopped.');
+                })
+                .catch((reason: unknown) => {
+                    setMessage(
+                        reason instanceof Error ? reason.message : 'Could not stop hosted web.',
+                    );
+                });
+        },
+        onRestartHostedWebServer: () => {
+            void runHostedWebServerAction('restartHostedWebServer', window.vaultBillDesktop)
+                .then((isRunning) => {
+                    setHostedWebServerRunning(isRunning);
+                    setMessage('Hosted web restarted.');
+                })
+                .catch((reason: unknown) => {
+                    setMessage(
+                        reason instanceof Error ? reason.message : 'Could not restart hosted web.',
+                    );
+                });
         },
         onIncludeDraftsInReportsChange: (value: boolean) => {
             const previousValue = includeDraftsInReports;
             setIncludeDraftsInReports(value);
-            const save = async () => {
-                const current = await loadWorkspaceSettings(capabilities.isHostedWeb);
-                const nextSettings = { ...current, includeDraftsInReports: value };
-                if (window.vaultBillDesktop) {
-                    await window.vaultBillDesktop.saveBusinessSettings(nextSettings);
-                    return;
-                }
-                if (capabilities.isHostedWeb) {
-                    await requestHostedApi('/settings/business', 'POST', nextSettings);
-                }
-            };
-            void save().catch((reason: unknown) => {
+            void saveIncludeDraftsInReportsSetting({
+                isHostedWeb: capabilities.isHostedWeb,
+                value,
+            }).catch((reason: unknown) => {
                 setIncludeDraftsInReports(previousValue);
                 setMessage(
                     reason instanceof Error ? reason.message : 'Could not save the report setting.',
@@ -170,7 +190,15 @@ export const useSettingsSecuritySectionState = () => {
         },
         operatorContext,
         operatorRole: operatorContext?.role ?? 'User',
-        onActivateLicense: activateLicense,
+        onActivateLicense: () => {
+            activateSecurityLicense({
+                activationForm,
+                activateDesktop: window.vaultBillDesktop?.activateLicense,
+                activateHosted: (licenseKey) =>
+                    requestHostedApi('/trial/activate', 'POST', { licenseKey }),
+                setMessage,
+            });
+        },
         trialStatus,
     };
 };

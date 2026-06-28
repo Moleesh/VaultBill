@@ -8,6 +8,8 @@ const defaultLocalApiBaseUrl =
 const localApiBaseUrl = defaultLocalApiBaseUrl;
 const csrfStorageKey = 'vaultbill.hosted.csrf';
 const localHostedOrigins = new Set(['localhost', '127.0.0.1', '[::1]']);
+export const hostedApiUnavailableEvent = 'vaultbill-hosted-api-unavailable';
+export const hostedApiRecoveredEvent = 'vaultbill-hosted-api-recovered';
 
 export const canUseLocalHostedApi = (): boolean => localHostedOrigins.has(window.location.hostname);
 
@@ -22,20 +24,29 @@ export const requestHostedApi = async <T>(
     body?: unknown,
 ): Promise<T> => {
     const csrfToken = window.sessionStorage.getItem(csrfStorageKey);
-    const response = await fetch(`${localApiBaseUrl}${path}`, {
-        method,
-        credentials: 'include',
-        headers: {
-            accept: 'application/json',
-            'content-type': 'application/json',
-            ...(method === 'POST' && csrfToken ? { 'x-vaultbill-csrf': csrfToken } : {}),
-        },
-        ...(body === undefined ? {} : { body: JSON.stringify(body) }),
-    });
+    let response: Response;
+    try {
+        response = await fetch(`${localApiBaseUrl}${path}`, {
+            method,
+            credentials: 'include',
+            headers: {
+                accept: 'application/json',
+                'content-type': 'application/json',
+                ...(method === 'POST' && csrfToken ? { 'x-vaultbill-csrf': csrfToken } : {}),
+            },
+            ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+        });
+    } catch (error) {
+        window.dispatchEvent(new CustomEvent(hostedApiUnavailableEvent));
+        throw error;
+    }
     const responseBody = await response.text();
     const payload = responseBody.length > 0 ? (JSON.parse(responseBody) as unknown) : undefined;
 
     if (!response.ok) {
+        if (response.status >= 500 || response.status === 404) {
+            window.dispatchEvent(new CustomEvent(hostedApiUnavailableEvent));
+        }
         throw new Error(
             typeof payload === 'object' &&
                 payload !== null &&
@@ -46,6 +57,7 @@ export const requestHostedApi = async <T>(
         );
     }
 
+    window.dispatchEvent(new CustomEvent(hostedApiRecoveredEvent));
     return payload as T;
 };
 

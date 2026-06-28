@@ -137,7 +137,16 @@ describe('settings UI', () => {
                     sysAdminUsesDefaultPassword: false,
                     backupUsesDefaultPassword: false,
                 }),
-                getHostedWebSettings: vi.fn().mockResolvedValue({ lanEnabled: true }),
+                getHostedWebServerStatus: vi.fn().mockResolvedValue({
+                    isRunning: true,
+                    url: 'http://127.0.0.1/VaultBill/',
+                }),
+                getHostedWebSettings: vi.fn().mockResolvedValue({
+                    autoStart: true,
+                    lanEnabled: true,
+                    passwordRequired: false,
+                    port: 80,
+                }),
                 getSecretsSettings: vi.fn().mockResolvedValue({ secrets: [] }),
                 getTrialStatus: vi.fn().mockResolvedValue({
                     isFullVersion: true,

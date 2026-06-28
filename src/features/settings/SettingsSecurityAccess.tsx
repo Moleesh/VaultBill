@@ -13,6 +13,8 @@ type SettingsSecurityAccessProps = {
     readonly isDemoMode: boolean;
     readonly canLanServer: boolean;
     readonly lanEnabled: boolean;
+    readonly hostedWebAutoStart: boolean;
+    readonly hostedWebServerRunning: boolean;
     readonly activationForm: SettingsActivationFormApi;
     readonly trialStatus:
         | {
@@ -22,6 +24,10 @@ type SettingsSecurityAccessProps = {
           }
         | undefined;
     readonly onLanEnabledChange: (value: boolean) => void;
+    readonly onHostedWebAutoStartChange: (value: boolean) => void;
+    readonly onStartHostedWebServer: () => void;
+    readonly onStopHostedWebServer: () => void;
+    readonly onRestartHostedWebServer: () => void;
     readonly onActivateLicense: () => void;
 };
 
@@ -31,9 +37,15 @@ export const SettingsSecurityAccess: FC<SettingsSecurityAccessProps> = ({
     isDemoMode,
     canLanServer,
     lanEnabled,
+    hostedWebAutoStart,
+    hostedWebServerRunning,
     activationForm,
     trialStatus,
     onLanEnabledChange,
+    onHostedWebAutoStartChange,
+    onStartHostedWebServer,
+    onStopHostedWebServer,
+    onRestartHostedWebServer,
     onActivateLicense,
 }) => (
     <>
@@ -86,15 +98,53 @@ export const SettingsSecurityAccess: FC<SettingsSecurityAccessProps> = ({
                     <ShieldCheck aria-hidden="true" />
                 </div>
                 {canLanServer ? (
-                    <FormField.CheckboxField
-                        checked={lanEnabled}
-                        label={
-                            lanEnabled ? 'Hosted web access enabled' : 'Hosted web access disabled'
-                        }
-                        onChange={(event) => {
-                            onLanEnabledChange(event.currentTarget.checked);
-                        }}
-                    />
+                    <>
+                        <FormField.CheckboxField
+                            checked={lanEnabled}
+                            label={
+                                lanEnabled
+                                    ? 'Allow hosted web access from the network'
+                                    : 'Keep hosted web access on this computer only'
+                            }
+                            onChange={(event) => {
+                                onLanEnabledChange(event.currentTarget.checked);
+                            }}
+                        />
+                        <FormField.CheckboxField
+                            checked={hostedWebAutoStart}
+                            label="Start hosted web automatically when VaultBill opens"
+                            onChange={(event) => {
+                                onHostedWebAutoStartChange(event.currentTarget.checked);
+                            }}
+                        />
+                        <p className="field-note" role="status">
+                            Hosted web is currently {hostedWebServerRunning ? 'running' : 'stopped'}
+                            .
+                        </p>
+                        <div className="operator-create">
+                            <ActionButton
+                                disabled={hostedWebServerRunning}
+                                onClick={onStartHostedWebServer}
+                                variant="secondary"
+                            >
+                                Start hosted web
+                            </ActionButton>
+                            <ActionButton
+                                disabled={!hostedWebServerRunning}
+                                onClick={onStopHostedWebServer}
+                                variant="secondary"
+                            >
+                                Stop hosted web
+                            </ActionButton>
+                            <ActionButton
+                                disabled={!hostedWebServerRunning}
+                                onClick={onRestartHostedWebServer}
+                                variant="primary"
+                            >
+                                Restart hosted web
+                            </ActionButton>
+                        </div>
+                    </>
                 ) : (
                     <p className="field-note">
                         Hosted web access is managed from VaultBill Desktop when the local host

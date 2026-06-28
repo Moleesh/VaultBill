@@ -4,45 +4,61 @@ import type { CapabilityRegistry } from './Capability.types';
 
 const desktopRuntimeMarker = 'desktop';
 const runtimeStorageKey = 'vaultbill.runtime-mode';
+let rememberedRuntimeModeInMemory: 'desktop' | 'web' | null = null;
 
 const hasDesktopRuntimeMarker = (): boolean =>
     new URLSearchParams(window.location.search).get('runtime') === desktopRuntimeMarker;
 
 const hasElectronUserAgent = (): boolean => navigator.userAgent.includes('Electron');
 
+const hasDesktopHostEnvironment = (): boolean =>
+    hasElectronUserAgent() || hasDesktopRuntimeBridge();
+
 const readRememberedRuntimeMode = (): 'desktop' | 'web' | null => {
     try {
         const rememberedRuntimeMode = window.sessionStorage.getItem(runtimeStorageKey);
-        return rememberedRuntimeMode === 'desktop' || rememberedRuntimeMode === 'web'
-            ? rememberedRuntimeMode
-            : null;
+        const normalizedRuntimeMode =
+            rememberedRuntimeMode === 'desktop' || rememberedRuntimeMode === 'web'
+                ? rememberedRuntimeMode
+                : null;
+        if (normalizedRuntimeMode) rememberedRuntimeModeInMemory = normalizedRuntimeMode;
+        return normalizedRuntimeMode;
     } catch {
-        return null;
+        return rememberedRuntimeModeInMemory;
     }
+};
+
+const readStableRememberedRuntimeMode = (): 'desktop' | 'web' | null => {
+    const rememberedRuntimeMode = readRememberedRuntimeMode();
+    return rememberedRuntimeMode ?? rememberedRuntimeModeInMemory;
 };
 
 const rememberRuntimeMode = (runtimeMode: 'desktop' | 'web'): void => {
+    rememberedRuntimeModeInMemory = runtimeMode;
     try {
         window.sessionStorage.setItem(runtimeStorageKey, runtimeMode);
     } catch {
-        // Ignore storage restrictions and continue with live runtime detection only.
+        // Ignore storage restrictions and continue with the in-memory runtime fallback.
     }
 };
 
+const hasDesktopRuntimeBridge = (): boolean =>
+    window.vaultBillRuntime === 'desktop' || window.vaultBillDesktop !== undefined;
+
 export const isDesktopRuntime = (): boolean =>
     (() => {
-        const detectedDesktopRuntime =
-            hasDesktopRuntimeMarker() ||
-            hasElectronUserAgent() ||
-            window.vaultBillRuntime === 'desktop' ||
-            window.vaultBillDesktop !== undefined;
+        const detectedDesktopRuntime = hasDesktopRuntimeMarker() || hasDesktopHostEnvironment();
 
         if (detectedDesktopRuntime) {
             rememberRuntimeMode('desktop');
             return true;
         }
 
-        return readRememberedRuntimeMode() === 'desktop';
+        const rememberedRuntimeMode = readStableRememberedRuntimeMode();
+        if (rememberedRuntimeMode === 'desktop') return true;
+
+        rememberRuntimeMode('web');
+        return false;
     })();
 
 export const shouldRenderDesktopChrome = (capabilities: CapabilityRegistry): boolean =>
@@ -51,7 +67,6 @@ export const shouldRenderDesktopChrome = (capabilities: CapabilityRegistry): boo
 const detectRuntimeMode = (): 'demo' | 'desktop' | 'web' => {
     if (import.meta.env.VITE_DEMO_MODE === 'true') return 'demo';
     if (isDesktopRuntime()) return 'desktop';
-    if (readRememberedRuntimeMode() === 'desktop') return 'desktop';
     rememberRuntimeMode('web');
     return 'web';
 };

@@ -1,6 +1,6 @@
 /** @format */
 
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { buildCapabilities, isDesktopRuntime } from '../CapabilityRegistry';
 
@@ -24,5 +24,23 @@ describe('CapabilityRegistry', () => {
         window.history.replaceState({}, '', '/VaultBill/login');
 
         expect(buildCapabilities().isDesktop).toBe(true);
+    });
+
+    it('keeps the desktop runtime marker even when session storage becomes unavailable', () => {
+        expect(isDesktopRuntime()).toBe(true);
+
+        const getItemSpy = vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+            throw new Error('session storage unavailable');
+        });
+        const setItemSpy = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+            throw new Error('session storage unavailable');
+        });
+
+        window.history.replaceState({}, '', '/VaultBill/login');
+
+        expect(buildCapabilities().isDesktop).toBe(true);
+
+        getItemSpy.mockRestore();
+        setItemSpy.mockRestore();
     });
 });

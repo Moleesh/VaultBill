@@ -27,6 +27,7 @@ export type HostedWebSettings = {
     lanEnabled: boolean;
     passwordRequired: boolean;
     port: number;
+    autoStart: boolean;
 };
 
 export type MainState = {
@@ -57,7 +58,12 @@ export const mainState: MainState = {
     localApiServer: undefined,
     mainWindow: undefined,
     tray: undefined,
-    hostedWebSettings: { lanEnabled: false, passwordRequired: true, port: defaultHostedWebPort },
+    hostedWebSettings: {
+        lanEnabled: false,
+        passwordRequired: true,
+        port: defaultHostedWebPort,
+        autoStart: true,
+    },
     isQuitting: false,
     trialTimer: undefined,
     runtimeClosePromise: undefined,

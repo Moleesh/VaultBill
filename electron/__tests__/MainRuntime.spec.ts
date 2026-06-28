@@ -56,12 +56,17 @@ describe('MainRuntime createWindow', () => {
         lastBrowserWindowOptions = undefined;
         process.argv = [
             ...process.argv.filter((argument) => !argument.startsWith('--dev-server-url=')),
-            '--dev-server-url=http://localhost:5173',
         ];
 
         const { mainState } = await import('../MainState.js');
         mainState.currentDirectory = 'C:/VaultBill/electron';
         mainState.identity = { appName: 'VaultBill' };
+        mainState.hostedWebSettings = {
+            lanEnabled: false,
+            passwordRequired: true,
+            port: 80,
+            autoStart: true,
+        };
         mainState.mainWindow = undefined;
     });
 
@@ -88,7 +93,7 @@ describe('MainRuntime createWindow', () => {
             },
         });
         expect(mainState.mainWindow).toBeDefined();
-        expect(loadURLMock).toHaveBeenCalledWith('http://localhost:5173/?runtime=desktop');
+        expect(loadURLMock).toHaveBeenCalledWith('http://127.0.0.1/VaultBill/?runtime=desktop');
         expect(windowOnMock).toHaveBeenCalledWith('close', expect.any(Function));
         expect(setWindowOpenHandlerMock).toHaveBeenCalledTimes(1);
         expect(webContentsOnMock).toHaveBeenCalledWith('will-navigate', expect.any(Function));

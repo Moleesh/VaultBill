@@ -40,14 +40,18 @@ export const useCreateSettingsActivationForm = useSettingsActivationForm;
 /** Loads trial, credential, and hosted-web availability state from the active runtime. */
 export const loadSettingsSecurityRuntimeState = async (isHostedWeb: boolean) => {
     if (window.vaultBillDesktop) {
-        const [credentialStatus, trialStatus, hostedWebSettings] = await Promise.all([
-            window.vaultBillDesktop.getCredentialStatus(),
-            window.vaultBillDesktop.getTrialStatus(),
-            window.vaultBillDesktop.getHostedWebSettings(),
-        ]);
+        const [credentialStatus, trialStatus, hostedWebSettings, hostedWebServerStatus] =
+            await Promise.all([
+                window.vaultBillDesktop.getCredentialStatus(),
+                window.vaultBillDesktop.getTrialStatus(),
+                window.vaultBillDesktop.getHostedWebSettings(),
+                window.vaultBillDesktop.getHostedWebServerStatus(),
+            ]);
         return {
             credentialStatus,
             lanEnabled: hostedWebSettings.lanEnabled,
+            hostedWebAutoStart: hostedWebSettings.autoStart,
+            hostedWebServerRunning: hostedWebServerStatus.isRunning,
             trialStatus,
         };
     }
@@ -59,12 +63,16 @@ export const loadSettingsSecurityRuntimeState = async (isHostedWeb: boolean) => 
         return {
             credentialStatus,
             lanEnabled: false,
+            hostedWebAutoStart: false,
+            hostedWebServerRunning: false,
             trialStatus,
         };
     }
     return {
         credentialStatus: undefined,
         lanEnabled: false,
+        hostedWebAutoStart: false,
+        hostedWebServerRunning: false,
         trialStatus: undefined,
     };
 };

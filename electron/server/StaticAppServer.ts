@@ -30,6 +30,15 @@ export const tryServeStaticApp = async (
         response.end();
         return true;
     }
+    if (pathname === staticBasePath.slice(0, -1)) {
+        const query = request.url?.includes('?') ? request.url.slice(request.url.indexOf('?')) : '';
+        response.writeHead(302, {
+            location: `${staticBasePath}${query}`,
+            'x-content-type-options': 'nosniff',
+        });
+        response.end();
+        return true;
+    }
     const requestPath = normalizeStaticRequestPath(pathname);
     const relativePath = requestPath === '/' ? 'index.html' : requestPath.replace(/^\/+/u, '');
     const requestedFile = path.resolve(staticDirectory, relativePath);
@@ -68,6 +77,7 @@ const isApiPath = (url: string | undefined): boolean =>
         '/document-formats',
         '/reports',
         '/window',
+        '/workspace',
         '/print',
         '/backup',
         '/credentials',

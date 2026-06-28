@@ -34,6 +34,7 @@ export const HostedWebSettingsSchema = z.object({
     lanEnabled: z.boolean(),
     passwordRequired: z.boolean(),
     port: z.number().int().min(1).max(65_535),
+    autoStart: z.boolean(),
 });
 
 /** Parsed business settings shape returned to the application runtime. */
@@ -64,6 +65,7 @@ const defaultHostedWebSettings: HostedWebSettings = {
     lanEnabled: false,
     passwordRequired: true,
     port: defaultHostedWebPort,
+    autoStart: true,
 };
 
 /** Backup metadata tracked separately from live business settings. */

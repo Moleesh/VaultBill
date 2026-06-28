@@ -192,4 +192,26 @@ describe('login UI', () => {
         expect(window.vaultBillDesktop?.minimizeWindow).toHaveBeenCalledTimes(1);
         expect(window.vaultBillDesktop?.closeWindow).toHaveBeenCalledTimes(1);
     });
+
+    it('opens a confirmation before re-entering setup with F9', async () => {
+        setDesktopBridge([adminAccount]);
+        const openSetupWizard = vi.fn();
+
+        renderPage(<LoginPage onOpenSetupWizard={openSetupWizard} />, desktopCapabilities);
+
+        await screen.findByRole('button', {
+            name: /Operator account Operations Admin/i,
+        });
+        fireEvent.keyDown(window, { key: 'F9', code: 'F9' });
+
+        expect(
+            screen.getByRole('heading', {
+                name: 'Return to setup wizard',
+            }),
+        ).toBeVisible();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Open setup' }));
+
+        expect(openSetupWizard).toHaveBeenCalledTimes(1);
+    });
 });

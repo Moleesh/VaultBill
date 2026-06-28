@@ -30,6 +30,18 @@ const rootRedirectPlugin = () => ({
                 response.end();
                 return;
             }
+            if (
+                request.url === applicationBasePath.slice(0, -1) ||
+                request.url?.startsWith(`${applicationBasePath.slice(0, -1)}?`) === true
+            ) {
+                const query = request.url.includes('?')
+                    ? request.url.slice(request.url.indexOf('?'))
+                    : '';
+                response.statusCode = 302;
+                response.setHeader('location', `${applicationBasePath}${query}`);
+                response.end();
+                return;
+            }
             next();
         });
     },

@@ -19,17 +19,6 @@ import path from 'node:path';
 
 import { embeddedDesktopAppUrl, mainState, hostedAppUrl } from './MainState.js';
 
-const getDevServerUrl = (): string | undefined =>
-    process.argv
-        .find((argument) => argument.startsWith('--dev-server-url='))
-        ?.replace('--dev-server-url=', '');
-
-const appendDesktopRuntimeMarker = (urlValue: string): string => {
-    const url = new URL(urlValue);
-    url.searchParams.set('runtime', 'desktop');
-    return url.toString();
-};
-
 /** Reads the packaged license verifier embedded into the desktop build. */
 export const readLicenseVerifier = (): string => {
     try {
@@ -79,15 +68,10 @@ export const createWindow = async () => {
         return { action: 'deny' };
     });
     mainState.mainWindow.webContents.on('will-navigate', (event, url) => {
-        const devServerUrl = getDevServerUrl();
-        const allowedOrigin = devServerUrl
-            ? new URL(devServerUrl).origin
-            : new URL(hostedAppUrl()).origin;
+        const allowedOrigin = new URL(hostedAppUrl()).origin;
         if (!url.startsWith(allowedOrigin)) event.preventDefault();
     });
-    const devServerUrl = getDevServerUrl();
-    if (devServerUrl) await mainState.mainWindow.loadURL(appendDesktopRuntimeMarker(devServerUrl));
-    else await mainState.mainWindow.loadURL(embeddedDesktopAppUrl());
+    await mainState.mainWindow.loadURL(embeddedDesktopAppUrl());
 };
 
 /** Creates the tray icon and menu used while VaultBill continues running in the background. */
@@ -106,7 +90,12 @@ export const createTray = () => {
                     mainState.mainWindow?.focus();
                 },
             },
-            { label: `Hosted web: ${hostedAppUrl()}`, enabled: false },
+            {
+                label: mainState.localApiServer?.isHostedAccessEnabled()
+                    ? `Hosted web: ${hostedAppUrl()}`
+                    : 'Hosted web: stopped by System Administrator',
+                enabled: false,
+            },
             {
                 label: mainState.hostedWebSettings.lanEnabled
                     ? `LAN access: enabled on port ${String(mainState.hostedWebSettings.port)}`

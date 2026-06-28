@@ -148,6 +148,27 @@ export const registerMainIpcHandlers = () => {
         return mainState.hostedWebSettings;
     });
     ipcMain.handle('vaultbill:local-api:settings', () => mainState.hostedWebSettings);
+    ipcMain.handle('vaultbill:local-api:status', () => ({
+        isRunning: mainState.localApiServer?.isHostedAccessEnabled() ?? false,
+    }));
+    ipcMain.handle('vaultbill:local-api:start', () => {
+        if (!mainState.localApiServer) throw new Error('Hosted web services are not ready.');
+        mainState.localApiServer.startHostedAccess();
+        refreshTray();
+        return { isRunning: mainState.localApiServer.isHostedAccessEnabled() };
+    });
+    ipcMain.handle('vaultbill:local-api:stop', () => {
+        if (!mainState.localApiServer) throw new Error('Hosted web services are not ready.');
+        mainState.localApiServer.stopHostedAccess();
+        refreshTray();
+        return { isRunning: mainState.localApiServer.isHostedAccessEnabled() };
+    });
+    ipcMain.handle('vaultbill:local-api:restart', () => {
+        if (!mainState.localApiServer) throw new Error('Hosted web services are not ready.');
+        mainState.localApiServer.restartHostedAccess();
+        refreshTray();
+        return { isRunning: mainState.localApiServer.isHostedAccessEnabled() };
+    });
     ipcMain.handle('vaultbill:trial:status', () => mainState.recordStore?.checkpointTrial());
     ipcMain.handle('vaultbill:trial:activate', (_event, licenseKey: unknown) => {
         if (!mainState.recordStore || typeof licenseKey !== 'string') {

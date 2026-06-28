@@ -22,30 +22,21 @@ export const LoginHelpModal: FC<LoginHelpModalProps> = ({ isOpen, onClose }) => 
                     Log in.
                 </p>
                 <p>
-                    Some operator accounts start without a password until a System Administrator or
-                    Admin adds one in Settings.
+                    Some operator accounts start without a password until an Admin adds one in
+                    Settings.
                 </p>
             </section>
             <section>
                 <h3>If an Admin password is forgotten</h3>
                 <p>
-                    Ask a signed-in System Administrator to open Settings and set a new password for
-                    that account.
+                    Ask a signed-in Admin to open Settings and set a new password for that account.
                 </p>
             </section>
             <section>
-                <h3>If the System Administrator is hidden</h3>
+                <h3>Open setup again</h3>
                 <p>
-                    On VaultBill Desktop, press <strong>F8</strong> on the sign-in screen to reveal
-                    the protected System Administrator account.
-                </p>
-            </section>
-            <section>
-                <h3>If the System Administrator password is lost</h3>
-                <p>
-                    Contact the trusted host owner or deployment owner who originally secured the
-                    workspace. Do not reset or reinstall anything until the backup and recovery plan
-                    is confirmed.
+                    On the sign-in screen, press <strong>F9</strong> and confirm to reopen the
+                    initial setup wizard.
                 </p>
             </section>
             <section>

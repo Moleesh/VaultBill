@@ -40,6 +40,7 @@ describe('SettingsStore', () => {
             ],
         });
         store.saveHostedWeb({
+            autoStart: true,
             lanEnabled: true,
             passwordRequired: true,
             port: defaultHostedWebPort,
@@ -56,6 +57,7 @@ describe('SettingsStore', () => {
             ],
         });
         expect(store.getHostedWeb()).toEqual({
+            autoStart: true,
             lanEnabled: true,
             passwordRequired: true,
             port: defaultHostedWebPort,

@@ -90,11 +90,25 @@ type VaultBillDesktopBridge = {
         readonly lanEnabled: boolean;
         readonly passwordRequired: boolean;
         readonly port: number;
+        readonly autoStart: boolean;
     }) => Promise<unknown>;
     readonly getHostedWebSettings: () => Promise<{
         readonly lanEnabled: boolean;
         readonly passwordRequired: boolean;
         readonly port: number;
+        readonly autoStart: boolean;
+    }>;
+    readonly getHostedWebServerStatus: () => Promise<{
+        readonly isRunning: boolean;
+    }>;
+    readonly startHostedWebServer: () => Promise<{
+        readonly isRunning: boolean;
+    }>;
+    readonly stopHostedWebServer: () => Promise<{
+        readonly isRunning: boolean;
+    }>;
+    readonly restartHostedWebServer: () => Promise<{
+        readonly isRunning: boolean;
     }>;
     readonly getTrialStatus: () => Promise<{
         readonly isFullVersion: boolean;

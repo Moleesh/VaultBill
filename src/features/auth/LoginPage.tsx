@@ -5,27 +5,35 @@
  * help actions.
  */
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type FC } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
-import type { FC } from 'react';
 
 import { AppBrandIcon } from '../../components/AppBrandIcon/AppBrandIcon';
+import { AppConfirmDialog } from '../../components/AppConfirmDialog/AppConfirmDialog';
 import { DesktopWindowControls } from '../../components/DesktopWindowControls';
 import { shouldRenderDesktopChrome } from '../../capability/CapabilityRegistry';
 import { useCapabilities } from '../../capability/CapabilityContext';
 import { defaultRuntimeBranding } from '../../constants/RuntimeDefaults';
-import { canUseLocalHostedApi, requestHostedWindowAction } from '../../runtime/HostedApi';
 import { applyTheme, loadResolvedTheme } from '../../runtime/WorkspaceTheme';
 import { LoginActivationModal } from './LoginActivationModal';
 import { LoginHelpModal } from './LoginHelpModal';
 import { buildLoginAccountOptions, findLoginAccount, getLoginAccountId } from './LoginPageSupport';
+import {
+    activateLoginLicense,
+    getLoginFooterCopy,
+    requestLoginCloseWindow,
+    requestLoginMinimizeWindow,
+    useSetupShortcutConfirmation,
+} from './LoginPageRuntimeSupport';
 import { LoginPageForm } from './LoginPageForm';
 import { useSession } from './SessionContext';
 import { useActivationForm, useLoginForm } from './useLoginForms';
 import { useSysAdminUnlock } from './useSysAdminUnlock';
 
 /** Renders the compact login experience for the current runtime mode. */
-export const LoginPage: FC = () => {
+export const LoginPage: FC<{ readonly onOpenSetupWizard?: () => void }> = ({
+    onOpenSetupWizard,
+}) => {
     const capabilities = useCapabilities();
     const showDesktopChrome = shouldRenderDesktopChrome(capabilities);
     const { accounts, hostedConnectionState, login, operatorContext } = useSession();
@@ -34,6 +42,7 @@ export const LoginPage: FC = () => {
     const [error, setError] = useState('');
     const [isHelpOpen, setIsHelpOpen] = useState(false);
     const [isActivationOpen, setIsActivationOpen] = useState(false);
+    const [isSetupShortcutConfirmOpen, setIsSetupShortcutConfirmOpen] = useState(false);
     const [activationMessage, setActivationMessage] = useState('');
     const { isUnlocked: isSysAdminUnlocked } = useSysAdminUnlock();
     const accountOptions = buildLoginAccountOptions(accounts, isSysAdminUnlocked);
@@ -60,6 +69,14 @@ export const LoginPage: FC = () => {
     const effectiveSelectedAccountId = selectedAccountId || fallbackSelectedAccountId;
     const selectedAccount = findLoginAccount(accounts, effectiveSelectedAccountId);
     const isLoginDisabled = !effectiveSelectedAccountId || hostedConnectionState !== 'connected';
+    const footerCopy = getLoginFooterCopy({
+        isDemoMode: capabilities.isDemoMode,
+        isDesktop: showDesktopChrome,
+        isHostedWeb: capabilities.isHostedWeb,
+    });
+    useSetupShortcutConfirmation(onOpenSetupWizard, () => {
+        setIsSetupShortcutConfirmOpen(true);
+    });
 
     useEffect(() => {
         void loadResolvedTheme(capabilities.isHostedWeb)
@@ -109,18 +126,10 @@ export const LoginPage: FC = () => {
                     <DesktopWindowControls
                         isDesktop={showDesktopChrome}
                         onCloseWindow={() => {
-                            if (window.vaultBillDesktop?.closeWindow) {
-                                void window.vaultBillDesktop.closeWindow();
-                                return;
-                            }
-                            if (canUseLocalHostedApi()) void requestHostedWindowAction('close');
+                            requestLoginCloseWindow(showDesktopChrome);
                         }}
                         onMinimizeWindow={() => {
-                            if (window.vaultBillDesktop?.minimizeWindow) {
-                                void window.vaultBillDesktop.minimizeWindow();
-                                return;
-                            }
-                            if (canUseLocalHostedApi()) void requestHostedWindowAction('minimize');
+                            requestLoginMinimizeWindow(showDesktopChrome);
                         }}
                     />
                 </div>
@@ -161,8 +170,8 @@ export const LoginPage: FC = () => {
                     />
                 </div>
                 <footer>
-                    <span>Local-first desktop workspace</span>
-                    <span>Designed for calm, focused work</span>
+                    <span>{footerCopy.primary}</span>
+                    <span>{footerCopy.secondary}</span>
                 </footer>
             </section>
             <LoginHelpModal
@@ -176,21 +185,24 @@ export const LoginPage: FC = () => {
                 form={activationForm}
                 isOpen={isActivationOpen}
                 onActivate={() => {
-                    void window.vaultBillDesktop
-                        ?.activateLicense(activationForm.state.values.licenseKey)
-                        .then(() => {
-                            activationForm.reset();
-                            setActivationMessage('VaultBill is activated. You can now log in.');
-                        })
-                        .catch((reason: unknown) => {
-                            setActivationMessage(
-                                reason instanceof Error ? reason.message : 'Activation failed.',
-                            );
-                        });
+                    activateLoginLicense(activationForm, setActivationMessage);
                 }}
                 onClose={() => {
                     setIsActivationOpen(false);
                 }}
+            />
+            <AppConfirmDialog
+                confirmLabel="Open setup"
+                description="Open the initial setup wizard again from the sign-in screen?"
+                isOpen={isSetupShortcutConfirmOpen}
+                onCancel={() => {
+                    setIsSetupShortcutConfirmOpen(false);
+                }}
+                onConfirm={() => {
+                    setIsSetupShortcutConfirmOpen(false);
+                    onOpenSetupWizard?.();
+                }}
+                title="Return to setup wizard"
             />
         </main>
     );

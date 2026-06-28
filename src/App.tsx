@@ -4,6 +4,7 @@
 
 import { Suspense, useEffect, useState } from 'react';
 import type { FC } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import { AppRouteFallback, AppRouteTree } from './AppRoutesSupport';
 import { AnimatedCursor } from './components/AnimatedCursor';
@@ -15,7 +16,10 @@ import { canUseLocalHostedApi, requestHostedApi } from './runtime/HostedApi';
 
 const AppRoutes: FC = () => {
     const capabilities = useCapabilities();
+    const navigate = useNavigate();
     const [setupRevision, setSetupRevision] = useState(0);
+    const [setupWizardRevision, setSetupWizardRevision] = useState(0);
+    const [setupWizardForcedOpen, setSetupWizardForcedOpen] = useState(false);
     const [desktopSetupRequired, setDesktopSetupRequired] = useState<boolean | null>(
         !capabilities.isDemoMode &&
             (window.vaultBillDesktop ||
@@ -93,10 +97,18 @@ const AppRoutes: FC = () => {
                 <Suspense fallback={<AppRouteFallback />}>
                     <AppRouteTree
                         isDemoMode={capabilities.isDemoMode}
-                        setupRequired={setupRequired}
+                        onOpenSetupWizard={() => {
+                            setSetupWizardForcedOpen(true);
+                            setSetupWizardRevision((current) => current + 1);
+                            void navigate('/setup', { replace: true });
+                        }}
                         onSetupComplete={() => {
+                            setSetupWizardForcedOpen(false);
                             setSetupRevision((current) => current + 1);
                         }}
+                        setupRequired={setupRequired}
+                        setupWizardRevision={setupWizardRevision}
+                        shouldAllowSetupWizard={setupRequired || setupWizardForcedOpen}
                     />
                 </Suspense>
             </RecordStoreProvider>

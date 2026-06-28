@@ -43,11 +43,17 @@ export const SettingsSecuritySection: FC = () => {
             <SettingsSecurityAccess
                 activationForm={state.activationForm}
                 canLanServer={state.canLanServer}
+                hostedWebAutoStart={state.hostedWebAutoStart}
+                hostedWebServerRunning={state.hostedWebServerRunning}
                 isDemoMode={state.isDemoMode}
                 isSysAdmin={state.operatorRole === 'SysAdmin'}
                 lanEnabled={state.lanEnabled}
                 onActivateLicense={state.onActivateLicense}
+                onHostedWebAutoStartChange={state.onHostedWebAutoStartChange}
                 onLanEnabledChange={state.onLanEnabledChange}
+                onRestartHostedWebServer={state.onRestartHostedWebServer}
+                onStartHostedWebServer={state.onStartHostedWebServer}
+                onStopHostedWebServer={state.onStopHostedWebServer}
                 trialStatus={state.trialStatus}
             />
             {state.operatorRole === 'SysAdmin' ? (

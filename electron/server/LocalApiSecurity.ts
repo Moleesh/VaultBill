@@ -14,6 +14,7 @@ export const LocalApiConfigurationSchema = z.object({
     lanEnabled: z.boolean().default(false),
     passwordRequired: z.boolean().default(true),
     port: z.number().int().min(1).max(65_535).default(defaultHostedWebPort),
+    autoStart: z.boolean().default(true),
 });
 
 /** Parsed hosted API configuration shape used by the Electron runtime. */

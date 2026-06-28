@@ -45,30 +45,42 @@ export const AppRouteFallback: FC = () => <div className="app-screen-state" aria
 
 type AppRouteTreeProps = {
     readonly isDemoMode: boolean;
+    readonly shouldAllowSetupWizard: boolean;
     readonly setupRequired: boolean;
+    readonly setupWizardRevision: number;
+    readonly onOpenSetupWizard: () => void;
     readonly onSetupComplete: () => void;
 };
 
 /** Renders the complete application route tree with lazy-loaded route screens. */
 export const AppRouteTree: FC<AppRouteTreeProps> = ({
     isDemoMode,
+    onOpenSetupWizard,
     setupRequired,
+    setupWizardRevision,
+    shouldAllowSetupWizard,
     onSetupComplete,
 }) => (
     <Routes>
         <Route
             path="/setup"
             element={
-                isDemoMode || !setupRequired ? (
+                isDemoMode || !shouldAllowSetupWizard ? (
                     <Navigate replace to="/login" />
                 ) : (
-                    <SetupPage onComplete={onSetupComplete} />
+                    <SetupPage key={setupWizardRevision} onComplete={onSetupComplete} />
                 )
             }
         />
         <Route
             path="/login"
-            element={setupRequired ? <Navigate replace to="/setup" /> : <LoginPage />}
+            element={
+                setupRequired ? (
+                    <Navigate replace to="/setup" />
+                ) : (
+                    <LoginPage onOpenSetupWizard={onOpenSetupWizard} />
+                )
+            }
         />
         <Route
             path="/access-denied"

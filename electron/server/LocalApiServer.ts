@@ -10,7 +10,6 @@ import type { SettingsStore } from '../SettingsStore.js';
 import {
     fallbackHostedWebPort,
     getLocalApiHost,
-    isAllowedLocalApiOrigin,
     LocalApiConfigurationSchema,
     type LocalApiConfiguration,
 } from './LocalApiSecurity.js';
@@ -19,25 +18,23 @@ import {
     ApiError,
     getSession,
     requireCsrf,
-    type HostedSession,
-    type LoginAttempts,
     type LocalApiDataOperations,
-    type LocalApiState,
 } from './LocalApiContext.js';
 import { handleLocalApiAdminRoutes } from './LocalApiAdminRoutes.js';
 import { handleLocalApiAuthRoutes } from './LocalApiAuthRoutes.js';
 import { accountForSession } from './LocalApiAuthRoutesSupport.js';
 import { handleLocalApiContentRoutes } from './LocalApiContentRoutes.js';
+import {
+    applyLocalApiCorsHeaders,
+    buildLocalApiLanMessage,
+    createLocalApiState,
+    guardAllowedLocalApiOrigin,
+    sendHostedAccessDisabled,
+    sendLocalApiError,
+} from './LocalApiServerSupport.js';
+import type { HostedSession, LoginAttempts } from './LocalApiContext.js';
 
 export { getLocalApiHealth } from './LocalApiAuthRoutes.js';
-
-const localApiCorsHeaders = [
-    'content-type',
-    'x-vaultbill-csrf',
-    'x-vaultbill-sysadmin-password',
-    'x-vaultbill-backup-password',
-    'x-vaultbill-recovery-key',
-].join(', ');
 
 /** Hosts the authenticated local API and the static app bundle. */
 export class LocalApiServer {
@@ -51,6 +48,7 @@ export class LocalApiServer {
     readonly #dataOperations: LocalApiDataOperations | undefined;
     #configuration: LocalApiConfiguration;
     #server: Server | undefined;
+    #hostedAccessEnabled: boolean;
 
     public constructor(
         recordStore: DesktopRecordStore,
@@ -67,6 +65,7 @@ export class LocalApiServer {
         this.#settingsStore = settingsStore;
         this.#staticDirectory = staticDirectory;
         this.#configuration = LocalApiConfigurationSchema.parse(configuration ?? {});
+        this.#hostedAccessEnabled = this.#configuration.autoStart;
         this.#dataOperations = dataOperations;
     }
 
@@ -111,14 +110,33 @@ export class LocalApiServer {
             await this.stop();
             await this.start();
         }
-        console.info(
-            `VaultBill LAN access ${next.lanEnabled ? 'enabled' : 'disabled'} on ${getLocalApiHost(next)}.`,
-        );
+        console.info(buildLocalApiLanMessage(next));
         return next;
     };
 
     /** Returns the currently active hosted API configuration. */
     public getConfiguration = (): LocalApiConfiguration => this.#configuration;
+
+    /** Reports whether hosted browser access is currently enabled. */
+    public isHostedAccessEnabled = (): boolean => this.#hostedAccessEnabled;
+
+    /** Enables the hosted browser access layer without changing the listening server. */
+    public startHostedAccess = (): void => {
+        this.#hostedAccessEnabled = true;
+    };
+
+    /** Disables hosted browser access and clears active hosted sessions. */
+    public stopHostedAccess = (): void => {
+        this.#hostedAccessEnabled = false;
+        this.#sessions.clear();
+        this.#loginAttempts.clear();
+    };
+
+    /** Restarts hosted browser access and clears active hosted sessions. */
+    public restartHostedAccess = (): void => {
+        this.stopHostedAccess();
+        this.startHostedAccess();
+    };
 
     /** Stops the hosted API server without clearing the persisted configuration. */
     public stop = async (): Promise<void> => {
@@ -133,46 +151,35 @@ export class LocalApiServer {
         });
     };
 
-    /** Collects the current server dependencies for one request cycle. */
-    #state = (): LocalApiState => ({
-        recordStore: this.#recordStore,
-        credentialStore: this.#credentialStore,
-        builderStore: this.#builderStore,
-        settingsStore: this.#settingsStore,
-        staticDirectory: this.#staticDirectory,
-        sessions: this.#sessions,
-        loginAttempts: this.#loginAttempts,
-        dataOperations: this.#dataOperations,
-        configuration: this.#configuration,
-    });
-
-    /** Applies hosted-web CORS headers for a trusted browser origin. */
-    #applyCorsHeaders = (response: ServerResponse, requestOrigin: string) => {
-        response.setHeader('access-control-allow-origin', requestOrigin);
-        response.setHeader('access-control-allow-credentials', 'true');
-        response.setHeader('access-control-allow-headers', localApiCorsHeaders);
-        response.setHeader('access-control-allow-methods', 'GET, POST, OPTIONS');
-        response.setHeader('vary', 'Origin');
-    };
-
     /** Handles one hosted API or static-app request end to end. */
     async #handle(request: IncomingMessage, response: ServerResponse): Promise<void> {
         response.setHeader('content-type', 'application/json');
         response.setHeader('x-content-type-options', 'nosniff');
         response.setHeader('cache-control', 'no-store');
         const requestOrigin = request.headers.origin;
-        if (!isAllowedLocalApiOrigin(requestOrigin, request.headers.host)) {
-            this.#send(response, 403, { error: 'Origin is not allowed.' });
-            return;
-        }
-        if (requestOrigin) this.#applyCorsHeaders(response, requestOrigin);
+        if (!guardAllowedLocalApiOrigin(request, response)) return;
+        if (requestOrigin) applyLocalApiCorsHeaders(response, requestOrigin);
         if (request.method === 'OPTIONS') {
             response.writeHead(204);
             response.end();
             return;
         }
         if (await tryServeStaticApp(request, response, this.#staticDirectory)) return;
-        const state = this.#state();
+        if (!this.#hostedAccessEnabled) {
+            sendHostedAccessDisabled(request, response);
+            return;
+        }
+        const state = createLocalApiState({
+            builderStore: this.#builderStore,
+            configuration: this.#configuration,
+            credentialStore: this.#credentialStore,
+            dataOperations: this.#dataOperations,
+            loginAttempts: this.#loginAttempts,
+            recordStore: this.#recordStore,
+            sessions: this.#sessions,
+            settingsStore: this.#settingsStore,
+            staticDirectory: this.#staticDirectory,
+        });
         if (await handleLocalApiAuthRoutes(state, request, response)) return;
         const session = getSession(state, request);
         if (!session) {
@@ -185,20 +192,8 @@ export class LocalApiServer {
         throw new ApiError(404, 'The hosted API route was not found.');
     }
 
-    /** Sends one JSON response with the provided status code. */
-    #send = (response: ServerResponse, status: number, payload: unknown) => {
-        response.writeHead(status);
-        response.end(JSON.stringify(payload));
-    };
-
     /** Converts thrown request errors into consistent hosted API responses. */
     #sendError = (response: ServerResponse, error: unknown) => {
-        if (response.headersSent || response.writableEnded) return;
-        if (error instanceof ApiError) {
-            this.#send(response, error.status, { error: error.message });
-            return;
-        }
-        console.error('VaultBill hosted API request failed.', error);
-        this.#send(response, 500, { error: 'The hosted API request could not be completed.' });
+        sendLocalApiError(response, error);
     };
 }
