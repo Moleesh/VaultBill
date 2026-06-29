@@ -18,13 +18,6 @@ Nice and tidy. 🙂
 [![Platforms](https://img.shields.io/badge/platforms-Windows%20%7C%20Linux-167d73)](https://github.com/Moleesh/VaultBill/actions/workflows/release-app.yml)
 [![Tests](https://img.shields.io/badge/tests-Vitest%20%2B%20Playwright-f0a202)](https://github.com/Moleesh/VaultBill/actions)
 
-<p align="center">
-    <img
-        alt="Developed using Codex / ChatGPT"
-        src="https://img.shields.io/badge/Developed%20using-Codex%20%2F%20ChatGPT-10a37f?style=for-the-badge&logo=openai&logoColor=white"
-    />
-</p>
-
 ## What VaultBill Does 🚀
 
 VaultBill helps a business set up document formats, capture records, print and
@@ -250,6 +243,13 @@ and notes. That keeps the release list tidy instead of collecting stale copies.
 - kebab-case DOM class names so JSX and SCSS stay predictable together
 - focused utility comments where behavior is easy to misuse or drift over time
 - README and inline docs updated alongside product-facing cleanup
+
+## Contribution 🤝
+
+VaultBill is developed with AI coding support from Codex and ChatGPT.
+
+[![Codex](https://img.shields.io/badge/Codex-AI%20coding%20agent-111111?style=for-the-badge&logo=codex&logoColor=white)](https://openai.com/codex/)
+![ChatGPT](https://img.shields.io/badge/ChatGPT-assisted-10a37f?style=for-the-badge&logo=chatgpt&logoColor=white)
 
 ## Troubleshooting 🧯
 
