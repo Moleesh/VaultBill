@@ -1,6 +1,6 @@
 /** @format */
 
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -84,7 +84,7 @@ describe('app shell', () => {
         delete (window as Partial<Window> & { vaultBillRuntime?: unknown }).vaultBillRuntime;
     });
 
-    it('shows desktop window controls in the shell top bar', () => {
+    it('shows desktop window controls in the shell top bar', async () => {
         render(
             <MemoryRouter initialEntries={['/app/dashboard']}>
                 <CapabilityProvider value={desktopCapabilities}>
@@ -101,12 +101,18 @@ describe('app shell', () => {
             </MemoryRouter>,
         );
 
+        await waitFor(() => {
+            expect(window.vaultBillDesktop?.getTrialStatus).toHaveBeenCalledTimes(1);
+            expect(window.vaultBillDesktop?.getHostedWebUrl).toHaveBeenCalledTimes(1);
+            expect(window.vaultBillDesktop?.listRecords).toHaveBeenCalledTimes(1);
+        });
+
         expect(screen.getByRole('navigation', { name: 'Primary' })).toBeVisible();
         expect(screen.getByRole('button', { name: 'Close to tray' })).toBeVisible();
         expect(screen.getByRole('button', { name: 'Minimize to taskbar' })).toBeVisible();
     });
 
-    it('keeps shell window controls visible when the hosted desktop runtime marker is present', () => {
+    it('keeps shell window controls visible when the hosted desktop runtime marker is present', async () => {
         render(
             <MemoryRouter initialEntries={['/app/dashboard']}>
                 <CapabilityProvider value={hostedCapabilities}>
@@ -122,6 +128,12 @@ describe('app shell', () => {
                 </CapabilityProvider>
             </MemoryRouter>,
         );
+
+        await waitFor(() => {
+            expect(window.vaultBillDesktop?.getTrialStatus).toHaveBeenCalledTimes(1);
+            expect(window.vaultBillDesktop?.getHostedWebUrl).toHaveBeenCalledTimes(1);
+            expect(window.vaultBillDesktop?.listRecords).toHaveBeenCalledTimes(1);
+        });
 
         expect(screen.getByRole('button', { name: 'Close to tray' })).toBeVisible();
         expect(screen.getByRole('button', { name: 'Minimize to taskbar' })).toBeVisible();

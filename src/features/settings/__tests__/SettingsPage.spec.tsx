@@ -1,6 +1,6 @@
 /** @format */
 
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ReactNode } from 'react';
@@ -66,15 +66,18 @@ const renderPage = (
     session = createTestSession(adminAccount),
     capabilities = webCapabilities,
 ) =>
-    render(
-        <MemoryRouter>
-            <CapabilityProvider value={capabilities}>
-                <SessionContext.Provider value={session}>
-                    <RecordStoreProvider>{children}</RecordStoreProvider>
-                </SessionContext.Provider>
-            </CapabilityProvider>
-        </MemoryRouter>,
-    );
+    act(async () => {
+        render(
+            <MemoryRouter>
+                <CapabilityProvider value={capabilities}>
+                    <SessionContext.Provider value={session}>
+                        <RecordStoreProvider>{children}</RecordStoreProvider>
+                    </SessionContext.Provider>
+                </CapabilityProvider>
+            </MemoryRouter>,
+        );
+        await Promise.resolve();
+    });
 
 describe('settings UI', () => {
     beforeEach(() => {
@@ -86,7 +89,7 @@ describe('settings UI', () => {
         delete (window as Partial<Window> & { vaultBillDesktop?: unknown }).vaultBillDesktop;
     });
 
-    it('shows capability-aware settings and help', () => {
+    it('shows capability-aware settings and help', async () => {
         const fullWebCapabilities = {
             ...webCapabilities,
             isDemoMode: false,
@@ -94,7 +97,7 @@ describe('settings UI', () => {
             canSmsIntegration: true,
             canGspIntegration: true,
         };
-        renderPage(
+        await renderPage(
             <>
                 <SettingsPage />
                 <ContextualHelp
@@ -165,13 +168,21 @@ describe('settings UI', () => {
             } as const,
         });
 
-        renderPage(
+        await renderPage(
             <SettingsPage />,
             createTestSession(sysAdminAccount, [sysAdminAccount]),
             desktopCapabilities,
         );
 
         expect(await screen.findByText('Preferred printer')).toBeVisible();
+        expect(await screen.findByText('Full version activated.')).toBeVisible();
+        expect(await screen.findByRole('heading', { name: 'Reports' })).toBeVisible();
+        await waitFor(() => {
+            expect(window.vaultBillDesktop?.getCredentialStatus).toHaveBeenCalledTimes(1);
+            expect(window.vaultBillDesktop?.getTrialStatus).toHaveBeenCalledTimes(1);
+            expect(window.vaultBillDesktop?.getHostedWebSettings).toHaveBeenCalledTimes(1);
+            expect(window.vaultBillDesktop?.getHostedWebServerStatus).toHaveBeenCalledTimes(1);
+        });
         expect(screen.getByText(/Store shared keys and values here/i)).toBeVisible();
         expect(screen.getByText('Key')).toBeVisible();
         expect(screen.getByRole('heading', { name: 'Backup and restore' })).toBeVisible();
