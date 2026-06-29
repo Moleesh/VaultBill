@@ -18,6 +18,13 @@ Nice and tidy. 🙂
 [![Platforms](https://img.shields.io/badge/platforms-Windows%20%7C%20Linux-167d73)](https://github.com/Moleesh/VaultBill/actions/workflows/release-app.yml)
 [![Tests](https://img.shields.io/badge/tests-Vitest%20%2B%20Playwright-f0a202)](https://github.com/Moleesh/VaultBill/actions)
 
+<p align="center">
+    <img
+        alt="Developed using Codex / ChatGPT"
+        src="https://img.shields.io/badge/Developed%20using-Codex%20%2F%20ChatGPT-10a37f?style=for-the-badge&logo=openai&logoColor=white"
+    />
+</p>
+
 ## What VaultBill Does 🚀
 
 VaultBill helps a business set up document formats, capture records, print and

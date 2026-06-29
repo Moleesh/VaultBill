@@ -9,6 +9,7 @@ body.has-animated-cursor * {
     --cursor-size: 0.9rem;
     --cursor-ring-size: 2.4rem;
     --cursor-spark-size: 0.3rem;
+    --cursor-orbit-radius: calc(var(--cursor-ring-size) * 0.44);
     --cursor-color: color-mix(in srgb, var(--color-primary) 78%, black 22%);
     --cursor-ring-color: color-mix(in srgb, var(--color-primary) 74%, white 6%);
     --cursor-spark-color: color-mix(in srgb, white 74%, var(--color-primary) 26%);
@@ -38,6 +39,8 @@ body.has-animated-cursor * {
 .animated-cursor-ring,
 .animated-cursor-spark {
     position: absolute;
+    top: 0;
+    left: 0;
     border-radius: 999px;
     transform: translate(-50%, -50%);
     transition:
@@ -74,18 +77,18 @@ body.has-animated-cursor * {
 .animated-cursor-ring {
     width: var(--cursor-ring-size);
     height: var(--cursor-ring-size);
-    border: 2px solid color-mix(in srgb, var(--cursor-ring-color) 92%, transparent);
+    border: 2px solid color-mix(in srgb, var(--cursor-ring-color) 72%, transparent);
     background:
         radial-gradient(
             circle at 50% 50%,
-            color-mix(in srgb, white 14%, transparent),
+            color-mix(in srgb, white 9%, transparent),
             transparent 58%
         ),
-        color-mix(in srgb, var(--cursor-ring-color) 24%, transparent);
+        color-mix(in srgb, var(--cursor-ring-color) 15%, transparent);
     box-shadow:
-        inset 0 1px 0 color-mix(in srgb, white 20%, transparent),
-        0 0 0 1px color-mix(in srgb, white 72%, transparent),
-        0 0 0.75rem color-mix(in srgb, var(--cursor-ring-color) 22%, transparent);
+        inset 0 1px 0 color-mix(in srgb, white 14%, transparent),
+        0 0 0 1px color-mix(in srgb, white 52%, transparent),
+        0 0 0.64rem color-mix(in srgb, var(--cursor-ring-color) 14%, transparent);
 }
 
 .animated-cursor-spark {
@@ -102,13 +105,13 @@ body.has-animated-cursor * {
     box-shadow:
         0 0 0 1px color-mix(in srgb, white 58%, transparent),
         0 0 0.7rem color-mix(in srgb, var(--cursor-spark-color) 50%, transparent);
-    transform: translate(0.58rem, -0.58rem);
-    animation: cursor-spark-orbit 2.2s ease-in-out infinite;
+    transform: translate(-50%, -50%) rotate(-42deg) translateX(var(--cursor-orbit-radius))
+        scale(1.02);
+    animation: cursor-spark-orbit 2.8s linear infinite;
 }
 
 .animated-cursor[data-pressed='true'] .animated-cursor-core,
-.animated-cursor[data-pressed='true'] .animated-cursor-ring,
-.animated-cursor[data-pressed='true'] .animated-cursor-spark {
+.animated-cursor[data-pressed='true'] .animated-cursor-ring {
     transform: translate(-50%, -50%) scale(0.88);
 }
 
@@ -211,20 +214,50 @@ body.has-animated-cursor * {
 }
 
 @keyframes cursor-spark-orbit {
-    0%,
-    100% {
+    0% {
         border-radius: 999px;
-        transform: translate(0.58rem, -0.58rem) scale(0.92);
+        opacity: 0.94;
+        transform: translate(-50%, -50%) rotate(-42deg) translateX(var(--cursor-orbit-radius))
+            scale(1.02);
         box-shadow:
             0 0 0 1px color-mix(in srgb, white 58%, transparent),
             0 0 0.55rem color-mix(in srgb, var(--cursor-spark-color) 38%, transparent);
     }
+    25% {
+        border-radius: 999px;
+        opacity: 1;
+        transform: translate(-50%, -50%) rotate(48deg) translateX(var(--cursor-orbit-radius))
+            scale(1.12);
+        box-shadow:
+            0 0 0 2px color-mix(in srgb, white 68%, transparent),
+            0 0 0.78rem color-mix(in srgb, var(--cursor-spark-color) 48%, transparent);
+    }
     50% {
         border-radius: 999px;
-        transform: translate(0.58rem, -0.58rem) scale(1.22);
+        opacity: 0.82;
+        transform: translate(-50%, -50%) rotate(138deg) translateX(var(--cursor-orbit-radius))
+            scale(0.9);
         box-shadow:
-            0 0 0 2px color-mix(in srgb, white 74%, transparent),
-            0 0 0.85rem color-mix(in srgb, var(--cursor-spark-color) 56%, transparent);
+            0 0 0 1px color-mix(in srgb, white 50%, transparent),
+            0 0 0.52rem color-mix(in srgb, var(--cursor-spark-color) 32%, transparent);
+    }
+    75% {
+        border-radius: 999px;
+        opacity: 0.76;
+        transform: translate(-50%, -50%) rotate(228deg) translateX(var(--cursor-orbit-radius))
+            scale(0.82);
+        box-shadow:
+            0 0 0 1px color-mix(in srgb, white 46%, transparent),
+            0 0 0.46rem color-mix(in srgb, var(--cursor-spark-color) 28%, transparent);
+    }
+    100% {
+        border-radius: 999px;
+        opacity: 0.94;
+        transform: translate(-50%, -50%) rotate(318deg) translateX(var(--cursor-orbit-radius))
+            scale(1.02);
+        box-shadow:
+            0 0 0 1px color-mix(in srgb, white 58%, transparent),
+            0 0 0.55rem color-mix(in srgb, var(--cursor-spark-color) 38%, transparent);
     }
 }
 
