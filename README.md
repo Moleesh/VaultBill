@@ -244,12 +244,12 @@ and notes. That keeps the release list tidy instead of collecting stale copies.
 - focused utility comments where behavior is easy to misuse or drift over time
 - README and inline docs updated alongside product-facing cleanup
 
-## Contribution 🤝
+## Credits 🤝
 
-VaultBill is developed with AI coding support from Codex and ChatGPT.
-
-[![Codex](https://img.shields.io/badge/Codex-AI%20coding%20agent-111111?style=for-the-badge&logo=codex&logoColor=white)](https://openai.com/codex/)
-![ChatGPT](https://img.shields.io/badge/ChatGPT-assisted-10a37f?style=for-the-badge&logo=chatgpt&logoColor=white)
+VaultBill is developed with AI coding support from
+[<img alt="Codex" src="https://raw.githubusercontent.com/lobehub/lobe-icons/refs/heads/master/packages/static-png/light/codex-color.png" width="18" /> Codex](https://openai.com/codex/)
+and
+[<img alt="ChatGPT" src="https://cdn.openai.com/API/logo-assets/blossom/32x32.svg" width="18" /> ChatGPT](https://chatgpt.com/).
 
 ## Troubleshooting 🧯
 

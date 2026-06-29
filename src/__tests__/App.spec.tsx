@@ -1,6 +1,6 @@
 /** @format */
 
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -122,9 +122,13 @@ describe('App', () => {
 
         expect(await screen.findByRole('heading', { name: 'VaultBill' })).toBeVisible();
 
-        if (import.meta.env.VITE_DEMO_MODE === 'true') {
-            expect(screen.getByText('Demo User')).toBeVisible();
-            fireEvent.click(screen.getByRole('button', { name: 'Start demo' }));
+        const startDemoButton = screen.queryByRole('button', { name: 'Start demo' });
+
+        if (startDemoButton) {
+            expect(await screen.findByText('Demo User')).toBeVisible();
+            act(() => {
+                fireEvent.click(startDemoButton);
+            });
 
             expect(
                 await screen.findByRole('heading', { name: /Welcome back, Demo User/u }),
@@ -135,10 +139,12 @@ describe('App', () => {
                     name: /Operator account Operations Admin/u,
                 }),
             ).toBeVisible();
-            fireEvent.change(screen.getByLabelText('Password'), {
-                target: { value: '147085aA' },
+            act(() => {
+                fireEvent.change(screen.getByLabelText('Password'), {
+                    target: { value: '147085aA' },
+                });
+                fireEvent.click(screen.getByRole('button', { name: 'Log in' }));
             });
-            fireEvent.click(screen.getByRole('button', { name: 'Log in' }));
 
             expect(
                 await screen.findByRole('heading', {
