@@ -17,6 +17,14 @@ type DesktopOperatorAccount = {
 
 type VaultBillDesktopBridge = {
     readonly getAppIdentity: () => Promise<DesktopBuildIdentity>;
+    readonly getRuntimeProcessInfo: () => Promise<{
+        readonly pid: number;
+        readonly processName: string;
+        readonly execPath: string;
+        readonly cwd: string;
+        readonly args: readonly string[];
+        readonly appUserModelId: string;
+    }>;
     readonly getHostedWebUrl: () => Promise<string>;
     readonly openHostedWeb: () => Promise<void>;
     readonly minimizeWindow: () => Promise<void>;

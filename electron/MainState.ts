@@ -21,6 +21,7 @@ export const embeddedDesktopAppUrl = (): string => {
 
 export type MainIdentity = {
     readonly appName: string;
+    readonly appSlug: string;
 };
 
 export type HostedWebSettings = {
@@ -49,7 +50,7 @@ export type MainState = {
 
 export const mainState: MainState = {
     currentDirectory: '',
-    identity: { appName: 'VaultBill' },
+    identity: { appName: 'VaultBill', appSlug: 'vaultbill' },
     recordStore: undefined,
     credentialStore: undefined,
     builderStore: undefined,

@@ -175,6 +175,7 @@ describe('login UI', () => {
                 name: /Operator account System Administrator/i,
             }),
         ).toBeVisible();
+        expect(screen.getByRole('status')).toHaveTextContent('System Administrator unlocked');
         expect(await screen.findByLabelText('Password')).toBeVisible();
     });
 

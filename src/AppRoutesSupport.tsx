@@ -1,42 +1,75 @@
 /** @format */
 
 import { lazy } from 'react';
-import type { FC } from 'react';
+import type { ComponentType, FC } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 
 import { ProtectedRoute } from './features/auth/ProtectedRoute';
 
-export const AppShell = lazy(async () =>
+const lazyRouteReloadSessionKey = 'vaultbill.lazy-route-reload';
+
+const isRecoverableLazyRouteError = (error: unknown): boolean => {
+    if (!(error instanceof Error)) return false;
+    return (
+        error.message.includes('Failed to fetch dynamically imported module') ||
+        error.message.includes('Importing a module script failed') ||
+        error.message.includes('Failed to load module script')
+    );
+};
+
+type LazyRouteModule<TProps extends object> = {
+    readonly default: ComponentType<TProps>;
+};
+
+const lazyRoute = <TProps extends object>(importer: () => Promise<LazyRouteModule<TProps>>) =>
+    lazy(async () => {
+        try {
+            const loaded = await importer();
+            window.sessionStorage.removeItem(lazyRouteReloadSessionKey);
+            return loaded;
+        } catch (error) {
+            if (
+                isRecoverableLazyRouteError(error) &&
+                window.sessionStorage.getItem(lazyRouteReloadSessionKey) !== 'pending'
+            ) {
+                window.sessionStorage.setItem(lazyRouteReloadSessionKey, 'pending');
+                window.location.reload();
+            }
+            throw error;
+        }
+    });
+
+export const AppShell = lazyRoute(async () =>
     import('./components/AppShell').then((module) => ({ default: module.AppShell })),
 );
-export const AccessDeniedPage = lazy(async () =>
+export const AccessDeniedPage = lazyRoute(async () =>
     import('./features/auth/AccessDeniedPage').then((module) => ({
         default: module.AccessDeniedPage,
     })),
 );
-export const LoginPage = lazy(async () =>
+export const LoginPage = lazyRoute(async () =>
     import('./features/auth/LoginPage').then((module) => ({ default: module.LoginPage })),
 );
-export const BuilderPage = lazy(async () =>
+export const BuilderPage = lazyRoute(async () =>
     import('./features/builder/BuilderPage').then((module) => ({ default: module.BuilderPage })),
 );
-export const DashboardPage = lazy(async () =>
+export const DashboardPage = lazyRoute(async () =>
     import('./features/dashboard/DashboardPage').then((module) => ({
         default: module.DashboardPage,
     })),
 );
-export const RecordsPage = lazy(async () =>
+export const RecordsPage = lazyRoute(async () =>
     import('./features/records/RecordsPage').then((module) => ({ default: module.RecordsPage })),
 );
-export const ReportsPage = lazy(async () =>
+export const ReportsPage = lazyRoute(async () =>
     import('./features/reports/ReportsPage').then((module) => ({ default: module.ReportsPage })),
 );
-export const SettingsPage = lazy(async () =>
+export const SettingsPage = lazyRoute(async () =>
     import('./features/settings/SettingsPage').then((module) => ({
         default: module.SettingsPage,
     })),
 );
-export const SetupPage = lazy(async () =>
+export const SetupPage = lazyRoute(async () =>
     import('./features/setup/SetupPage').then((module) => ({ default: module.SetupPage })),
 );
 

@@ -1,6 +1,6 @@
 /** @format */
 
-import { KeyRound, LogOut, RotateCcw } from 'lucide-react';
+import { KeyRound, LockKeyhole, LogOut, RotateCcw } from 'lucide-react';
 import type { FC } from 'react';
 
 import { ActionButton } from './ActionButton';
@@ -63,7 +63,7 @@ export const AppShellTopbar: FC<AppShellTopbarProps> = ({
                     {!isDemoMode ? (
                         <IconOnlyButton
                             aria-label="Change my password"
-                            icon={<KeyRound aria-hidden="true" size={19} />}
+                            icon={<LockKeyhole aria-hidden="true" size={19} />}
                             onClick={onChangePassword}
                         />
                     ) : (

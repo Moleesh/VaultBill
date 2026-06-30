@@ -15,6 +15,15 @@ import type { VaultBillDesktopBridge } from './DesktopBridgeTypes.js';
 export const createDesktopBridge = (ipcRenderer: IpcRenderer): VaultBillDesktopBridge => ({
     getAppIdentity: async () =>
         ipcRenderer.invoke('vaultbill:get-app-identity') as Promise<BuildIdentity>,
+    getRuntimeProcessInfo: async () =>
+        ipcRenderer.invoke('vaultbill:runtime:process-info') as Promise<{
+            readonly pid: number;
+            readonly processName: string;
+            readonly execPath: string;
+            readonly cwd: string;
+            readonly args: readonly string[];
+            readonly appUserModelId: string;
+        }>,
     getHostedWebUrl: async () => ipcRenderer.invoke('vaultbill:hosted-web:url') as Promise<string>,
     openHostedWeb: async () => {
         await ipcRenderer.invoke('vaultbill:hosted-web:open');

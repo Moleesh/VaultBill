@@ -4,7 +4,7 @@ import {
     ChevronLeft,
     ChevronRight,
     ExternalLink,
-    KeyRound,
+    LockKeyhole,
     LogOut,
     RotateCcw,
     Server,
@@ -123,7 +123,7 @@ export const AppShellSidebar: FC<AppShellSidebarProps> = ({
                 {!isDemoMode ? (
                     <IconOnlyButton
                         aria-label="Change my password"
-                        icon={<KeyRound aria-hidden="true" size={20} />}
+                        icon={<LockKeyhole aria-hidden="true" size={20} />}
                         onClick={onChangePassword}
                     />
                 ) : null}

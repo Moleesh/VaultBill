@@ -7,12 +7,14 @@ import { renderHtmlToPdf } from './PdfBridge.js';
 import { listElectronPrinters } from './PrinterBridge.js';
 import { hostedAppUrl, mainState } from './MainState.js';
 import { refreshTray } from './MainRuntime.js';
+import { getRuntimeProcessInfo } from './RuntimeProcessInfo.js';
 import { LocalApiConfigurationSchema } from './server/LocalApiSecurity.js';
 import { registerMainIpcBackupHandlers } from './MainIpcBackupHandlers.js';
 import { completeSetup } from './SetupSupport.js';
 
 export const registerMainIpcHandlers = () => {
     ipcMain.handle('vaultbill:get-app-identity', () => mainState.identity);
+    ipcMain.handle('vaultbill:runtime:process-info', () => getRuntimeProcessInfo());
     ipcMain.handle('vaultbill:hosted-web:url', () => hostedAppUrl());
     ipcMain.handle('vaultbill:hosted-web:open', () => shell.openExternal(hostedAppUrl()));
     ipcMain.handle('vaultbill:window:minimize', () => mainState.mainWindow?.minimize());

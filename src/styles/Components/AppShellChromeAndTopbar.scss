@@ -254,9 +254,10 @@
     justify-content: flex-end;
     position: relative;
     z-index: 1;
+    white-space: nowrap;
 }
 .app-shell.has-window-controls .app-shell-topbar-actions {
-    max-width: min(100%, 24rem);
+    max-width: min(100%, 32rem);
 }
 .app-shell-window-chrome {
     position: fixed;
@@ -302,6 +303,7 @@
     gap: var(--space-2);
     max-width: 100%;
     min-width: 0;
+    flex-shrink: 0;
     white-space: nowrap;
     min-height: 3.1rem;
     padding-inline: var(--space-4);
@@ -385,7 +387,9 @@
     border-radius: inherit;
     background: var(--color-primary);
 }
-.icon-button {
+.app-shell-topbar .icon-button,
+.app-shell-mobile-account-actions .icon-button,
+.app-shell-operator-actions .icon-button {
     display: inline-grid;
     width: 2.75rem;
     min-width: 2.75rem;

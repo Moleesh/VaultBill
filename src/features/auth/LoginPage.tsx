@@ -46,6 +46,7 @@ export const LoginPage: FC<{ readonly onOpenSetupWizard?: () => void }> = ({
     const [isHelpOpen, setIsHelpOpen] = useState(false);
     const [isActivationOpen, setIsActivationOpen] = useState(false);
     const [isSetupShortcutConfirmOpen, setIsSetupShortcutConfirmOpen] = useState(false);
+    const [isSysAdminUnlockMessageVisible, setIsSysAdminUnlockMessageVisible] = useState(false);
     const [activationMessage, setActivationMessage] = useState('');
     const { isUnlocked: isSysAdminUnlocked } = useSysAdminUnlock();
     const accountOptions = buildLoginAccountOptions(accounts, isSysAdminUnlocked);
@@ -87,6 +88,18 @@ export const LoginPage: FC<{ readonly onOpenSetupWizard?: () => void }> = ({
             .catch(() => undefined);
     }, [capabilities.isHostedWeb]);
 
+    useEffect(() => {
+        if (!showDesktopChrome || !isSysAdminUnlocked) return;
+
+        setIsSysAdminUnlockMessageVisible(true);
+        const timeout = window.setTimeout(() => {
+            setIsSysAdminUnlockMessageVisible(false);
+        }, 2800);
+        return () => {
+            window.clearTimeout(timeout);
+        };
+    }, [isSysAdminUnlocked, showDesktopChrome]);
+
     const submitLogin = async () => {
         if (isLoginDisabled || loginSubmissionInFlightRef.current) return;
         await loginForm.handleSubmit();
@@ -124,6 +137,16 @@ export const LoginPage: FC<{ readonly onOpenSetupWizard?: () => void }> = ({
 
     return (
         <main className="login-page">
+            {showDesktopChrome && isSysAdminUnlockMessageVisible ? (
+                <div className="setup-page-toast" role="status">
+                    <div className="setup-page-toast-content">
+                        <strong className="setup-page-toast-title">System Administrator</strong>
+                        <p>
+                            System Administrator unlocked. You can now choose the protected account.
+                        </p>
+                    </div>
+                </div>
+            ) : null}
             {showDesktopChrome ? (
                 <div className="login-page-chrome">
                     <DesktopWindowControls
@@ -176,7 +199,7 @@ export const LoginPage: FC<{ readonly onOpenSetupWizard?: () => void }> = ({
                         showDesktopActions={showDesktopChrome}
                     />
                 </div>
-                <footer>
+                <footer className={showDesktopChrome ? 'login-card-footer--desktop' : undefined}>
                     <span className="login-card-footer-copy login-card-footer-copy--primary">
                         {footerCopy.primary}
                     </span>

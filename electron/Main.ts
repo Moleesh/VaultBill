@@ -29,6 +29,11 @@ import {
 import { mainState } from './MainState.js';
 import { printHtmlWithElectron } from './PrintBridge.js';
 import { cancelOutputJob } from './PrintBridge.js';
+import {
+    clearRuntimeProcessInfoFile,
+    runtimeAppUserModelId,
+    writeRuntimeProcessInfoFile,
+} from './RuntimeProcessInfo.js';
 
 mainState.currentDirectory = path.dirname(fileURLToPath(import.meta.url));
 mainState.identity = getBuildIdentity();
@@ -130,6 +135,7 @@ const createBackupHandlers = () => ({
 void app
     .whenReady()
     .then(async () => {
+        app.setAppUserModelId(runtimeAppUserModelId);
         Menu.setApplicationMenu(null);
         const databasePath = path.join(app.getPath('userData'), 'vaultbill.sqlite');
         mainState.recordStore = new DesktopRecordStore(databasePath, readLicenseVerifier());
@@ -177,6 +183,7 @@ void app
         registerMainIpcHandlers();
         await mainState.localApiServer.start();
         mainState.hostedWebSettings = mainState.localApiServer.getConfiguration();
+        writeRuntimeProcessInfoFile();
         await createWindow();
         createTray();
         mainState.trialTimer = setInterval(() => mainState.recordStore?.checkpointTrial(), 60_000);
@@ -193,6 +200,7 @@ void app
 
 app.on('before-quit', () => {
     mainState.isQuitting = true;
+    clearRuntimeProcessInfoFile();
     void closeRuntime();
     mainState.tray?.destroy();
 });

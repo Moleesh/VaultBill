@@ -6,7 +6,9 @@ import { beforeEach, describe, expect, it } from 'vitest';
 
 import type { CapabilityRegistry } from '../../../capability/Capability.types';
 import { CapabilityProvider } from '../../../capability/CapabilityContext';
+import { SessionContext } from '../../auth/SessionContext';
 import { SysAdminDashboard } from '../SysAdminDashboard';
+import { createTestSession } from '../../../test/TestSession';
 
 const desktopCapabilities: CapabilityRegistry = {
     isDesktop: true,
@@ -24,6 +26,14 @@ const desktopCapabilities: CapabilityRegistry = {
     canGspIntegration: true,
     hasLocalDb: true,
 };
+
+const sysAdminAccount = {
+    userId: 'sysadmin_1',
+    username: 'sysadmin',
+    displayName: 'System Administrator',
+    role: 'SysAdmin',
+    isActive: true,
+} as const;
 
 describe('SysAdmin dashboard', () => {
     beforeEach(() => {
@@ -66,7 +76,9 @@ describe('SysAdmin dashboard', () => {
         render(
             <MemoryRouter>
                 <CapabilityProvider value={desktopCapabilities}>
-                    <SysAdminDashboard />
+                    <SessionContext.Provider value={createTestSession(sysAdminAccount)}>
+                        <SysAdminDashboard />
+                    </SessionContext.Provider>
                 </CapabilityProvider>
             </MemoryRouter>,
         );

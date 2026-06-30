@@ -385,9 +385,14 @@
 }
 
 .login-card-footer-copy--secondary {
-    justify-self: center;
-    max-width: 30ch;
-    text-align: center;
+    justify-self: end;
+    max-width: none;
+    white-space: normal;
+    text-align: right;
+}
+
+.login-card-footer--desktop .login-card-footer-copy--secondary {
+    white-space: nowrap;
 }
 
 @include respond-to('laptop') {
@@ -397,7 +402,7 @@
     }
 
     .login-card-footer-copy--secondary {
-        max-width: 26ch;
+        max-width: none;
     }
 }
 
@@ -409,6 +414,7 @@
 
     .login-card-footer-copy--secondary {
         justify-self: start;
+        white-space: normal;
         max-width: none;
         text-align: left;
     }

@@ -60,7 +60,7 @@ describe('MainRuntime createWindow', () => {
 
         const { mainState } = await import('../MainState.js');
         mainState.currentDirectory = 'C:/VaultBill/electron';
-        mainState.identity = { appName: 'VaultBill' };
+        mainState.identity = { appName: 'VaultBill', appSlug: 'vaultbill' };
         mainState.hostedWebSettings = {
             lanEnabled: false,
             passwordRequired: true,
@@ -89,7 +89,7 @@ describe('MainRuntime createWindow', () => {
             webPreferences: {
                 contextIsolation: true,
                 nodeIntegration: false,
-                sandbox: true,
+                sandbox: false,
             },
         });
         expect(mainState.mainWindow).toBeDefined();
