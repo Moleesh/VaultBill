@@ -1,4 +1,5 @@
 /** @format */
+/* eslint-disable max-lines */
 
 import { createHash } from 'node:crypto';
 
@@ -191,6 +192,62 @@ describe('login UI', () => {
 
         expect(window.vaultBillDesktop?.minimizeWindow).toHaveBeenCalledTimes(1);
         expect(window.vaultBillDesktop?.closeWindow).toHaveBeenCalledTimes(1);
+    });
+
+    it('opens the sign-in help modal from the login actions', async () => {
+        setDesktopBridge([adminAccount]);
+
+        renderPage(<LoginPage />, desktopCapabilities);
+
+        fireEvent.click(await screen.findByRole('button', { name: 'Sign-in help' }));
+
+        expect(await screen.findByRole('heading', { name: 'Sign-in help' })).toBeVisible();
+        expect(screen.getByText(/Choose your account, enter a password/i)).toBeVisible();
+    });
+
+    it('falls back to the hosted account list when the desktop bridge returns no active accounts', async () => {
+        setDesktopBridge([]);
+        const fetchMock = vi.fn().mockImplementation((input: string | URL | Request) => {
+            const url =
+                typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+            const body = url.includes('/auth/accounts')
+                ? JSON.stringify([adminAccount])
+                : JSON.stringify({
+                      companyName: '',
+                      address: '',
+                      gstin: '',
+                      theme: 'teal-flow',
+                      outputTarget: 'PreviewOnly',
+                      preferredPrinterName: '',
+                      includeDraftsInReports: false,
+                  });
+            return Promise.resolve(
+                new Response(body, {
+                    status: 200,
+                    headers: { 'content-type': 'application/json' },
+                }),
+            );
+        });
+        vi.stubGlobal('fetch', fetchMock);
+        Object.defineProperty(window, 'fetch', {
+            configurable: true,
+            value: fetchMock,
+        });
+
+        renderPage(<LoginPage />, desktopCapabilities);
+
+        expect(
+            await screen.findByRole('button', {
+                name: /Operator account Operations Admin/i,
+            }),
+        ).toBeVisible();
+        expect(fetchMock).toHaveBeenCalledWith(
+            expect.stringContaining('/auth/accounts'),
+            expect.objectContaining({
+                credentials: 'include',
+                method: 'GET',
+            }),
+        );
     });
 
     it('opens a confirmation before re-entering setup with F9', async () => {

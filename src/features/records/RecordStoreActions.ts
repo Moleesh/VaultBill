@@ -1,6 +1,6 @@
 /** @format */
 
-import { requestHostedApi } from '../../runtime/HostedApi';
+import { canUseLocalHostedApi, requestHostedApi } from '../../runtime/HostedApi';
 import type { OperatorContext } from '../auth/AccountTypes';
 import {
     AppRecordSchema,
@@ -20,8 +20,8 @@ import {
 
 type RecordStoreActionDependencies = {
     readonly accounts: () => readonly AppRecord[];
-    readonly isDemoMode: () => boolean;
     readonly isHostedWeb: () => boolean;
+    readonly usesStaticHostedBrowserBuild: () => boolean;
     readonly sessionOperator: () => OperatorContext | undefined;
     readonly setRecords: (records: readonly AppRecord[]) => void;
     readonly setLoading: (isLoading: boolean) => void;
@@ -32,8 +32,7 @@ type RecordStoreActionDependencies = {
 export const createRecordStoreActions = (dependencies: RecordStoreActionDependencies) => {
     const loadRecords = () => {
         const desktopBridge = window.vaultBillDesktop;
-
-        if (desktopBridge && !dependencies.isDemoMode()) {
+        if (desktopBridge) {
             void loadDesktopRecords(
                 {
                     setRecords: dependencies.setRecords,
@@ -45,11 +44,13 @@ export const createRecordStoreActions = (dependencies: RecordStoreActionDependen
             return;
         }
 
-        if (dependencies.isHostedWeb()) {
+        if (
+            !dependencies.usesStaticHostedBrowserBuild() &&
+            (dependencies.isHostedWeb() || canUseLocalHostedApi())
+        ) {
             void loadHostedRecords(
                 {
                     accounts: dependencies.accounts,
-                    isDemoMode: dependencies.isDemoMode,
                     isHostedWeb: dependencies.isHostedWeb,
                     sessionOperator: dependencies.sessionOperator,
                 },
@@ -64,7 +65,7 @@ export const createRecordStoreActions = (dependencies: RecordStoreActionDependen
 
         loadBrowserRecords(
             {
-                isDemoMode: dependencies.isDemoMode,
+                usesStaticHostedBrowserBuild: dependencies.usesStaticHostedBrowserBuild,
             },
             {
                 setRecords: dependencies.setRecords,
@@ -85,8 +86,11 @@ export const createRecordStoreActions = (dependencies: RecordStoreActionDependen
         const desktopBridge = window.vaultBillDesktop;
         const record = AppRecordSchema.parse(
             desktopBridge
-                ? await desktopBridge.saveDraft({ record: input, operatorContext })
-                : dependencies.isHostedWeb()
+                ? await requestHostedApi('/records/draft', 'POST', { record: input }).catch(() =>
+                      desktopBridge.saveDraft({ record: input, operatorContext }),
+                  )
+                : !dependencies.usesStaticHostedBrowserBuild() &&
+                    (dependencies.isHostedWeb() || canUseLocalHostedApi())
                   ? await requestHostedApi('/records/draft', 'POST', { record: input })
                   : buildStoredRecord(input, operatorContext, existing, 'Draft'),
         );
@@ -95,7 +99,9 @@ export const createRecordStoreActions = (dependencies: RecordStoreActionDependen
             ...records.filter((current) => current.recordId !== record.recordId),
         ]);
 
-        if (!desktopBridge && !dependencies.isHostedWeb()) writeBrowserRecords(nextRecords);
+        if (!desktopBridge && !dependencies.isHostedWeb() && !canUseLocalHostedApi()) {
+            writeBrowserRecords(nextRecords);
+        }
 
         dependencies.setRecords(nextRecords);
         return record;
@@ -115,8 +121,11 @@ export const createRecordStoreActions = (dependencies: RecordStoreActionDependen
         const desktopBridge = window.vaultBillDesktop;
         const record = AppRecordSchema.parse(
             desktopBridge
-                ? await desktopBridge.finalizeRecord({ record: input, operatorContext })
-                : dependencies.isHostedWeb()
+                ? await requestHostedApi('/records/finalize', 'POST', { record: input }).catch(() =>
+                      desktopBridge.finalizeRecord({ record: input, operatorContext }),
+                  )
+                : !dependencies.usesStaticHostedBrowserBuild() &&
+                    (dependencies.isHostedWeb() || canUseLocalHostedApi())
                   ? await requestHostedApi('/records/finalize', 'POST', { record: input })
                   : buildStoredRecord(input, operatorContext, existing, 'Finalized'),
         );
@@ -125,7 +134,9 @@ export const createRecordStoreActions = (dependencies: RecordStoreActionDependen
             ...records.filter((current) => current.recordId !== record.recordId),
         ]);
 
-        if (!desktopBridge && !dependencies.isHostedWeb()) writeBrowserRecords(nextRecords);
+        if (!desktopBridge && !dependencies.isHostedWeb() && !canUseLocalHostedApi()) {
+            writeBrowserRecords(nextRecords);
+        }
 
         dependencies.setRecords(nextRecords);
         return record;
@@ -150,8 +161,11 @@ export const createRecordStoreActions = (dependencies: RecordStoreActionDependen
         const desktopBridge = window.vaultBillDesktop;
         const record = AppRecordSchema.parse(
             desktopBridge
-                ? await desktopBridge.cancelRecord({ recordId, reason, operatorContext })
-                : dependencies.isHostedWeb()
+                ? await requestHostedApi('/records/cancel', 'POST', { recordId, reason }).catch(
+                      () => desktopBridge.cancelRecord({ recordId, reason, operatorContext }),
+                  )
+                : !dependencies.usesStaticHostedBrowserBuild() &&
+                    (dependencies.isHostedWeb() || canUseLocalHostedApi())
                   ? await requestHostedApi('/records/cancel', 'POST', { recordId, reason })
                   : {
                         ...existing,
@@ -165,7 +179,9 @@ export const createRecordStoreActions = (dependencies: RecordStoreActionDependen
             ...records.filter((current) => current.recordId !== record.recordId),
         ]);
 
-        if (!desktopBridge && !dependencies.isHostedWeb()) writeBrowserRecords(nextRecords);
+        if (!desktopBridge && !dependencies.isHostedWeb() && !canUseLocalHostedApi()) {
+            writeBrowserRecords(nextRecords);
+        }
 
         dependencies.setRecords(nextRecords);
         return record;

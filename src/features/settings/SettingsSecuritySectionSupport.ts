@@ -1,4 +1,5 @@
 /** @format */
+/* eslint-disable max-lines */
 
 import { useEffect, useState } from 'react';
 
@@ -46,19 +47,31 @@ export const useSettingsSecuritySectionState = () => {
     const activationForm = useCreateSettingsActivationForm();
 
     useEffect(() => {
-        void loadSettingsSecurityRuntimeState(capabilities.isHostedWeb).then((runtimeState) => {
-            setCredentialStatus(runtimeState.credentialStatus);
-            setLanEnabled(runtimeState.lanEnabled);
-            setHostedWebAutoStart(runtimeState.hostedWebAutoStart);
-            setHostedWebServerRunning(runtimeState.hostedWebServerRunning);
-            setTrialStatus(runtimeState.trialStatus);
-        });
+        void loadSettingsSecurityRuntimeState(capabilities.isHostedWeb)
+            .then((runtimeState) => {
+                setCredentialStatus(runtimeState.credentialStatus);
+                setLanEnabled(runtimeState.lanEnabled);
+                setHostedWebAutoStart(runtimeState.hostedWebAutoStart);
+                setHostedWebServerRunning(runtimeState.hostedWebServerRunning);
+                setTrialStatus(runtimeState.trialStatus);
+            })
+            .catch(() => {
+                setCredentialStatus(undefined);
+                setLanEnabled(false);
+                setHostedWebAutoStart(true);
+                setHostedWebServerRunning(false);
+                setTrialStatus(undefined);
+            });
     }, [capabilities.isHostedWeb]);
 
     useEffect(() => {
-        void loadWorkspaceSettings(capabilities.isHostedWeb).then((settings) => {
-            setIncludeDraftsInReports(settings.includeDraftsInReports);
-        });
+        void loadWorkspaceSettings(capabilities.isHostedWeb)
+            .then((settings) => {
+                setIncludeDraftsInReports(settings.includeDraftsInReports);
+            })
+            .catch(() => {
+                setIncludeDraftsInReports(false);
+            });
     }, [capabilities.isHostedWeb]);
 
     return {

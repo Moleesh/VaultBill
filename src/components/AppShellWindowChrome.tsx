@@ -7,11 +7,13 @@ import { DesktopWindowControls } from './DesktopWindowControls';
 type AppShellWindowChromeProps = {
     readonly onCloseWindow: () => void;
     readonly onMinimizeWindow: () => void;
+    readonly onRefreshWindow: () => void;
 };
 
 export const AppShellWindowChrome: FC<AppShellWindowChromeProps> = ({
     onCloseWindow,
     onMinimizeWindow,
+    onRefreshWindow,
 }) => (
     <div className="app-shell-window-chrome" aria-label="Window controls">
         <DesktopWindowControls
@@ -19,6 +21,7 @@ export const AppShellWindowChrome: FC<AppShellWindowChromeProps> = ({
             isDesktop
             onCloseWindow={onCloseWindow}
             onMinimizeWindow={onMinimizeWindow}
+            onRefreshWindow={onRefreshWindow}
         />
     </div>
 );

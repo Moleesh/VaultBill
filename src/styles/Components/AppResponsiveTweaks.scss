@@ -37,6 +37,15 @@
         justify-self: stretch;
     }
 
+    .section-heading {
+        align-items: start;
+    }
+
+    .section-heading > .action-link {
+        width: 100%;
+        justify-content: center;
+    }
+
     .dashboard-metrics article {
         min-height: 6.5rem;
     }

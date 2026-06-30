@@ -116,6 +116,15 @@
     );
 }
 
+.login-page-chrome .desktop-window-controls .desktop-window-control--refresh {
+    color: color-mix(in srgb, var(--color-primary-text) 92%, white 8%);
+    background: linear-gradient(
+        160deg,
+        color-mix(in srgb, var(--color-secondary) 58%, white 42%),
+        color-mix(in srgb, var(--color-primary) 78%, black 22%)
+    );
+}
+
 .login-page-chrome .desktop-window-controls .desktop-window-control--close {
     color: var(--window-control-close-text);
     background: linear-gradient(
@@ -136,6 +145,14 @@
         160deg,
         color-mix(in srgb, var(--window-control-minimize-start) 72%, white 28%),
         color-mix(in srgb, var(--window-control-minimize-end) 88%, white 12%)
+    );
+}
+
+.login-page-chrome .desktop-window-controls .desktop-window-control--refresh:hover {
+    background: linear-gradient(
+        160deg,
+        color-mix(in srgb, var(--color-secondary) 66%, white 34%),
+        color-mix(in srgb, var(--color-primary) 84%, white 16%)
     );
 }
 
@@ -301,6 +318,17 @@
     justify-items: stretch;
 }
 
+.host-reconnect-modal {
+    display: grid;
+    gap: var(--space-3);
+    max-width: 28rem;
+}
+
+.host-reconnect-modal p {
+    color: var(--color-text-body);
+    line-height: 1.6;
+}
+
 .login-help-link {
     justify-content: flex-start;
     width: 100%;
@@ -335,13 +363,55 @@
 
 .login-card footer {
     grid-column: 1 / -1;
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+    gap: var(--space-4);
     border-top: var(--line-width) solid color-mix(in srgb, var(--color-border) 58%, white);
     background: color-mix(in srgb, var(--color-surface) 96%, white 18%);
     color: var(--color-text-muted);
     padding: var(--space-3) var(--space-5);
     font-size: var(--font-size-sm);
+}
+
+.login-card-footer-copy {
+    display: block;
+    min-width: 0;
+    line-height: 1.45;
+}
+
+.login-card-footer-copy--primary {
+    text-align: left;
+}
+
+.login-card-footer-copy--secondary {
+    justify-self: center;
+    max-width: 30ch;
+    text-align: center;
+}
+
+@include respond-to('laptop') {
+    .login-card footer {
+        gap: var(--space-3);
+        padding-inline: var(--space-4);
+    }
+
+    .login-card-footer-copy--secondary {
+        max-width: 26ch;
+    }
+}
+
+@include respond-to('tablet') {
+    .login-card footer {
+        grid-template-columns: minmax(0, 1fr);
+        justify-items: start;
+    }
+
+    .login-card-footer-copy--secondary {
+        justify-self: start;
+        max-width: none;
+        text-align: left;
+    }
 }
 
 .field-note {

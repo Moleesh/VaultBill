@@ -82,6 +82,10 @@ export const AppShell: FC = () => {
     }, [capabilities.isHostedWeb, setThemeId]);
 
     useEffect(() => {
+        if (!operatorContext) {
+            setTrialStatus(undefined);
+            return;
+        }
         if (window.vaultBillDesktop) {
             void window.vaultBillDesktop.getTrialStatus().then(setTrialStatus);
         } else if (capabilities.isHostedWeb) {
@@ -89,7 +93,7 @@ export const AppShell: FC = () => {
                 setTrialStatus,
             );
         }
-    }, [capabilities.isHostedWeb]);
+    }, [capabilities.isHostedWeb, operatorContext]);
 
     useEffect(() => {
         if (window.vaultBillDesktop) {
@@ -125,6 +129,7 @@ export const AppShell: FC = () => {
                 <AppShellWindowChrome
                     onCloseWindow={shellActions.closeWindow}
                     onMinimizeWindow={shellActions.minimizeWindow}
+                    onRefreshWindow={shellActions.refreshWindow}
                 />
             ) : null}
             <AppShellSidebar
@@ -133,6 +138,7 @@ export const AppShell: FC = () => {
                 isDesktop={showWindowControls}
                 isExpanded={isExpanded}
                 isHostedWeb={capabilities.isHostedWeb}
+                canOpenHostedWeb={capabilities.isDesktop}
                 landingRoute={landingRoute}
                 hostedWebUrl={hostedWebUrl}
                 onChangePassword={shellActions.openPasswordDialog}

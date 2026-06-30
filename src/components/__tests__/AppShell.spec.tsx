@@ -11,6 +11,16 @@ import { RecordStoreProvider } from '../../features/records/RecordStoreContext';
 import { SessionContext } from '../../features/auth/SessionContext';
 import { createTestSession } from '../../test/TestSession';
 
+const hasFetchCallForPath = (
+    calls: readonly (readonly [string | URL | Request, ...unknown[]])[],
+    path: string,
+) =>
+    calls.some(([input]) => {
+        const url =
+            typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+        return url.includes(path);
+    });
+
 const desktopCapabilities: CapabilityRegistry = {
     isDesktop: true,
     isHostedWeb: false,
@@ -110,6 +120,7 @@ describe('app shell', () => {
         expect(screen.getByRole('navigation', { name: 'Primary' })).toBeVisible();
         expect(screen.getByRole('button', { name: 'Close to tray' })).toBeVisible();
         expect(screen.getByRole('button', { name: 'Minimize to taskbar' })).toBeVisible();
+        expect(screen.getByRole('button', { name: 'Open hosted web' })).toBeVisible();
     });
 
     it('keeps shell window controls visible when the hosted desktop runtime marker is present', async () => {
@@ -137,5 +148,42 @@ describe('app shell', () => {
 
         expect(screen.getByRole('button', { name: 'Close to tray' })).toBeVisible();
         expect(screen.getByRole('button', { name: 'Minimize to taskbar' })).toBeVisible();
+        expect(screen.queryByRole('button', { name: 'Open hosted web' })).toBeNull();
+    });
+
+    it('does not request hosted trial status after the session disappears', async () => {
+        delete (window as Partial<Window> & { vaultBillDesktop?: unknown }).vaultBillDesktop;
+        const fetchSpy = vi.spyOn(window, 'fetch');
+
+        render(
+            <MemoryRouter initialEntries={['/app/dashboard']}>
+                <CapabilityProvider value={hostedCapabilities}>
+                    <SessionContext.Provider
+                        value={{
+                            accounts: [],
+                            operatorContext: undefined,
+                            hostedConnectionState: 'connected',
+                            login: () => Promise.resolve(),
+                            logout: () => undefined,
+                            saveAccount: () => Promise.resolve(),
+                            archiveAccount: () => Promise.resolve(),
+                            resetPassword: () => Promise.resolve(),
+                        }}
+                    >
+                        <RecordStoreProvider>
+                            <Routes>
+                                <Route path="/app/*" element={<AppShell />} />
+                            </Routes>
+                        </RecordStoreProvider>
+                    </SessionContext.Provider>
+                </CapabilityProvider>
+            </MemoryRouter>,
+        );
+
+        await waitFor(() => {
+            expect(hasFetchCallForPath(fetchSpy.mock.calls, '/trial/status')).toBe(false);
+        });
+
+        fetchSpy.mockRestore();
     });
 });

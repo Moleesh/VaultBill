@@ -14,6 +14,7 @@ export type PopupBaseProps = PropsWithChildren<{
     readonly label: string;
     readonly onClose: () => void;
     readonly closeOnBackdrop?: boolean;
+    readonly closeOnEscape?: boolean;
 }>;
 
 const getPortalRoot = (): HTMLElement => {
@@ -30,12 +31,13 @@ export const PopupBase: FC<PopupBaseProps> = ({
     children,
     className,
     closeOnBackdrop = true,
+    closeOnEscape = true,
     isOpen,
     label,
     onClose,
 }) => {
     const popupRef = useRef<HTMLDivElement>(null);
-    usePopupFocus(isOpen, popupRef, onClose);
+    usePopupFocus(isOpen, popupRef, onClose, closeOnEscape);
 
     if (!isOpen) {
         return null;

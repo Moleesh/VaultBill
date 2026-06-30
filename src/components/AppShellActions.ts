@@ -57,6 +57,9 @@ export const createAppShellActions = ({
         }
         if (canUseLocalHostedApi()) void requestHostedWindowAction('minimize');
     };
+    const refreshWindow = () => {
+        window.location.reload();
+    };
     const logOut = () => {
         logout();
         void navigate('/login');
@@ -97,6 +100,7 @@ export const createAppShellActions = ({
         closeWindow,
         logOut,
         minimizeWindow,
+        refreshWindow,
         openActivationDialog,
         openPasswordDialog,
         openResetDialog,

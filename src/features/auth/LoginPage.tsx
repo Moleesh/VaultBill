@@ -1,4 +1,5 @@
 /** @format */
+/* eslint-disable max-lines */
 
 /**
  * Login surface for operator selection, password entry, and desktop license or
@@ -14,6 +15,7 @@ import { DesktopWindowControls } from '../../components/DesktopWindowControls';
 import { shouldRenderDesktopChrome } from '../../capability/CapabilityRegistry';
 import { useCapabilities } from '../../capability/CapabilityContext';
 import { defaultRuntimeBranding } from '../../constants/RuntimeDefaults';
+import { isStaticHostedBrowserBuild } from '../../runtime/RuntimeMode';
 import { applyTheme, loadResolvedTheme } from '../../runtime/WorkspaceTheme';
 import { LoginActivationModal } from './LoginActivationModal';
 import { LoginHelpModal } from './LoginHelpModal';
@@ -35,6 +37,7 @@ export const LoginPage: FC<{ readonly onOpenSetupWizard?: () => void }> = ({
     onOpenSetupWizard,
 }) => {
     const capabilities = useCapabilities();
+    const usesStaticHostedBrowserBuild = isStaticHostedBrowserBuild(capabilities);
     const showDesktopChrome = shouldRenderDesktopChrome(capabilities);
     const { accounts, hostedConnectionState, login, operatorContext } = useSession();
     const navigate = useNavigate();
@@ -70,7 +73,7 @@ export const LoginPage: FC<{ readonly onOpenSetupWizard?: () => void }> = ({
     const selectedAccount = findLoginAccount(accounts, effectiveSelectedAccountId);
     const isLoginDisabled = !effectiveSelectedAccountId || hostedConnectionState !== 'connected';
     const footerCopy = getLoginFooterCopy({
-        isDemoMode: capabilities.isDemoMode,
+        isStaticHostedBrowserBuild: usesStaticHostedBrowserBuild,
         isDesktop: showDesktopChrome,
         isHostedWeb: capabilities.isHostedWeb,
     });
@@ -131,6 +134,9 @@ export const LoginPage: FC<{ readonly onOpenSetupWizard?: () => void }> = ({
                         onMinimizeWindow={() => {
                             requestLoginMinimizeWindow(showDesktopChrome);
                         }}
+                        onRefreshWindow={() => {
+                            window.location.reload();
+                        }}
                     />
                 </div>
             ) : null}
@@ -140,7 +146,7 @@ export const LoginPage: FC<{ readonly onOpenSetupWizard?: () => void }> = ({
                     <p className="eyebrow">Secure workspace</p>
                     <h1 id="login-title">{defaultRuntimeBranding.applicationName}</h1>
                     <p>{defaultRuntimeBranding.tagline}</p>
-                    {capabilities.isDemoMode ? (
+                    {usesStaticHostedBrowserBuild ? (
                         <span className="status-pill">Browser-only product demo</span>
                     ) : null}
                 </div>
@@ -152,6 +158,7 @@ export const LoginPage: FC<{ readonly onOpenSetupWizard?: () => void }> = ({
                         form={loginForm}
                         hostedConnectionState={hostedConnectionState}
                         isLoginDisabled={isLoginDisabled}
+                        isStaticHostedBrowserBuild={usesStaticHostedBrowserBuild}
                         onActivationOpen={() => {
                             setIsActivationOpen(true);
                         }}
@@ -170,8 +177,12 @@ export const LoginPage: FC<{ readonly onOpenSetupWizard?: () => void }> = ({
                     />
                 </div>
                 <footer>
-                    <span>{footerCopy.primary}</span>
-                    <span>{footerCopy.secondary}</span>
+                    <span className="login-card-footer-copy login-card-footer-copy--primary">
+                        {footerCopy.primary}
+                    </span>
+                    <span className="login-card-footer-copy login-card-footer-copy--secondary">
+                        {footerCopy.secondary}
+                    </span>
                 </footer>
             </section>
             <LoginHelpModal

@@ -106,7 +106,7 @@
     animation: app-shell-topbar-surface 14s ease-in-out infinite alternate;
 }
 .app-shell.has-window-controls .app-shell-topbar {
-    padding-right: clamp(11rem, 14vw, 12.5rem);
+    padding-right: clamp(12.75rem, 17vw, 14.5rem);
 }
 .app-shell-topbar::before {
     position: absolute;
@@ -204,6 +204,10 @@
 .app-shell-topbar-mark svg {
     color: var(--color-surface);
 }
+.app-shell-topbar-mark .app-brand-icon {
+    width: 1.8rem;
+    height: 1.8rem;
+}
 .app-shell-topbar-label {
     width: max-content;
     margin: 0 0 0.1rem;
@@ -256,8 +260,8 @@
 }
 .app-shell-window-chrome {
     position: fixed;
-    top: calc(var(--space-4) + env(safe-area-inset-top));
-    right: calc(var(--space-4) + env(safe-area-inset-right));
+    top: calc(var(--space-4) + 0.12rem + env(safe-area-inset-top));
+    right: calc(clamp(var(--space-4), 4vw, var(--space-8)) + env(safe-area-inset-right));
     z-index: 120;
     display: inline-flex;
     align-items: center;
@@ -268,7 +272,6 @@
     padding: 0;
     box-shadow: none;
     backdrop-filter: none;
-    animation: app-shell-window-chrome-float 9s ease-in-out infinite alternate;
 }
 .desktop-window-controls,
 .app-shell-window-controls {
@@ -283,6 +286,15 @@
 }
 .app-shell-window-controls {
     background: transparent;
+}
+.desktop-window-control--minimize {
+    order: 1;
+}
+.desktop-window-control--refresh {
+    order: 2;
+}
+.desktop-window-control--close {
+    order: 3;
 }
 .app-shell-trial-pill {
     display: inline-flex;
@@ -427,6 +439,14 @@
         var(--window-control-minimize-end)
     );
 }
+.desktop-window-control--refresh {
+    color: color-mix(in srgb, var(--color-primary-text) 92%, white 8%);
+    background: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--color-secondary) 58%, white 42%),
+        color-mix(in srgb, var(--color-primary) 78%, black 22%)
+    );
+}
 .desktop-window-control--close {
     color: var(--window-control-close-text);
     background: linear-gradient(
@@ -461,6 +481,14 @@
         color-mix(in srgb, var(--window-control-close-end) 90%, white 10%)
     );
     color: var(--window-control-close-text);
+}
+.desktop-window-control--refresh:hover {
+    background: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--color-secondary) 66%, white 34%),
+        color-mix(in srgb, var(--color-primary) 84%, white 16%)
+    );
+    color: color-mix(in srgb, var(--color-primary-text) 96%, white 4%);
 }
 @keyframes app-shell-topbar-glow {
     from {

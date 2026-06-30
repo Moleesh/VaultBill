@@ -10,8 +10,24 @@ const csrfStorageKey = 'vaultbill.hosted.csrf';
 const localHostedOrigins = new Set(['localhost', '127.0.0.1', '[::1]']);
 export const hostedApiUnavailableEvent = 'vaultbill-hosted-api-unavailable';
 export const hostedApiRecoveredEvent = 'vaultbill-hosted-api-recovered';
+let hostedApiIsUnavailable = false;
+
+export class HostedApiError extends Error {
+    readonly status: number;
+
+    constructor(status: number, message: string) {
+        super(message);
+        this.name = 'HostedApiError';
+        this.status = status;
+    }
+}
 
 export const canUseLocalHostedApi = (): boolean => localHostedOrigins.has(window.location.hostname);
+
+export const isHostedApiErrorStatus = (
+    error: unknown,
+    statuses: readonly number[],
+): error is HostedApiError => error instanceof HostedApiError && statuses.includes(error.status);
 
 export const setHostedCsrfToken = (token: string | undefined) => {
     if (token) window.sessionStorage.setItem(csrfStorageKey, token);
@@ -37,7 +53,7 @@ export const requestHostedApi = async <T>(
             ...(body === undefined ? {} : { body: JSON.stringify(body) }),
         });
     } catch (error) {
-        window.dispatchEvent(new CustomEvent(hostedApiUnavailableEvent));
+        notifyHostedApiUnavailable();
         throw error;
     }
     const responseBody = await response.text();
@@ -45,9 +61,10 @@ export const requestHostedApi = async <T>(
 
     if (!response.ok) {
         if (response.status >= 500 || response.status === 404) {
-            window.dispatchEvent(new CustomEvent(hostedApiUnavailableEvent));
+            notifyHostedApiUnavailable();
         }
-        throw new Error(
+        throw new HostedApiError(
+            response.status,
             typeof payload === 'object' &&
                 payload !== null &&
                 'error' in payload &&
@@ -57,8 +74,20 @@ export const requestHostedApi = async <T>(
         );
     }
 
-    window.dispatchEvent(new CustomEvent(hostedApiRecoveredEvent));
+    notifyHostedApiRecovered();
     return payload as T;
+};
+
+const notifyHostedApiUnavailable = () => {
+    if (hostedApiIsUnavailable) return;
+    hostedApiIsUnavailable = true;
+    window.dispatchEvent(new CustomEvent(hostedApiUnavailableEvent));
+};
+
+const notifyHostedApiRecovered = () => {
+    if (!hostedApiIsUnavailable) return;
+    hostedApiIsUnavailable = false;
+    window.dispatchEvent(new CustomEvent(hostedApiRecoveredEvent));
 };
 
 export const requestHostedWindowAction = async (action: 'close' | 'minimize'): Promise<void> => {

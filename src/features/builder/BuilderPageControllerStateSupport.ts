@@ -1,7 +1,7 @@
 /** @format */
 
 import { DocumentFormatConfigSchema } from '../../db/startup/ConfigSchemas';
-import { requestHostedApi } from '../../runtime/HostedApi';
+import { isHostedApiErrorStatus, requestHostedApi } from '../../runtime/HostedApi';
 import {
     normalizeSecretsSettings,
     secretValuesFromSettings,
@@ -54,11 +54,20 @@ export const validateBuilderConfig = ({
 export const loadBuilderSecretValues = async (
     isHostedWeb: boolean,
 ): Promise<Readonly<Record<string, string>>> => {
-    const rawSettings = window.vaultBillDesktop
-        ? await window.vaultBillDesktop.getSecretsSettings()
-        : isHostedWeb
-          ? await requestHostedApi('/settings/secrets')
-          : undefined;
+    let rawSettings: unknown;
+    if (window.vaultBillDesktop) {
+        rawSettings = await window.vaultBillDesktop.getSecretsSettings();
+    } else if (isHostedWeb) {
+        try {
+            rawSettings = await requestHostedApi('/settings/secrets');
+        } catch (error) {
+            if (isHostedApiErrorStatus(error, [401, 403, 404])) {
+                rawSettings = undefined;
+            } else {
+                throw error;
+            }
+        }
+    }
     const normalized = normalizeSecretsSettings(rawSettings);
     return secretValuesFromSettings(normalized.secrets);
 };

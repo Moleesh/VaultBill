@@ -44,7 +44,7 @@ export const SetupPage = lazy(async () =>
 export const AppRouteFallback: FC = () => <div className="app-screen-state" aria-busy="true" />;
 
 type AppRouteTreeProps = {
-    readonly isDemoMode: boolean;
+    readonly isStaticHostedBrowserBuild: boolean;
     readonly shouldAllowSetupWizard: boolean;
     readonly setupRequired: boolean;
     readonly setupWizardRevision: number;
@@ -54,7 +54,7 @@ type AppRouteTreeProps = {
 
 /** Renders the complete application route tree with lazy-loaded route screens. */
 export const AppRouteTree: FC<AppRouteTreeProps> = ({
-    isDemoMode,
+    isStaticHostedBrowserBuild,
     onOpenSetupWizard,
     setupRequired,
     setupWizardRevision,
@@ -65,7 +65,7 @@ export const AppRouteTree: FC<AppRouteTreeProps> = ({
         <Route
             path="/setup"
             element={
-                isDemoMode || !shouldAllowSetupWizard ? (
+                isStaticHostedBrowserBuild || !shouldAllowSetupWizard ? (
                     <Navigate replace to="/login" />
                 ) : (
                     <SetupPage key={setupWizardRevision} onComplete={onSetupComplete} />

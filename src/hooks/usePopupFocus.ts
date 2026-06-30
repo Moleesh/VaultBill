@@ -7,6 +7,7 @@ export const usePopupFocus = (
     isOpen: boolean,
     containerRef: RefObject<HTMLElement | null>,
     onClose: () => void,
+    closeOnEscape = true,
 ): void => {
     const onCloseRef = useRef(onClose);
 
@@ -25,7 +26,7 @@ export const usePopupFocus = (
         focusable?.focus();
 
         const handleKeyDown = (event: KeyboardEvent) => {
-            if (event.key === 'Escape') {
+            if (closeOnEscape && event.key === 'Escape') {
                 onCloseRef.current();
             }
         };
@@ -37,5 +38,5 @@ export const usePopupFocus = (
                 previousFocus.focus();
             }
         };
-    }, [containerRef, isOpen]);
+    }, [closeOnEscape, containerRef, isOpen]);
 };

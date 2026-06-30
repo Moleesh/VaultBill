@@ -4,9 +4,9 @@ import { KeyRound, LogOut, RotateCcw } from 'lucide-react';
 import type { FC } from 'react';
 
 import { ActionButton } from './ActionButton';
+import { AppBrandIcon } from './AppBrandIcon/AppBrandIcon';
 import { IconOnlyButton } from './IconOnlyButton';
 import { ThemePalette } from './ThemePalette';
-import { appShellIcons } from './AppShellSupport';
 import { shellSections } from '../constants/RuntimeDefaults';
 import { formatTrialCountdownParts } from '../features/dashboard/SysAdminDashboardTrialSupport';
 import type { AppRouteId, ThemeController } from '../types/AppTypes';
@@ -42,13 +42,12 @@ export const AppShellTopbar: FC<AppShellTopbarProps> = ({
     const pageSubtitle = isDemoMode
         ? 'Guided browser demo workspace'
         : (section?.description ?? '');
-    const PageIcon = appShellIcons[routeId];
 
     return (
         <header className="app-shell-topbar">
             <div className="app-shell-topbar-copy">
                 <span className="app-shell-topbar-mark" aria-hidden="true">
-                    <PageIcon size={18} />
+                    <AppBrandIcon size="small" />
                 </span>
                 <div className="app-shell-topbar-copy-text">
                     <p className="eyebrow app-shell-topbar-label">Workspace</p>

@@ -23,6 +23,9 @@ export const SetupPageChrome: FC = () => (
                 }
                 if (canUseLocalHostedApi()) void requestHostedWindowAction('minimize');
             }}
+            onRefreshWindow={() => {
+                window.location.reload();
+            }}
         />
     </div>
 );

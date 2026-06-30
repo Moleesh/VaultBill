@@ -14,8 +14,8 @@ import {
 type SessionActionDependencies = {
     readonly accounts: () => readonly OperatorAccount[];
     readonly account: () => OperatorAccount | undefined;
-    readonly isDemoMode: () => boolean;
-    readonly isHostedWeb: () => boolean;
+    readonly canUseHostedSessionApi: () => boolean;
+    readonly usesStaticHostedBrowserBuild: () => boolean;
     readonly saveAccounts: (accounts: readonly OperatorAccount[]) => void;
     readonly setAccount: (account: OperatorAccount | undefined) => void;
     readonly setHostedCsrfToken: (token: string | undefined) => void;
@@ -40,9 +40,9 @@ export const createSessionActions = (dependencies: SessionActionDependencies) =>
         if (!selectedAccount) {
             throw new Error('The selected operator account is unavailable.');
         }
-        if (window.vaultBillDesktop && !dependencies.isDemoMode()) {
+        if (window.vaultBillDesktop) {
             selectedAccount = await window.vaultBillDesktop.loginAccount(userId, password);
-        } else if (dependencies.isHostedWeb()) {
+        } else if (dependencies.canUseHostedSessionApi()) {
             const hostedSession = await requestHostedApi<HostedSessionPayload>(
                 '/auth/login',
                 'POST',
@@ -64,7 +64,7 @@ export const createSessionActions = (dependencies: SessionActionDependencies) =>
     };
 
     const logout: SessionContextValue['logout'] = () => {
-        if (dependencies.isHostedWeb()) {
+        if (dependencies.canUseHostedSessionApi()) {
             void requestHostedApi('/auth/logout', 'POST').finally(() => {
                 dependencies.setHostedCsrfToken(undefined);
             });
@@ -83,7 +83,7 @@ export const createSessionActions = (dependencies: SessionActionDependencies) =>
             : [...baseAccounts, nextAccount];
         const validation = validateManagedAccounts(nextAccounts);
         if (validation) throw new Error(validation);
-        if (window.vaultBillDesktop && !dependencies.isDemoMode()) {
+        if (window.vaultBillDesktop) {
             const saved = await window.vaultBillDesktop.saveAccount(nextAccount);
             persistAccounts(
                 nextAccounts.map((candidate) =>
@@ -92,7 +92,7 @@ export const createSessionActions = (dependencies: SessionActionDependencies) =>
             );
             return;
         }
-        if (dependencies.isHostedWeb()) {
+        if (dependencies.canUseHostedSessionApi()) {
             const saved = await requestHostedApi<OperatorAccount>(
                 '/accounts/save',
                 'POST',
@@ -110,9 +110,9 @@ export const createSessionActions = (dependencies: SessionActionDependencies) =>
 
     const archiveAccount: SessionContextValue['archiveAccount'] = async (userId) => {
         if (userId === 'sysadmin_1') throw new Error('The System Administrator cannot be removed.');
-        if (window.vaultBillDesktop && !dependencies.isDemoMode()) {
+        if (window.vaultBillDesktop) {
             await window.vaultBillDesktop.archiveAccount(userId);
-        } else if (dependencies.isHostedWeb()) {
+        } else if (dependencies.canUseHostedSessionApi()) {
             await requestHostedApi('/accounts/archive', 'POST', { userId });
         }
         persistAccounts(
@@ -126,7 +126,7 @@ export const createSessionActions = (dependencies: SessionActionDependencies) =>
 
     const resetPassword: SessionContextValue['resetPassword'] = async (userId, password) => {
         if (password.length < 8) throw new Error('Passwords must contain at least 8 characters.');
-        if (window.vaultBillDesktop && !dependencies.isDemoMode()) {
+        if (window.vaultBillDesktop) {
             const saved = await window.vaultBillDesktop.resetPassword(userId, password);
             persistAccounts(
                 dependencies
@@ -135,7 +135,7 @@ export const createSessionActions = (dependencies: SessionActionDependencies) =>
             );
             return;
         }
-        if (dependencies.isHostedWeb()) {
+        if (dependencies.canUseHostedSessionApi()) {
             const saved = await requestHostedApi<OperatorAccount>(
                 '/accounts/reset-password',
                 'POST',
@@ -152,6 +152,8 @@ export const createSessionActions = (dependencies: SessionActionDependencies) =>
             if (dependencies.account()?.userId === saved.userId) dependencies.setAccount(saved);
             return;
         }
+        if (!dependencies.usesStaticHostedBrowserBuild()) return;
+
         const passwordHash = await hashPassword(password);
         persistAccounts(
             dependencies.accounts().map((candidate) =>

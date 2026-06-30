@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 
 import { useCapabilities } from '../../capability/CapabilityContext';
+import { useSession } from '../auth/SessionContext';
 import { requestHostedApi } from '../../runtime/HostedApi';
 
 export type InventoryItem = {
@@ -151,6 +152,7 @@ const loadHostedSummary = async (): Promise<SysAdminDashboardState> => {
  */
 export const useSysAdminDashboardState = (): SysAdminDashboardState => {
     const capabilities = useCapabilities();
+    const { operatorContext } = useSession();
     const [state, setState] = useState<SysAdminDashboardState>({
         inventory: [],
         summary: defaultSummary,
@@ -158,6 +160,14 @@ export const useSysAdminDashboardState = (): SysAdminDashboardState => {
     });
 
     useEffect(() => {
+        if (!operatorContext) {
+            setState({
+                inventory: [],
+                summary: defaultSummary,
+                message: '',
+            });
+            return;
+        }
         const load = async () => {
             try {
                 const nextState = window.vaultBillDesktop
@@ -178,7 +188,7 @@ export const useSysAdminDashboardState = (): SysAdminDashboardState => {
             }
         };
         void load();
-    }, [capabilities.isHostedWeb]);
+    }, [capabilities.isHostedWeb, operatorContext]);
 
     return state;
 };

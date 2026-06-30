@@ -3,7 +3,11 @@
 import { useForm } from '@tanstack/react-form';
 
 import { builtInDocumentFormatSummaries } from '../../constants/BuiltInDocumentFormats';
-import { requestHostedApi } from '../../runtime/HostedApi';
+import {
+    canUseLocalHostedApi,
+    isHostedApiErrorStatus,
+    requestHostedApi,
+} from '../../runtime/HostedApi';
 import {
     normalizeSecretsSettings,
     secretValuesFromSettings,
@@ -33,11 +37,11 @@ export const useCreateRecordsReprintSearchForm = useRecordsReprintSearchForm;
 /** Resolves the document format list from desktop inventory, hosted inventory, or bundled defaults. */
 export const resolveRecordsFormatOptions = (
     publishedFormats: readonly PublishedFormat[],
-    isDemoMode: boolean,
+    usesStaticHostedBrowserBuild: boolean,
 ) =>
     (publishedFormats.length > 0
         ? publishedFormats
-        : isDemoMode
+        : usesStaticHostedBrowserBuild
           ? builtInDocumentFormatSummaries.slice(0, 1)
           : builtInDocumentFormatSummaries
     ).map((format) => ({
@@ -63,11 +67,17 @@ export const filterReprintRecords = (records: readonly AppRecord[], searchQuery:
 export const loadPublishedFormats = async (
     isHostedWeb: boolean,
 ): Promise<readonly PublishedFormat[]> => {
+    if (isHostedWeb || canUseLocalHostedApi()) {
+        try {
+            return await requestHostedApi<readonly PublishedFormat[]>('/print/formats');
+        } catch {
+            if (window.vaultBillDesktop) {
+                return window.vaultBillDesktop.listBuilderInventory();
+            }
+        }
+    }
     if (window.vaultBillDesktop) {
         return window.vaultBillDesktop.listBuilderInventory();
-    }
-    if (isHostedWeb) {
-        return requestHostedApi<readonly PublishedFormat[]>('/print/formats');
     }
     return [];
 };
@@ -76,11 +86,22 @@ export const loadPublishedFormats = async (
 export const loadRecordsSecretValues = async (
     isHostedWeb: boolean,
 ): Promise<Readonly<Record<string, string>>> => {
-    const rawSettings = window.vaultBillDesktop
-        ? await window.vaultBillDesktop.getSecretsSettings()
-        : isHostedWeb
-          ? await requestHostedApi('/settings/secrets')
-          : undefined;
+    let rawSettings: unknown;
+    if (isHostedWeb || canUseLocalHostedApi()) {
+        try {
+            rawSettings = await requestHostedApi('/settings/secrets');
+        } catch (error) {
+            if (window.vaultBillDesktop) {
+                rawSettings = await window.vaultBillDesktop.getSecretsSettings();
+            } else if (isHostedApiErrorStatus(error, [401, 403, 404])) {
+                rawSettings = undefined;
+            } else {
+                throw error;
+            }
+        }
+    } else if (window.vaultBillDesktop) {
+        rawSettings = await window.vaultBillDesktop.getSecretsSettings();
+    }
     const normalized = normalizeSecretsSettings(rawSettings);
     return secretValuesFromSettings(normalized.secrets);
 };

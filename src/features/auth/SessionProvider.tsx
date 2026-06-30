@@ -1,24 +1,23 @@
 /** @format */
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { FC, PropsWithChildren } from 'react';
 
 import { useCapabilities } from '../../capability/CapabilityContext';
 import {
+    canUseLocalHostedApi,
     hostedApiRecoveredEvent,
     hostedApiUnavailableEvent,
     requestHostedApi,
     setHostedCsrfToken,
 } from '../../runtime/HostedApi';
+import { isStaticHostedBrowserBuild } from '../../runtime/RuntimeMode';
 import { bootstrapOperatorAccounts, createOperatorContext } from './AccountBootstrap';
 import type { OperatorAccount } from './AccountTypes';
 import { createSessionActions } from './SessionActions';
 import { SessionContext } from './SessionContextBase';
 import { demoAccount } from './SessionSupport';
 import type { SessionContextValue } from './SessionTypes';
-
-const hostedSessionRefreshIntervalMs = 3000;
-const desktopSessionRefreshIntervalMs = 3000;
 
 const readHostedSessionSnapshot = async (): Promise<{
     readonly accounts: readonly OperatorAccount[];
@@ -47,13 +46,21 @@ const readHostedSessionSnapshot = async (): Promise<{
 /** Supplies the active operator session for demo, hosted web, and desktop modes. */
 export const SessionProvider: FC<PropsWithChildren> = ({ children }) => {
     const capabilities = useCapabilities();
+    const usesStaticHostedBrowserBuild = isStaticHostedBrowserBuild(capabilities);
+    const canUseHostedSessionApi =
+        window.vaultBillDesktop === undefined &&
+        !usesStaticHostedBrowserBuild &&
+        (capabilities.isHostedWeb || canUseLocalHostedApi());
     const [hostedConnectionState, setHostedConnectionState] = useState<
         SessionContextValue['hostedConnectionState']
-    >(capabilities.isHostedWeb ? 'connecting' : 'connected');
+    >(canUseHostedSessionApi ? 'connecting' : 'connected');
+    const hostedConnectionStateRef = useRef<SessionContextValue['hostedConnectionState']>(
+        canUseHostedSessionApi ? 'connecting' : 'connected',
+    );
     const [accounts, setAccounts] = useState<readonly OperatorAccount[]>(() =>
-        capabilities.isDemoMode
+        usesStaticHostedBrowserBuild
             ? [demoAccount]
-            : capabilities.isHostedWeb
+            : canUseHostedSessionApi
               ? []
               : window.vaultBillDesktop
                 ? []
@@ -62,25 +69,43 @@ export const SessionProvider: FC<PropsWithChildren> = ({ children }) => {
     const [account, setAccount] = useState<OperatorAccount | undefined>();
 
     useEffect(() => {
+        hostedConnectionStateRef.current = hostedConnectionState;
+    }, [hostedConnectionState]);
+
+    useEffect(() => {
         const bridge = window.vaultBillDesktop;
-        if (!bridge || capabilities.isDemoMode) return;
+        if (!bridge || usesStaticHostedBrowserBuild) return;
 
         let isCurrent = true;
 
         const refreshDesktopAccounts = () => {
-            void bridge.listAccounts().then((desktopAccounts) => {
-                if (!isCurrent) return;
-                setAccounts(desktopAccounts);
-            });
+            void bridge
+                .listAccounts()
+                .then(async (desktopAccounts) => {
+                    if (desktopAccounts.some((account) => account.isActive)) {
+                        return desktopAccounts;
+                    }
+
+                    try {
+                        return await requestHostedApi<readonly OperatorAccount[]>('/auth/accounts');
+                    } catch {
+                        return desktopAccounts;
+                    }
+                })
+                .then((nextAccounts) => {
+                    if (!isCurrent) return;
+                    setAccounts(nextAccounts);
+                })
+                .catch(() => {
+                    if (!isCurrent) return;
+                    setAccounts([]);
+                });
         };
 
         refreshDesktopAccounts();
 
-        const refreshInterval = window.setInterval(
-            refreshDesktopAccounts,
-            desktopSessionRefreshIntervalMs,
-        );
         const refreshOnFocus = () => {
+            if (document.visibilityState === 'hidden') return;
             refreshDesktopAccounts();
         };
         window.addEventListener('focus', refreshOnFocus);
@@ -88,16 +113,16 @@ export const SessionProvider: FC<PropsWithChildren> = ({ children }) => {
 
         return () => {
             isCurrent = false;
-            window.clearInterval(refreshInterval);
             window.removeEventListener('focus', refreshOnFocus);
             document.removeEventListener('visibilitychange', refreshOnFocus);
         };
-    }, [capabilities.isDemoMode]);
+    }, [usesStaticHostedBrowserBuild]);
 
     useEffect(() => {
-        if (!capabilities.isHostedWeb) return;
+        if (!canUseHostedSessionApi) return;
 
         let isCurrent = true;
+        let isRefreshInFlight = false;
 
         const applyUnavailableState = () => {
             if (!isCurrent) return;
@@ -108,6 +133,8 @@ export const SessionProvider: FC<PropsWithChildren> = ({ children }) => {
         };
 
         const refreshHostedSession = () => {
+            if (isRefreshInFlight) return;
+            isRefreshInFlight = true;
             setHostedConnectionState((current) =>
                 current === 'connected' ? current : 'connecting',
             );
@@ -121,22 +148,22 @@ export const SessionProvider: FC<PropsWithChildren> = ({ children }) => {
                 })
                 .catch(() => {
                     applyUnavailableState();
+                })
+                .finally(() => {
+                    isRefreshInFlight = false;
                 });
         };
 
         refreshHostedSession();
-
-        const refreshInterval = window.setInterval(
-            refreshHostedSession,
-            hostedSessionRefreshIntervalMs,
-        );
         const refreshOnFocus = () => {
+            if (document.visibilityState === 'hidden') return;
             refreshHostedSession();
         };
         const handleHostedApiUnavailable = () => {
             applyUnavailableState();
         };
         const handleHostedApiRecovered = () => {
+            if (hostedConnectionStateRef.current === 'connected') return;
             refreshHostedSession();
         };
         window.addEventListener('focus', refreshOnFocus);
@@ -146,26 +173,25 @@ export const SessionProvider: FC<PropsWithChildren> = ({ children }) => {
 
         return () => {
             isCurrent = false;
-            window.clearInterval(refreshInterval);
             window.removeEventListener('focus', refreshOnFocus);
             document.removeEventListener('visibilitychange', refreshOnFocus);
             window.removeEventListener(hostedApiUnavailableEvent, handleHostedApiUnavailable);
             window.removeEventListener(hostedApiRecoveredEvent, handleHostedApiRecovered);
         };
-    }, [capabilities.isHostedWeb]);
+    }, [canUseHostedSessionApi]);
 
     const actions = useMemo(
         () =>
             createSessionActions({
                 accounts: () => accounts,
                 account: () => account,
-                isDemoMode: () => capabilities.isDemoMode,
-                isHostedWeb: () => capabilities.isHostedWeb,
+                canUseHostedSessionApi: () => canUseHostedSessionApi,
+                usesStaticHostedBrowserBuild: () => usesStaticHostedBrowserBuild,
                 saveAccounts: setAccounts,
                 setAccount,
                 setHostedCsrfToken,
             }),
-        [account, accounts, capabilities.isDemoMode, capabilities.isHostedWeb],
+        [account, accounts, canUseHostedSessionApi, usesStaticHostedBrowserBuild],
     );
 
     return (

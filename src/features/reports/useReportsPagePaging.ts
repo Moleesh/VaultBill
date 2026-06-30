@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { useCapabilities } from '../../capability/CapabilityContext';
-import { requestHostedApi } from '../../runtime/HostedApi';
+import { canUseLocalHostedApi, requestHostedApi } from '../../runtime/HostedApi';
+import { isStaticHostedBrowserBuild } from '../../runtime/RuntimeMode';
 import type { AppRecord } from '../records/RecordStoreSupport';
 import { pageSize, requestReportPage, type PrintTask } from './ReportsPageSupport';
 import type { ReportFieldFilter } from './ReportsPageTypes';
@@ -27,6 +28,7 @@ export const useReportsPagePaging = (
     status: string,
 ) => {
     const capabilities = useCapabilities();
+    const usesStaticHostedBrowserBuild = isStaticHostedBrowserBuild(capabilities);
     const [serverRecords, setServerRecords] = useState<readonly AppRecord[]>([]);
     const [serverTotal, setServerTotal] = useState(0);
     const [nextCursor, setNextCursor] = useState<string>();
@@ -37,8 +39,8 @@ export const useReportsPagePaging = (
     const [trialExpired, setTrialExpired] = useState(false);
     const sentinelRef = useRef<HTMLDivElement>(null);
     const usesServerPaging =
-        !capabilities.isDemoMode &&
-        (window.vaultBillDesktop !== undefined || capabilities.isHostedWeb);
+        window.vaultBillDesktop !== undefined ||
+        (!usesStaticHostedBrowserBuild && (capabilities.isHostedWeb || canUseLocalHostedApi()));
 
     const matchingRecords = usesServerPaging ? serverRecords : browserMatchingRecords;
     const totalRecords = usesServerPaging ? serverTotal : browserMatchingRecords.length;

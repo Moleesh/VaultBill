@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { FC, PropsWithChildren } from 'react';
 
 import { useCapabilities } from '../../capability/CapabilityContext';
+import { isStaticHostedBrowserBuild } from '../../runtime/RuntimeMode';
 import { useSession } from '../auth/useSession';
 import { RecordStoreContext } from './RecordStoreContextBase';
 import { createRecordStoreActions } from './RecordStoreActions';
@@ -14,6 +15,7 @@ import type { AppRecord } from './RecordStoreSupport';
  */
 export const RecordStoreProvider: FC<PropsWithChildren> = ({ children }) => {
     const capabilities = useCapabilities();
+    const usesStaticHostedBrowserBuild = isStaticHostedBrowserBuild(capabilities);
     const { operatorContext: sessionOperator } = useSession();
     const [records, setRecords] = useState<readonly AppRecord[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -23,27 +25,27 @@ export const RecordStoreProvider: FC<PropsWithChildren> = ({ children }) => {
         () =>
             createRecordStoreActions({
                 accounts: () => [],
-                isDemoMode: () => capabilities.isDemoMode,
                 isHostedWeb: () => capabilities.isHostedWeb,
+                usesStaticHostedBrowserBuild: () => usesStaticHostedBrowserBuild,
                 sessionOperator: () => sessionOperator,
                 setRecords,
                 setLoading: setIsLoading,
                 setError,
             }).loadRecords,
-        [capabilities.isDemoMode, capabilities.isHostedWeb, sessionOperator],
+        [capabilities.isHostedWeb, sessionOperator, usesStaticHostedBrowserBuild],
     );
     const actions = useMemo(
         () =>
             createRecordStoreActions({
                 accounts: () => records,
-                isDemoMode: () => capabilities.isDemoMode,
                 isHostedWeb: () => capabilities.isHostedWeb,
+                usesStaticHostedBrowserBuild: () => usesStaticHostedBrowserBuild,
                 sessionOperator: () => sessionOperator,
                 setRecords,
                 setLoading: setIsLoading,
                 setError,
             }),
-        [capabilities.isDemoMode, capabilities.isHostedWeb, records, sessionOperator],
+        [capabilities.isHostedWeb, records, sessionOperator, usesStaticHostedBrowserBuild],
     );
 
     useEffect(() => {

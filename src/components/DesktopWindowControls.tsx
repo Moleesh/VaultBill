@@ -5,13 +5,14 @@
  * behavior while staying hidden from the web runtime.
  */
 
-import { Minus, X } from 'lucide-react';
+import { Minus, RotateCcw, X } from 'lucide-react';
 import type { FC } from 'react';
 
 import { IconOnlyButton } from './IconOnlyButton';
 
 type DesktopWindowControlsProps = {
     readonly isDesktop?: boolean;
+    readonly onRefreshWindow?: (() => void) | undefined;
     readonly onMinimizeWindow?: (() => void) | undefined;
     readonly onCloseWindow?: (() => void) | undefined;
     readonly className?: string;
@@ -23,8 +24,9 @@ export const DesktopWindowControls: FC<DesktopWindowControlsProps> = ({
     isDesktop = false,
     onCloseWindow,
     onMinimizeWindow,
+    onRefreshWindow,
 }) => {
-    if (!onMinimizeWindow && !onCloseWindow) {
+    if (!onRefreshWindow && !onMinimizeWindow && !onCloseWindow) {
         return null;
     }
 
@@ -40,6 +42,15 @@ export const DesktopWindowControls: FC<DesktopWindowControlsProps> = ({
                     icon={<Minus aria-hidden="true" size={18} />}
                     onClick={onMinimizeWindow}
                     title="Minimize to taskbar"
+                />
+            ) : null}
+            {isDesktop && onRefreshWindow ? (
+                <IconOnlyButton
+                    aria-label="Refresh window"
+                    className="icon-button desktop-window-control desktop-window-control--refresh"
+                    icon={<RotateCcw aria-hidden="true" size={18} />}
+                    onClick={onRefreshWindow}
+                    title="Refresh window"
                 />
             ) : null}
             {onCloseWindow ? (

@@ -27,6 +27,7 @@ type AppShellSidebarProps = {
     readonly isDemoMode: boolean;
     readonly isDesktop: boolean;
     readonly isHostedWeb: boolean;
+    readonly canOpenHostedWeb: boolean;
     readonly operatorDisplayName: string;
     readonly operatorRole: string;
     readonly hostedWebUrl?: string;
@@ -46,6 +47,7 @@ export const AppShellSidebar: FC<AppShellSidebarProps> = ({
     isDemoMode,
     isDesktop,
     isHostedWeb,
+    canOpenHostedWeb,
     operatorDisplayName,
     operatorRole,
     hostedWebUrl,
@@ -110,7 +112,7 @@ export const AppShellSidebar: FC<AppShellSidebarProps> = ({
             </div>
             <div className="app-shell-operator-actions">
                 <ThemePalette controller={themeController} />
-                {hostedWebUrl ? (
+                {canOpenHostedWeb && hostedWebUrl ? (
                     <IconOnlyButton
                         aria-label="Open hosted web"
                         icon={<ExternalLink aria-hidden="true" size={20} />}

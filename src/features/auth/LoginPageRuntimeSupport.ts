@@ -6,11 +6,11 @@ import { canUseLocalHostedApi, requestHostedWindowAction } from '../../runtime/H
 import type { ActivationFormApi } from './useLoginForms';
 
 export const getLoginFooterCopy = (input: {
-    readonly isDemoMode: boolean;
+    readonly isStaticHostedBrowserBuild: boolean;
     readonly isDesktop: boolean;
     readonly isHostedWeb: boolean;
 }): { readonly primary: string; readonly secondary: string } => {
-    if (input.isDemoMode) {
+    if (input.isStaticHostedBrowserBuild) {
         return {
             primary: 'Interactive demo workspace',
             secondary: 'Explore the flow before setting up a live workspace',

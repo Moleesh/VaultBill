@@ -107,6 +107,8 @@
     grid-template-columns: minmax(0, 1fr) 1.05rem;
     align-items: center;
     gap: 0.15rem;
+    width: 100%;
+    min-width: 0;
     min-height: 2.55rem;
     padding-inline: var(--space-3) 0.55rem;
     background: var(--color-surface-raised);
@@ -117,6 +119,8 @@
 }
 
 .searchable-dropdown-trigger span:first-child {
+    display: block;
+    width: 100%;
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;

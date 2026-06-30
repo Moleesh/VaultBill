@@ -30,9 +30,16 @@ export const SettingsSecretsSection: FC = () => {
             : capabilities.isHostedWeb
               ? requestHostedApi('/settings/secrets')
               : undefined;
-        void secretRequest?.then((rawSettings) => {
-            setSettings(normalizeSecretsSettings(rawSettings));
-        });
+        void secretRequest
+            ?.then((rawSettings) => {
+                setSettings(normalizeSecretsSettings(rawSettings));
+            })
+            .catch((reason: unknown) => {
+                setSettings(defaultSecretsSettings);
+                setMessage(
+                    reason instanceof Error ? reason.message : 'Secrets could not be loaded.',
+                );
+            });
     }, [capabilities.isHostedWeb]);
 
     useEffect(() => {

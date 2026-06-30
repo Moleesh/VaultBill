@@ -31,10 +31,12 @@ import {
     useCreateRecordsReprintSearchForm,
     type PublishedFormat,
 } from './useRecordsPageStateSupport';
+import { isStaticHostedBrowserBuild } from '../../runtime/RuntimeMode';
 
 /** Holds the record page data, derived values, and server-backed inventory. */
 export const useRecordsPageState = () => {
     const capabilities = useCapabilities();
+    const usesStaticHostedBrowserBuild = isStaticHostedBrowserBuild(capabilities);
     const { operatorContext } = useSession();
     const { cancelRecord, error, finalizeRecord, isLoading, records, saveDraft } = useRecordStore();
     const [searchParams, setSearchParams] = useSearchParams();
@@ -60,7 +62,10 @@ export const useRecordsPageState = () => {
         searchParams.get('tab') === 'reprint' ? 'reprint' : 'create';
     const selectedStoredRecord = findSelectedStoredRecord(records, record);
     const isReadOnly = actionState === 'Finalized' || actionState === 'Reprint';
-    const formatOptions = resolveRecordsFormatOptions(publishedFormats, capabilities.isDemoMode);
+    const formatOptions = resolveRecordsFormatOptions(
+        publishedFormats,
+        usesStaticHostedBrowserBuild,
+    );
     const activeConfig = activePrintPackage?.config ?? builtInDefaultFormat;
     const recordTotals = useMemo(() => calculateRecordTotals(record), [record]);
     const configuredDocumentFields = useMemo(
@@ -98,11 +103,19 @@ export const useRecordsPageState = () => {
     }, [capabilities.isHostedWeb]);
 
     useEffect(() => {
-        void loadWorkspaceSettings(capabilities.isHostedWeb).then(setWorkspaceSettings);
+        void loadWorkspaceSettings(capabilities.isHostedWeb)
+            .then(setWorkspaceSettings)
+            .catch(() => {
+                setWorkspaceSettings(defaultWorkspaceSettings);
+            });
     }, [capabilities.isHostedWeb]);
 
     useEffect(() => {
-        void loadRecordsSecretValues(capabilities.isHostedWeb).then(setSecretValues);
+        void loadRecordsSecretValues(capabilities.isHostedWeb)
+            .then(setSecretValues)
+            .catch(() => {
+                setSecretValues({});
+            });
     }, [capabilities.isHostedWeb]);
 
     useEffect(() => {

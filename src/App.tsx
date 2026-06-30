@@ -13,58 +13,58 @@ import { useCapabilities } from './capability/CapabilityContext';
 import { SessionProvider } from './features/auth/SessionContext';
 import { RecordStoreProvider } from './features/records/RecordStoreContext';
 import { canUseLocalHostedApi, requestHostedApi } from './runtime/HostedApi';
+import { canUseDbBackedRuntime, isStaticHostedBrowserBuild } from './runtime/RuntimeMode';
 
 const AppRoutes: FC = () => {
     const capabilities = useCapabilities();
     const navigate = useNavigate();
+    const usesStaticHostedBrowserBuild = isStaticHostedBrowserBuild(capabilities);
     const [setupRevision, setSetupRevision] = useState(0);
     const [setupWizardRevision, setSetupWizardRevision] = useState(0);
     const [setupWizardForcedOpen, setSetupWizardForcedOpen] = useState(false);
     const [desktopSetupRequired, setDesktopSetupRequired] = useState<boolean | null>(
-        !capabilities.isDemoMode &&
-            (window.vaultBillDesktop ||
-                capabilities.isDesktop ||
-                capabilities.isHostedWeb ||
-                canUseLocalHostedApi())
-            ? null
-            : false,
+        !usesStaticHostedBrowserBuild && canUseDbBackedRuntime(capabilities) ? null : false,
     );
     const setupRequired = desktopSetupRequired ?? false;
 
     useEffect(() => {
-        if (capabilities.isDemoMode) {
+        if (usesStaticHostedBrowserBuild) {
             setDesktopSetupRequired(false);
             return;
         }
 
         let isCurrent = true;
         const canUseHostedSetupStatus = capabilities.isHostedWeb || canUseLocalHostedApi();
-        const desktopRequest = window.vaultBillDesktop
-            ? Promise.all([
-                  window.vaultBillDesktop.listAccounts(),
-                  window.vaultBillDesktop.getBusinessSettings(),
-              ]).then(([accounts, business]) => ({
-                  hasActiveAdmin: accounts.some(
-                      (account) => account.role === 'Admin' && account.isActive,
-                  ),
-                  business,
-              }))
-            : canUseHostedSetupStatus
-              ? requestHostedApi<{
-                    readonly isSetupComplete: boolean;
-                    readonly hasActiveAdmin: boolean;
-                    readonly business: {
-                        readonly companyName: string;
-                        readonly address: string;
-                    };
-                }>('/setup/status').then((status) => ({
-                    hasActiveAdmin: status.hasActiveAdmin,
-                    business: status.business,
-                }))
-              : Promise.resolve({
-                    hasActiveAdmin: false,
-                    business: { companyName: '', address: '' },
-                });
+        const desktopStatusFallback = () =>
+            window.vaultBillDesktop
+                ? Promise.all([
+                      window.vaultBillDesktop.listAccounts(),
+                      window.vaultBillDesktop.getBusinessSettings(),
+                  ]).then(([accounts, business]) => ({
+                      hasActiveAdmin: accounts.some(
+                          (account) => account.role === 'Admin' && account.isActive,
+                      ),
+                      business,
+                  }))
+                : Promise.resolve({
+                      hasActiveAdmin: false,
+                      business: { companyName: '', address: '' },
+                  });
+        const desktopRequest = canUseHostedSetupStatus
+            ? requestHostedApi<{
+                  readonly isSetupComplete: boolean;
+                  readonly hasActiveAdmin: boolean;
+                  readonly business: {
+                      readonly companyName: string;
+                      readonly address: string;
+                  };
+              }>('/setup/status')
+                  .then((status) => ({
+                      hasActiveAdmin: status.hasActiveAdmin,
+                      business: status.business,
+                  }))
+                  .catch(() => desktopStatusFallback())
+            : desktopStatusFallback();
 
         void desktopRequest
             .then(({ hasActiveAdmin, business }) => {
@@ -87,7 +87,7 @@ const AppRoutes: FC = () => {
         return () => {
             isCurrent = false;
         };
-    }, [capabilities.isDemoMode, capabilities.isHostedWeb, setupRevision]);
+    }, [capabilities.isHostedWeb, setupRevision, usesStaticHostedBrowserBuild]);
 
     if (desktopSetupRequired === null) return null;
 
@@ -96,7 +96,7 @@ const AppRoutes: FC = () => {
             <RecordStoreProvider>
                 <Suspense fallback={<AppRouteFallback />}>
                     <AppRouteTree
-                        isDemoMode={capabilities.isDemoMode}
+                        isStaticHostedBrowserBuild={usesStaticHostedBrowserBuild}
                         onOpenSetupWizard={() => {
                             setSetupWizardForcedOpen(true);
                             setSetupWizardRevision((current) => current + 1);

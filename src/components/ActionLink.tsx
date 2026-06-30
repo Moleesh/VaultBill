@@ -22,8 +22,8 @@ const actionLinkClassName = (
               ? 'button-secondary'
               : variant === 'danger'
                 ? 'button-danger'
-                : '';
-    return [variantClassName, className].filter(Boolean).join(' ');
+                : 'action-link';
+    return ['action-link', variantClassName, className].filter(Boolean).join(' ');
 };
 
 /** Shared route link that reuses button variants for navigation actions. */

@@ -4,6 +4,7 @@ import { KeyRound } from 'lucide-react';
 import type { FC } from 'react';
 
 import { ActionButton } from '../../components/ActionButton';
+import { AppModal } from '../../components/AppModal/AppModal';
 import { FormField } from '../../components/FormFields';
 import { IconButton } from '../../components/IconButton';
 import { SearchableDropdown } from '../../components/SearchableDropdown/SearchableDropdown';
@@ -17,6 +18,7 @@ type LoginPageFormProps = {
     readonly error: string;
     readonly hostedConnectionState: 'connecting' | 'connected' | 'unavailable';
     readonly isLoginDisabled: boolean;
+    readonly isStaticHostedBrowserBuild: boolean;
     readonly showDesktopActions: boolean;
     readonly accountOptions: readonly DropdownOption[];
     readonly form: LoginFormApi;
@@ -34,6 +36,7 @@ export const LoginPageForm: FC<LoginPageFormProps> = ({
     error,
     hostedConnectionState,
     isLoginDisabled,
+    isStaticHostedBrowserBuild,
     showDesktopActions,
     accountOptions,
     form,
@@ -52,27 +55,29 @@ export const LoginPageForm: FC<LoginPageFormProps> = ({
     return (
         <>
             {capabilities.isHostedWeb && hostedConnectionState !== 'connected' ? (
-                <div className="host-reconnect" role="status">
-                    <strong>
-                        {hostedConnectionState === 'connecting'
+                <AppModal
+                    isDismissible={false}
+                    isOpen
+                    onClose={() => undefined}
+                    title={
+                        hostedConnectionState === 'connecting'
                             ? 'Connecting to VaultBill Desktop'
-                            : 'VaultBill Desktop is unavailable'}
-                    </strong>
-                    <p>
-                        {hostedConnectionState === 'connecting'
-                            ? 'Checking the local workspace session.'
-                            : 'Open VaultBill Desktop on the host computer, then try again.'}
-                    </p>
-                    {hostedConnectionState === 'unavailable' ? (
-                        <ActionButton
-                            onClick={() => {
-                                window.location.reload();
-                            }}
-                        >
-                            Reconnect
-                        </ActionButton>
-                    ) : null}
-                </div>
+                            : 'VaultBill Desktop is unavailable'
+                    }
+                >
+                    <div className="host-reconnect-modal" role="status">
+                        <p>
+                            {hostedConnectionState === 'connecting'
+                                ? 'Checking the local workspace session. Please wait while VaultBill reconnects.'
+                                : 'The hosted browser workspace is waiting for the desktop host to come back. Please wait until the connection is restored.'}
+                        </p>
+                        <p className="field-note">
+                            {hostedConnectionState === 'connecting'
+                                ? 'The sign-in screen will continue automatically once the desktop host responds.'
+                                : 'Open VaultBill Desktop on the host computer and keep this dialog open.'}
+                        </p>
+                    </div>
+                </AppModal>
             ) : null}
             {isHostedDesktopAvailable ? (
                 <>
@@ -83,7 +88,7 @@ export const LoginPageForm: FC<LoginPageFormProps> = ({
                             onSubmit();
                         }}
                     >
-                        {capabilities.isDemoMode ? (
+                        {isStaticHostedBrowserBuild ? (
                             <div className="demo-login-summary">
                                 <strong>Demo User</strong>
                                 <p>Try records, printing, and the guided demo workspace.</p>
@@ -100,7 +105,7 @@ export const LoginPageForm: FC<LoginPageFormProps> = ({
                                 value={selectedAccountId}
                             />
                         )}
-                        {!capabilities.isDemoMode &&
+                        {!isStaticHostedBrowserBuild &&
                         (selectedAccount?.passwordHash || selectedAccount?.passwordConfigured) ? (
                             <form.Field name="password">
                                 {(field) => (
@@ -119,7 +124,7 @@ export const LoginPageForm: FC<LoginPageFormProps> = ({
                             </form.Field>
                         ) : null}
                         <ActionButton disabled={isLoginDisabled} type="submit" variant="primary">
-                            {capabilities.isDemoMode ? 'Start demo' : 'Log in'}
+                            {isStaticHostedBrowserBuild ? 'Start demo' : 'Log in'}
                         </ActionButton>
                     </form>
                     {error ? (
@@ -131,9 +136,9 @@ export const LoginPageForm: FC<LoginPageFormProps> = ({
             ) : null}
             {shouldShowHelpActions ? (
                 <div className="login-help-actions">
-                    <IconButton className="login-help-link" onClick={onHelpOpen}>
+                    <ActionButton className="login-help-link" onClick={onHelpOpen}>
                         Sign-in help
-                    </IconButton>
+                    </ActionButton>
                     {showDesktopActions ? (
                         <IconButton
                             className="login-help-link"

@@ -2,13 +2,24 @@
 
 import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { CapabilityRegistry } from '../../../capability/Capability.types';
 import { CapabilityProvider } from '../../../capability/CapabilityContext';
 import { RecordStoreProvider } from '../../records/RecordStoreContext';
+import { SessionContext } from '../../auth/SessionContext';
 import { SessionProvider } from '../../auth/SessionContext';
 import { DashboardPage } from '../DashboardPage';
+
+const hasFetchCallForAnyPath = (
+    calls: readonly (readonly [string | URL | Request, ...unknown[]])[],
+    paths: readonly string[],
+) =>
+    calls.some(([input]) => {
+        const url =
+            typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+        return paths.some((path) => url.includes(path));
+    });
 
 const desktopCapabilities: CapabilityRegistry = {
     isDesktop: true,
@@ -79,6 +90,10 @@ describe('dashboard page', () => {
         });
     });
 
+    afterEach(() => {
+        delete (window as Partial<Window> & { vaultBillDesktop?: unknown }).vaultBillDesktop;
+    });
+
     it('renders the dashboard for the active operator', async () => {
         render(
             <MemoryRouter initialEntries={['/app/dashboard']}>
@@ -99,5 +114,55 @@ describe('dashboard page', () => {
         });
         expect(screen.getByText('Finalized revenue')).toBeVisible();
         expect(screen.getByText('Latest records')).toBeVisible();
+    });
+
+    it('does not request hosted summary endpoints without an active hosted session', async () => {
+        delete (window as Partial<Window> & { vaultBillDesktop?: unknown }).vaultBillDesktop;
+        const fetchSpy = vi.spyOn(window, 'fetch');
+
+        render(
+            <MemoryRouter initialEntries={['/app/dashboard']}>
+                <CapabilityProvider
+                    value={{
+                        ...desktopCapabilities,
+                        isDesktop: false,
+                        isHostedWeb: true,
+                        hasLocalDb: false,
+                    }}
+                >
+                    <SessionContext.Provider
+                        value={{
+                            accounts: [],
+                            operatorContext: undefined,
+                            hostedConnectionState: 'connected',
+                            login: () => Promise.resolve(),
+                            logout: () => undefined,
+                            saveAccount: () => Promise.resolve(),
+                            archiveAccount: () => Promise.resolve(),
+                            resetPassword: () => Promise.resolve(),
+                        }}
+                    >
+                        <RecordStoreProvider>
+                            <Routes>
+                                <Route path="/app/dashboard" element={<DashboardPage />} />
+                            </Routes>
+                        </RecordStoreProvider>
+                    </SessionContext.Provider>
+                </CapabilityProvider>
+            </MemoryRouter>,
+        );
+
+        await waitFor(() => {
+            expect(
+                hasFetchCallForAnyPath(fetchSpy.mock.calls, [
+                    '/builder/inventory',
+                    '/records',
+                    '/backup/status',
+                    '/trial/status',
+                ]),
+            ).toBe(false);
+        });
+
+        fetchSpy.mockRestore();
     });
 });

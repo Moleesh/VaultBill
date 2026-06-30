@@ -14,7 +14,6 @@ import {
 
 type RecordStoreActionDependencies = {
     readonly accounts: () => readonly AppRecord[];
-    readonly isDemoMode: () => boolean;
     readonly isHostedWeb: () => boolean;
     readonly sessionOperator: () => OperatorContext | undefined;
 };
@@ -30,7 +29,9 @@ export const loadDesktopRecords = async (
     desktopBridge: NonNullable<typeof window.vaultBillDesktop>,
 ) => {
     try {
-        const storedRecords = await desktopBridge.listRecords();
+        const storedRecords = await requestHostedApi('/records').catch(() =>
+            desktopBridge.listRecords(),
+        );
         signals.setRecords(sortLatestFirst(z.array(AppRecordSchema).parse(storedRecords)));
         signals.setError('');
     } catch (reason: unknown) {
@@ -62,11 +63,13 @@ export const loadHostedRecords = async (
 };
 
 export const loadBrowserRecords = (
-    dependencies: Pick<RecordStoreActionDependencies, 'isDemoMode'>,
+    dependencies: {
+        readonly usesStaticHostedBrowserBuild: () => boolean;
+    },
     signals: RecordStoreActionSignals,
 ) => {
     try {
-        signals.setRecords(readBrowserRecords(dependencies.isDemoMode()));
+        signals.setRecords(readBrowserRecords(dependencies.usesStaticHostedBrowserBuild()));
         signals.setError('');
     } catch (reason) {
         signals.setError(reason instanceof Error ? reason.message : 'Records could not be loaded.');

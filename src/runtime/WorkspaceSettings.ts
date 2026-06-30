@@ -1,6 +1,6 @@
 /** @format */
 
-import { requestHostedApi } from './HostedApi';
+import { canUseLocalHostedApi, requestHostedApi } from './HostedApi';
 
 export type WorkspaceSettings = {
     readonly companyName: string;
@@ -56,11 +56,19 @@ export const loadWorkspaceSettings = async (
     isHostedWeb: boolean,
     path = '/workspace/settings',
 ): Promise<WorkspaceSettings> => {
+    if (isHostedWeb || canUseLocalHostedApi()) {
+        try {
+            return normalizeWorkspaceSettings(await requestHostedApi(path));
+        } catch {
+            if (window.vaultBillDesktop) {
+                return normalizeWorkspaceSettings(
+                    await window.vaultBillDesktop.getBusinessSettings(),
+                );
+            }
+        }
+    }
     if (window.vaultBillDesktop) {
         return normalizeWorkspaceSettings(await window.vaultBillDesktop.getBusinessSettings());
-    }
-    if (isHostedWeb) {
-        return normalizeWorkspaceSettings(await requestHostedApi(path));
     }
     return defaultWorkspaceSettings;
 };

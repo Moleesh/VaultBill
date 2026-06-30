@@ -19,6 +19,8 @@ import path from 'node:path';
 
 import { embeddedDesktopAppUrl, mainState, hostedAppUrl } from './MainState.js';
 
+const desktopIconPath = () => path.join(mainState.currentDirectory, '../build/icon.png');
+
 /** Reads the packaged license verifier embedded into the desktop build. */
 export const readLicenseVerifier = (): string => {
     try {
@@ -40,6 +42,7 @@ export const createWindow = async () => {
         height: 900,
         minWidth: 320,
         minHeight: 568,
+        icon: desktopIconPath(),
         title: mainState.identity.appName,
         frame: false,
         fullscreen: true,
@@ -54,7 +57,7 @@ export const createWindow = async () => {
             contextIsolation: true,
             nodeIntegration: false,
             preload: path.join(mainState.currentDirectory, 'Preload.js'),
-            sandbox: true,
+            sandbox: false,
         },
     });
     mainState.mainWindow.on('close', (event) => {
@@ -76,9 +79,9 @@ export const createWindow = async () => {
 
 /** Creates the tray icon and menu used while VaultBill continues running in the background. */
 export const createTray = () => {
-    const icon = nativeImage.createFromPath(
-        path.join(mainState.currentDirectory, '../build/icon.png'),
-    );
+    const icon = nativeImage.createFromPath(desktopIconPath());
+    const hostedWebEnabled = mainState.localApiServer?.isHostedAccessEnabled() ?? false;
+    const hostedWebAddress = hostedAppUrl();
     mainState.tray = new Tray(icon);
     mainState.tray.setToolTip('VaultBill is hosting the local workspace');
     mainState.tray.setContextMenu(
@@ -91,10 +94,13 @@ export const createTray = () => {
                 },
             },
             {
-                label: mainState.localApiServer?.isHostedAccessEnabled()
-                    ? `Hosted web: ${hostedAppUrl()}`
+                label: hostedWebEnabled
+                    ? `Open hosted web: ${hostedWebAddress}`
                     : 'Hosted web: stopped by System Administrator',
-                enabled: false,
+                enabled: hostedWebEnabled,
+                click: () => {
+                    if (hostedWebEnabled) void shell.openExternal(hostedWebAddress);
+                },
             },
             {
                 label: mainState.hostedWebSettings.lanEnabled
@@ -103,6 +109,22 @@ export const createTray = () => {
                 enabled: false,
             },
             { type: 'separator' },
+            {
+                label: 'Restart VaultBill',
+                click: () => {
+                    mainState.isQuitting = true;
+                    void closeRuntime()
+                        .catch((error: unknown) => {
+                            console.error(
+                                'VaultBill could not close cleanly before restart.',
+                                error,
+                            );
+                        })
+                        .finally(() => {
+                            restartApplication();
+                        });
+                },
+            },
             {
                 label: 'Quit VaultBill',
                 click: () => {
@@ -146,8 +168,11 @@ export const closeRuntime = async () => {
 /** Relaunches the Electron application after a short delay. */
 export const restartApplication = () => {
     setTimeout(() => {
-        app.relaunch();
-        app.exit(0);
+        app.relaunch({
+            execPath: process.execPath,
+            args: process.argv.slice(1),
+        });
+        app.quit();
     }, 150);
 };
 
