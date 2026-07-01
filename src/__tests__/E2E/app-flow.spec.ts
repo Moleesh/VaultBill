@@ -36,6 +36,10 @@ const loginAsAdmin = async (page: Page) => {
 
     await operatorAccountButton.click();
     await page.getByRole('option', { name: /Operations Admin/u }).click();
+    const passwordField = page.getByLabel(/Password/u);
+    if (await passwordField.isVisible().catch(() => false)) {
+        await passwordField.fill('vaultbill-e2e-password');
+    }
     await page.getByRole('button', { name: /Log in/u }).click();
 };
 
