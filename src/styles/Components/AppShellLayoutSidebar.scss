@@ -43,7 +43,7 @@
     --app-shell-sidebar-icon-size: 3.25rem;
     height: 100vh;
     min-height: 0;
-    overflow-x: hidden;
+    overflow-x: visible;
     overflow-y: auto;
     padding: var(--space-4) var(--space-3);
     border-right: var(--line-width) solid var(--color-border);
@@ -111,6 +111,14 @@
     height: var(--app-shell-sidebar-icon-size);
     border-radius: 999px;
     padding: 0;
+}
+
+.app-shell-sidebar-toggle:focus-visible {
+    outline: none;
+    border-color: color-mix(in srgb, var(--color-primary) 58%, transparent);
+    box-shadow:
+        0 0 0 0.16rem color-mix(in srgb, var(--color-primary) 18%, transparent),
+        0 0.35rem 1rem color-mix(in srgb, var(--color-panel-shadow) 14%, transparent);
 }
 
 .app-shell-brand strong {
@@ -195,6 +203,7 @@
     display: grid;
     gap: var(--space-1);
     min-width: 0;
+    align-content: start;
     overflow-wrap: anywhere;
 }
 
@@ -220,5 +229,60 @@
     gap: var(--space-1);
     color: var(--color-text-muted);
     min-width: 0;
+    line-height: 1.4;
     overflow-wrap: anywhere;
+}
+
+.app-shell-host-url {
+    color: var(--color-primary);
+    text-decoration: underline;
+    text-underline-offset: 0.18em;
+}
+
+.app-shell-host-url:hover {
+    color: color-mix(in srgb, var(--color-primary) 82%, white);
+}
+
+.app-shell-host-url:focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--color-primary) 42%, white);
+    outline-offset: 3px;
+    border-radius: 0.35rem;
+}
+
+.app-shell.is-sidebar-expanded .app-shell-operator-actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(3.25rem, 1fr));
+    justify-content: stretch;
+    align-items: stretch;
+    gap: var(--space-2);
+}
+
+.app-shell.is-sidebar-expanded .app-shell-operator-actions > * {
+    justify-self: stretch;
+}
+
+.app-shell.is-sidebar-expanded .app-shell-operator-actions .icon-button {
+    width: 100%;
+    min-width: 0;
+}
+
+.app-shell.is-sidebar-expanded .app-shell-operator {
+    padding: var(--space-4);
+    border: var(--line-width) solid color-mix(in srgb, var(--color-border) 74%, transparent);
+    border-radius: var(--radius-md);
+    background: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--color-surface-raised) 96%, white),
+        color-mix(in srgb, var(--color-surface) 98%, white)
+    );
+    box-shadow: var(--shadow-card);
+}
+
+.app-shell:not(.is-sidebar-expanded) .app-shell-operator .theme-palette {
+    z-index: 280;
+}
+
+.app-shell:not(.is-sidebar-expanded) .app-shell-operator .theme-palette-popover {
+    bottom: 0;
+    left: calc(100% + var(--space-2));
 }

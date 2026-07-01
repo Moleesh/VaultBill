@@ -39,6 +39,7 @@ export const LoginPage: FC<{ readonly onOpenSetupWizard?: () => void }> = ({
     const capabilities = useCapabilities();
     const usesStaticHostedBrowserBuild = isStaticHostedBrowserBuild(capabilities);
     const showDesktopChrome = shouldRenderDesktopChrome(capabilities);
+    const allowSetupShortcut = capabilities.isDesktop || window.vaultBillRuntime === 'desktop';
     const { accounts, hostedConnectionState, login, operatorContext } = useSession();
     const navigate = useNavigate();
     const loginSubmissionInFlightRef = useRef(false);
@@ -63,7 +64,12 @@ export const LoginPage: FC<{ readonly onOpenSetupWizard?: () => void }> = ({
                 await login(accountId, password);
                 void navigate('/app/dashboard');
             } catch (reason) {
-                setError(reason instanceof Error ? reason.message : 'Login failed.');
+                const message = reason instanceof Error ? reason.message : 'Login failed.';
+                setError(
+                    message
+                        .replace(/^Error invoking remote method '[^']+':\s*/u, '')
+                        .replace(/^Error:\s*/u, ''),
+                );
             } finally {
                 loginSubmissionInFlightRef.current = false;
             }
@@ -73,12 +79,15 @@ export const LoginPage: FC<{ readonly onOpenSetupWizard?: () => void }> = ({
     const effectiveSelectedAccountId = selectedAccountId || fallbackSelectedAccountId;
     const selectedAccount = findLoginAccount(accounts, effectiveSelectedAccountId);
     const isLoginDisabled = !effectiveSelectedAccountId || hostedConnectionState !== 'connected';
+    const isPasswordRequired = Boolean(
+        selectedAccount?.passwordHash ?? selectedAccount?.passwordConfigured,
+    );
     const footerCopy = getLoginFooterCopy({
         isStaticHostedBrowserBuild: usesStaticHostedBrowserBuild,
         isDesktop: showDesktopChrome,
         isHostedWeb: capabilities.isHostedWeb,
     });
-    useSetupShortcutConfirmation(onOpenSetupWizard, () => {
+    useSetupShortcutConfirmation(allowSetupShortcut, onOpenSetupWizard, () => {
         setIsSetupShortcutConfirmOpen(true);
     });
 
@@ -89,19 +98,15 @@ export const LoginPage: FC<{ readonly onOpenSetupWizard?: () => void }> = ({
     }, [capabilities.isHostedWeb]);
 
     useEffect(() => {
-        if (!showDesktopChrome || !isSysAdminUnlocked) return;
-
-        setIsSysAdminUnlockMessageVisible(true);
-        const timeout = window.setTimeout(() => {
-            setIsSysAdminUnlockMessageVisible(false);
-        }, 2800);
-        return () => {
-            window.clearTimeout(timeout);
-        };
+        setIsSysAdminUnlockMessageVisible(showDesktopChrome && isSysAdminUnlocked);
     }, [isSysAdminUnlocked, showDesktopChrome]);
 
     const submitLogin = async () => {
         if (isLoginDisabled || loginSubmissionInFlightRef.current) return;
+        if (isPasswordRequired && loginForm.state.values.password.trim().length === 0) {
+            setError('Password is required.');
+            return;
+        }
         await loginForm.handleSubmit();
     };
 
@@ -137,16 +142,6 @@ export const LoginPage: FC<{ readonly onOpenSetupWizard?: () => void }> = ({
 
     return (
         <main className="login-page">
-            {showDesktopChrome && isSysAdminUnlockMessageVisible ? (
-                <div className="setup-page-toast" role="status">
-                    <div className="setup-page-toast-content">
-                        <strong className="setup-page-toast-title">System Administrator</strong>
-                        <p>
-                            System Administrator unlocked. You can now choose the protected account.
-                        </p>
-                    </div>
-                </div>
-            ) : null}
             {showDesktopChrome ? (
                 <div className="login-page-chrome">
                     <DesktopWindowControls
@@ -174,6 +169,17 @@ export const LoginPage: FC<{ readonly onOpenSetupWizard?: () => void }> = ({
                     ) : null}
                 </div>
                 <div className="login-card-form">
+                    {showDesktopChrome && isSysAdminUnlockMessageVisible ? (
+                        <div className="login-inline-status" role="status">
+                            <strong className="login-inline-status-title">
+                                System Administrator
+                            </strong>
+                            <p>
+                                System Administrator unlocked. You can now choose the protected
+                                account.
+                            </p>
+                        </div>
+                    ) : null}
                     <LoginPageForm
                         accountOptions={accountOptions}
                         capabilities={capabilities}
@@ -181,6 +187,7 @@ export const LoginPage: FC<{ readonly onOpenSetupWizard?: () => void }> = ({
                         form={loginForm}
                         hostedConnectionState={hostedConnectionState}
                         isLoginDisabled={isLoginDisabled}
+                        isPasswordRequired={isPasswordRequired}
                         isStaticHostedBrowserBuild={usesStaticHostedBrowserBuild}
                         onActivationOpen={() => {
                             setIsActivationOpen(true);
@@ -188,8 +195,12 @@ export const LoginPage: FC<{ readonly onOpenSetupWizard?: () => void }> = ({
                         onHelpOpen={() => {
                             setIsHelpOpen(true);
                         }}
+                        onPasswordChange={() => {
+                            if (error) setError('');
+                        }}
                         onSelectedAccountIdChange={(nextSelectedAccountId) => {
                             setSelectedAccountId(nextSelectedAccountId);
+                            if (error) setError('');
                         }}
                         onSubmit={() => {
                             void submitLogin();

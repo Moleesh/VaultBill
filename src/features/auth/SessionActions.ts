@@ -125,7 +125,6 @@ export const createSessionActions = (dependencies: SessionActionDependencies) =>
     };
 
     const resetPassword: SessionContextValue['resetPassword'] = async (userId, password) => {
-        if (password.length < 8) throw new Error('Passwords must contain at least 8 characters.');
         if (window.vaultBillDesktop) {
             const saved = await window.vaultBillDesktop.resetPassword(userId, password);
             persistAccounts(

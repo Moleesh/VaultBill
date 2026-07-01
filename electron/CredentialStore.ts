@@ -161,7 +161,6 @@ export class CredentialStore {
     };
 
     public resetPassword = (userId: string, password: string): DesktopOperatorAccount => {
-        if (password.length < 8) throw new Error('Passwords must contain at least 8 characters.');
         const salt = randomBytes(16);
         const hash = scryptSync(password, salt, scryptKeyLength);
         const result = this.#database

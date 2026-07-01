@@ -28,39 +28,44 @@ export const SettingsBusinessThemePicker: FC<SettingsBusinessThemePickerProps> =
     theme,
     onThemeChange,
     wrapperClassName,
-}) => (
-    <FormField.Wrapper
-        label={
-            <>
-                <Palette aria-hidden="true" size={17} /> Theme
-            </>
-        }
-        note={note}
-        wrapperClassName={
-            wrapperClassName ? `settings-theme-picker ${wrapperClassName}` : 'settings-theme-picker'
-        }
-    >
-        <div className="settings-theme-picker-options" role="radiogroup" aria-label="Theme">
-            {themeOptions.map((option) => (
-                <ActionButton
-                    aria-checked={theme === option.id}
-                    aria-pressed={theme === option.id}
-                    key={option.id}
-                    onClick={() => {
-                        onThemeChange(option.id);
-                    }}
-                    role="radio"
-                    title={option.label}
-                >
-                    <span
-                        aria-hidden="true"
-                        style={{
-                            background: `linear-gradient(135deg, ${themeSwatches[option.id][0]} 50%, ${themeSwatches[option.id][1]} 50%)`,
+}) => {
+    return (
+        <FormField.Wrapper
+            as="div"
+            label={
+                <>
+                    <Palette aria-hidden="true" size={17} /> Theme
+                </>
+            }
+            note={note}
+            wrapperClassName={
+                wrapperClassName
+                    ? `settings-theme-picker ${wrapperClassName}`
+                    : 'settings-theme-picker'
+            }
+        >
+            <div className="settings-theme-picker-options" role="radiogroup" aria-label="Theme">
+                {themeOptions.map((option) => (
+                    <ActionButton
+                        aria-checked={theme === option.id}
+                        aria-pressed={theme === option.id}
+                        key={option.id}
+                        onClick={() => {
+                            onThemeChange(option.id);
                         }}
-                    />
-                    <small>{option.label}</small>
-                </ActionButton>
-            ))}
-        </div>
-    </FormField.Wrapper>
-);
+                        role="radio"
+                        title={option.label}
+                    >
+                        <span
+                            aria-hidden="true"
+                            style={{
+                                background: `linear-gradient(135deg, ${themeSwatches[option.id][0]} 50%, ${themeSwatches[option.id][1]} 50%)`,
+                            }}
+                        />
+                        <small>{option.label}</small>
+                    </ActionButton>
+                ))}
+            </div>
+        </FormField.Wrapper>
+    );
+};

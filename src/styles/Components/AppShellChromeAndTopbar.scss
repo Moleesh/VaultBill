@@ -250,6 +250,7 @@
     gap: var(--space-2);
     justify-self: end;
     min-width: 0;
+    min-height: var(--app-shell-window-control-size, 3.45rem);
     flex-wrap: nowrap;
     justify-content: flex-end;
     position: relative;
@@ -258,10 +259,16 @@
 }
 .app-shell.has-window-controls .app-shell-topbar-actions {
     max-width: min(100%, 32rem);
+    padding-block: calc((var(--app-shell-window-control-size, 3.45rem) - 3.1rem) / 2);
 }
 .app-shell-window-chrome {
+    --app-shell-window-control-size: 3.45rem;
     position: fixed;
-    top: calc(var(--space-4) + 0.12rem + env(safe-area-inset-top));
+    top: calc(
+        var(--space-4) +
+            ((var(--app-shell-topbar-height) - var(--app-shell-window-control-size)) / 2) +
+            env(safe-area-inset-top)
+    );
     right: calc(clamp(var(--space-4), 4vw, var(--space-8)) + env(safe-area-inset-right));
     z-index: 120;
     display: inline-flex;
@@ -399,9 +406,9 @@
 }
 .desktop-window-controls .icon-button,
 .app-shell-window-controls .icon-button {
-    width: 3.45rem;
-    min-width: 3.45rem;
-    height: 3.45rem;
+    width: var(--app-shell-window-control-size, 3.45rem);
+    min-width: var(--app-shell-window-control-size, 3.45rem);
+    height: var(--app-shell-window-control-size, 3.45rem);
     border: 0;
     color: var(--color-surface);
     border-radius: 1.05rem;

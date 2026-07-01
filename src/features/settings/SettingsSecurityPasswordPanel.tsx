@@ -45,7 +45,7 @@ export const SettingsSecurityPasswordPanel: FC<SettingsSecurityPasswordPanelProp
             </passwordForm.Field>
             <passwordForm.Field name="password">
                 {(field) => (
-                    <FormField.TextField
+                    <FormField.PasswordField
                         label="New password"
                         onBlur={field.handleBlur}
                         onChange={(event) => {
@@ -53,7 +53,6 @@ export const SettingsSecurityPasswordPanel: FC<SettingsSecurityPasswordPanelProp
                         }}
                         required
                         requiredIndicator
-                        type="password"
                         value={field.state.value}
                     />
                 )}

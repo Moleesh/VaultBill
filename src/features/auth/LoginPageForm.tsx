@@ -18,6 +18,7 @@ type LoginPageFormProps = {
     readonly error: string;
     readonly hostedConnectionState: 'connecting' | 'connected' | 'unavailable';
     readonly isLoginDisabled: boolean;
+    readonly isPasswordRequired: boolean;
     readonly isStaticHostedBrowserBuild: boolean;
     readonly showDesktopActions: boolean;
     readonly accountOptions: readonly DropdownOption[];
@@ -26,6 +27,7 @@ type LoginPageFormProps = {
     readonly selectedAccountId: string;
     readonly onActivationOpen: () => void;
     readonly onHelpOpen: () => void;
+    readonly onPasswordChange: () => void;
     readonly onSelectedAccountIdChange: (value: string) => void;
     readonly onSubmit: () => void;
 };
@@ -36,6 +38,7 @@ export const LoginPageForm: FC<LoginPageFormProps> = ({
     error,
     hostedConnectionState,
     isLoginDisabled,
+    isPasswordRequired,
     isStaticHostedBrowserBuild,
     showDesktopActions,
     accountOptions,
@@ -44,6 +47,7 @@ export const LoginPageForm: FC<LoginPageFormProps> = ({
     selectedAccountId,
     onActivationOpen,
     onHelpOpen,
+    onPasswordChange,
     onSelectedAccountIdChange,
     onSubmit,
 }) => {
@@ -109,29 +113,32 @@ export const LoginPageForm: FC<LoginPageFormProps> = ({
                         (selectedAccount?.passwordHash || selectedAccount?.passwordConfigured) ? (
                             <form.Field name="password">
                                 {(field) => (
-                                    <FormField.TextField
+                                    <FormField.PasswordField
                                         autoComplete="current-password"
+                                        invalid={Boolean(error)}
                                         label="Password"
                                         onBlur={field.handleBlur}
                                         onChange={(event) => {
                                             field.handleChange(event.currentTarget.value);
+                                            onPasswordChange();
                                         }}
-                                        type="password"
+                                        requiredIndicator={isPasswordRequired}
+                                        required={isPasswordRequired}
                                         value={field.state.value}
                                         wrapperClassName="login-password"
                                     />
                                 )}
                             </form.Field>
                         ) : null}
+                        {error ? (
+                            <p className="feedback-error" role="alert">
+                                {error}
+                            </p>
+                        ) : null}
                         <ActionButton disabled={isLoginDisabled} type="submit" variant="primary">
                             {isStaticHostedBrowserBuild ? 'Start demo' : 'Log in'}
                         </ActionButton>
                     </form>
-                    {error ? (
-                        <p className="feedback-error" role="alert">
-                            {error}
-                        </p>
-                    ) : null}
                 </>
             ) : null}
             {shouldShowHelpActions ? (

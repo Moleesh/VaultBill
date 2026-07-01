@@ -26,8 +26,8 @@ export const getLoginFooterCopy = (input: {
 
     if (input.isHostedWeb) {
         return {
-            primary: 'Browser workspace connected to the desktop host',
-            secondary: 'Open in the browser while the desktop host keeps the local session active',
+            primary: 'Browser linked to desktop',
+            secondary: 'Desktop keeps this session active',
         };
     }
 
@@ -39,11 +39,12 @@ export const getLoginFooterCopy = (input: {
 
 /** Opens a confirmation flow when the setup shortcut is used on the sign-in page. */
 export const useSetupShortcutConfirmation = (
+    isDesktop: boolean,
     onOpenSetupWizard: (() => void) | undefined,
     onOpenConfirm: () => void,
 ): void => {
     useEffect(() => {
-        if (!onOpenSetupWizard) return;
+        if (!isDesktop || !onOpenSetupWizard) return;
 
         const handleKeyDown = (event: KeyboardEvent) => {
             if (event.key !== 'F9') return;
@@ -55,7 +56,7 @@ export const useSetupShortcutConfirmation = (
         return () => {
             window.removeEventListener('keydown', handleKeyDown);
         };
-    }, [onOpenConfirm, onOpenSetupWizard]);
+    }, [isDesktop, onOpenConfirm, onOpenSetupWizard]);
 };
 
 /** Requests the desktop close action from the most capable runtime available. */

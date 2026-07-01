@@ -99,26 +99,24 @@ export const AppShellDialogs: FC<AppShellDialogsProps> = ({
                 <p>Set the password used by this operator on desktop and hosted-web login.</p>
                 <passwordForm.Field name="accountPassword">
                     {(field) => (
-                        <FormField.TextField
+                        <FormField.PasswordField
                             autoComplete="new-password"
                             label="New password"
                             onChange={(event) => {
                                 field.handleChange(event.currentTarget.value);
                             }}
-                            type="password"
                             value={field.state.value}
                         />
                     )}
                 </passwordForm.Field>
                 <passwordForm.Field name="accountPasswordConfirmation">
                     {(field) => (
-                        <FormField.TextField
+                        <FormField.PasswordField
                             autoComplete="new-password"
                             label="Confirm new password"
                             onChange={(event) => {
                                 field.handleChange(event.currentTarget.value);
                             }}
-                            type="password"
                             value={field.state.value}
                         />
                     )}

@@ -71,13 +71,12 @@ export const SettingsDialogs: FC<SettingsDialogsProps> = ({
             ) : null}
             <restoreForm.Field name="password">
                 {(field) => (
-                    <FormField.TextField
+                    <FormField.PasswordField
                         autoComplete="current-password"
                         label="Backup password"
                         onChange={(event) => {
                             field.handleChange(event.currentTarget.value);
                         }}
-                        type="password"
                         value={field.state.value}
                     />
                 )}
@@ -119,13 +118,12 @@ export const SettingsDialogs: FC<SettingsDialogsProps> = ({
             </p>
             <resetForm.Field name="sysAdminPassword">
                 {(field) => (
-                    <FormField.TextField
+                    <FormField.PasswordField
                         autoComplete="current-password"
                         label="System Administrator password"
                         onChange={(event) => {
                             field.handleChange(event.currentTarget.value);
                         }}
-                        type="password"
                         value={field.state.value}
                     />
                 )}

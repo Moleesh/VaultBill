@@ -13,6 +13,11 @@ type SetupPageActionsProps = {
 /** Renders the first-run wizard navigation actions with consistent validation gating. */
 export const SetupPageActions: FC<SetupPageActionsProps> = ({ isFinalStep, showBack }) => {
     const { onContinue, onFinish, setStepIndex } = useSetupPageContext();
+    const runDeferred = (action: () => void) => {
+        window.requestAnimationFrame(() => {
+            action();
+        });
+    };
 
     return (
         <footer className="setup-card-actions">
@@ -28,11 +33,21 @@ export const SetupPageActions: FC<SetupPageActionsProps> = ({ isFinalStep, showB
                 <span aria-hidden="true" />
             )}
             {isFinalStep ? (
-                <ActionButton onClick={onFinish} variant="primary">
+                <ActionButton
+                    onClick={() => {
+                        runDeferred(onFinish);
+                    }}
+                    variant="primary"
+                >
                     Start using VaultBill
                 </ActionButton>
             ) : (
-                <ActionButton onClick={onContinue} variant="primary">
+                <ActionButton
+                    onClick={() => {
+                        runDeferred(onContinue);
+                    }}
+                    variant="primary"
+                >
                     Continue
                 </ActionButton>
             )}

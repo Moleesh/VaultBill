@@ -307,6 +307,35 @@
     padding: clamp(var(--space-6), 5vw, var(--space-10));
 }
 
+.login-inline-status {
+    display: grid;
+    gap: 0.35rem;
+    border: 1px solid color-mix(in srgb, var(--color-primary) 18%, transparent);
+    border-radius: var(--radius-md);
+    background: linear-gradient(
+        145deg,
+        color-mix(in srgb, var(--color-surface-raised) 96%, white 12%),
+        color-mix(in srgb, var(--color-secondary) 8%, transparent)
+    );
+    padding: var(--space-4);
+    box-shadow:
+        0 0.85rem 1.4rem color-mix(in srgb, var(--color-panel-shadow) 10%, transparent),
+        inset 0 1px 0 color-mix(in srgb, white 18%, transparent);
+}
+
+.login-inline-status-title {
+    color: var(--color-text-title);
+    font-size: var(--font-size-sm);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.login-inline-status p {
+    color: var(--color-text-body);
+    font-size: var(--font-size-sm);
+    line-height: 1.5;
+}
+
 .login-card-auth {
     display: grid;
     gap: var(--space-4);
@@ -363,9 +392,10 @@
 
 .login-card footer {
     grid-column: 1 / -1;
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    align-items: start;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
     gap: var(--space-4);
     border-top: var(--line-width) solid color-mix(in srgb, var(--color-border) 58%, white);
     background: color-mix(in srgb, var(--color-surface) 96%, white 18%);
@@ -377,6 +407,7 @@
 .login-card-footer-copy {
     display: block;
     min-width: 0;
+    flex: 1 1 15rem;
     line-height: 1.45;
 }
 
@@ -385,7 +416,7 @@
 }
 
 .login-card-footer-copy--secondary {
-    justify-self: end;
+    margin-left: auto;
     max-width: none;
     white-space: normal;
     text-align: right;
@@ -408,12 +439,11 @@
 
 @include respond-to('tablet') {
     .login-card footer {
-        grid-template-columns: minmax(0, 1fr);
-        justify-items: start;
+        align-items: start;
     }
 
     .login-card-footer-copy--secondary {
-        justify-self: start;
+        margin-left: 0;
         white-space: normal;
         max-width: none;
         text-align: left;
@@ -447,10 +477,10 @@
         right: var(--space-3);
         left: var(--space-3);
         width: auto;
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr) auto;
     }
 
     .setup-page-toast-close {
-        justify-self: start;
+        justify-self: end;
     }
 }

@@ -77,7 +77,7 @@ export const SettingsSecurityOperatorPanel: FC<SettingsSecurityOperatorPanelProp
                 </createOperatorForm.Field>
                 <createOperatorForm.Field name="password">
                     {(field) => (
-                        <FormField.TextField
+                        <FormField.PasswordField
                             autoComplete="new-password"
                             label="Optional password"
                             onBlur={field.handleBlur}
@@ -85,7 +85,6 @@ export const SettingsSecurityOperatorPanel: FC<SettingsSecurityOperatorPanelProp
                                 field.handleChange(event.currentTarget.value);
                             }}
                             placeholder="Leave blank if you want to add it later"
-                            type="password"
                             value={field.state.value}
                         />
                     )}

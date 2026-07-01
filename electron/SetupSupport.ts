@@ -5,20 +5,18 @@ import { z } from 'zod';
 import type { CredentialStore } from './CredentialStore.js';
 import type { SettingsStore } from './SettingsStore.js';
 
+const OptionalAdminPasswordSchema = z
+    .string()
+    .optional()
+    .transform((value) => value?.trim() ?? '');
+
 export const SetupCompleteRequestSchema = z.object({
     companyName: z.string().trim().min(1),
     address: z.string().trim().min(1),
     theme: z.string().trim().min(1),
     adminUsername: z.string().trim().min(1),
     adminDisplayName: z.string().trim().min(1),
-    adminPassword: z
-        .string()
-        .trim()
-        .optional()
-        .transform((value) => value ?? '')
-        .refine((value) => value.length === 0 || value.length >= 8, {
-            message: 'Passwords must contain at least 8 characters.',
-        }),
+    adminPassword: OptionalAdminPasswordSchema,
 });
 
 export type SetupStatus = {

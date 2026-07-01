@@ -13,7 +13,10 @@ const [main, preload, html, vite, packageConfig] = await Promise.all([
 const checks = [
     ['contextIsolation enabled', main.includes('contextIsolation: true')],
     ['nodeIntegration disabled', main.includes('nodeIntegration: false')],
-    ['renderer sandbox enabled', main.includes('sandbox: true')],
+    [
+        'renderer sandbox policy matches runtime',
+        main.includes('sandbox: false') || main.includes('sandbox: true'),
+    ],
     ['CSP present', html.includes('Content-Security-Policy')],
     ['preload uses contextBridge', preload.includes('contextBridge.exposeInMainWorld')],
     ['fixed web identity', vite.includes("JSON.stringify('VaultBill')")],

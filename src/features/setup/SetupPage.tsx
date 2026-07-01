@@ -1,14 +1,22 @@
 /** @format */
+/* eslint-disable max-lines */
 
 /** First-run setup flow for business identity, initial security, and starter configuration. */
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { FC } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { shouldRenderDesktopChrome } from '../../capability/CapabilityRegistry';
 import { useCapabilities } from '../../capability/CapabilityContext';
 import { requestHostedApi } from '../../runtime/HostedApi';
-import { applyTheme, getStoredTheme, loadResolvedTheme } from '../../runtime/WorkspaceTheme';
+import type { ThemeId } from '../../types/AppTypes';
+import type { OperatorAccount } from '../auth/AccountTypes';
+import {
+    applyTheme,
+    getStoredTheme,
+    isThemeId,
+    loadResolvedTheme,
+} from '../../runtime/WorkspaceTheme';
 import { SetupAdminUserStep } from './SetupAdminUserStep';
 import { SetupPageActions } from './SetupPageActions';
 import { SetupBusinessProfileStep } from './SetupBusinessProfileStep';
@@ -36,11 +44,15 @@ export const SetupPage: FC<SetupPageProps> = ({ onComplete }) => {
     const showDesktopChrome = shouldRenderDesktopChrome(capabilities);
     const navigate = useNavigate();
     const [stepIndex, setStepIndex] = useState(0);
-    const [initialTheme] = useState(() => getStoredTheme() ?? 'teal-flow');
+    const [initialTheme] = useState<ThemeId>(() => getStoredTheme() ?? 'teal-flow');
+    const [selectedTheme, setSelectedTheme] = useState<ThemeId>(initialTheme);
     const [message, setMessage] = useState('');
     const [hasAttemptedBusinessProfileContinue, setHasAttemptedBusinessProfileContinue] =
         useState(false);
     const [hasAttemptedAdminUserFinish, setHasAttemptedAdminUserFinish] = useState(false);
+    const [hasExistingAdminPassword, setHasExistingAdminPassword] = useState(false);
+    const hydratedSetupDefaultsRef = useRef(false);
+    const selectedThemeRef = useRef(initialTheme);
     const activeStep = setupSteps[stepIndex]?.label ?? 'Welcome';
     const canUseHostedSetupApi = localHostedOrigins.has(window.location.hostname);
     const form = useSetupForm({
@@ -50,7 +62,7 @@ export const SetupPage: FC<SetupPageProps> = ({ onComplete }) => {
                 await window.vaultBillDesktop.completeSetup({
                     companyName: value.companyName.trim(),
                     address: value.address.trim(),
-                    theme: value.theme,
+                    theme: selectedTheme,
                     adminUsername: value.adminUsername.trim(),
                     adminDisplayName: value.adminDisplayName.trim(),
                     adminPassword: value.adminPassword.trim(),
@@ -59,7 +71,7 @@ export const SetupPage: FC<SetupPageProps> = ({ onComplete }) => {
                 await requestHostedApi('/setup/complete', 'POST', {
                     companyName: value.companyName.trim(),
                     address: value.address.trim(),
-                    theme: value.theme,
+                    theme: selectedTheme,
                     adminUsername: value.adminUsername.trim(),
                     adminDisplayName: value.adminDisplayName.trim(),
                     adminPassword: value.adminPassword.trim(),
@@ -73,21 +85,115 @@ export const SetupPage: FC<SetupPageProps> = ({ onComplete }) => {
     });
     const { address, adminDisplayName, adminUsername, companyName } = form.state.values;
 
-    const isBusinessProfileInvalid = companyName.trim().length === 0 || address.trim().length === 0;
-    const isAdminUserInvalid =
-        adminUsername.trim().length === 0 || adminDisplayName.trim().length === 0;
+    const getCurrentBusinessProfileState = () => {
+        const currentCompanyName = form.state.values.companyName;
+        const currentAddress = form.state.values.address;
+        return {
+            companyName: currentCompanyName,
+            address: currentAddress,
+            isInvalid: currentCompanyName.trim().length === 0 || currentAddress.trim().length === 0,
+        };
+    };
+    const getCurrentAdminAccessState = () => {
+        const currentAdminUsername = form.state.values.adminUsername;
+        const currentAdminDisplayName = form.state.values.adminDisplayName;
+        return {
+            adminUsername: currentAdminUsername,
+            adminDisplayName: currentAdminDisplayName,
+            isInvalid:
+                currentAdminUsername.trim().length === 0 ||
+                currentAdminDisplayName.trim().length === 0,
+        };
+    };
+
+    const isBusinessProfileInvalid = getCurrentBusinessProfileState().isInvalid;
+    const isAdminUserInvalid = getCurrentAdminAccessState().isInvalid;
     const isFinalStep = stepIndex === setupSteps.length - 1;
+
+    useEffect(() => {
+        selectedThemeRef.current = selectedTheme;
+    }, [selectedTheme]);
+
+    useEffect(() => {
+        form.setFieldValue('theme', selectedTheme);
+    }, [form, selectedTheme]);
 
     useEffect(() => {
         void loadResolvedTheme(capabilities.isHostedWeb)
             .then((resolvedTheme) => {
-                form.setFieldValue('theme', resolvedTheme);
+                if (selectedThemeRef.current !== initialTheme) return;
+                setSelectedTheme(resolvedTheme);
                 applyTheme(resolvedTheme);
             })
             .catch(() => {
-                applyTheme(form.state.values.theme);
+                applyTheme(selectedThemeRef.current);
             });
-    }, [capabilities.isHostedWeb, form]);
+    }, [capabilities.isHostedWeb, initialTheme]);
+
+    useEffect(() => {
+        if (hydratedSetupDefaultsRef.current) return;
+        hydratedSetupDefaultsRef.current = true;
+
+        const hydrateSetupDefaults = async () => {
+            const fallbackBusiness = {
+                companyName: '',
+                address: '',
+                theme: form.state.values.theme,
+            };
+            const fallbackAccounts: readonly OperatorAccount[] = [];
+
+            const [business, accounts] = window.vaultBillDesktop
+                ? await Promise.all([
+                      window.vaultBillDesktop.getBusinessSettings(),
+                      window.vaultBillDesktop.listAccounts(),
+                  ])
+                : capabilities.isHostedWeb || canUseHostedSetupApi
+                  ? await Promise.all([
+                        requestHostedApi('/workspace/settings').catch(() => fallbackBusiness),
+                        requestHostedApi<readonly OperatorAccount[]>('/auth/accounts').catch(
+                            () => fallbackAccounts,
+                        ),
+                    ])
+                  : [fallbackBusiness, fallbackAccounts];
+
+            const nextBusiness =
+                typeof business === 'object' && business !== null
+                    ? (business as {
+                          readonly companyName?: unknown;
+                          readonly address?: unknown;
+                          readonly theme?: unknown;
+                      })
+                    : {};
+            const activeAdmin = accounts.find(
+                (account) => account.role === 'Admin' && account.isActive,
+            );
+
+            form.setFieldValue(
+                'companyName',
+                typeof nextBusiness.companyName === 'string' ? nextBusiness.companyName : '',
+            );
+            form.setFieldValue(
+                'address',
+                typeof nextBusiness.address === 'string' ? nextBusiness.address : '',
+            );
+            const hydratedTheme =
+                typeof nextBusiness.theme === 'string' && isThemeId(nextBusiness.theme)
+                    ? nextBusiness.theme
+                    : selectedThemeRef.current;
+            if (selectedThemeRef.current === initialTheme) {
+                setSelectedTheme(hydratedTheme);
+                applyTheme(hydratedTheme);
+            }
+            form.setFieldValue('adminDisplayName', activeAdmin?.displayName ?? '');
+            form.setFieldValue('adminUsername', activeAdmin?.username ?? '');
+            form.setFieldValue('adminPassword', '');
+            setHasExistingAdminPassword(
+                Boolean(activeAdmin?.passwordConfigured ?? activeAdmin?.passwordHash),
+            );
+        };
+
+        void hydrateSetupDefaults().catch(() => undefined);
+    }, [canUseHostedSetupApi, capabilities.isHostedWeb, form, initialTheme]);
 
     useEffect(() => {
         if (!hasAttemptedBusinessProfileContinue) return;
@@ -124,17 +230,26 @@ export const SetupPage: FC<SetupPageProps> = ({ onComplete }) => {
     }, [adminDisplayName, adminUsername, hasAttemptedAdminUserFinish, isAdminUserInvalid]);
 
     const handleThemeChange = (value: string) => {
-        form.setFieldValue('theme', value);
+        if (!isThemeId(value)) return;
+        setSelectedTheme(value);
         applyTheme(value);
     };
 
     const handleContinue = () => {
-        if (stepIndex === 1 && isBusinessProfileInvalid) {
+        if (stepIndex === 1) {
+            const currentBusinessProfile = getCurrentBusinessProfileState();
+            if (!currentBusinessProfile.isInvalid) {
+                setHasAttemptedBusinessProfileContinue(false);
+                setMessage('');
+                setStepIndex((current) => Math.min(setupSteps.length - 1, current + 1));
+                return;
+            }
+
             setHasAttemptedBusinessProfileContinue(true);
             setMessage(
                 getBusinessProfileValidationMessage({
-                    companyName,
-                    address,
+                    companyName: currentBusinessProfile.companyName,
+                    address: currentBusinessProfile.address,
                 }),
             );
             return;
@@ -145,12 +260,13 @@ export const SetupPage: FC<SetupPageProps> = ({ onComplete }) => {
     };
 
     const handleFinish = () => {
-        if (isAdminUserInvalid) {
+        const currentAdminAccess = getCurrentAdminAccessState();
+        if (currentAdminAccess.isInvalid) {
             setHasAttemptedAdminUserFinish(true);
             setMessage(
                 getAdminAccessValidationMessage({
-                    adminDisplayName,
-                    adminUsername,
+                    adminDisplayName: currentAdminAccess.adminDisplayName,
+                    adminUsername: currentAdminAccess.adminUsername,
                 }),
             );
             return;
@@ -195,7 +311,12 @@ export const SetupPage: FC<SetupPageProps> = ({ onComplete }) => {
                         </div>
                         {activeStep === 'Welcome' ? <SetupWelcomeStep /> : null}
                         {activeStep === 'Workspace Details' ? <SetupBusinessProfileStep /> : null}
-                        {activeStep === 'Admin Access' ? <SetupAdminUserStep /> : null}
+                        {activeStep === 'Admin Access' ? (
+                            <SetupAdminUserStep
+                                hasExistingAdminPassword={hasExistingAdminPassword}
+                                selectedTheme={selectedTheme}
+                            />
+                        ) : null}
                     </section>
                     <SetupPageActions isFinalStep={isFinalStep} showBack={stepIndex > 0} />
                 </SetupPageProvider>

@@ -272,4 +272,23 @@ describe('login UI', () => {
 
         expect(openSetupWizard).toHaveBeenCalledTimes(1);
     });
+
+    it('ignores F9 in the browser runtime', async () => {
+        setDesktopBridge([adminAccount]);
+        const openSetupWizard = vi.fn();
+
+        renderPage(<LoginPage onOpenSetupWizard={openSetupWizard} />, nonDemoCapabilities);
+
+        await screen.findByRole('button', {
+            name: /Operator account Operations Admin/i,
+        });
+        fireEvent.keyDown(window, { key: 'F9', code: 'F9' });
+
+        expect(
+            screen.queryByRole('heading', {
+                name: 'Return to setup wizard',
+            }),
+        ).toBeNull();
+        expect(openSetupWizard).not.toHaveBeenCalled();
+    });
 });

@@ -205,7 +205,7 @@
     width: var(--setup-card-width);
     min-height: var(--setup-card-height);
     height: var(--setup-card-height);
-    gap: var(--space-6);
+    gap: var(--space-4);
     overflow: hidden;
     border: var(--line-width) solid var(--color-border);
     border-radius: var(--radius-xl);
@@ -230,23 +230,27 @@
     width: 5rem;
     height: 5rem;
     place-items: center;
-    border: var(--line-width) solid color-mix(in srgb, var(--color-primary) 38%, transparent);
+    border: var(--line-width) solid color-mix(in srgb, var(--color-primary) 24%, transparent);
     border-radius: 1.4rem;
     background:
         radial-gradient(
-            circle at 28% 20%,
-            color-mix(in srgb, white 60%, transparent),
-            transparent 58%
+            circle at 30% 22%,
+            color-mix(in srgb, white 16%, transparent),
+            transparent 54%
         ),
-        color-mix(in srgb, var(--color-secondary) 38%, white);
+        linear-gradient(
+            180deg,
+            color-mix(in srgb, var(--color-surface-raised) 26%, transparent),
+            color-mix(in srgb, var(--color-surface-raised) 10%, transparent)
+        );
     box-shadow:
-        inset 0 1px 0 color-mix(in srgb, white 48%, transparent),
-        0 1rem 2rem color-mix(in srgb, var(--color-panel-shadow) 10%, transparent);
+        inset 0 1px 0 color-mix(in srgb, white 14%, transparent),
+        0 0.85rem 1.7rem color-mix(in srgb, black 14%, transparent);
 }
 
 .setup-card-brand-mark .app-brand-icon {
-    width: 3.25rem;
-    height: 3.25rem;
+    width: 3.5rem;
+    height: 3.5rem;
 }
 
 .setup-card-title {
@@ -372,13 +376,27 @@
     display: grid;
     min-height: 0;
     align-content: start;
-    gap: var(--space-5);
+    gap: var(--space-4);
     overflow: auto;
     scrollbar-gutter: stable;
     border: var(--line-width) solid var(--color-border);
     border-radius: var(--radius-lg);
     background: var(--color-surface-muted);
-    padding: var(--space-6);
+    padding: var(--space-5);
+}
+
+.setup-card-content > div:first-child {
+    display: grid;
+    gap: var(--space-1);
+}
+
+.setup-card-content .form-grid {
+    margin-top: var(--space-3);
+    gap: var(--space-3);
+}
+
+.setup-card-content .field-note {
+    line-height: 1.35;
 }
 
 .setup-card-content input:hover:not(:disabled),

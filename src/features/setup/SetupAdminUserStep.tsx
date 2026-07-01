@@ -7,7 +7,10 @@ import { SettingsBusinessThemePicker } from '../settings/SettingsBusinessThemePi
 import { useSetupPageContext } from './SetupPageContext';
 
 /** Collects the first Admin account created during first-run setup. */
-export const SetupAdminUserStep: FC = () => {
+export const SetupAdminUserStep: FC<{
+    readonly hasExistingAdminPassword?: boolean;
+    readonly selectedTheme: string;
+}> = ({ hasExistingAdminPassword = false, selectedTheme }) => {
     const { form, handleThemeChange, showAdminUserValidation } = useSetupPageContext();
 
     return (
@@ -48,21 +51,28 @@ export const SetupAdminUserStep: FC = () => {
             <SettingsBusinessThemePicker
                 note="This theme is used before login and continues into the workspace until someone changes it later in Settings."
                 onThemeChange={handleThemeChange}
-                theme={form.state.values.theme}
+                theme={selectedTheme}
                 wrapperClassName="span-2"
             />
             <form.Field name="adminPassword">
                 {(field) => (
-                    <FormField.TextField
+                    <FormField.PasswordField
                         autoComplete="new-password"
                         label="Admin password (optional)"
-                        note="Leave this blank for now, or add a password before you finish setup."
+                        note={
+                            hasExistingAdminPassword
+                                ? 'Current password is kept unless you enter a new one here.'
+                                : 'Leave this blank for now, or add a password before you finish setup.'
+                        }
                         onBlur={field.handleBlur}
                         onChange={(event) => {
                             field.handleChange(event.currentTarget.value);
                         }}
-                        placeholder="Leave blank if you want to add it later"
-                        type="password"
+                        placeholder={
+                            hasExistingAdminPassword
+                                ? 'Enter a new password only if you want to replace it'
+                                : 'Leave blank if you want to add it later'
+                        }
                         value={field.state.value}
                         wrapperClassName="span-2"
                     />

@@ -105,9 +105,19 @@ export const AppShellSidebar: FC<AppShellSidebarProps> = ({
                     </small>
                 ) : null}
                 {hostedWebUrl ? (
-                    <small className="app-shell-host-status app-shell-host-url">
+                    <a
+                        className="app-shell-host-status app-shell-host-url"
+                        href={hostedWebUrl}
+                        onClick={(event) => {
+                            event.preventDefault();
+                            onOpenHostedWeb();
+                        }}
+                        target="_blank"
+                        rel="noreferrer"
+                        title={hostedWebUrl}
+                    >
                         {hostedWebUrl.replace(/^https?:\/\//u, '')}
-                    </small>
+                    </a>
                 ) : null}
             </div>
             <div className="app-shell-operator-actions">

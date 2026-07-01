@@ -68,13 +68,12 @@ export const SettingsBackupActions: FC<SettingsBackupActionsProps> = ({
             {isHostedWeb && (canBackup || canRestore) ? (
                 <form.Field name="remoteAuthorizationPassword">
                     {(field) => (
-                        <FormField.TextField
+                        <FormField.PasswordField
                             autoComplete="current-password"
                             label="System Administrator password for host operations"
                             onChange={(event) => {
                                 field.handleChange(event.currentTarget.value);
                             }}
-                            type="password"
                             value={field.state.value}
                         />
                     )}
@@ -109,13 +108,12 @@ export const SettingsBackupActions: FC<SettingsBackupActionsProps> = ({
             <div className="operator-create">
                 <form.Field name="backupPassword">
                     {(field) => (
-                        <FormField.TextField
+                        <FormField.PasswordField
                             autoComplete="new-password"
                             label="New backup password"
                             onChange={(event) => {
                                 field.handleChange(event.currentTarget.value);
                             }}
-                            type="password"
                             value={field.state.value}
                         />
                     )}

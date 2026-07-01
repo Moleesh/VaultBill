@@ -110,6 +110,50 @@ select[aria-invalid='true']:focus-visible {
     display: block;
 }
 
+.field-input-shell {
+    position: relative;
+    display: grid;
+}
+
+.field-input-shell > input {
+    width: 100%;
+    min-width: 0;
+}
+
+.field-input-shell.has-trailing-adornment > input {
+    padding-inline-end: 3.35rem;
+}
+
+.field-trailing-adornment {
+    position: absolute;
+    top: 50%;
+    right: var(--space-2);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transform: translateY(-50%);
+}
+
+.password-visibility-toggle {
+    min-width: 2rem;
+    min-height: 2rem;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: color-mix(in srgb, var(--color-text-muted) 88%, var(--color-text-body) 12%);
+    padding: 0;
+    box-shadow: none;
+}
+
+.password-visibility-toggle:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+    color: var(--color-primary);
+}
+
+.password-visibility-toggle:focus-visible {
+    box-shadow: 0 0 0 0.14rem color-mix(in srgb, var(--color-primary) 16%, transparent);
+}
+
 .button-primary:hover {
     background: var(--color-primary-hover);
 }

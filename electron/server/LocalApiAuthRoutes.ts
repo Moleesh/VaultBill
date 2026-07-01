@@ -40,7 +40,7 @@ const ManagedAccountSchema = z.object({
     isActive: z.boolean(),
 });
 const AccountIdSchema = z.object({ userId: z.string().min(1) });
-const PasswordResetSchema = AccountIdSchema.extend({ password: z.string().min(8) });
+const PasswordResetSchema = AccountIdSchema.extend({ password: z.string() });
 
 /** Returns the local API health payload shown to hosted-web clients. */
 export const getLocalApiHealth = (appName: string, passwordRequired = true): LocalApiHealth => ({
