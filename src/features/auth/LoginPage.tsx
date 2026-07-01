@@ -44,7 +44,6 @@ export const LoginPage: FC<{ readonly onOpenSetupWizard?: () => void }> = ({
     const navigate = useNavigate();
     const loginSubmissionInFlightRef = useRef(false);
     const latestPasswordRef = useRef('');
-    const latestSelectedAccountIdRef = useRef('');
     const [error, setError] = useState('');
     const [isHelpOpen, setIsHelpOpen] = useState(false);
     const [isActivationOpen, setIsActivationOpen] = useState(false);
@@ -97,10 +96,6 @@ export const LoginPage: FC<{ readonly onOpenSetupWizard?: () => void }> = ({
         isHostedWeb: capabilities.isHostedWeb,
     });
 
-    useEffect(() => {
-        latestSelectedAccountIdRef.current = effectiveSelectedAccountId;
-    }, [effectiveSelectedAccountId]);
-
     useSetupShortcutConfirmation(allowSetupShortcut, onOpenSetupWizard, () => {
         setIsSetupShortcutConfirmOpen(true);
     });
@@ -117,13 +112,16 @@ export const LoginPage: FC<{ readonly onOpenSetupWizard?: () => void }> = ({
 
     const submitLogin = async () => {
         if (isLoginDisabled || loginSubmissionInFlightRef.current) return;
-        if (isPasswordRequired && latestPasswordRef.current.trim().length === 0) {
+        const currentPassword = latestPasswordRef.current;
+        const currentSelectedAccountId = effectiveSelectedAccountId;
+
+        if (isPasswordRequired && currentPassword.trim().length === 0) {
             setError('Password is required.');
             return;
         }
         await performLogin({
-            password: latestPasswordRef.current,
-            selectedAccountId: latestSelectedAccountIdRef.current,
+            password: currentPassword,
+            selectedAccountId: currentSelectedAccountId,
         });
     };
 
@@ -135,6 +133,7 @@ export const LoginPage: FC<{ readonly onOpenSetupWizard?: () => void }> = ({
             setSelectedAccountId(fallbackSelectedAccountId);
             loginForm.setFieldValue('selectedAccountId', fallbackSelectedAccountId);
             loginForm.setFieldValue('password', '');
+            latestPasswordRef.current = '';
             return;
         }
 
@@ -157,6 +156,7 @@ export const LoginPage: FC<{ readonly onOpenSetupWizard?: () => void }> = ({
                 setSelectedAccountId(sysAdminAccountId);
                 loginForm.setFieldValue('selectedAccountId', sysAdminAccountId);
                 loginForm.setFieldValue('password', '');
+                latestPasswordRef.current = '';
                 return;
             }
         }
@@ -245,7 +245,6 @@ export const LoginPage: FC<{ readonly onOpenSetupWizard?: () => void }> = ({
                         }}
                         onSelectedAccountIdChange={(nextSelectedAccountId) => {
                             setSelectedAccountId(nextSelectedAccountId);
-                            latestSelectedAccountIdRef.current = nextSelectedAccountId;
                             latestPasswordRef.current = '';
                             if (error) setError('');
                         }}
