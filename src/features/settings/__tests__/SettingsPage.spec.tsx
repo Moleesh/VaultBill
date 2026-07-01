@@ -8,6 +8,7 @@ import type { ReactNode } from 'react';
 import type { CapabilityRegistry } from '../../../capability/Capability.types';
 import { CapabilityProvider } from '../../../capability/CapabilityContext';
 import { ContextualHelp } from '../../../components/ContextualHelp';
+import { TestQueryProvider } from '../../../test/TestQueryProvider';
 import { SessionContext } from '../../auth/SessionContext';
 import { SettingsPage } from '../SettingsPage';
 import { RecordStoreProvider } from '../../records/RecordStoreContext';
@@ -69,11 +70,13 @@ const renderPage = (
     act(async () => {
         render(
             <MemoryRouter>
-                <CapabilityProvider value={capabilities}>
-                    <SessionContext.Provider value={session}>
-                        <RecordStoreProvider>{children}</RecordStoreProvider>
-                    </SessionContext.Provider>
-                </CapabilityProvider>
+                <TestQueryProvider>
+                    <CapabilityProvider value={capabilities}>
+                        <SessionContext.Provider value={session}>
+                            <RecordStoreProvider>{children}</RecordStoreProvider>
+                        </SessionContext.Provider>
+                    </CapabilityProvider>
+                </TestQueryProvider>
             </MemoryRouter>,
         );
         await Promise.resolve();

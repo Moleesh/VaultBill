@@ -186,6 +186,49 @@ npm run dev:electron
 This flow intentionally avoids pointing Electron at a separate Vite dev server,
 so stopping the desktop runtime also stops the live hosted workspace.
 
+## Data Fetching Architecture 🔄
+
+VaultBill is moving onto **TanStack Query** as the single runtime-fetch source of
+truth for browser, hosted local web, and desktop-backed data reads.
+
+Current shared foundation:
+
+- one root `QueryClient` for the app
+- centralized runtime query keys
+- centralized runtime query loaders for setup, session, trial, hosted-web,
+  workspace, secrets, printer, and published-format reads
+- query invalidation after setup completion, hosted-session recovery, and
+  settings saves
+
+Already migrated to the shared query layer:
+
+- app setup status and first-run defaults
+- session bootstrap and reconnect handling
+- shell trial state and hosted local web status
+- settings business, secrets, and security runtime sections
+- builder inventory, package loading, and publish/delete invalidation
+- builder secret hydration for formula previews
+- record-store loading plus draft, finalize, cancel, and reset cache updates
+- records shared workspace settings, published formats, secret hydration, active
+  print-package loading, and print/download/cancel output mutations
+- reports workspace settings, trial-status reads, server paging, and
+  print/cancel output mutations
+- auth and operator mutations that invalidate shared runtime state after login,
+  logout, save, archive, and password reset
+
+What still remains outside TanStack Query on purpose:
+
+1. desktop window and tray control actions that are imperative UI commands, not
+   server state
+2. backup, restore, and application-reset tasks that run like file or process
+   operations rather than cached runtime data
+3. low-level repository and adapter internals that support Electron or browser
+   persistence beneath the screen-level query and mutation hooks
+
+When adding a new API-backed screen, prefer a query or mutation hook over a
+component-local `useEffect` fetch so reconnect, retry, and cache behavior stay
+consistent.
+
 Useful packaging and smoke commands:
 
 | Command                             | Purpose                                  |

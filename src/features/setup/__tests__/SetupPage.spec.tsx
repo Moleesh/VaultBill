@@ -1,13 +1,14 @@
 /** @format */
 /* eslint-disable max-lines */
 
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { act } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { CapabilityRegistry } from '../../../capability/Capability.types';
 import { CapabilityProvider } from '../../../capability/CapabilityContext';
+import { TestQueryProvider } from '../../../test/TestQueryProvider';
 import { SetupPage } from '../SetupPage';
 
 const createDeferred = <T,>() => {
@@ -66,9 +67,11 @@ describe('SetupPage desktop chrome', () => {
     it('shows and wires desktop controls when the desktop runtime marker is present', () => {
         render(
             <MemoryRouter initialEntries={['/setup']}>
-                <CapabilityProvider value={webCapabilities}>
-                    <SetupPage />
-                </CapabilityProvider>
+                <TestQueryProvider>
+                    <CapabilityProvider value={webCapabilities}>
+                        <SetupPage />
+                    </CapabilityProvider>
+                </TestQueryProvider>
             </MemoryRouter>,
         );
 
@@ -105,9 +108,11 @@ describe('SetupPage desktop chrome', () => {
 
         render(
             <MemoryRouter initialEntries={['/setup']}>
-                <CapabilityProvider value={webCapabilities}>
-                    <SetupPage />
-                </CapabilityProvider>
+                <TestQueryProvider>
+                    <CapabilityProvider value={webCapabilities}>
+                        <SetupPage />
+                    </CapabilityProvider>
+                </TestQueryProvider>
             </MemoryRouter>,
         );
 
@@ -146,14 +151,20 @@ describe('SetupPage desktop chrome', () => {
 
         render(
             <MemoryRouter initialEntries={['/setup']}>
-                <CapabilityProvider value={webCapabilities}>
-                    <SetupPage />
-                </CapabilityProvider>
+                <TestQueryProvider>
+                    <CapabilityProvider value={webCapabilities}>
+                        <SetupPage />
+                    </CapabilityProvider>
+                </TestQueryProvider>
             </MemoryRouter>,
         );
 
         fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
         fireEvent.click(await screen.findByRole('button', { name: 'Continue' }));
+        await screen.findByRole('heading', {
+            level: 2,
+            name: 'Admin Access',
+        });
 
         expect(
             await screen.findByText('Current password is kept unless you enter a new one here.'),
@@ -161,14 +172,77 @@ describe('SetupPage desktop chrome', () => {
         expect(
             screen.getByPlaceholderText('Enter a new password only if you want to replace it'),
         ).toBeVisible();
+        expect(
+            screen.getByRole('checkbox', { name: /Clear the current admin password/i }),
+        ).toBeVisible();
+    });
+
+    it('lets setup explicitly clear the current admin password', async () => {
+        const completeSetup = vi.fn().mockResolvedValue(undefined);
+        const desktopBridge = {
+            closeWindow: vi.fn().mockResolvedValue(undefined),
+            completeSetup,
+            getBusinessSettings: vi.fn().mockResolvedValue({
+                companyName: 'Aster Works',
+                address: '12 Market Road',
+                theme: 'teal-flow',
+            }),
+            listAccounts: vi.fn().mockResolvedValue([
+                {
+                    userId: 'admin_1',
+                    username: 'owner',
+                    displayName: 'Owner Admin',
+                    role: 'Admin',
+                    isActive: true,
+                    passwordConfigured: true,
+                },
+            ]),
+            minimizeWindow: vi.fn().mockResolvedValue(undefined),
+        } as const;
+        Object.defineProperty(window, 'vaultBillDesktop', {
+            configurable: true,
+            value: desktopBridge,
+        });
+
+        render(
+            <MemoryRouter initialEntries={['/setup']}>
+                <TestQueryProvider>
+                    <CapabilityProvider value={webCapabilities}>
+                        <SetupPage />
+                    </CapabilityProvider>
+                </TestQueryProvider>
+            </MemoryRouter>,
+        );
+
+        fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+        fireEvent.click(await screen.findByRole('button', { name: 'Continue' }));
+        await screen.findByRole('heading', {
+            level: 2,
+            name: 'Admin Access',
+        });
+
+        fireEvent.click(
+            screen.getByRole('checkbox', { name: /Clear the current admin password/i }),
+        );
+        fireEvent.click(screen.getByRole('button', { name: 'Start using VaultBill' }));
+
+        await waitFor(() => {
+            expect(completeSetup).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    clearAdminPassword: true,
+                }),
+            );
+        });
     });
 
     it('continues on the first click right after entering setup details', async () => {
         render(
             <MemoryRouter initialEntries={['/setup']}>
-                <CapabilityProvider value={webCapabilities}>
-                    <SetupPage />
-                </CapabilityProvider>
+                <TestQueryProvider>
+                    <CapabilityProvider value={webCapabilities}>
+                        <SetupPage />
+                    </CapabilityProvider>
+                </TestQueryProvider>
             </MemoryRouter>,
         );
 
@@ -232,9 +306,11 @@ describe('SetupPage desktop chrome', () => {
 
         render(
             <MemoryRouter initialEntries={['/setup']}>
-                <CapabilityProvider value={webCapabilities}>
-                    <SetupPage />
-                </CapabilityProvider>
+                <TestQueryProvider>
+                    <CapabilityProvider value={webCapabilities}>
+                        <SetupPage />
+                    </CapabilityProvider>
+                </TestQueryProvider>
             </MemoryRouter>,
         );
 

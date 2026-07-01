@@ -1,6 +1,12 @@
 /** @format */
 
-import { requestHostedApi } from '../../runtime/HostedApi';
+import { useMutation } from '@tanstack/react-query';
+
+import {
+    cancelRuntimeOutput,
+    downloadPdfOutput,
+    runPrintHtmlOutput,
+} from '../../query/RuntimeQueries';
 import type { WorkspaceSettings } from '../../runtime/WorkspaceSettings';
 import { renderRecordHtml, type RecordPrintPackage } from './RecordPrintHtml';
 import type { AppRecord, EditableRecord } from './RecordStoreContext';
@@ -24,6 +30,47 @@ type OutputState = {
 
 /** Handles record printing, export, and output cancellation. */
 export const useRecordsPageOutput = (state: OutputState) => {
+    const printHtmlMutation = useMutation({
+        mutationFn: ({
+            html,
+            jobId,
+            printerName,
+        }: {
+            readonly html: string;
+            readonly jobId: string;
+            readonly printerName?: string;
+        }) =>
+            runPrintHtmlOutput({
+                capabilities: state.capabilities,
+                html,
+                jobId,
+                ...(printerName ? { printerName } : {}),
+            }),
+    });
+    const downloadPdfMutation = useMutation({
+        mutationFn: ({
+            fileName,
+            html,
+            jobId,
+        }: {
+            readonly fileName: string;
+            readonly html: string;
+            readonly jobId: string;
+        }) =>
+            downloadPdfOutput({
+                fileName,
+                html,
+                jobId,
+            }),
+    });
+    const cancelOutputMutation = useMutation({
+        mutationFn: (jobId: string) =>
+            cancelRuntimeOutput({
+                capabilities: state.capabilities,
+                jobId,
+            }),
+    });
+
     const focusAction = (actionId: string) => {
         window.setTimeout(() => {
             document.querySelector<HTMLButtonElement>(`[data-action-id="${actionId}"]`)?.focus();
@@ -49,46 +96,18 @@ export const useRecordsPageOutput = (state: OutputState) => {
                 state.workspaceSettings,
             );
             if (window.vaultBillDesktop && state.outputTarget === 'DownloadPdf') {
-                const result = await window.vaultBillDesktop.downloadPdf({
-                    html,
+                await downloadPdfMutation.mutateAsync({
                     fileName: state.selectedStoredRecord?.documentNumber ?? 'vaultbill-draft',
-                    jobId,
-                });
-                if (!result.success || !result.pdfData) {
-                    throw new Error(result.warning ?? 'PDF generation failed.');
-                }
-                const arrayBuffer = new Uint8Array(result.pdfData).buffer;
-                const url = URL.createObjectURL(
-                    new Blob([arrayBuffer], { type: 'application/pdf' }),
-                );
-                const anchor = document.createElement('a');
-                anchor.href = url;
-                anchor.download = result.fileName;
-                anchor.click();
-                URL.revokeObjectURL(url);
-                return;
-            }
-            if (window.vaultBillDesktop) {
-                const result = await window.vaultBillDesktop.printHtml({
                     html,
                     jobId,
-                    ...(state.preferredPrinterName
-                        ? { printerName: state.preferredPrinterName }
-                        : {}),
                 });
-                if (!result.success) throw new Error(result.warning ?? 'Printing failed.');
                 return;
             }
-            if (state.capabilities.isHostedWeb) {
-                const result = await requestHostedApi<{ success: boolean; warning?: string }>(
-                    '/print/html',
-                    'POST',
-                    { html, jobId },
-                );
-                if (!result.success) throw new Error(result.warning ?? 'Host printing failed.');
-                return;
-            }
-            window.print();
+            await printHtmlMutation.mutateAsync({
+                html,
+                jobId,
+                ...(state.preferredPrinterName ? { printerName: state.preferredPrinterName } : {}),
+            });
         };
         void runOutput()
             .then(() => {
@@ -126,12 +145,7 @@ export const useRecordsPageOutput = (state: OutputState) => {
     const cancelOutput = () => {
         const currentTask = state.outputTask;
         if (!currentTask) return;
-        const cancel = window.vaultBillDesktop
-            ? window.vaultBillDesktop.cancelOutput(currentTask.jobId)
-            : state.capabilities.isHostedWeb
-              ? requestHostedApi('/print/cancel', 'POST', { jobId: currentTask.jobId })
-              : Promise.resolve(false);
-        void cancel.finally(() => {
+        void cancelOutputMutation.mutateAsync(currentTask.jobId).finally(() => {
             state.setOutputTask({
                 ...currentTask,
                 message: 'Output cancelled before completion.',

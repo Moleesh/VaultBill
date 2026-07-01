@@ -1,29 +1,23 @@
 /** @format */
 
-import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 
 import { useReportsPageFilters } from './useReportsPageFilters';
 import { useReportsPagePaging } from './useReportsPagePaging';
 import { useCapabilities } from '../../capability/CapabilityContext';
-import {
-    defaultWorkspaceSettings,
-    loadWorkspaceSettings,
-    type WorkspaceSettings,
-} from '../../runtime/WorkspaceSettings';
+import { defaultWorkspaceSettings } from '../../runtime/WorkspaceSettings';
+import { getRuntimeQueryScope, queryKeys } from '../../query/QueryKeys';
+import { fetchWorkspaceSettings } from '../../query/RuntimeQueries';
 
 export const useReportsPageData = () => {
     const capabilities = useCapabilities();
-    const [workspaceSettings, setWorkspaceSettings] =
-        useState<WorkspaceSettings>(defaultWorkspaceSettings);
+    const runtimeScope = getRuntimeQueryScope(capabilities);
+    const workspaceSettingsQuery = useQuery({
+        queryKey: queryKeys.workspaceSettings(runtimeScope),
+        queryFn: () => fetchWorkspaceSettings({ capabilities }),
+    });
+    const workspaceSettings = workspaceSettingsQuery.data ?? defaultWorkspaceSettings;
     const filters = useReportsPageFilters(workspaceSettings.includeDraftsInReports);
-
-    useEffect(() => {
-        void loadWorkspaceSettings(capabilities.isHostedWeb)
-            .then(setWorkspaceSettings)
-            .catch(() => {
-                setWorkspaceSettings(defaultWorkspaceSettings);
-            });
-    }, [capabilities.isHostedWeb]);
 
     const paging = useReportsPagePaging(
         filters.query,

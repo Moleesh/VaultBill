@@ -42,6 +42,7 @@ export type VaultBillDesktopBridge = {
         readonly adminUsername: string;
         readonly adminDisplayName: string;
         readonly adminPassword?: string;
+        readonly clearAdminPassword?: boolean;
     }) => Promise<void>;
     readonly getBusinessSettings: () => Promise<unknown>;
     readonly saveBusinessSettings: (request: unknown) => Promise<unknown>;
@@ -81,6 +82,7 @@ export type VaultBillDesktopBridge = {
     readonly activateLicense: (licenseKey: string) => Promise<TrialStatus>;
     readonly loadBuilderPackage: (formatId?: string) => Promise<BuilderPackage | undefined>;
     readonly listBuilderInventory: () => Promise<readonly BuilderInventoryItem[]>;
+    readonly deleteBuilderPackage: (formatId: string) => Promise<void>;
     readonly saveBuilderPackage: (builderPackage: unknown) => Promise<BuilderPackage>;
     readonly createBackup: (request: { readonly encrypted: boolean }) => Promise<{
         readonly cancelled: boolean;

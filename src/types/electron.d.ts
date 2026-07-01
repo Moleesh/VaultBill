@@ -42,6 +42,7 @@ type VaultBillDesktopBridge = {
         readonly adminUsername: string;
         readonly adminDisplayName: string;
         readonly adminPassword?: string;
+        readonly clearAdminPassword?: boolean;
     }) => Promise<void>;
     readonly getBusinessSettings: () => Promise<unknown>;
     readonly saveBusinessSettings: (request: unknown) => Promise<unknown>;
@@ -158,6 +159,7 @@ type VaultBillDesktopBridge = {
             readonly isValid: boolean;
         }[]
     >;
+    readonly deleteBuilderPackage: (formatId: string) => Promise<void>;
     readonly saveBuilderPackage: (builderPackage: unknown) => Promise<unknown>;
     readonly createBackup: (request: { readonly encrypted: boolean }) => Promise<{
         readonly cancelled: boolean;

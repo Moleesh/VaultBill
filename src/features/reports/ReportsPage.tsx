@@ -5,6 +5,7 @@
  * jobs.
  */
 
+import { useMutation } from '@tanstack/react-query';
 import type { FC } from 'react';
 
 import { ReportsActionBar } from './ReportsActionBar';
@@ -12,12 +13,19 @@ import { ReportsFilterPanel } from './ReportsFilterPanel';
 import { ReportsPrintTaskModal } from './ReportsPrintTaskModal';
 import { ReportsResults } from './ReportsResults';
 import { useReportsPageController } from './useReportsPageController';
-import { requestHostedApi } from '../../runtime/HostedApi';
+import { cancelRuntimeOutput } from '../../query/RuntimeQueries';
 import type { ReportsPageController } from './ReportsPageTypes';
 
 /** Renders report filters, result loading, and reporting actions. */
 export const ReportsPage: FC = () => {
     const controller: ReportsPageController = useReportsPageController();
+    const cancelOutputMutation = useMutation({
+        mutationFn: (jobId: string) =>
+            cancelRuntimeOutput({
+                capabilities: controller.capabilities,
+                jobId,
+            }),
+    });
     const reportError = controller.error !== '' ? controller.error : controller.pageError;
 
     return (
@@ -88,14 +96,7 @@ export const ReportsPage: FC = () => {
                         controller.setTask(undefined);
                         return;
                     }
-                    const cancel = controller.capabilities.isHostedWeb
-                        ? requestHostedApi<{ readonly cancelled: boolean }>(
-                              '/print/cancel',
-                              'POST',
-                              { jobId: controller.task.jobId },
-                          )
-                        : Promise.resolve(false);
-                    void cancel.finally(() => {
+                    void cancelOutputMutation.mutateAsync(controller.task.jobId).finally(() => {
                         controller.setTask(undefined);
                     });
                 }}

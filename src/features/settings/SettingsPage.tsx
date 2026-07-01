@@ -1,6 +1,6 @@
 /** @format */
 
-import type { FC } from 'react';
+import { useEffect, useMemo, useState, type FC } from 'react';
 
 import { useCapabilities } from '../../capability/CapabilityContext';
 import { useSession } from '../auth/SessionContext';
@@ -13,15 +13,44 @@ import { SettingsSecuritySection } from './SettingsSecuritySection';
 export const SettingsPage: FC = () => {
     const capabilities = useCapabilities();
     const { operatorContext } = useSession();
+    const isSysAdmin = operatorContext?.role === 'SysAdmin';
+    const sections = useMemo(
+        () =>
+            [
+                isSysAdmin ? { id: 'business', label: 'Business' } : null,
+                { id: 'security', label: 'Security' },
+                isSysAdmin && (capabilities.isDesktop || capabilities.isHostedWeb)
+                    ? { id: 'backup', label: 'Backup' }
+                    : null,
+                isSysAdmin ? { id: 'secrets', label: 'Secrets' } : null,
+            ].filter((section): section is { id: string; label: string } => section !== null),
+        [capabilities.isDesktop, capabilities.isHostedWeb, isSysAdmin],
+    );
+    const [activeSectionId, setActiveSectionId] = useState(() => {
+        const hashSectionId = window.location.hash.replace(/^#/u, '');
+        return hashSectionId || (sections[0]?.id ?? 'security');
+    });
+
+    useEffect(() => {
+        const validSectionIds = new Set(sections.map((section) => section.id));
+        const hashSectionId = window.location.hash.replace(/^#/u, '');
+
+        if (hashSectionId && validSectionIds.has(hashSectionId)) {
+            setActiveSectionId(hashSectionId);
+            return;
+        }
+
+        setActiveSectionId(sections[0]?.id ?? 'security');
+    }, [sections]);
+
     if (!operatorContext) return null;
-    const isSysAdmin = operatorContext.role === 'SysAdmin';
 
     return (
         <div className="page-stack settings-page">
             <div className="operational-header">
                 <div>
-                    <p className="eyebrow">Settings</p>
-                    <h1>{isSysAdmin ? 'Administration settings' : 'Operator settings'}</h1>
+                    <p className="eyebrow">{isSysAdmin ? 'Administration' : 'Access'}</p>
+                    <h1>{isSysAdmin ? 'Workspace administration' : 'Account access'}</h1>
                     <p>
                         {isSysAdmin
                             ? 'Business, security, backups, and secrets in one focused workspace.'
@@ -30,12 +59,18 @@ export const SettingsPage: FC = () => {
                 </div>
             </div>
             <nav className="settings-jump-links" aria-label="Settings sections">
-                {isSysAdmin ? <a href="#business">Business</a> : null}
-                <a href="#security">Security</a>
-                {isSysAdmin && (capabilities.isDesktop || capabilities.isHostedWeb) ? (
-                    <a href="#backup">Backup</a>
-                ) : null}
-                {isSysAdmin ? <a href="#secrets">Secrets</a> : null}
+                {sections.map((section) => (
+                    <a
+                        aria-current={activeSectionId === section.id ? 'page' : undefined}
+                        href={`#${section.id}`}
+                        key={section.id}
+                        onClick={() => {
+                            setActiveSectionId(section.id);
+                        }}
+                    >
+                        {section.label}
+                    </a>
+                ))}
             </nav>
             {isSysAdmin ? <SettingsBusinessSection /> : null}
             <SettingsSecuritySection />

@@ -2,7 +2,8 @@
 
 /** Root application entry that wires the router, shell, and mode-specific page stack. */
 
-import { Suspense, useEffect, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { Suspense, useState } from 'react';
 import type { FC } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -12,84 +13,33 @@ import { CapabilityProvider } from './capability/CapabilityContext';
 import { useCapabilities } from './capability/CapabilityContext';
 import { SessionProvider } from './features/auth/SessionContext';
 import { RecordStoreProvider } from './features/records/RecordStoreContext';
-import { canUseLocalHostedApi, requestHostedApi } from './runtime/HostedApi';
 import { canUseDbBackedRuntime, isStaticHostedBrowserBuild } from './runtime/RuntimeMode';
+import { queryKeys, getRuntimeQueryScope } from './query/QueryKeys';
+import { fetchSetupStatus } from './query/RuntimeQueries';
+import { VaultBillQueryProvider } from './query/VaultBillQueryProvider';
 
 const AppRoutes: FC = () => {
     const capabilities = useCapabilities();
+    const queryClient = useQueryClient();
     const navigate = useNavigate();
     const usesStaticHostedBrowserBuild = isStaticHostedBrowserBuild(capabilities);
-    const [setupRevision, setSetupRevision] = useState(0);
     const [setupWizardRevision, setSetupWizardRevision] = useState(0);
     const [setupWizardForcedOpen, setSetupWizardForcedOpen] = useState(false);
-    const [desktopSetupRequired, setDesktopSetupRequired] = useState<boolean | null>(
-        !usesStaticHostedBrowserBuild && canUseDbBackedRuntime(capabilities) ? null : false,
-    );
-    const setupRequired = desktopSetupRequired ?? false;
+    const runtimeScope = getRuntimeQueryScope(capabilities);
+    const setupStatusQuery = useQuery({
+        queryKey: queryKeys.setupStatus(runtimeScope),
+        enabled: !usesStaticHostedBrowserBuild && canUseDbBackedRuntime(capabilities),
+        queryFn: () => fetchSetupStatus(capabilities),
+    });
+    const setupRequired = setupStatusQuery.data?.isSetupRequired ?? false;
 
-    useEffect(() => {
-        if (usesStaticHostedBrowserBuild) {
-            setDesktopSetupRequired(false);
-            return;
-        }
-
-        let isCurrent = true;
-        const canUseHostedSetupStatus = capabilities.isHostedWeb || canUseLocalHostedApi();
-        const desktopStatusFallback = () =>
-            window.vaultBillDesktop
-                ? Promise.all([
-                      window.vaultBillDesktop.listAccounts(),
-                      window.vaultBillDesktop.getBusinessSettings(),
-                  ]).then(([accounts, business]) => ({
-                      hasActiveAdmin: accounts.some(
-                          (account) => account.role === 'Admin' && account.isActive,
-                      ),
-                      business,
-                  }))
-                : Promise.resolve({
-                      hasActiveAdmin: false,
-                      business: { companyName: '', address: '' },
-                  });
-        const desktopRequest = canUseHostedSetupStatus
-            ? requestHostedApi<{
-                  readonly isSetupComplete: boolean;
-                  readonly hasActiveAdmin: boolean;
-                  readonly business: {
-                      readonly companyName: string;
-                      readonly address: string;
-                  };
-              }>('/setup/status')
-                  .then((status) => ({
-                      hasActiveAdmin: status.hasActiveAdmin,
-                      business: status.business,
-                  }))
-                  .catch(() => desktopStatusFallback())
-            : desktopStatusFallback();
-
-        void desktopRequest
-            .then(({ hasActiveAdmin, business }) => {
-                if (!isCurrent) return;
-                const isConfiguredBusiness =
-                    typeof business === 'object' &&
-                    business !== null &&
-                    typeof (business as { readonly companyName?: unknown }).companyName ===
-                        'string' &&
-                    (business as { readonly companyName: string }).companyName.trim().length > 0 &&
-                    typeof (business as { readonly address?: unknown }).address === 'string' &&
-                    (business as { readonly address: string }).address.trim().length > 0;
-                const isSetupRequired = !hasActiveAdmin || !isConfiguredBusiness;
-                setDesktopSetupRequired(isSetupRequired);
-            })
-            .catch(() => {
-                if (isCurrent) setDesktopSetupRequired(false);
-            });
-
-        return () => {
-            isCurrent = false;
-        };
-    }, [capabilities.isHostedWeb, setupRevision, usesStaticHostedBrowserBuild]);
-
-    if (desktopSetupRequired === null) return null;
+    if (
+        !usesStaticHostedBrowserBuild &&
+        canUseDbBackedRuntime(capabilities) &&
+        setupStatusQuery.isPending
+    ) {
+        return null;
+    }
 
     return (
         <SessionProvider>
@@ -104,7 +54,12 @@ const AppRoutes: FC = () => {
                         }}
                         onSetupComplete={() => {
                             setSetupWizardForcedOpen(false);
-                            setSetupRevision((current) => current + 1);
+                            void queryClient.invalidateQueries({
+                                queryKey: queryKeys.setupStatus(runtimeScope),
+                            });
+                            void queryClient.invalidateQueries({
+                                queryKey: queryKeys.session(runtimeScope),
+                            });
                         }}
                         setupRequired={setupRequired}
                         setupWizardRevision={setupWizardRevision}
@@ -116,8 +71,10 @@ const AppRoutes: FC = () => {
     );
 };
 export const App: FC = () => (
-    <CapabilityProvider>
-        <AppRoutes />
-        <AnimatedCursor />
-    </CapabilityProvider>
+    <VaultBillQueryProvider>
+        <CapabilityProvider>
+            <AppRoutes />
+            <AnimatedCursor />
+        </CapabilityProvider>
+    </VaultBillQueryProvider>
 );

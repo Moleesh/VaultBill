@@ -90,6 +90,26 @@ describe('CredentialStore', () => {
         });
     });
 
+    it('can clear an existing account password', () => {
+        const opened = openStore();
+        opened.store.saveAccount({
+            userId: 'admin_1',
+            username: 'admin',
+            displayName: 'Operations Admin',
+            role: 'Admin',
+            isActive: true,
+        });
+        opened.store.resetPassword('admin_1', 'changed-password');
+
+        expect(opened.store.clearPassword('admin_1')).toMatchObject({
+            passwordConfigured: false,
+            usesDefaultPassword: false,
+        });
+        expect(opened.store.authenticate('admin_1', '', true)).toMatchObject({
+            passwordConfigured: false,
+        });
+    });
+
     it('blocks passwordless accounts from remote hosted authentication', () => {
         const opened = openStore();
         opened.store.saveAccount({

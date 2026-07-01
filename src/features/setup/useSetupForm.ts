@@ -9,6 +9,7 @@ export type SetupFormValues = {
     readonly adminDisplayName: string;
     readonly adminUsername: string;
     readonly adminPassword: string;
+    readonly clearAdminPassword: boolean;
 };
 
 type UseSetupFormOptions = {
@@ -17,19 +18,23 @@ type UseSetupFormOptions = {
 };
 
 /** Creates the first-run setup form state with TanStack Form. */
-export const useSetupForm = ({ defaultTheme, onSubmit }: UseSetupFormOptions) =>
-    useForm({
-        defaultValues: {
-            companyName: '',
-            address: '',
-            theme: defaultTheme,
-            adminDisplayName: '',
-            adminUsername: '',
-            adminPassword: '',
-        } satisfies SetupFormValues,
+export const useSetupForm = ({ defaultTheme, onSubmit }: UseSetupFormOptions) => {
+    const defaultValues: SetupFormValues = {
+        companyName: '',
+        address: '',
+        theme: defaultTheme,
+        adminDisplayName: '',
+        adminUsername: '',
+        adminPassword: '',
+        clearAdminPassword: false,
+    };
+
+    return useForm({
+        defaultValues,
         onSubmit: async ({ value }) => {
             await onSubmit(value);
         },
     });
+};
 
 export type SetupFormApi = ReturnType<typeof useSetupForm>;

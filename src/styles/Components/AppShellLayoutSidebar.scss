@@ -100,6 +100,14 @@
     justify-content: flex-start;
 }
 
+.app-shell-brand:focus-visible {
+    outline: none;
+    border-radius: var(--radius-md);
+    box-shadow:
+        0 0 0 0.16rem color-mix(in srgb, var(--color-primary) 18%, transparent),
+        0 0.35rem 1rem color-mix(in srgb, var(--color-panel-shadow) 14%, transparent);
+}
+
 .app-shell-sidebar-toggle {
     display: flex;
     align-items: center;
@@ -173,6 +181,15 @@
     background: var(--color-card);
     box-shadow: var(--shadow-card);
     transform: none;
+}
+
+.app-shell-nav-item:focus-visible {
+    outline: none;
+    border-color: color-mix(in srgb, var(--color-primary) 58%, transparent);
+    background: color-mix(in srgb, var(--color-card) 96%, white 4%);
+    box-shadow:
+        0 0 0 0.16rem color-mix(in srgb, var(--color-primary) 18%, transparent),
+        0 0.35rem 1rem color-mix(in srgb, var(--color-panel-shadow) 14%, transparent);
 }
 
 .app-shell-nav-item:hover .app-shell-nav-icon,

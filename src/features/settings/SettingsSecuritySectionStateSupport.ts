@@ -2,8 +2,6 @@
 
 import { useForm } from '@tanstack/react-form';
 
-import { requestHostedApi } from '../../runtime/HostedApi';
-
 /** Default hosted-web port used when desktop LAN access is enabled. */
 export const defaultHostedWebPort = 80;
 
@@ -36,43 +34,3 @@ export type SettingsActivationFormApi = ReturnType<typeof useSettingsActivationF
 
 /** Creates the activation form used by the settings security section. */
 export const useCreateSettingsActivationForm = useSettingsActivationForm;
-
-/** Loads trial, credential, and hosted-web availability state from the active runtime. */
-export const loadSettingsSecurityRuntimeState = async (isHostedWeb: boolean) => {
-    if (window.vaultBillDesktop) {
-        const [credentialStatus, trialStatus, hostedWebSettings, hostedWebServerStatus] =
-            await Promise.all([
-                window.vaultBillDesktop.getCredentialStatus(),
-                window.vaultBillDesktop.getTrialStatus(),
-                window.vaultBillDesktop.getHostedWebSettings(),
-                window.vaultBillDesktop.getHostedWebServerStatus(),
-            ]);
-        return {
-            credentialStatus,
-            lanEnabled: hostedWebSettings.lanEnabled,
-            hostedWebAutoStart: hostedWebSettings.autoStart,
-            hostedWebServerRunning: hostedWebServerStatus.isRunning,
-            trialStatus,
-        };
-    }
-    if (isHostedWeb) {
-        const [credentialStatus, trialStatus] = await Promise.all([
-            requestHostedApi<CredentialStatus>('/credentials/status'),
-            requestHostedApi<TrialStatus>('/trial/status'),
-        ]);
-        return {
-            credentialStatus,
-            lanEnabled: false,
-            hostedWebAutoStart: false,
-            hostedWebServerRunning: false,
-            trialStatus,
-        };
-    }
-    return {
-        credentialStatus: undefined,
-        lanEnabled: false,
-        hostedWebAutoStart: false,
-        hostedWebServerRunning: false,
-        trialStatus: undefined,
-    };
-};

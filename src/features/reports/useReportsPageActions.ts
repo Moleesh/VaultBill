@@ -1,6 +1,8 @@
 /** @format */
 
-import { requestHostedApi } from '../../runtime/HostedApi';
+import { useMutation } from '@tanstack/react-query';
+
+import { runPrintHtmlOutput } from '../../query/RuntimeQueries';
 import type { AppRecord } from '../records/RecordStoreSupport';
 import { combineRecordHtml } from '../records/RecordPrintHtml';
 import { loadPrintPackages, printBatchSize } from './ReportsPageSupport';
@@ -8,23 +10,14 @@ import { buildReportCsv, renderReportHtml } from './ReportsPageRenderingSupport'
 import type { ReportsPageActionInput } from './ReportsPageTypes';
 
 export const useReportsPageActions = (input: ReportsPageActionInput) => {
-    const runOutput = async (html: string, jobId: string) => {
-        if (window.vaultBillDesktop) {
-            const result = await window.vaultBillDesktop.printHtml({ html, jobId });
-            if (!result.success) throw new Error(result.warning ?? 'Printing failed.');
-            return;
-        }
-        if (input.capabilities.isHostedWeb) {
-            const result = await requestHostedApi<{ success: boolean; warning?: string }>(
-                '/print/html',
-                'POST',
-                { html, jobId },
-            );
-            if (!result.success) throw new Error(result.warning ?? 'Host printing failed.');
-            return;
-        }
-        window.print();
-    };
+    const printOutputMutation = useMutation({
+        mutationFn: ({ html, jobId }: { readonly html: string; readonly jobId: string }) =>
+            runPrintHtmlOutput({
+                capabilities: input.capabilities,
+                html,
+                jobId,
+            }),
+    });
 
     const exportAll = () => {
         input.setTask({
@@ -78,7 +71,10 @@ export const useReportsPageActions = (input: ReportsPageActionInput) => {
         void input
             .loadCompleteResult()
             .then(async (completeRecords) => {
-                await runOutput(renderReportHtml(input.reportId, completeRecords), jobId);
+                await printOutputMutation.mutateAsync({
+                    html: renderReportHtml(input.reportId, completeRecords),
+                    jobId,
+                });
                 return completeRecords;
             })
             .then((completeRecords) => {
@@ -126,10 +122,10 @@ export const useReportsPageActions = (input: ReportsPageActionInput) => {
                 });
                 return loadPrintPackages(batch, input.capabilities.isHostedWeb)
                     .then((packages) =>
-                        runOutput(
-                            combineRecordHtml(batch, packages, input.workspaceSettings),
+                        printOutputMutation.mutateAsync({
+                            html: combineRecordHtml(batch, packages, input.workspaceSettings),
                             jobId,
-                        ),
+                        }),
                     )
                     .then(() => ({ nextCompleted, printable }));
             })

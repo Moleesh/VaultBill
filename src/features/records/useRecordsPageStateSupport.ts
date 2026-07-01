@@ -3,16 +3,7 @@
 import { useForm } from '@tanstack/react-form';
 
 import { builtInDocumentFormatSummaries } from '../../constants/BuiltInDocumentFormats';
-import {
-    canUseLocalHostedApi,
-    isHostedApiErrorStatus,
-    requestHostedApi,
-} from '../../runtime/HostedApi';
-import {
-    normalizeSecretsSettings,
-    secretValuesFromSettings,
-} from '../settings/SettingsSecretsSectionSupport';
-import type { AppRecord, EditableRecord } from './RecordStoreContext';
+import { type AppRecord, type EditableRecord } from './RecordStoreContext';
 
 /** Minimal published-format shape used by the records page picker and reprint flow. */
 export type PublishedFormat = { readonly formatId: string; readonly formatName: string };
@@ -61,49 +52,6 @@ export const filterReprintRecords = (records: readonly AppRecord[], searchQuery:
                 item.documentNumber?.toLocaleLowerCase().includes(query))
         );
     });
-};
-
-/** Loads the published format inventory for desktop or hosted mode. */
-export const loadPublishedFormats = async (
-    isHostedWeb: boolean,
-): Promise<readonly PublishedFormat[]> => {
-    if (isHostedWeb || canUseLocalHostedApi()) {
-        try {
-            return await requestHostedApi<readonly PublishedFormat[]>('/print/formats');
-        } catch {
-            if (window.vaultBillDesktop) {
-                return window.vaultBillDesktop.listBuilderInventory();
-            }
-        }
-    }
-    if (window.vaultBillDesktop) {
-        return window.vaultBillDesktop.listBuilderInventory();
-    }
-    return [];
-};
-
-/** Loads shared secret values from the active runtime and normalizes them for formula use. */
-export const loadRecordsSecretValues = async (
-    isHostedWeb: boolean,
-): Promise<Readonly<Record<string, string>>> => {
-    let rawSettings: unknown;
-    if (isHostedWeb || canUseLocalHostedApi()) {
-        try {
-            rawSettings = await requestHostedApi('/settings/secrets');
-        } catch (error) {
-            if (window.vaultBillDesktop) {
-                rawSettings = await window.vaultBillDesktop.getSecretsSettings();
-            } else if (isHostedApiErrorStatus(error, [401, 403, 404])) {
-                rawSettings = undefined;
-            } else {
-                throw error;
-            }
-        }
-    } else if (window.vaultBillDesktop) {
-        rawSettings = await window.vaultBillDesktop.getSecretsSettings();
-    }
-    const normalized = normalizeSecretsSettings(rawSettings);
-    return secretValuesFromSettings(normalized.secrets);
 };
 
 /** Locates the currently selected stored record inside the editable records collection. */

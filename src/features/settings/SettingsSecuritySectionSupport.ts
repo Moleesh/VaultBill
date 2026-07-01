@@ -2,13 +2,15 @@
 /* eslint-disable max-lines */
 
 import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 
 import type { Role } from '../../types/AppTypes';
 import { useCapabilities } from '../../capability/CapabilityContext';
 import { requestHostedApi } from '../../runtime/HostedApi';
-import { loadWorkspaceSettings } from '../../runtime/WorkspaceSettings';
 import type { OperatorAccount } from '../auth/AccountTypes';
 import { useSession } from '../auth/SessionContext';
+import { getRuntimeQueryScope, queryKeys } from '../../query/QueryKeys';
+import { fetchSecurityRuntimeState, fetchWorkspaceSettings } from '../../query/RuntimeQueries';
 import {
     getManageableSecurityAccounts,
     isDefaultCredentialsActive,
@@ -20,7 +22,6 @@ import {
 } from './SettingsSecuritySectionActions';
 import {
     defaultHostedWebPort,
-    loadSettingsSecurityRuntimeState,
     useCreateSettingsActivationForm,
     type CredentialStatus,
     type TrialStatus,
@@ -36,6 +37,7 @@ export type { SettingsActivationFormApi } from './SettingsSecuritySectionStateSu
 /** Holds runtime-backed security settings state and actions for the settings screen. */
 export const useSettingsSecuritySectionState = () => {
     const capabilities = useCapabilities();
+    const runtimeScope = getRuntimeQueryScope(capabilities);
     const { accounts, archiveAccount, operatorContext, resetPassword, saveAccount } = useSession();
     const [lanEnabled, setLanEnabled] = useState(false);
     const [hostedWebAutoStart, setHostedWebAutoStart] = useState(true);
@@ -45,34 +47,42 @@ export const useSettingsSecuritySectionState = () => {
     const [message, setMessage] = useState('');
     const [includeDraftsInReports, setIncludeDraftsInReports] = useState(false);
     const activationForm = useCreateSettingsActivationForm();
+    const securityRuntimeQuery = useQuery({
+        queryKey: queryKeys.securityRuntimeState(runtimeScope),
+        queryFn: () => fetchSecurityRuntimeState({ capabilities }),
+    });
+    const workspaceSettingsQuery = useQuery({
+        queryKey: queryKeys.workspaceSettings(runtimeScope),
+        queryFn: () => fetchWorkspaceSettings({ capabilities }),
+    });
 
     useEffect(() => {
-        void loadSettingsSecurityRuntimeState(capabilities.isHostedWeb)
-            .then((runtimeState) => {
-                setCredentialStatus(runtimeState.credentialStatus);
-                setLanEnabled(runtimeState.lanEnabled);
-                setHostedWebAutoStart(runtimeState.hostedWebAutoStart);
-                setHostedWebServerRunning(runtimeState.hostedWebServerRunning);
-                setTrialStatus(runtimeState.trialStatus);
-            })
-            .catch(() => {
-                setCredentialStatus(undefined);
-                setLanEnabled(false);
-                setHostedWebAutoStart(true);
-                setHostedWebServerRunning(false);
-                setTrialStatus(undefined);
-            });
-    }, [capabilities.isHostedWeb]);
+        if (securityRuntimeQuery.data) {
+            setCredentialStatus(securityRuntimeQuery.data.credentialStatus);
+            setLanEnabled(securityRuntimeQuery.data.lanEnabled);
+            setHostedWebAutoStart(securityRuntimeQuery.data.hostedWebAutoStart);
+            setHostedWebServerRunning(securityRuntimeQuery.data.hostedWebServerRunning);
+            setTrialStatus(securityRuntimeQuery.data.trialStatus);
+            return;
+        }
+        if (securityRuntimeQuery.isError) {
+            setCredentialStatus(undefined);
+            setLanEnabled(false);
+            setHostedWebAutoStart(true);
+            setHostedWebServerRunning(false);
+            setTrialStatus(undefined);
+        }
+    }, [securityRuntimeQuery.data, securityRuntimeQuery.isError]);
 
     useEffect(() => {
-        void loadWorkspaceSettings(capabilities.isHostedWeb)
-            .then((settings) => {
-                setIncludeDraftsInReports(settings.includeDraftsInReports);
-            })
-            .catch(() => {
-                setIncludeDraftsInReports(false);
-            });
-    }, [capabilities.isHostedWeb]);
+        if (workspaceSettingsQuery.data) {
+            setIncludeDraftsInReports(workspaceSettingsQuery.data.includeDraftsInReports);
+            return;
+        }
+        if (workspaceSettingsQuery.isError) {
+            setIncludeDraftsInReports(false);
+        }
+    }, [workspaceSettingsQuery.data, workspaceSettingsQuery.isError]);
 
     return {
         activeUserCount: accounts.filter((account) => account.role === 'User' && account.isActive)

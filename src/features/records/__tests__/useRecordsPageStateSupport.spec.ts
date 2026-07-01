@@ -2,7 +2,7 @@
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { loadRecordsSecretValues } from '../useRecordsPageStateSupport';
+import { fetchSecretsSettings } from '../../../query/RuntimeQueries';
 import { HostedApiError } from '../../../runtime/HostedApi';
 
 vi.mock('../../../runtime/HostedApi', async () => {
@@ -25,6 +25,8 @@ describe('useRecordsPageStateSupport', () => {
             new HostedApiError(403, 'Only the System Administrator can perform this operation.'),
         );
 
-        await expect(loadRecordsSecretValues(true)).resolves.toEqual({});
+        await expect(
+            fetchSecretsSettings({ capabilities: { isHostedWeb: true } }),
+        ).resolves.toEqual(expect.objectContaining({ secrets: [] }));
     });
 });

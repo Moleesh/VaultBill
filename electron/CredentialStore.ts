@@ -181,6 +181,19 @@ export class CredentialStore {
         return loadCredentialAccount(this.#database, userId);
     };
 
+    public clearPassword = (userId: string): DesktopOperatorAccount => {
+        const result = this.#database
+            .prepare(
+                `UPDATE app_users
+        SET password_salt = NULL, password_hash = NULL, uses_default_password = 0,
+          updated_at = ?
+        WHERE user_id = ? AND archived_at IS NULL;`,
+            )
+            .run(new Date().toISOString(), userId);
+        if (result.changes !== 1) throw new Error('The operator account was not found.');
+        return loadCredentialAccount(this.#database, userId);
+    };
+
     public getBackupPassword = (): string => getBackupPassword(this.#database, this.#protector);
 
     public setBackupPassword = (password: string) => {

@@ -25,7 +25,8 @@ export const BuilderPageWorkspace: FC<{ readonly controller: BuilderPageControll
                     currentFormatName={controller.config.FormatName}
                     inventory={controller.inventory}
                     onCreateNew={controller.createNewDocument}
-                    onDuplicateCurrent={controller.duplicateCurrentDocument}
+                    onDeleteDocument={controller.deleteDocument}
+                    onDuplicateDocument={controller.duplicateDocument}
                     onLoadDocument={controller.loadDocument}
                 />
             ) : (

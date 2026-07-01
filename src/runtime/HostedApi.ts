@@ -36,7 +36,7 @@ export const setHostedCsrfToken = (token: string | undefined) => {
 
 export const requestHostedApi = async <T>(
     path: string,
-    method: 'GET' | 'POST' = 'GET',
+    method: 'GET' | 'POST' | 'DELETE' = 'GET',
     body?: unknown,
 ): Promise<T> => {
     const csrfToken = window.sessionStorage.getItem(csrfStorageKey);
@@ -48,7 +48,9 @@ export const requestHostedApi = async <T>(
             headers: {
                 accept: 'application/json',
                 'content-type': 'application/json',
-                ...(method === 'POST' && csrfToken ? { 'x-vaultbill-csrf': csrfToken } : {}),
+                ...((method === 'POST' || method === 'DELETE') && csrfToken
+                    ? { 'x-vaultbill-csrf': csrfToken }
+                    : {}),
             },
             ...(body === undefined ? {} : { body: JSON.stringify(body) }),
         });

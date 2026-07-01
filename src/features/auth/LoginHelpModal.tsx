@@ -22,21 +22,22 @@ export const LoginHelpModal: FC<LoginHelpModalProps> = ({ isOpen, onClose }) => 
                     Log in.
                 </p>
                 <p>
-                    Some operator accounts start without a password until an Admin adds one in
-                    Settings.
+                    If your account does not have the password you expect, ask your Admin to set or
+                    update the password for your account in Settings before you sign in.
                 </p>
             </section>
             <section>
                 <h3>If an Admin password is forgotten</h3>
                 <p>
-                    Ask a signed-in Admin to open Settings and set a new password for that account.
+                    Ask your System Administrator to reset the Admin password, then sign in again
+                    with the new password.
                 </p>
             </section>
             <section>
-                <h3>Open setup again</h3>
+                <h3>If another operator password is forgotten</h3>
                 <p>
-                    On the sign-in screen, press <strong>F9</strong> and confirm to reopen the
-                    initial setup wizard.
+                    Ask your Admin to reset or set the desired password for that operator account in
+                    Settings.
                 </p>
             </section>
             <section>

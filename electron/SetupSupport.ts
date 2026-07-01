@@ -17,6 +17,7 @@ export const SetupCompleteRequestSchema = z.object({
     adminUsername: z.string().trim().min(1),
     adminDisplayName: z.string().trim().min(1),
     adminPassword: OptionalAdminPasswordSchema,
+    clearAdminPassword: z.boolean().optional().default(false),
 });
 
 export type SetupStatus = {
@@ -71,7 +72,9 @@ export const completeSetup = (
         role: 'Admin',
         isActive: true,
     });
-    if (setup.adminPassword.length > 0) {
+    if (setup.clearAdminPassword) {
+        credentialStore.clearPassword(adminUserId);
+    } else if (setup.adminPassword.length > 0) {
         credentialStore.resetPassword(adminUserId, setup.adminPassword);
     }
 };

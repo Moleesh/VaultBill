@@ -2,13 +2,8 @@
 
 import type { CapabilityRegistry } from '../../capability/Capability.types';
 import { DocumentFormatConfigSchema } from '../../db/startup/ConfigSchemas';
-import { requestHostedApi } from '../../runtime/HostedApi';
 import {
     base64ByteLength,
-    readBuilderAssets,
-    readConfig,
-    readSavedTemplates,
-    readTemplateHtml,
     type AssetSummary,
     type SavedPrintTemplate,
     type StoredBuilderPackage,
@@ -18,9 +13,14 @@ import {
     normalizeSavedPrintTemplates,
 } from './BuilderSavedTemplatesSupport';
 import type { DocumentFormatConfig } from './BuilderPageControllerSupport';
+import {
+    fetchBuilderInventory,
+    fetchBuilderPackage,
+    removeBuilderPackage,
+} from '../../query/RuntimeQueries';
 import type { BuilderInventoryItem } from './BuilderDocumentLibrarySupport';
 
-type BuilderDocumentLibrarySetters = {
+export type BuilderDocumentLibrarySetters = {
     readonly setAssets: (value: readonly AssetSummary[]) => void;
     readonly setConfig: (value: DocumentFormatConfig) => void;
     readonly setMessage: (value: string) => void;
@@ -33,7 +33,7 @@ type BuilderDocumentLibraryContext = BuilderDocumentLibrarySetters & {
     readonly capabilities: Pick<CapabilityRegistry, 'isHostedWeb'>;
 };
 
-const applyStoredBuilderPackage = (
+export const applyStoredBuilderPackage = (
     stored: StoredBuilderPackage | undefined,
     setters: BuilderDocumentLibrarySetters,
 ): boolean => {
@@ -53,42 +53,6 @@ const applyStoredBuilderPackage = (
     return true;
 };
 
-export const loadBuilderPackage = async ({
-    capabilities,
-    formatId,
-}: Pick<BuilderDocumentLibraryContext, 'capabilities'> & {
-    readonly formatId: string | undefined;
-}) => {
-    if (window.vaultBillDesktop) {
-        return window.vaultBillDesktop.loadBuilderPackage(formatId);
-    }
-    if (capabilities.isHostedWeb) {
-        const query = formatId ? `?formatId=${encodeURIComponent(formatId)}` : '';
-        return requestHostedApi<StoredBuilderPackage | undefined>(`/builder/package${query}`);
-    }
-
-    return {
-        config: readConfig(),
-        templateHtml: readTemplateHtml(),
-        savedTemplates: readSavedTemplates(),
-        assets: readBuilderAssets(),
-    } satisfies StoredBuilderPackage;
-};
-
-export const loadBuilderInventory = async ({
-    capabilities,
-}: Pick<BuilderDocumentLibraryContext, 'capabilities'>): Promise<
-    readonly BuilderInventoryItem[]
-> => {
-    if (window.vaultBillDesktop) {
-        return window.vaultBillDesktop.listBuilderInventory();
-    }
-    if (capabilities.isHostedWeb) {
-        return requestHostedApi<readonly BuilderInventoryItem[]>('/builder/inventory');
-    }
-    return [];
-};
-
 export const loadAndApplyBuilderPackage = async ({
     capabilities,
     formatId,
@@ -97,8 +61,15 @@ export const loadAndApplyBuilderPackage = async ({
     readonly capabilities: Pick<CapabilityRegistry, 'isHostedWeb'>;
     readonly formatId: string | undefined;
     readonly setters: BuilderDocumentLibrarySetters;
-}) => applyStoredBuilderPackage(await loadBuilderPackage({ capabilities, formatId }), setters);
+}) => applyStoredBuilderPackage(await fetchBuilderPackage({ capabilities, formatId }), setters);
 
 export const refreshBuilderInventory = async (
     capabilities: Pick<CapabilityRegistry, 'isHostedWeb'>,
-): Promise<readonly BuilderInventoryItem[]> => loadBuilderInventory({ capabilities });
+): Promise<readonly BuilderInventoryItem[]> => fetchBuilderInventory({ capabilities });
+
+export const deleteBuilderPackage = async ({
+    capabilities,
+    formatId,
+}: Pick<BuilderDocumentLibraryContext, 'capabilities'> & {
+    readonly formatId: string;
+}): Promise<void> => removeBuilderPackage({ capabilities, formatId });

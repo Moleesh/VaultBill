@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { CapabilityRegistry } from '../../../capability/Capability.types';
 import { CapabilityProvider } from '../../../capability/CapabilityContext';
+import { TestQueryProvider } from '../../../test/TestQueryProvider';
 import { RecordStoreProvider } from '../../records/RecordStoreContext';
 import { SessionContext } from '../../auth/SessionContext';
 import { SessionProvider } from '../../auth/SessionContext';
@@ -97,15 +98,17 @@ describe('dashboard page', () => {
     it('renders the dashboard for the active operator', async () => {
         render(
             <MemoryRouter initialEntries={['/app/dashboard']}>
-                <CapabilityProvider value={desktopCapabilities}>
-                    <SessionProvider>
-                        <RecordStoreProvider>
-                            <Routes>
-                                <Route path="/app/dashboard" element={<DashboardPage />} />
-                            </Routes>
-                        </RecordStoreProvider>
-                    </SessionProvider>
-                </CapabilityProvider>
+                <TestQueryProvider>
+                    <CapabilityProvider value={desktopCapabilities}>
+                        <SessionProvider>
+                            <RecordStoreProvider>
+                                <Routes>
+                                    <Route path="/app/dashboard" element={<DashboardPage />} />
+                                </Routes>
+                            </RecordStoreProvider>
+                        </SessionProvider>
+                    </CapabilityProvider>
+                </TestQueryProvider>
             </MemoryRouter>,
         );
 

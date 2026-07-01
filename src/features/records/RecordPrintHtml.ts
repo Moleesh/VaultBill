@@ -6,8 +6,8 @@
  */
 
 import type { DocumentFormatConfig } from '../../db/startup/ConfigSchemas';
+import { fetchBuilderPackage } from '../../query/RuntimeQueries';
 import type { WorkspaceSettings } from '../../runtime/WorkspaceSettings';
-import { requestHostedApi } from '../../runtime/HostedApi';
 import type { AppRecord, EditableRecord } from './RecordStoreContext';
 import { extractDocumentFragment } from './RecordPrintHtmlSupport';
 import { renderRecordHtml as renderRecordDocumentHtml } from './RecordPrintHtmlRender';
@@ -28,17 +28,10 @@ export const loadRecordPrintPackage = async (
     formatId: string,
     isHostedWeb: boolean,
 ): Promise<RecordPrintPackage | undefined> => {
-    if (window.vaultBillDesktop) {
-        return (await window.vaultBillDesktop.loadBuilderPackage(formatId)) as
-            | RecordPrintPackage
-            | undefined;
-    }
-    if (isHostedWeb) {
-        return requestHostedApi<RecordPrintPackage | undefined>(
-            `/print/template?formatId=${encodeURIComponent(formatId)}`,
-        );
-    }
-    return undefined;
+    return (await fetchBuilderPackage({
+        capabilities: { isHostedWeb },
+        formatId,
+    })) as RecordPrintPackage | undefined;
 };
 
 /** Renders one record with template placeholders resolved against the record. */

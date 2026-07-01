@@ -1,11 +1,6 @@
 /** @format */
 
 import { DocumentFormatConfigSchema } from '../../db/startup/ConfigSchemas';
-import { isHostedApiErrorStatus, requestHostedApi } from '../../runtime/HostedApi';
-import {
-    normalizeSecretsSettings,
-    secretValuesFromSettings,
-} from '../settings/SettingsSecretsSectionSupport';
 import { validateCalculationGraph } from './BuilderPageCalculationSupport';
 import type { DocumentFormatConfig, FieldConfig } from './BuilderPageControllerSupport';
 
@@ -48,26 +43,4 @@ export const validateBuilderConfig = ({
     errors.push(...validateCalculationGraph(allFields));
     if (!templateHtml.trim()) errors.push('Upload one HTML print template.');
     return errors;
-};
-
-/** Loads builder secret values from the active runtime so formula previews can resolve them. */
-export const loadBuilderSecretValues = async (
-    isHostedWeb: boolean,
-): Promise<Readonly<Record<string, string>>> => {
-    let rawSettings: unknown;
-    if (window.vaultBillDesktop) {
-        rawSettings = await window.vaultBillDesktop.getSecretsSettings();
-    } else if (isHostedWeb) {
-        try {
-            rawSettings = await requestHostedApi('/settings/secrets');
-        } catch (error) {
-            if (isHostedApiErrorStatus(error, [401, 403, 404])) {
-                rawSettings = undefined;
-            } else {
-                throw error;
-            }
-        }
-    }
-    const normalized = normalizeSecretsSettings(rawSettings);
-    return secretValuesFromSettings(normalized.secrets);
 };

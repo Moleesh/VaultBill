@@ -1,20 +1,22 @@
 /** @format */
 
 import { useForm } from '@tanstack/react-form';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 
 import { useCapabilities } from '../../capability/CapabilityContext';
-import { requestHostedApi } from '../../runtime/HostedApi';
+import { getRuntimeQueryScope, queryKeys } from '../../query/QueryKeys';
+import {
+    fetchWorkspacePrinters,
+    fetchWorkspaceSettings,
+    saveWorkspaceSettings,
+} from '../../query/RuntimeQueries';
 import {
     applyTheme,
     loadResolvedTheme,
     resolveThemeFromWorkspaceSettings,
 } from '../../runtime/WorkspaceTheme';
-import {
-    defaultWorkspaceSettings,
-    loadWorkspaceSettings,
-    normalizeWorkspaceSettings,
-} from '../../runtime/WorkspaceSettings';
+import { defaultWorkspaceSettings } from '../../runtime/WorkspaceSettings';
 
 export type PrinterSummary = {
     readonly id: string;
@@ -37,8 +39,20 @@ export type SettingsBusinessFormValues = {
  */
 export const useSettingsBusinessSection = () => {
     const capabilities = useCapabilities();
+    const queryClient = useQueryClient();
+    const runtimeScope = getRuntimeQueryScope(capabilities);
     const [availablePrinters, setAvailablePrinters] = useState<readonly PrinterSummary[]>([]);
     const [message, setMessage] = useState('');
+    const workspaceSettingsQuery = useQuery({
+        queryKey: queryKeys.workspaceSettings(runtimeScope),
+        queryFn: () => fetchWorkspaceSettings({ capabilities }),
+    });
+    const printersQuery = useQuery({
+        queryKey: queryKeys.workspacePrinters(runtimeScope),
+        enabled: Boolean(window.vaultBillDesktop?.listPrinters),
+        queryFn: fetchWorkspacePrinters,
+        staleTime: Number.POSITIVE_INFINITY,
+    });
     const form = useForm({
         defaultValues: {
             address: defaultWorkspaceSettings.address,
@@ -54,7 +68,7 @@ export const useSettingsBusinessSection = () => {
                 setMessage('Business name and address are required.');
                 return;
             }
-            const nextBusiness = {
+            const nextBusiness: SettingsBusinessFormValues = {
                 companyName: value.companyName.trim(),
                 address: value.address.trim(),
                 gstin: value.gstin.trim(),
@@ -64,22 +78,26 @@ export const useSettingsBusinessSection = () => {
                 includeDraftsInReports: value.includeDraftsInReports,
             };
             applyTheme(value.theme);
-            const persistence = window.vaultBillDesktop
-                ? window.vaultBillDesktop.saveBusinessSettings(nextBusiness)
-                : capabilities.isHostedWeb
-                  ? requestHostedApi('/settings/business', 'POST', nextBusiness)
-                  : Promise.resolve(nextBusiness);
-            await persistence
-                .then(() => {
-                    setMessage('Business settings saved.');
-                })
-                .catch((reason: unknown) => {
-                    setMessage(
-                        reason instanceof Error
-                            ? reason.message
-                            : 'Business settings could not be saved.',
-                    );
-                });
+            await saveBusinessMutation.mutateAsync(nextBusiness);
+        },
+    });
+    const saveBusinessMutation = useMutation({
+        mutationFn: (nextBusiness: SettingsBusinessFormValues) =>
+            saveWorkspaceSettings({
+                capabilities,
+                settings: nextBusiness,
+            }),
+        onSuccess: async (_, nextBusiness) => {
+            setMessage('Business settings saved.');
+            queryClient.setQueryData(queryKeys.workspaceSettings(runtimeScope), nextBusiness);
+            await queryClient.invalidateQueries({
+                queryKey: queryKeys.workspaceSettings(runtimeScope),
+            });
+        },
+        onError: (reason: unknown) => {
+            setMessage(
+                reason instanceof Error ? reason.message : 'Business settings could not be saved.',
+            );
         },
     });
 
@@ -91,41 +109,41 @@ export const useSettingsBusinessSection = () => {
     }, [capabilities.isHostedWeb, form]);
 
     useEffect(() => {
-        const businessRequest = window.vaultBillDesktop
-            ? loadWorkspaceSettings(false)
-            : capabilities.isHostedWeb
-              ? requestHostedApi('/settings/business').then(normalizeWorkspaceSettings)
-              : Promise.resolve(defaultWorkspaceSettings);
-        void businessRequest.then((settings) => {
-            form.reset(settings);
-            const resolvedTheme = resolveThemeFromWorkspaceSettings(settings);
-            form.setFieldValue('theme', resolvedTheme);
-            applyTheme(resolvedTheme);
-        });
-    }, [capabilities.isHostedWeb, form]);
+        if (!workspaceSettingsQuery.data) return;
+        form.reset(workspaceSettingsQuery.data);
+        const resolvedTheme = resolveThemeFromWorkspaceSettings(workspaceSettingsQuery.data);
+        form.setFieldValue('theme', resolvedTheme);
+        applyTheme(resolvedTheme);
+    }, [form, workspaceSettingsQuery.data]);
 
     useEffect(() => {
-        if (!window.vaultBillDesktop?.listPrinters) {
+        if (!workspaceSettingsQuery.isError) return;
+        form.reset(defaultWorkspaceSettings);
+        const resolvedTheme = resolveThemeFromWorkspaceSettings(defaultWorkspaceSettings);
+        form.setFieldValue('theme', resolvedTheme);
+        applyTheme(resolvedTheme);
+    }, [form, workspaceSettingsQuery.isError]);
+
+    useEffect(() => {
+        if (!printersQuery.data) {
             setAvailablePrinters([]);
             return;
         }
-        void window.vaultBillDesktop.listPrinters().then((printers) => {
-            setAvailablePrinters(printers);
-            const { preferredPrinterName } = form.state.values;
-            if (
-                preferredPrinterName &&
-                !printers.some((printer) => printer.name === preferredPrinterName)
-            ) {
-                form.setFieldValue('preferredPrinterName', '');
-                return;
-            }
-            if (!preferredPrinterName) {
-                const { name: defaultPrinter = '' } =
-                    printers.find((printer) => printer.isDefault) ?? {};
-                if (defaultPrinter) form.setFieldValue('preferredPrinterName', defaultPrinter);
-            }
-        });
-    }, [form]);
+        setAvailablePrinters(printersQuery.data);
+        const { preferredPrinterName } = form.state.values;
+        if (
+            preferredPrinterName &&
+            !printersQuery.data.some((printer) => printer.name === preferredPrinterName)
+        ) {
+            form.setFieldValue('preferredPrinterName', '');
+            return;
+        }
+        if (!preferredPrinterName) {
+            const { name: defaultPrinter = '' } =
+                printersQuery.data.find((printer) => printer.isDefault) ?? {};
+            if (defaultPrinter) form.setFieldValue('preferredPrinterName', defaultPrinter);
+        }
+    }, [form, printersQuery.data]);
 
     return {
         availablePrinters,

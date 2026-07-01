@@ -27,7 +27,7 @@ type LoginPageFormProps = {
     readonly selectedAccountId: string;
     readonly onActivationOpen: () => void;
     readonly onHelpOpen: () => void;
-    readonly onPasswordChange: () => void;
+    readonly onPasswordChange: (value: string) => void;
     readonly onSelectedAccountIdChange: (value: string) => void;
     readonly onSubmit: () => void;
 };
@@ -119,8 +119,9 @@ export const LoginPageForm: FC<LoginPageFormProps> = ({
                                         label="Password"
                                         onBlur={field.handleBlur}
                                         onChange={(event) => {
-                                            field.handleChange(event.currentTarget.value);
-                                            onPasswordChange();
+                                            const nextPassword = event.currentTarget.value;
+                                            field.handleChange(nextPassword);
+                                            onPasswordChange(nextPassword);
                                         }}
                                         requiredIndicator={isPasswordRequired}
                                         required={isPasswordRequired}

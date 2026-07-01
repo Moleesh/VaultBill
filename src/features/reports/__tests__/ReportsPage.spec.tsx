@@ -6,6 +6,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 
 import type { CapabilityRegistry } from '../../../capability/Capability.types';
 import { CapabilityProvider } from '../../../capability/CapabilityContext';
+import { TestQueryProvider } from '../../../test/TestQueryProvider';
 import { SessionProvider } from '../../auth/SessionContext';
 import { RecordStoreProvider } from '../../records/RecordStoreContext';
 import { ReportsPage } from '../ReportsPage';
@@ -49,15 +50,17 @@ describe('reports page', () => {
     it('renders the report workspace', async () => {
         render(
             <MemoryRouter initialEntries={['/app/reports']}>
-                <CapabilityProvider value={demoCapabilities}>
-                    <SessionProvider>
-                        <RecordStoreProvider>
-                            <Routes>
-                                <Route path="/app/reports" element={<ReportsPage />} />
-                            </Routes>
-                        </RecordStoreProvider>
-                    </SessionProvider>
-                </CapabilityProvider>
+                <TestQueryProvider>
+                    <CapabilityProvider value={demoCapabilities}>
+                        <SessionProvider>
+                            <RecordStoreProvider>
+                                <Routes>
+                                    <Route path="/app/reports" element={<ReportsPage />} />
+                                </Routes>
+                            </RecordStoreProvider>
+                        </SessionProvider>
+                    </CapabilityProvider>
+                </TestQueryProvider>
             </MemoryRouter>,
         );
 

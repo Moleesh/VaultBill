@@ -10,6 +10,7 @@ import type { ReactNode } from 'react';
 
 import type { CapabilityRegistry } from '../../../capability/Capability.types';
 import { CapabilityProvider } from '../../../capability/CapabilityContext';
+import { TestQueryProvider } from '../../../test/TestQueryProvider';
 import { LoginPage } from '../LoginPage';
 import type { OperatorAccount } from '../AccountTypes';
 import { SessionProvider } from '../SessionContext';
@@ -64,9 +65,11 @@ const sysAdminAccount = {
 const renderPage = (children: ReactNode, capabilities = nonDemoCapabilities) =>
     render(
         <MemoryRouter initialEntries={['/login']}>
-            <CapabilityProvider value={capabilities}>
-                <SessionProvider>{children}</SessionProvider>
-            </CapabilityProvider>
+            <TestQueryProvider>
+                <CapabilityProvider value={capabilities}>
+                    <SessionProvider>{children}</SessionProvider>
+                </CapabilityProvider>
+            </TestQueryProvider>
         </MemoryRouter>,
     );
 
@@ -104,14 +107,16 @@ describe('login UI', () => {
 
         render(
             <MemoryRouter initialEntries={['/login']}>
-                <CapabilityProvider value={desktopCapabilities}>
-                    <SessionProvider>
-                        <Routes>
-                            <Route path="/login" element={<LoginPage />} />
-                            <Route path="/app/dashboard" element={<h1>Dashboard</h1>} />
-                        </Routes>
-                    </SessionProvider>
-                </CapabilityProvider>
+                <TestQueryProvider>
+                    <CapabilityProvider value={desktopCapabilities}>
+                        <SessionProvider>
+                            <Routes>
+                                <Route path="/login" element={<LoginPage />} />
+                                <Route path="/app/dashboard" element={<h1>Dashboard</h1>} />
+                            </Routes>
+                        </SessionProvider>
+                    </CapabilityProvider>
+                </TestQueryProvider>
             </MemoryRouter>,
         );
 
@@ -163,12 +168,6 @@ describe('login UI', () => {
         ).toBeVisible();
         expect(screen.queryByRole('option', { name: /System Administrator/i })).toBeNull();
         fireEvent.keyDown(window, { key: 'F8', code: 'F8' });
-        fireEvent.click(
-            screen.getByRole('button', {
-                name: /Operator account Operations Admin/i,
-            }),
-        );
-        fireEvent.click(await screen.findByRole('option', { name: /System Administrator/i }));
 
         expect(
             await screen.findByRole('button', {
@@ -249,6 +248,80 @@ describe('login UI', () => {
                 method: 'GET',
             }),
         );
+    });
+
+    it('refreshes the login account details after setup data changes', async () => {
+        let desktopAccounts: readonly OperatorAccount[] = [
+            {
+                ...adminAccount,
+                userId: 'admin_original',
+                displayName: 'Original Admin',
+                username: 'original',
+            },
+        ];
+
+        Object.defineProperty(window, 'vaultBillDesktop', {
+            configurable: true,
+            value: {
+                activateLicense: vi.fn().mockResolvedValue(undefined),
+                closeWindow: vi.fn().mockResolvedValue(undefined),
+                listAccounts: vi.fn().mockImplementation(() => Promise.resolve(desktopAccounts)),
+                loginAccount: vi.fn().mockImplementation((userId: string) => {
+                    const account = desktopAccounts.find(
+                        (candidate) => candidate.userId === userId,
+                    );
+                    return account
+                        ? Promise.resolve(account)
+                        : Promise.reject(new Error('Unknown account.'));
+                }),
+                minimizeWindow: vi.fn().mockResolvedValue(undefined),
+            } as const,
+        });
+
+        const { rerender } = render(
+            <MemoryRouter initialEntries={['/login']}>
+                <TestQueryProvider>
+                    <CapabilityProvider value={desktopCapabilities}>
+                        <SessionProvider refreshRevision={0}>
+                            <LoginPage />
+                        </SessionProvider>
+                    </CapabilityProvider>
+                </TestQueryProvider>
+            </MemoryRouter>,
+        );
+
+        expect(
+            await screen.findByRole('button', {
+                name: /Operator account Original Admin/i,
+            }),
+        ).toBeVisible();
+
+        desktopAccounts = [
+            {
+                ...adminAccount,
+                userId: 'admin_latest',
+                displayName: 'Latest Admin',
+                username: 'latest',
+            },
+        ];
+
+        rerender(
+            <MemoryRouter initialEntries={['/login']}>
+                <TestQueryProvider>
+                    <CapabilityProvider value={desktopCapabilities}>
+                        <SessionProvider refreshRevision={1}>
+                            <LoginPage />
+                        </SessionProvider>
+                    </CapabilityProvider>
+                </TestQueryProvider>
+            </MemoryRouter>,
+        );
+
+        expect(
+            await screen.findByRole('button', {
+                name: /Operator account Latest Admin/i,
+            }),
+        ).toBeVisible();
     });
 
     it('opens a confirmation before re-entering setup with F9', async () => {

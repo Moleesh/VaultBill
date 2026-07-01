@@ -134,6 +134,9 @@ export const createDesktopBridge = (ipcRenderer: IpcRenderer): VaultBillDesktopB
         ipcRenderer.invoke('vaultbill:builder:inventory') as Promise<
             readonly BuilderInventoryItem[]
         >,
+    deleteBuilderPackage: async (formatId) => {
+        await ipcRenderer.invoke('vaultbill:builder:delete', formatId);
+    },
     saveBuilderPackage: async (builderPackage) =>
         ipcRenderer.invoke('vaultbill:builder:save', builderPackage) as Promise<BuilderPackage>,
     createBackup: async (request) =>

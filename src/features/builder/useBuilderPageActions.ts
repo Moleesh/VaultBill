@@ -1,15 +1,16 @@
 /** @format */
 
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { Dispatch, SetStateAction, ChangeEvent } from 'react';
 import type { z } from 'zod';
 
-import { requestHostedApi } from '../../runtime/HostedApi';
 import { DocumentFormatConfigSchema } from '../../db/startup/ConfigSchemas';
+import { getRuntimeQueryScope, queryKeys } from '../../query/QueryKeys';
+import { saveBuilderPackage } from '../../query/RuntimeQueries';
 import { applyCalculationOrder } from './BuilderPageCalculationSupport';
 import {
     confirmLargeFile,
     mimeTypeFromName,
-    writeBuilderPackage,
     type AssetSummary,
     type SavedPrintTemplate,
 } from './BuilderPageSupport';
@@ -50,6 +51,37 @@ export const useBuilderPageActions = ({
     setMessage,
     setImportWarnings,
 }: BuilderPageActionProps) => {
+    const queryClient = useQueryClient();
+    const runtimeScope = getRuntimeQueryScope({
+        isDesktop: Boolean(window.vaultBillDesktop),
+        isDemoMode: !window.vaultBillDesktop && !capabilities.isHostedWeb,
+        isHostedWeb: capabilities.isHostedWeb,
+    });
+    const publishMutation = useMutation({
+        mutationFn: (builderPackage: {
+            readonly assets: readonly AssetSummary[];
+            readonly config: DocumentFormatConfig;
+            readonly savedTemplates: readonly SavedPrintTemplate[];
+            readonly templateHtml: string;
+        }) =>
+            saveBuilderPackage({
+                capabilities,
+                config: builderPackage.config,
+                templateHtml: builderPackage.templateHtml,
+                assets: builderPackage.assets,
+                savedTemplates: builderPackage.savedTemplates,
+            }),
+        onSuccess: async (_, builderPackage) => {
+            queryClient.setQueryData(
+                queryKeys.builderPackage(runtimeScope, builderPackage.config.FormatId),
+                builderPackage,
+            );
+            await queryClient.invalidateQueries({
+                queryKey: queryKeys.builderInventory(runtimeScope),
+            });
+        },
+    });
+
     const importJson = async (event: ChangeEvent<HTMLInputElement>) => {
         const file = event.currentTarget.files?.[0];
         if (!file) return;
@@ -143,20 +175,19 @@ export const useBuilderPageActions = ({
 
     const publish = async (): Promise<void> => {
         const orderedConfig: DocumentFormatConfig = orderConfigForPublish(config);
-        const builderPackage: {
+        const nextPackage: {
             readonly config: DocumentFormatConfig;
             readonly templateHtml: string;
             readonly assets: readonly AssetSummary[];
             readonly savedTemplates: readonly SavedPrintTemplate[];
-        } = { config: orderedConfig, templateHtml, assets, savedTemplates };
+        } = {
+            config: orderedConfig,
+            templateHtml,
+            assets,
+            savedTemplates,
+        };
         try {
-            if (window.vaultBillDesktop) {
-                await window.vaultBillDesktop.saveBuilderPackage(builderPackage);
-            } else if (capabilities.isHostedWeb) {
-                await requestHostedApi<unknown>('/builder/package', 'POST', builderPackage);
-            } else {
-                writeBuilderPackage(builderPackage);
-            }
+            await publishMutation.mutateAsync(nextPackage);
             setMessage('Format, print template, and assets published.');
         } catch (reason: unknown) {
             setMessage(reason instanceof Error ? reason.message : 'Publish failed.');

@@ -88,6 +88,15 @@ export const handleLocalApiContentRoutes = async (
         sendJson(response, 200, state.builderStore.save(await readBody(request)));
         return true;
     }
+    if (request.method === 'DELETE' && request.url?.startsWith('/builder/package')) {
+        requireBuilderAccess(account, 'Only the System Administrator can delete Builder formats.');
+        assertWritableTrial(state, 'use Builder');
+        const formatId = readFormatId(request.url);
+        if (!formatId) throw new ApiError(400, 'A document format is required.');
+        state.builderStore.delete(formatId);
+        sendJson(response, 200, { deleted: true });
+        return true;
+    }
     if (request.method === 'GET' && request.url?.startsWith('/print/template')) {
         return sendBuilderPackage(state, response, readFormatId(request.url));
     }

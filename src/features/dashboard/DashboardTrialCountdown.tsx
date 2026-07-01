@@ -21,6 +21,8 @@ export const DashboardTrialCountdown: FC<DashboardTrialCountdownProps> = ({
     if (isFullVersion) return null;
 
     const countdown = formatTrialCountdownParts(remainingSeconds);
+    const headlineAmount = isTrialExpired ? 'Expired' : countdown.amount;
+    const headlineLabel = isTrialExpired ? 'Activate now' : countdown.label;
     const progress = Math.max(0, Math.min(100, (remainingSeconds / (24 * 60 * 60)) * 100));
 
     return (
@@ -31,8 +33,8 @@ export const DashboardTrialCountdown: FC<DashboardTrialCountdownProps> = ({
             <div className="dashboard-trial-countdown-copy">
                 <small>Trial countdown</small>
                 <strong>
-                    <span>{countdown.amount}</span>
-                    <span>{isTrialExpired ? 'expired' : countdown.label}</span>
+                    <span>{headlineAmount}</span>
+                    <span>{headlineLabel}</span>
                 </strong>
             </div>
             <div
@@ -44,7 +46,7 @@ export const DashboardTrialCountdown: FC<DashboardTrialCountdownProps> = ({
             </div>
             <p>
                 {isTrialExpired
-                    ? 'The trial is now read-only.'
+                    ? 'Activate VaultBill to keep editing.'
                     : 'Tracked while VaultBill is open, and shown here as remaining session time.'}
             </p>
         </article>

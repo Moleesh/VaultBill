@@ -1,8 +1,11 @@
 /** @format */
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { useCapabilities } from '../../capability/CapabilityContext';
 import { builtInDefaultFormat } from '../../db/startup/BuiltInDefaultFormat';
+import { queryKeys, getRuntimeQueryScope } from '../../query/QueryKeys';
+import { fetchSecretsSettings } from '../../query/RuntimeQueries';
 import { builtInDefaultPrintTemplateHtml } from '../../db/startup/BuiltInDefaultPrintTemplate';
 import {
     builtInSampleAsset,
@@ -26,15 +29,16 @@ import {
 } from './BuilderPageControllerSupport';
 import {
     collectReferencedFieldIds,
-    loadBuilderSecretValues,
     validateBuilderConfig,
 } from './BuilderPageControllerStateSupport';
 import { useBuilderDocumentLibrary } from './useBuilderDocumentLibrary';
 import { useBuilderPageActions } from './useBuilderPageActions';
+import { secretValuesFromSettings } from '../settings/SettingsSecretsSectionSupport';
 
 /** Keeps the builder state, loading, and rendering actions in a compact hook. */
 export const useBuilderPageController = () => {
     const capabilities = useCapabilities();
+    const runtimeScope = getRuntimeQueryScope(capabilities);
     const [searchParams, setSearchParams] = useSearchParams();
     const [stepIndex, setStepIndex] = useState(() =>
         searchParams.get('step') === 'preview' ? steps.length - 1 : 0,
@@ -53,8 +57,6 @@ export const useBuilderPageController = () => {
     const [editing, setEditing] = useState<EditingState>();
     const [message, setMessage] = useState('');
     const [importWarnings, setImportWarnings] = useState<readonly string[]>([]);
-    const [secretValues, setSecretValues] = useState<Readonly<Record<string, string>>>({});
-
     const activeStep: BuilderStep = steps[stepIndex] ?? 'Format';
     const lineSection: DocumentFormatConfig['LineItemSections'][number] | undefined =
         config.LineItemSections[0];
@@ -84,12 +86,15 @@ export const useBuilderPageController = () => {
         [allFields, config, lineSection, templateHtml],
     );
 
-    useEffect(() => {
-        void loadBuilderSecretValues(capabilities.isHostedWeb).then(setSecretValues);
-    }, [capabilities.isHostedWeb]);
+    const builderSecretsQuery = useQuery({
+        queryKey: queryKeys.secretsSettings(runtimeScope),
+        queryFn: () => fetchSecretsSettings({ capabilities }),
+        select: (settings) => secretValuesFromSettings(settings.secrets),
+    });
 
     const documentLibrary = useBuilderDocumentLibrary({
-        capabilities: { isHostedWeb: capabilities.isHostedWeb },
+        assets,
+        capabilities,
         config,
         savedTemplates,
         setAssets,
@@ -98,6 +103,7 @@ export const useBuilderPageController = () => {
         setSavedTemplates,
         setTemplateHtml,
         setViewMode,
+        templateHtml,
     });
 
     const actions = useBuilderPageActions({
@@ -137,7 +143,7 @@ export const useBuilderPageController = () => {
         lineSection,
         message,
         savedTemplates,
-        secretValues,
+        secretValues: builderSecretsQuery.data ?? {},
         referencedFieldIds,
         setAssets,
         setConfig,

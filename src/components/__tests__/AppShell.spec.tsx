@@ -9,6 +9,7 @@ import { CapabilityProvider } from '../../capability/CapabilityContext';
 import { AppShell } from '../AppShell';
 import { RecordStoreProvider } from '../../features/records/RecordStoreContext';
 import { SessionContext } from '../../features/auth/SessionContext';
+import { TestQueryProvider } from '../../test/TestQueryProvider';
 import { createTestSession } from '../../test/TestSession';
 
 const hasFetchCallForPath = (
@@ -97,17 +98,19 @@ describe('app shell', () => {
     it('shows desktop window controls in the shell top bar', async () => {
         render(
             <MemoryRouter initialEntries={['/app/dashboard']}>
-                <CapabilityProvider value={desktopCapabilities}>
-                    <SessionContext.Provider value={createTestSession(sysAdminAccount)}>
-                        <RecordStoreProvider>
-                            <Routes>
-                                <Route path="/app/*" element={<AppShell />}>
-                                    <Route index element={<h1>Dashboard</h1>} />
-                                </Route>
-                            </Routes>
-                        </RecordStoreProvider>
-                    </SessionContext.Provider>
-                </CapabilityProvider>
+                <TestQueryProvider>
+                    <CapabilityProvider value={desktopCapabilities}>
+                        <SessionContext.Provider value={createTestSession(sysAdminAccount)}>
+                            <RecordStoreProvider>
+                                <Routes>
+                                    <Route path="/app/*" element={<AppShell />}>
+                                        <Route index element={<h1>Dashboard</h1>} />
+                                    </Route>
+                                </Routes>
+                            </RecordStoreProvider>
+                        </SessionContext.Provider>
+                    </CapabilityProvider>
+                </TestQueryProvider>
             </MemoryRouter>,
         );
 
@@ -126,17 +129,19 @@ describe('app shell', () => {
     it('keeps shell window controls visible when the hosted desktop runtime marker is present', async () => {
         render(
             <MemoryRouter initialEntries={['/app/dashboard']}>
-                <CapabilityProvider value={hostedCapabilities}>
-                    <SessionContext.Provider value={createTestSession(sysAdminAccount)}>
-                        <RecordStoreProvider>
-                            <Routes>
-                                <Route path="/app/*" element={<AppShell />}>
-                                    <Route index element={<h1>Dashboard</h1>} />
-                                </Route>
-                            </Routes>
-                        </RecordStoreProvider>
-                    </SessionContext.Provider>
-                </CapabilityProvider>
+                <TestQueryProvider>
+                    <CapabilityProvider value={hostedCapabilities}>
+                        <SessionContext.Provider value={createTestSession(sysAdminAccount)}>
+                            <RecordStoreProvider>
+                                <Routes>
+                                    <Route path="/app/*" element={<AppShell />}>
+                                        <Route index element={<h1>Dashboard</h1>} />
+                                    </Route>
+                                </Routes>
+                            </RecordStoreProvider>
+                        </SessionContext.Provider>
+                    </CapabilityProvider>
+                </TestQueryProvider>
             </MemoryRouter>,
         );
 
@@ -157,26 +162,28 @@ describe('app shell', () => {
 
         render(
             <MemoryRouter initialEntries={['/app/dashboard']}>
-                <CapabilityProvider value={hostedCapabilities}>
-                    <SessionContext.Provider
-                        value={{
-                            accounts: [],
-                            operatorContext: undefined,
-                            hostedConnectionState: 'connected',
-                            login: () => Promise.resolve(),
-                            logout: () => undefined,
-                            saveAccount: () => Promise.resolve(),
-                            archiveAccount: () => Promise.resolve(),
-                            resetPassword: () => Promise.resolve(),
-                        }}
-                    >
-                        <RecordStoreProvider>
-                            <Routes>
-                                <Route path="/app/*" element={<AppShell />} />
-                            </Routes>
-                        </RecordStoreProvider>
-                    </SessionContext.Provider>
-                </CapabilityProvider>
+                <TestQueryProvider>
+                    <CapabilityProvider value={hostedCapabilities}>
+                        <SessionContext.Provider
+                            value={{
+                                accounts: [],
+                                operatorContext: undefined,
+                                hostedConnectionState: 'connected',
+                                login: () => Promise.resolve(),
+                                logout: () => undefined,
+                                saveAccount: () => Promise.resolve(),
+                                archiveAccount: () => Promise.resolve(),
+                                resetPassword: () => Promise.resolve(),
+                            }}
+                        >
+                            <RecordStoreProvider>
+                                <Routes>
+                                    <Route path="/app/*" element={<AppShell />} />
+                                </Routes>
+                            </RecordStoreProvider>
+                        </SessionContext.Provider>
+                    </CapabilityProvider>
+                </TestQueryProvider>
             </MemoryRouter>,
         );
 

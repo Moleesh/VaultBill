@@ -1,15 +1,16 @@
 /** @format */
 
 import { useForm } from '@tanstack/react-form';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import type { FC } from 'react';
 
 import { ActionButton } from '../../components/ActionButton';
 import { useCapabilities } from '../../capability/CapabilityContext';
-import { requestHostedApi } from '../../runtime/HostedApi';
+import { getRuntimeQueryScope, queryKeys } from '../../query/QueryKeys';
+import { fetchSecretsSettings, saveSecretsSettings } from '../../query/RuntimeQueries';
 import {
     defaultSecretsSettings,
-    normalizeSecretsSettings,
     SecretsSectionCard,
     SecretsTable,
     type SecretsSettings,
@@ -18,29 +19,45 @@ import {
 /** Owns the shared Secrets table for formula and record references. */
 export const SettingsSecretsSection: FC = () => {
     const capabilities = useCapabilities();
+    const queryClient = useQueryClient();
+    const runtimeScope = getRuntimeQueryScope(capabilities);
     const [settings, setSettings] = useState<SecretsSettings>(defaultSecretsSettings);
     const [message, setMessage] = useState('');
+    const secretsQuery = useQuery({
+        queryKey: queryKeys.secretsSettings(runtimeScope),
+        queryFn: () => fetchSecretsSettings({ capabilities }),
+    });
+    const saveSecretsMutation = useMutation({
+        mutationFn: (currentSettings: SecretsSettings) =>
+            saveSecretsSettings({
+                capabilities,
+                settings: currentSettings,
+            }),
+        onSuccess: async (_, currentSettings) => {
+            setSettings(currentSettings);
+            setMessage('Secrets saved.');
+            await queryClient.invalidateQueries({
+                queryKey: queryKeys.secretsSettings(runtimeScope),
+            });
+        },
+        onError: (reason: unknown) => {
+            setMessage(reason instanceof Error ? reason.message : 'Secrets could not be saved.');
+        },
+    });
     const form = useForm({
         defaultValues: settings,
     });
 
     useEffect(() => {
-        const secretRequest = window.vaultBillDesktop
-            ? window.vaultBillDesktop.getSecretsSettings()
-            : capabilities.isHostedWeb
-              ? requestHostedApi('/settings/secrets')
-              : undefined;
-        void secretRequest
-            ?.then((rawSettings) => {
-                setSettings(normalizeSecretsSettings(rawSettings));
-            })
-            .catch((reason: unknown) => {
-                setSettings(defaultSecretsSettings);
-                setMessage(
-                    reason instanceof Error ? reason.message : 'Secrets could not be loaded.',
-                );
-            });
-    }, [capabilities.isHostedWeb]);
+        if (secretsQuery.data) {
+            setSettings(secretsQuery.data);
+            return;
+        }
+        if (secretsQuery.isError) {
+            setSettings(defaultSecretsSettings);
+            setMessage('Secrets could not be loaded.');
+        }
+    }, [secretsQuery.data, secretsQuery.isError]);
 
     useEffect(() => {
         form.reset(settings);
@@ -48,20 +65,7 @@ export const SettingsSecretsSection: FC = () => {
 
     const saveSecrets = () => {
         const currentSettings = form.state.values;
-        const persistence = window.vaultBillDesktop
-            ? window.vaultBillDesktop.saveSecretsSettings(currentSettings)
-            : capabilities.isHostedWeb
-              ? requestHostedApi('/settings/secrets', 'POST', currentSettings)
-              : Promise.resolve(currentSettings);
-        void persistence
-            .then(() => {
-                setMessage('Secrets saved.');
-            })
-            .catch((reason: unknown) => {
-                setMessage(
-                    reason instanceof Error ? reason.message : 'Secrets could not be saved.',
-                );
-            });
+        void saveSecretsMutation.mutateAsync(currentSettings);
     };
 
     return (

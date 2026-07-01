@@ -1,9 +1,12 @@
 /** @format */
 
 import { useEffect, useRef, useState } from 'react';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 
 import { useCapabilities } from '../../capability/CapabilityContext';
-import { canUseLocalHostedApi, requestHostedApi } from '../../runtime/HostedApi';
+import { canUseLocalHostedApi } from '../../runtime/HostedApi';
+import { getRuntimeQueryScope, queryKeys } from '../../query/QueryKeys';
+import { fetchReportPage, fetchTrialStatus } from '../../query/RuntimeQueries';
 import { isStaticHostedBrowserBuild } from '../../runtime/RuntimeMode';
 import type { AppRecord } from '../records/RecordStoreSupport';
 import { pageSize, requestReportPage, type PrintTask } from './ReportsPageSupport';
@@ -28,68 +31,45 @@ export const useReportsPagePaging = (
     status: string,
 ) => {
     const capabilities = useCapabilities();
+    const runtimeScope = getRuntimeQueryScope(capabilities);
     const usesStaticHostedBrowserBuild = isStaticHostedBrowserBuild(capabilities);
-    const [serverRecords, setServerRecords] = useState<readonly AppRecord[]>([]);
-    const [serverTotal, setServerTotal] = useState(0);
-    const [nextCursor, setNextCursor] = useState<string>();
-    const [pageLoading, setPageLoading] = useState(false);
-    const [pageError, setPageError] = useState('');
     const [task, setTask] = useState<PrintTask>();
     const [printSource, setPrintSource] = useState<readonly AppRecord[]>([]);
-    const [trialExpired, setTrialExpired] = useState(false);
     const sentinelRef = useRef<HTMLDivElement>(null);
+    const trialStatusQuery = useQuery({
+        queryKey: queryKeys.trialStatus(runtimeScope, 'reports-page'),
+        queryFn: () => fetchTrialStatus({ capabilities }),
+    });
     const usesServerPaging =
         window.vaultBillDesktop !== undefined ||
         (!usesStaticHostedBrowserBuild && (capabilities.isHostedWeb || canUseLocalHostedApi()));
+    const trialExpired = trialStatusQuery.data?.isExpired ?? false;
+    const reportPagesQuery = useInfiniteQuery({
+        queryKey: queryKeys.reportResults(runtimeScope, query),
+        enabled: usesServerPaging,
+        initialPageParam: undefined as string | undefined,
+        queryFn: ({ pageParam }) =>
+            fetchReportPage({
+                canUseHostedReportsApi: !window.vaultBillDesktop && usesServerPaging,
+                query,
+                ...(pageParam ? { cursor: pageParam } : {}),
+            }),
+        getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+    });
+    const serverPages = reportPagesQuery.data?.pages ?? [];
+    const serverRecords = serverPages.flatMap((page) => page.rows);
+    const serverTotal = serverPages[0]?.total ?? 0;
+    const nextCursor = reportPagesQuery.hasNextPage
+        ? serverPages[serverPages.length - 1]?.nextCursor
+        : undefined;
+    const pageLoading = reportPagesQuery.isPending || reportPagesQuery.isFetchingNextPage;
+    const pageError = reportPagesQuery.error instanceof Error ? reportPagesQuery.error.message : '';
 
     const matchingRecords = usesServerPaging ? serverRecords : browserMatchingRecords;
     const totalRecords = usesServerPaging ? serverTotal : browserMatchingRecords.length;
     const visibleRecords = usesServerPaging
         ? matchingRecords
         : matchingRecords.slice(0, visibleCount);
-
-    useEffect(() => {
-        if (window.vaultBillDesktop) {
-            void window.vaultBillDesktop.getTrialStatus().then((trial) => {
-                setTrialExpired(trial.isExpired);
-            });
-        } else if (capabilities.isHostedWeb) {
-            void requestHostedApi<{ readonly isExpired: boolean }>('/trial/status').then(
-                (trial) => {
-                    setTrialExpired(trial.isExpired);
-                },
-            );
-        }
-    }, [capabilities.isHostedWeb]);
-
-    useEffect(() => {
-        if (!usesServerPaging) return undefined;
-        let active = true;
-        setPageLoading(true);
-        setPageError('');
-        void requestReportPage(query)
-            .then((page) => {
-                if (!active) return;
-                setServerRecords(page.rows);
-                setServerTotal(page.total);
-                setNextCursor(page.nextCursor);
-            })
-            .catch((reason: unknown) => {
-                if (active) {
-                    setPageError(
-                        reason instanceof Error
-                            ? reason.message
-                            : 'Report data could not be loaded.',
-                    );
-                }
-            })
-            .finally(() => {
-                if (active) setPageLoading(false);
-            });
-        return () => {
-            active = false;
-        };
-    }, [query, usesServerPaging]);
 
     useEffect(() => {
         const sentinel = sentinelRef.current;
@@ -104,32 +84,8 @@ export const useReportsPagePaging = (
         const observer = new IntersectionObserver(
             (entries) => {
                 if (!entries.some((entry) => entry.isIntersecting)) return;
-                if (usesServerPaging && nextCursor) {
-                    setPageLoading(true);
-                    void requestReportPage({ ...query, cursor: nextCursor })
-                        .then((page) => {
-                            setServerRecords((current) => [
-                                ...current,
-                                ...page.rows.filter(
-                                    (record) =>
-                                        !current.some(
-                                            (candidate) => candidate.recordId === record.recordId,
-                                        ),
-                                ),
-                            ]);
-                            setServerTotal(page.total);
-                            setNextCursor(page.nextCursor);
-                        })
-                        .catch((reason: unknown) => {
-                            setPageError(
-                                reason instanceof Error
-                                    ? reason.message
-                                    : 'More report rows could not be loaded.',
-                            );
-                        })
-                        .finally(() => {
-                            setPageLoading(false);
-                        });
+                if (usesServerPaging) {
+                    void reportPagesQuery.fetchNextPage();
                 } else {
                     setVisibleCount((current) =>
                         Math.min(matchingRecords.length, current + pageSize),
@@ -147,6 +103,7 @@ export const useReportsPagePaging = (
         nextCursor,
         pageLoading,
         query,
+        reportPagesQuery,
         setVisibleCount,
         usesServerPaging,
         visibleCount,
@@ -183,13 +140,12 @@ export const useReportsPagePaging = (
         printSource,
         sentinelRef,
         serverRecords,
-        setNextCursor,
-        setPageError,
-        setServerRecords,
-        setServerTotal,
+        setNextCursor: () => undefined,
+        setPageError: () => undefined,
+        setServerRecords: () => undefined,
+        setServerTotal: () => undefined,
         setTask,
         setPrintSource,
-        setTrialExpired,
         task,
         totalRecords,
         trialExpired,

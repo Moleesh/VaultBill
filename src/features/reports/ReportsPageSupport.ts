@@ -1,8 +1,9 @@
 /** @format */
 
 import { loadRecordPrintPackage, type RecordPrintPackage } from '../records/RecordPrintHtml';
-import { AppRecordSchema, type AppRecord } from '../records/RecordStoreSupport';
-import { requestHostedApi } from '../../runtime/HostedApi';
+import type { AppRecord } from '../records/RecordStoreSupport';
+import { canUseLocalHostedApi } from '../../runtime/HostedApi';
+import { fetchReportPage } from '../../query/RuntimeQueries';
 export {
     buildCustomerLedger,
     buildReportCsv,
@@ -76,12 +77,8 @@ export const loadPrintPackages = async (
 export const requestReportPage = async (
     query: Readonly<Record<string, unknown>>,
 ): Promise<ReportPage> => {
-    const rawPage = window.vaultBillDesktop
-        ? await window.vaultBillDesktop.queryReport(query)
-        : await requestHostedApi<ReportPagePayload>('/reports/query', 'POST', query);
-    return {
-        rows: rawPage.rows.map((row) => AppRecordSchema.parse(row)),
-        total: rawPage.total,
-        ...(rawPage.nextCursor ? { nextCursor: rawPage.nextCursor } : {}),
-    };
+    return fetchReportPage({
+        canUseHostedReportsApi: window.vaultBillDesktop === undefined && canUseLocalHostedApi(),
+        query,
+    });
 };

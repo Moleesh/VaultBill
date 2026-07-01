@@ -8,6 +8,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import type { FC } from 'react';
+import { useQuery } from '@tanstack/react-query';
 
 import { shouldRenderDesktopChrome } from '../capability/CapabilityRegistry';
 import { useCapabilities } from '../capability/CapabilityContext';
@@ -15,8 +16,9 @@ import { defaultRuntimeBranding, shellSections } from '../constants/RuntimeDefau
 import { useSession } from '../features/auth/SessionContext';
 import { useRecordStore } from '../features/records/RecordStoreContext';
 import { useThemeController } from '../hooks/useThemeController';
-import { requestHostedApi } from '../runtime/HostedApi';
 import { loadResolvedTheme } from '../runtime/WorkspaceTheme';
+import { getRuntimeQueryScope, queryKeys } from '../query/QueryKeys';
+import { fetchHostedWebUrl, fetchTrialStatus } from '../query/RuntimeQueries';
 import { createAppShellActions } from './AppShellActions';
 import { getAllowedSectionIds, getPageId } from './AppShellSupport';
 import { AppShellContentFrame } from './AppShellContentFrame';
@@ -38,6 +40,7 @@ export const AppShell: FC = () => {
     const themeController = useThemeController('teal-flow');
     const { setThemeId } = themeController;
     const contentRef = useRef<HTMLElement>(null);
+    const runtimeScope = getRuntimeQueryScope(capabilities);
     const [isHelpOpen, setIsHelpOpen] = useState(false);
     const [isResetOpen, setIsResetOpen] = useState(false);
     const [isActivationOpen, setIsActivationOpen] = useState(false);
@@ -52,6 +55,19 @@ export const AppShell: FC = () => {
     const [scrollProgress, setScrollProgress] = useState(0);
     const [isExpanded, setIsExpanded] = useState(false);
     const showWindowControls = shouldRenderDesktopChrome(capabilities);
+    const trialStatusQuery = useQuery({
+        queryKey: queryKeys.trialStatus(runtimeScope, operatorContext?.account.userId ?? 'guest'),
+        enabled:
+            Boolean(operatorContext) &&
+            (Boolean(window.vaultBillDesktop) || capabilities.isHostedWeb),
+        queryFn: () => fetchTrialStatus({ capabilities }),
+    });
+    const hostedWebUrlQuery = useQuery({
+        queryKey: queryKeys.hostedWebUrl(runtimeScope),
+        enabled: Boolean(window.vaultBillDesktop) || capabilities.isHostedWeb,
+        queryFn: () => fetchHostedWebUrl({ capabilities }),
+        staleTime: Number.POSITIVE_INFINITY,
+    });
     const shellActions = createAppShellActions({
         accountUserId: operatorContext?.account.userId ?? '',
         logout,
@@ -86,26 +102,14 @@ export const AppShell: FC = () => {
             setTrialStatus(undefined);
             return;
         }
-        if (window.vaultBillDesktop) {
-            void window.vaultBillDesktop.getTrialStatus().then(setTrialStatus);
-        } else if (capabilities.isHostedWeb) {
-            void requestHostedApi<NonNullable<typeof trialStatus>>('/trial/status').then(
-                setTrialStatus,
-            );
+        if (trialStatusQuery.data) {
+            setTrialStatus(trialStatusQuery.data);
         }
-    }, [capabilities.isHostedWeb, operatorContext]);
+    }, [operatorContext, trialStatusQuery.data]);
 
     useEffect(() => {
-        if (window.vaultBillDesktop) {
-            void window.vaultBillDesktop.getHostedWebUrl().then(setHostedWebUrl);
-            return;
-        }
-        if (capabilities.isHostedWeb) {
-            setHostedWebUrl(window.location.origin);
-            return;
-        }
-        setHostedWebUrl('');
-    }, [capabilities.isHostedWeb]);
+        setHostedWebUrl(hostedWebUrlQuery.data ?? '');
+    }, [hostedWebUrlQuery.data]);
 
     if (!operatorContext) return null;
 

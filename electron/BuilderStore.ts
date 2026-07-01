@@ -1,4 +1,5 @@
 /** @format */
+/* eslint-disable max-lines */
 
 import { DatabaseSync } from 'node:sqlite';
 import {
@@ -200,6 +201,41 @@ export class BuilderStore {
                 )
                 .all(),
         );
+
+    /** Deletes one non-default stored format and its linked print artifacts. */
+    public delete = (formatId: string): void => {
+        const format = this.#database
+            .prepare(
+                `SELECT format_id, is_default
+                 FROM document_formats
+                 WHERE format_id = ?;`,
+            )
+            .get(formatId) as
+            | { readonly format_id: unknown; readonly is_default: unknown }
+            | undefined;
+
+        if (!format) throw new Error('The selected document could not be found.');
+        if (Number(format.is_default) === 1) {
+            throw new Error('The default document cannot be deleted.');
+        }
+
+        this.#database.exec('BEGIN IMMEDIATE;');
+        try {
+            this.#database
+                .prepare('DELETE FROM print_template_assets WHERE template_id = ?;')
+                .run(formatId);
+            this.#database
+                .prepare('DELETE FROM print_templates WHERE template_id = ?;')
+                .run(formatId);
+            this.#database
+                .prepare('DELETE FROM document_formats WHERE format_id = ?;')
+                .run(formatId);
+            this.#database.exec('COMMIT;');
+        } catch (error) {
+            this.#database.exec('ROLLBACK;');
+            throw error;
+        }
+    };
 
     /** Closes the SQLite connection when the desktop runtime shuts down. */
     public close = () => {

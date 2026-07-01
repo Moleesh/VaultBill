@@ -43,6 +43,8 @@ export const LoginPage: FC<{ readonly onOpenSetupWizard?: () => void }> = ({
     const { accounts, hostedConnectionState, login, operatorContext } = useSession();
     const navigate = useNavigate();
     const loginSubmissionInFlightRef = useRef(false);
+    const latestPasswordRef = useRef('');
+    const latestSelectedAccountIdRef = useRef('');
     const [error, setError] = useState('');
     const [isHelpOpen, setIsHelpOpen] = useState(false);
     const [isActivationOpen, setIsActivationOpen] = useState(false);
@@ -53,27 +55,34 @@ export const LoginPage: FC<{ readonly onOpenSetupWizard?: () => void }> = ({
     const accountOptions = buildLoginAccountOptions(accounts, isSysAdminUnlocked);
     const fallbackSelectedAccountId = getLoginAccountId(accounts, isSysAdminUnlocked);
     const [selectedAccountId, setSelectedAccountId] = useState('');
+    const performLogin = async ({
+        password,
+        selectedAccountId,
+    }: {
+        readonly password: string;
+        readonly selectedAccountId: string;
+    }) => {
+        const accountId = selectedAccountId || effectiveSelectedAccountId;
+        if (!accountId || hostedConnectionState !== 'connected') return;
+        if (loginSubmissionInFlightRef.current) return;
+        loginSubmissionInFlightRef.current = true;
+        try {
+            await login(accountId, password);
+            void navigate('/app/dashboard');
+        } catch (reason) {
+            const message = reason instanceof Error ? reason.message : 'Login failed.';
+            setError(
+                message
+                    .replace(/^Error invoking remote method '[^']+':\s*/u, '')
+                    .replace(/^Error:\s*/u, ''),
+            );
+        } finally {
+            loginSubmissionInFlightRef.current = false;
+        }
+    };
     const loginForm = useLoginForm({
         defaultSelectedAccountId: fallbackSelectedAccountId,
-        onSubmit: async ({ password, selectedAccountId }) => {
-            const accountId = selectedAccountId || effectiveSelectedAccountId;
-            if (!accountId || hostedConnectionState !== 'connected') return;
-            if (loginSubmissionInFlightRef.current) return;
-            loginSubmissionInFlightRef.current = true;
-            try {
-                await login(accountId, password);
-                void navigate('/app/dashboard');
-            } catch (reason) {
-                const message = reason instanceof Error ? reason.message : 'Login failed.';
-                setError(
-                    message
-                        .replace(/^Error invoking remote method '[^']+':\s*/u, '')
-                        .replace(/^Error:\s*/u, ''),
-                );
-            } finally {
-                loginSubmissionInFlightRef.current = false;
-            }
-        },
+        onSubmit: performLogin,
     });
     const activationForm = useActivationForm();
     const effectiveSelectedAccountId = selectedAccountId || fallbackSelectedAccountId;
@@ -87,6 +96,11 @@ export const LoginPage: FC<{ readonly onOpenSetupWizard?: () => void }> = ({
         isDesktop: showDesktopChrome,
         isHostedWeb: capabilities.isHostedWeb,
     });
+
+    useEffect(() => {
+        latestSelectedAccountIdRef.current = effectiveSelectedAccountId;
+    }, [effectiveSelectedAccountId]);
+
     useSetupShortcutConfirmation(allowSetupShortcut, onOpenSetupWizard, () => {
         setIsSetupShortcutConfirmOpen(true);
     });
@@ -103,18 +117,48 @@ export const LoginPage: FC<{ readonly onOpenSetupWizard?: () => void }> = ({
 
     const submitLogin = async () => {
         if (isLoginDisabled || loginSubmissionInFlightRef.current) return;
-        if (isPasswordRequired && loginForm.state.values.password.trim().length === 0) {
+        if (isPasswordRequired && latestPasswordRef.current.trim().length === 0) {
             setError('Password is required.');
             return;
         }
-        await loginForm.handleSubmit();
+        await performLogin({
+            password: latestPasswordRef.current,
+            selectedAccountId: latestSelectedAccountIdRef.current,
+        });
     };
 
     useEffect(() => {
+        if (
+            selectedAccountId &&
+            !accounts.some((account) => account.userId === selectedAccountId)
+        ) {
+            setSelectedAccountId(fallbackSelectedAccountId);
+            loginForm.setFieldValue('selectedAccountId', fallbackSelectedAccountId);
+            loginForm.setFieldValue('password', '');
+            return;
+        }
+
         if (!selectedAccountId && fallbackSelectedAccountId) {
             setSelectedAccountId(fallbackSelectedAccountId);
             loginForm.setFieldValue('selectedAccountId', fallbackSelectedAccountId);
             return;
+        }
+
+        if (isSysAdminUnlocked) {
+            const sysAdminAccountId = getLoginAccountId(accounts, true);
+            const sysAdminRole = accounts.find(
+                (account) => account.userId === sysAdminAccountId,
+            )?.role;
+            if (
+                sysAdminAccountId &&
+                sysAdminRole === 'SysAdmin' &&
+                effectiveSelectedAccountId !== sysAdminAccountId
+            ) {
+                setSelectedAccountId(sysAdminAccountId);
+                loginForm.setFieldValue('selectedAccountId', sysAdminAccountId);
+                loginForm.setFieldValue('password', '');
+                return;
+            }
         }
 
         if (!isSysAdminUnlocked) {
@@ -195,11 +239,14 @@ export const LoginPage: FC<{ readonly onOpenSetupWizard?: () => void }> = ({
                         onHelpOpen={() => {
                             setIsHelpOpen(true);
                         }}
-                        onPasswordChange={() => {
+                        onPasswordChange={(nextPassword) => {
+                            latestPasswordRef.current = nextPassword;
                             if (error) setError('');
                         }}
                         onSelectedAccountIdChange={(nextSelectedAccountId) => {
                             setSelectedAccountId(nextSelectedAccountId);
+                            latestSelectedAccountIdRef.current = nextSelectedAccountId;
+                            latestPasswordRef.current = '';
                             if (error) setError('');
                         }}
                         onSubmit={() => {

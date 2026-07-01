@@ -1,17 +1,21 @@
 /** @format */
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 
 import { useCapabilities } from '../../capability/CapabilityContext';
 import { builtInDefaultFormat } from '../../db/startup/BuiltInDefaultFormat';
+import { defaultWorkspaceSettings, type WorkspaceSettings } from '../../runtime/WorkspaceSettings';
+import { getRuntimeQueryScope, queryKeys } from '../../query/QueryKeys';
 import {
-    defaultWorkspaceSettings,
-    loadWorkspaceSettings,
-    type WorkspaceSettings,
-} from '../../runtime/WorkspaceSettings';
+    fetchBuilderPackage,
+    fetchPublishedFormats,
+    fetchSecretsSettings,
+    fetchWorkspaceSettings,
+} from '../../query/RuntimeQueries';
 import { useSession } from '../auth/SessionContext';
-import { loadRecordPrintPackage, type RecordPrintPackage } from './RecordPrintHtml';
+import type { RecordPrintPackage } from './RecordPrintHtml';
 import {
     createEmptyRecord,
     knownDocumentFields,
@@ -25,17 +29,16 @@ import { useRecordStore, type EditableRecord } from './RecordStoreContext';
 import {
     filterReprintRecords,
     findSelectedStoredRecord,
-    loadPublishedFormats,
-    loadRecordsSecretValues,
     resolveRecordsFormatOptions,
     useCreateRecordsReprintSearchForm,
-    type PublishedFormat,
 } from './useRecordsPageStateSupport';
 import { isStaticHostedBrowserBuild } from '../../runtime/RuntimeMode';
+import { secretValuesFromSettings } from '../settings/SettingsSecretsSectionSupport';
 
 /** Holds the record page data, derived values, and server-backed inventory. */
 export const useRecordsPageState = () => {
     const capabilities = useCapabilities();
+    const runtimeScope = getRuntimeQueryScope(capabilities);
     const usesStaticHostedBrowserBuild = isStaticHostedBrowserBuild(capabilities);
     const { operatorContext } = useSession();
     const { cancelRecord, error, finalizeRecord, isLoading, records, saveDraft } = useRecordStore();
@@ -51,17 +54,35 @@ export const useRecordsPageState = () => {
     const [isCancelOpen, setIsCancelOpen] = useState(false);
     const [cancelReason, setCancelReason] = useState('');
     const [outputTask, setOutputTask] = useState<OutputTask>();
-    const [activePrintPackage, setActivePrintPackage] = useState<RecordPrintPackage>();
-    const [publishedFormats, setPublishedFormats] = useState<readonly PublishedFormat[]>([]);
-    const [secretValues, setSecretValues] = useState<Readonly<Record<string, string>>>({});
-    const [workspaceSettings, setWorkspaceSettings] =
-        useState<WorkspaceSettings>(defaultWorkspaceSettings);
     const reprintSearchForm = useCreateRecordsReprintSearchForm();
+    const workspaceSettingsQuery = useQuery({
+        queryKey: queryKeys.workspaceSettings(runtimeScope),
+        queryFn: () => fetchWorkspaceSettings({ capabilities }),
+    });
+    const publishedFormatsQuery = useQuery({
+        queryKey: queryKeys.publishedFormats(runtimeScope),
+        queryFn: () => fetchPublishedFormats({ capabilities }),
+    });
+    const secretValuesQuery = useQuery({
+        queryKey: queryKeys.secretsSettings(runtimeScope),
+        queryFn: () => fetchSecretsSettings({ capabilities }),
+        select: (settings) => secretValuesFromSettings(settings.secrets),
+    });
+    const activePrintPackageQuery = useQuery({
+        queryKey: queryKeys.builderPackage(runtimeScope, record.formatId || '__current__'),
+        queryFn: () => fetchBuilderPackage({ capabilities, formatId: record.formatId }),
+        enabled: record.formatId.trim().length > 0,
+    });
 
     const activeTab: 'create' | 'reprint' =
         searchParams.get('tab') === 'reprint' ? 'reprint' : 'create';
     const selectedStoredRecord = findSelectedStoredRecord(records, record);
     const isReadOnly = actionState === 'Finalized' || actionState === 'Reprint';
+    const workspaceSettings: WorkspaceSettings =
+        workspaceSettingsQuery.data ?? defaultWorkspaceSettings;
+    const publishedFormats = publishedFormatsQuery.data ?? [];
+    const secretValues = secretValuesQuery.data ?? {};
+    const activePrintPackage = activePrintPackageQuery.data as RecordPrintPackage | undefined;
     const formatOptions = resolveRecordsFormatOptions(
         publishedFormats,
         usesStaticHostedBrowserBuild,
@@ -91,41 +112,6 @@ export const useRecordsPageState = () => {
     const showShortcuts =
         !window.matchMedia('(pointer: coarse)').matches &&
         (capabilities.isDesktop || capabilities.isHostedWeb || capabilities.isDemoMode);
-
-    useEffect(() => {
-        void loadPublishedFormats(capabilities.isHostedWeb)
-            .then((formats) => {
-                setPublishedFormats(formats);
-            })
-            .catch(() => {
-                setPublishedFormats([]);
-            });
-    }, [capabilities.isHostedWeb]);
-
-    useEffect(() => {
-        void loadWorkspaceSettings(capabilities.isHostedWeb)
-            .then(setWorkspaceSettings)
-            .catch(() => {
-                setWorkspaceSettings(defaultWorkspaceSettings);
-            });
-    }, [capabilities.isHostedWeb]);
-
-    useEffect(() => {
-        void loadRecordsSecretValues(capabilities.isHostedWeb)
-            .then(setSecretValues)
-            .catch(() => {
-                setSecretValues({});
-            });
-    }, [capabilities.isHostedWeb]);
-
-    useEffect(() => {
-        setActivePrintPackage(undefined);
-        void loadRecordPrintPackage(record.formatId, capabilities.isHostedWeb)
-            .then(setActivePrintPackage)
-            .catch(() => {
-                setActivePrintPackage(undefined);
-            });
-    }, [capabilities.isHostedWeb, record.formatId]);
 
     return {
         actionState,

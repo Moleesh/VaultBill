@@ -3,37 +3,29 @@
 import { forwardRef } from 'react';
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
 
+import { Button } from './Button';
+import type { ButtonVariant } from './Button';
+
 type IconButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> & {
     readonly children: ReactNode;
     readonly icon?: ReactNode;
-    readonly variant?: 'default' | 'primary' | 'secondary';
-};
-
-const iconButtonClassName = (
-    variant: IconButtonProps['variant'],
-    className: string | undefined,
-): string => {
-    const variantClassName =
-        variant === 'primary'
-            ? 'button-primary'
-            : variant === 'secondary'
-              ? 'button-secondary'
-              : '';
-    return [variantClassName, 'icon-button', className].filter(Boolean).join(' ');
+    readonly variant?: Exclude<ButtonVariant, 'danger'>;
 };
 
 /** Shared button for the common icon-plus-label action pattern. */
 export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
     ({ children, className, icon, type = 'button', variant = 'default', ...buttonProps }, ref) => (
-        <button
+        <Button
             {...buttonProps}
-            className={iconButtonClassName(variant, className)}
+            className={className}
+            icon={icon}
+            layout="icon"
             ref={ref}
             type={type}
+            variant={variant}
         >
-            {icon ?? null}
-            <span>{children}</span>
-        </button>
+            {children}
+        </Button>
     ),
 );
 

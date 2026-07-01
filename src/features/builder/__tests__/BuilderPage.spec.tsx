@@ -6,6 +6,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 
 import type { CapabilityRegistry } from '../../../capability/Capability.types';
 import { CapabilityProvider } from '../../../capability/CapabilityContext';
+import { TestQueryProvider } from '../../../test/TestQueryProvider';
 import { BuilderPage } from '../BuilderPage';
 
 const demoCapabilities: CapabilityRegistry = {
@@ -33,16 +34,18 @@ describe('builder page', () => {
     it('renders the document library first and opens the builder from there', async () => {
         render(
             <MemoryRouter initialEntries={['/app/builder']}>
-                <CapabilityProvider value={demoCapabilities}>
-                    <Routes>
-                        <Route path="/app/builder" element={<BuilderPage />} />
-                    </Routes>
-                </CapabilityProvider>
+                <TestQueryProvider>
+                    <CapabilityProvider value={demoCapabilities}>
+                        <Routes>
+                            <Route path="/app/builder" element={<BuilderPage />} />
+                        </Routes>
+                    </CapabilityProvider>
+                </TestQueryProvider>
             </MemoryRouter>,
         );
 
         expect(await screen.findByRole('heading', { name: 'Document library' })).toBeVisible();
-        fireEvent.click(screen.getByRole('button', { name: /Edit current/u }));
+        fireEvent.click(screen.getByRole('button', { name: /New document/u }));
         expect(await screen.findByRole('heading', { name: 'Document builder' })).toBeVisible();
     });
 });

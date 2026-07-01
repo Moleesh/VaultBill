@@ -4,25 +4,21 @@ import type { AnchorHTMLAttributes, FC, ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import type { LinkProps } from 'react-router-dom';
 
+import { buttonVariantClassName } from './Button';
+import type { ButtonVariant } from './Button';
+
 type ActionLinkProps = Omit<LinkProps, 'className'> &
     Omit<AnchorHTMLAttributes<HTMLAnchorElement>, 'href'> & {
         readonly children: ReactNode;
         readonly className?: string;
-        readonly variant?: 'default' | 'primary' | 'secondary' | 'danger';
+        readonly variant?: ButtonVariant;
     };
 
 const actionLinkClassName = (
     variant: ActionLinkProps['variant'],
     className: string | undefined,
 ): string => {
-    const variantClassName =
-        variant === 'primary'
-            ? 'button-primary'
-            : variant === 'secondary'
-              ? 'button-secondary'
-              : variant === 'danger'
-                ? 'button-danger'
-                : 'action-link';
+    const variantClassName = buttonVariantClassName(variant);
     return ['action-link', variantClassName, className].filter(Boolean).join(' ');
 };
 

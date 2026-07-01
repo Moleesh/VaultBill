@@ -5,12 +5,12 @@
 import { useEffect, useRef, useState } from 'react';
 import type { FC } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { shouldRenderDesktopChrome } from '../../capability/CapabilityRegistry';
 import { useCapabilities } from '../../capability/CapabilityContext';
 import { requestHostedApi } from '../../runtime/HostedApi';
 import type { ThemeId } from '../../types/AppTypes';
-import type { OperatorAccount } from '../auth/AccountTypes';
 import {
     applyTheme,
     getStoredTheme,
@@ -32,7 +32,9 @@ import {
     setupSteps,
 } from './SetupPageSupport';
 import { SetupWelcomeStep } from './SetupWelcomeStep';
-import { useSetupForm } from './useSetupForm';
+import { useSetupForm, type SetupFormValues } from './useSetupForm';
+import { getRuntimeQueryScope, queryKeys } from '../../query/QueryKeys';
+import { fetchSetupDefaults } from '../../query/RuntimeQueries';
 
 type SetupPageProps = {
     readonly onComplete?: () => void;
@@ -43,6 +45,7 @@ export const SetupPage: FC<SetupPageProps> = ({ onComplete }) => {
     const capabilities = useCapabilities();
     const showDesktopChrome = shouldRenderDesktopChrome(capabilities);
     const navigate = useNavigate();
+    const queryClient = useQueryClient();
     const [stepIndex, setStepIndex] = useState(0);
     const [initialTheme] = useState<ThemeId>(() => getStoredTheme() ?? 'teal-flow');
     const [selectedTheme, setSelectedTheme] = useState<ThemeId>(initialTheme);
@@ -55,32 +58,67 @@ export const SetupPage: FC<SetupPageProps> = ({ onComplete }) => {
     const selectedThemeRef = useRef(initialTheme);
     const activeStep = setupSteps[stepIndex]?.label ?? 'Welcome';
     const canUseHostedSetupApi = localHostedOrigins.has(window.location.hostname);
-    const form = useSetupForm({
-        defaultTheme: initialTheme,
-        onSubmit: async (value) => {
+    const runtimeScope = getRuntimeQueryScope(capabilities);
+    const setupDefaultsQuery = useQuery({
+        queryKey: queryKeys.setupDefaults(runtimeScope),
+        queryFn: () =>
+            fetchSetupDefaults({
+                capabilities,
+                canUseHostedSetupApi,
+            }),
+        staleTime: Number.POSITIVE_INFINITY,
+    });
+    const completeSetupMutation = useMutation({
+        mutationFn: async (value: SetupFormValues) => {
             if (window.vaultBillDesktop) {
                 await window.vaultBillDesktop.completeSetup({
                     companyName: value.companyName.trim(),
                     address: value.address.trim(),
-                    theme: selectedTheme,
+                    theme: selectedThemeRef.current,
                     adminUsername: value.adminUsername.trim(),
                     adminDisplayName: value.adminDisplayName.trim(),
                     adminPassword: value.adminPassword.trim(),
+                    clearAdminPassword: value.clearAdminPassword,
                 });
-            } else if (capabilities.isHostedWeb || canUseHostedSetupApi) {
+                return;
+            }
+            if (capabilities.isHostedWeb || canUseHostedSetupApi) {
                 await requestHostedApi('/setup/complete', 'POST', {
                     companyName: value.companyName.trim(),
                     address: value.address.trim(),
-                    theme: selectedTheme,
+                    theme: selectedThemeRef.current,
                     adminUsername: value.adminUsername.trim(),
                     adminDisplayName: value.adminDisplayName.trim(),
                     adminPassword: value.adminPassword.trim(),
+                    clearAdminPassword: value.clearAdminPassword,
                 });
-            } else {
-                throw new Error('Setup is only available through VaultBill Desktop.');
+                return;
             }
+            throw new Error('Setup is only available through VaultBill Desktop.');
+        },
+        onSuccess: async () => {
+            await Promise.all([
+                queryClient.invalidateQueries({
+                    queryKey: queryKeys.setupStatus(runtimeScope),
+                }),
+                queryClient.invalidateQueries({
+                    queryKey: queryKeys.setupDefaults(runtimeScope),
+                }),
+                queryClient.invalidateQueries({
+                    queryKey: queryKeys.session(runtimeScope),
+                }),
+                queryClient.invalidateQueries({
+                    queryKey: queryKeys.workspaceSettings(runtimeScope),
+                }),
+            ]);
             onComplete?.();
             await navigate('/login', { replace: true });
+        },
+    });
+    const form = useSetupForm({
+        defaultTheme: initialTheme,
+        onSubmit: async (value) => {
+            await completeSetupMutation.mutateAsync(value);
         },
     });
     const { address, adminDisplayName, adminUsername, companyName } = form.state.values;
@@ -132,68 +170,31 @@ export const SetupPage: FC<SetupPageProps> = ({ onComplete }) => {
 
     useEffect(() => {
         if (hydratedSetupDefaultsRef.current) return;
+        if (!setupDefaultsQuery.data) return;
         hydratedSetupDefaultsRef.current = true;
 
-        const hydrateSetupDefaults = async () => {
-            const fallbackBusiness = {
-                companyName: '',
-                address: '',
-                theme: form.state.values.theme,
-            };
-            const fallbackAccounts: readonly OperatorAccount[] = [];
+        const activeAdmin = setupDefaultsQuery.data.accounts.find(
+            (account) => account.role === 'Admin' && account.isActive,
+        );
+        const nextBusiness = setupDefaultsQuery.data.business;
 
-            const [business, accounts] = window.vaultBillDesktop
-                ? await Promise.all([
-                      window.vaultBillDesktop.getBusinessSettings(),
-                      window.vaultBillDesktop.listAccounts(),
-                  ])
-                : capabilities.isHostedWeb || canUseHostedSetupApi
-                  ? await Promise.all([
-                        requestHostedApi('/workspace/settings').catch(() => fallbackBusiness),
-                        requestHostedApi<readonly OperatorAccount[]>('/auth/accounts').catch(
-                            () => fallbackAccounts,
-                        ),
-                    ])
-                  : [fallbackBusiness, fallbackAccounts];
-
-            const nextBusiness =
-                typeof business === 'object' && business !== null
-                    ? (business as {
-                          readonly companyName?: unknown;
-                          readonly address?: unknown;
-                          readonly theme?: unknown;
-                      })
-                    : {};
-            const activeAdmin = accounts.find(
-                (account) => account.role === 'Admin' && account.isActive,
-            );
-
-            form.setFieldValue(
-                'companyName',
-                typeof nextBusiness.companyName === 'string' ? nextBusiness.companyName : '',
-            );
-            form.setFieldValue(
-                'address',
-                typeof nextBusiness.address === 'string' ? nextBusiness.address : '',
-            );
-            const hydratedTheme =
-                typeof nextBusiness.theme === 'string' && isThemeId(nextBusiness.theme)
-                    ? nextBusiness.theme
-                    : selectedThemeRef.current;
-            if (selectedThemeRef.current === initialTheme) {
-                setSelectedTheme(hydratedTheme);
-                applyTheme(hydratedTheme);
-            }
-            form.setFieldValue('adminDisplayName', activeAdmin?.displayName ?? '');
-            form.setFieldValue('adminUsername', activeAdmin?.username ?? '');
-            form.setFieldValue('adminPassword', '');
-            setHasExistingAdminPassword(
-                Boolean(activeAdmin?.passwordConfigured ?? activeAdmin?.passwordHash),
-            );
-        };
-
-        void hydrateSetupDefaults().catch(() => undefined);
-    }, [canUseHostedSetupApi, capabilities.isHostedWeb, form, initialTheme]);
+        form.setFieldValue('companyName', nextBusiness.companyName);
+        form.setFieldValue('address', nextBusiness.address);
+        const hydratedTheme = isThemeId(nextBusiness.theme)
+            ? nextBusiness.theme
+            : selectedThemeRef.current;
+        if (selectedThemeRef.current === initialTheme) {
+            setSelectedTheme(hydratedTheme);
+            applyTheme(hydratedTheme);
+        }
+        form.setFieldValue('adminDisplayName', activeAdmin?.displayName ?? '');
+        form.setFieldValue('adminUsername', activeAdmin?.username ?? '');
+        form.setFieldValue('adminPassword', '');
+        form.setFieldValue('clearAdminPassword', false);
+        setHasExistingAdminPassword(
+            Boolean(activeAdmin?.passwordConfigured ?? activeAdmin?.passwordHash),
+        );
+    }, [form, initialTheme, setupDefaultsQuery.data]);
 
     useEffect(() => {
         if (!hasAttemptedBusinessProfileContinue) return;

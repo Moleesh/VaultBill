@@ -67,7 +67,6 @@ export type ReportsPageController = {
     readonly setStatus: (value: string) => void;
     readonly setTask: (task: PrintTask | undefined) => void;
     readonly setToDate: (value: string) => void;
-    readonly setTrialExpired: (value: boolean) => void;
     readonly setVisibleCount: (count: number | ((current: number) => number)) => void;
     readonly updateReportFilter: (id: string, next: Partial<ReportFieldFilter>) => void;
     readonly status: string;

@@ -1,14 +1,38 @@
 /** @format */
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect, useMemo } from 'react';
 import type { FC, PropsWithChildren } from 'react';
 
 import { useCapabilities } from '../../capability/CapabilityContext';
 import { isStaticHostedBrowserBuild } from '../../runtime/RuntimeMode';
 import { useSession } from '../auth/useSession';
 import { RecordStoreContext } from './RecordStoreContextBase';
-import { createRecordStoreActions } from './RecordStoreActions';
-import type { AppRecord } from './RecordStoreSupport';
+import type { OperatorContext } from '../auth/AccountTypes';
+import {
+    cancelRuntimeRecord,
+    fetchStoredRecords,
+    finalizeRuntimeRecord,
+    saveDraftRuntimeRecord,
+} from '../../query/RuntimeQueries';
+import { getRuntimeQueryScope, queryKeys } from '../../query/QueryKeys';
+import {
+    recordStoreEventName,
+    resetBrowserRecords,
+    sortLatestFirst,
+    writeBrowserRecords,
+    type AppRecord,
+    type EditableRecord,
+} from './RecordStoreSupport';
+
+const mergeRecord = (
+    currentRecords: readonly AppRecord[],
+    nextRecord: AppRecord,
+): readonly AppRecord[] =>
+    sortLatestFirst([
+        nextRecord,
+        ...currentRecords.filter((record) => record.recordId !== nextRecord.recordId),
+    ]);
 
 /**
  * Supplies record data and record mutations across every runtime mode.
@@ -17,51 +41,148 @@ export const RecordStoreProvider: FC<PropsWithChildren> = ({ children }) => {
     const capabilities = useCapabilities();
     const usesStaticHostedBrowserBuild = isStaticHostedBrowserBuild(capabilities);
     const { operatorContext: sessionOperator } = useSession();
-    const [records, setRecords] = useState<readonly AppRecord[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState('');
-
-    const loadRecords = useMemo(
-        () =>
-            createRecordStoreActions({
-                accounts: () => [],
-                isHostedWeb: () => capabilities.isHostedWeb,
-                usesStaticHostedBrowserBuild: () => usesStaticHostedBrowserBuild,
-                sessionOperator: () => sessionOperator,
-                setRecords,
-                setLoading: setIsLoading,
-                setError,
-            }).loadRecords,
-        [capabilities.isHostedWeb, sessionOperator, usesStaticHostedBrowserBuild],
-    );
-    const actions = useMemo(
-        () =>
-            createRecordStoreActions({
-                accounts: () => records,
-                isHostedWeb: () => capabilities.isHostedWeb,
-                usesStaticHostedBrowserBuild: () => usesStaticHostedBrowserBuild,
-                sessionOperator: () => sessionOperator,
-                setRecords,
-                setLoading: setIsLoading,
-                setError,
+    const queryClient = useQueryClient();
+    const runtimeScope = getRuntimeQueryScope(capabilities);
+    const recordsQueryKey = queryKeys.records(runtimeScope);
+    const recordsQuery = useQuery({
+        queryKey: recordsQueryKey,
+        queryFn: () =>
+            fetchStoredRecords({
+                capabilities,
+                sessionOperator,
+                usesStaticHostedBrowserBuild,
             }),
-        [capabilities.isHostedWeb, records, sessionOperator, usesStaticHostedBrowserBuild],
-    );
+    });
+    const records = recordsQuery.data ?? [];
+    const error = recordsQuery.error instanceof Error ? recordsQuery.error.message : '';
+    const persistBrowserRecordsIfNeeded = (nextRecords: readonly AppRecord[]) => {
+        if (
+            !window.vaultBillDesktop &&
+            !capabilities.isHostedWeb &&
+            !usesStaticHostedBrowserBuild
+        ) {
+            writeBrowserRecords(nextRecords);
+        }
+    };
+    const updateCachedRecords = (
+        updater: (currentRecords: readonly AppRecord[]) => readonly AppRecord[],
+    ) => {
+        queryClient.setQueryData<readonly AppRecord[]>(recordsQueryKey, (currentRecords = []) => {
+            const nextRecords = updater(currentRecords);
+            persistBrowserRecordsIfNeeded(nextRecords);
+            return nextRecords;
+        });
+        void queryClient.invalidateQueries({
+            queryKey: ['runtime', runtimeScope, 'report-results'],
+        });
+    };
+    const saveDraftMutation = useMutation({
+        mutationFn: ({
+            input,
+            operatorContext,
+        }: {
+            readonly input: EditableRecord;
+            readonly operatorContext: OperatorContext;
+        }) =>
+            saveDraftRuntimeRecord({
+                capabilities,
+                existing: records.find((record) => record.recordId === input.recordId),
+                input,
+                operatorContext,
+                usesStaticHostedBrowserBuild,
+            }),
+        onSuccess: (nextRecord) => {
+            updateCachedRecords((currentRecords) => mergeRecord(currentRecords, nextRecord));
+        },
+    });
+    const finalizeRecordMutation = useMutation({
+        mutationFn: ({
+            input,
+            operatorContext,
+        }: {
+            readonly input: EditableRecord;
+            readonly operatorContext: OperatorContext;
+        }) =>
+            finalizeRuntimeRecord({
+                capabilities,
+                existing: records.find((record) => record.recordId === input.recordId),
+                input,
+                operatorContext,
+                usesStaticHostedBrowserBuild,
+            }),
+        onSuccess: (nextRecord) => {
+            updateCachedRecords((currentRecords) => mergeRecord(currentRecords, nextRecord));
+        },
+    });
+    const cancelRecordMutation = useMutation({
+        mutationFn: ({
+            operatorContext,
+            reason,
+            recordId,
+        }: {
+            readonly operatorContext: OperatorContext;
+            readonly reason: string;
+            readonly recordId: string;
+        }) =>
+            cancelRuntimeRecord({
+                capabilities,
+                existing: records.find((record) => record.recordId === recordId),
+                operatorContext,
+                reason,
+                recordId,
+                usesStaticHostedBrowserBuild,
+            }),
+        onSuccess: (nextRecord) => {
+            updateCachedRecords((currentRecords) => mergeRecord(currentRecords, nextRecord));
+        },
+    });
 
     useEffect(() => {
-        loadRecords();
-        window.addEventListener('vaultbill-record-store-change', loadRecords);
+        const refreshRecords = () => {
+            void queryClient.invalidateQueries({
+                queryKey: recordsQueryKey,
+            });
+        };
+        window.addEventListener(recordStoreEventName, refreshRecords);
 
         return () => {
-            window.removeEventListener('vaultbill-record-store-change', loadRecords);
+            window.removeEventListener(recordStoreEventName, refreshRecords);
         };
-    }, [loadRecords]);
+    }, [queryClient, recordsQueryKey]);
+
+    const actions = useMemo(
+        () => ({
+            saveDraft: (input: EditableRecord, operatorContext: OperatorContext) =>
+                saveDraftMutation.mutateAsync({ input, operatorContext }),
+            finalizeRecord: (input: EditableRecord, operatorContext: OperatorContext) =>
+                finalizeRecordMutation.mutateAsync({ input, operatorContext }),
+            cancelRecord: (recordId: string, reason: string, operatorContext: OperatorContext) =>
+                cancelRecordMutation.mutateAsync({ recordId, reason, operatorContext }),
+            resetDemoData: () => {
+                resetBrowserRecords();
+                void queryClient.invalidateQueries({
+                    queryKey: recordsQueryKey,
+                });
+                void queryClient.invalidateQueries({
+                    queryKey: ['runtime', runtimeScope, 'report-results'],
+                });
+            },
+        }),
+        [
+            cancelRecordMutation,
+            finalizeRecordMutation,
+            queryClient,
+            recordsQueryKey,
+            runtimeScope,
+            saveDraftMutation,
+        ],
+    );
 
     return (
         <RecordStoreContext.Provider
             value={{
                 records,
-                isLoading,
+                isLoading: recordsQuery.isPending,
                 error,
                 saveDraft: actions.saveDraft,
                 finalizeRecord: actions.finalizeRecord,

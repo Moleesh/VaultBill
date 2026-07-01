@@ -186,6 +186,12 @@ export const registerMainIpcHandlers = () => {
         'vaultbill:builder:inventory',
         () => mainState.builderStore?.listInventory() ?? [],
     );
+    ipcMain.handle('vaultbill:builder:delete', (_event, formatId: unknown) => {
+        if (!mainState.builderStore || typeof formatId !== 'string') {
+            throw new Error('A document format is required.');
+        }
+        mainState.builderStore.delete(formatId);
+    });
     ipcMain.handle('vaultbill:builder:save', (_event, builderPackage: unknown) => {
         if (!mainState.builderStore) throw new Error('Builder services are not ready.');
         return mainState.builderStore.save(builderPackage);
