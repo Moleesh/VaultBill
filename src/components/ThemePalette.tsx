@@ -170,12 +170,6 @@ export const ThemePalette: FC<ThemePaletteProps> = ({ controller }) => {
                                       controller.setThemeId(theme.id);
                                       closePalette(false);
                                   }}
-                                  onFocus={() => {
-                                      controller.setThemeId(theme.id);
-                                  }}
-                                  onMouseEnter={() => {
-                                      controller.setThemeId(theme.id);
-                                  }}
                               >
                                   <span
                                       className="theme-palette-swatch"

@@ -4,7 +4,15 @@
 import type { CapabilityRegistry } from '../capability/Capability.types';
 import { bootstrapOperatorAccounts } from '../features/auth/AccountBootstrap';
 import type { OperatorAccount, OperatorContext } from '../features/auth/AccountTypes';
-import { demoAccount, getStoredOperatorId } from '../features/auth/SessionSupport';
+import {
+    defaultPasswordHash,
+    demoAccount,
+    fallbackBrowserAccounts,
+    getStoredOperatorId,
+    hashPassword,
+    validateManagedAccounts,
+    type HostedSessionPayload,
+} from '../features/auth/SessionSupport';
 import type { BuilderInventoryItem } from '../features/builder/BuilderDocumentLibrarySupport';
 import type { DocumentFormatConfig } from '../features/builder/BuilderPageControllerSupport';
 import type {
@@ -38,8 +46,10 @@ import type {
 } from '../features/settings/SettingsSecuritySectionStateSupport';
 import {
     canUseLocalHostedApi,
+    createHostedBackup,
     isHostedApiErrorStatus,
     requestHostedApi,
+    restoreHostedBackup,
 } from '../runtime/HostedApi';
 import { canUseDbBackedRuntime } from '../runtime/RuntimeMode';
 import {
@@ -378,6 +388,188 @@ export const fetchSessionSnapshot = async ({
     };
 };
 
+export const loginRuntimeSession = async ({
+    accounts,
+    canUseHostedSessionApi,
+    password = '',
+    userId,
+}: {
+    readonly accounts: readonly OperatorAccount[];
+    readonly canUseHostedSessionApi: boolean;
+    readonly password?: string;
+    readonly userId: string;
+}): Promise<{
+    readonly account: OperatorAccount;
+    readonly csrfToken: string | undefined;
+}> => {
+    let selectedAccount =
+        accounts.find((candidate) => candidate.userId === userId && candidate.isActive) ??
+        undefined;
+
+    if (!selectedAccount) {
+        throw new Error('The selected operator account is unavailable.');
+    }
+
+    if (window.vaultBillDesktop) {
+        selectedAccount = await window.vaultBillDesktop.loginAccount(userId, password);
+        return {
+            account: selectedAccount,
+            csrfToken: undefined,
+        };
+    }
+
+    if (canUseHostedSessionApi) {
+        const hostedSession = await requestHostedApi<HostedSessionPayload>('/auth/login', 'POST', {
+            userId,
+            password,
+        });
+        return {
+            account: hostedSession.account,
+            csrfToken: hostedSession.csrfToken,
+        };
+    }
+
+    if (selectedAccount.passwordHash) {
+        const suppliedHash = await hashPassword(password);
+        if (suppliedHash !== selectedAccount.passwordHash) {
+            throw new Error('The password is incorrect.');
+        }
+    }
+
+    return {
+        account: selectedAccount,
+        csrfToken: undefined,
+    };
+};
+
+export const logoutRuntimeSession = async ({
+    canUseHostedSessionApi,
+}: {
+    readonly canUseHostedSessionApi: boolean;
+}): Promise<void> => {
+    if (canUseHostedSessionApi) {
+        await requestHostedApi('/auth/logout', 'POST');
+    }
+};
+
+export const saveRuntimeAccount = async ({
+    accounts,
+    canUseHostedSessionApi,
+    nextAccount,
+}: {
+    readonly accounts: readonly OperatorAccount[];
+    readonly canUseHostedSessionApi: boolean;
+    readonly nextAccount: OperatorAccount;
+}): Promise<{
+    readonly nextAccounts: readonly OperatorAccount[];
+    readonly savedAccount: OperatorAccount;
+}> => {
+    const existing = accounts.find((candidate) => candidate.userId === nextAccount.userId);
+    const baseAccounts = accounts.length > 0 ? accounts : fallbackBrowserAccounts;
+    const nextAccounts = existing
+        ? baseAccounts.map((candidate) =>
+              candidate.userId === nextAccount.userId ? nextAccount : candidate,
+          )
+        : [...baseAccounts, nextAccount];
+    const validation = validateManagedAccounts(nextAccounts);
+    if (validation) {
+        throw new Error(validation);
+    }
+
+    if (window.vaultBillDesktop) {
+        const saved = await window.vaultBillDesktop.saveAccount(nextAccount);
+        return {
+            nextAccounts: nextAccounts.map((candidate) =>
+                candidate.userId === saved.userId ? saved : candidate,
+            ),
+            savedAccount: saved,
+        };
+    }
+
+    if (canUseHostedSessionApi) {
+        const saved = await requestHostedApi<OperatorAccount>(
+            '/accounts/save',
+            'POST',
+            nextAccount,
+        );
+        return {
+            nextAccounts: nextAccounts.map((candidate) =>
+                candidate.userId === saved.userId ? saved : candidate,
+            ),
+            savedAccount: saved,
+        };
+    }
+
+    return {
+        nextAccounts,
+        savedAccount: nextAccount,
+    };
+};
+
+export const archiveRuntimeAccount = async ({
+    canUseHostedSessionApi,
+    userId,
+}: {
+    readonly canUseHostedSessionApi: boolean;
+    readonly userId: string;
+}): Promise<string> => {
+    if (userId === 'sysadmin_1') {
+        throw new Error('The System Administrator cannot be removed.');
+    }
+
+    if (window.vaultBillDesktop) {
+        await window.vaultBillDesktop.archiveAccount(userId);
+        return userId;
+    }
+
+    if (canUseHostedSessionApi) {
+        await requestHostedApi('/accounts/archive', 'POST', { userId });
+    }
+
+    return userId;
+};
+
+export const resetRuntimeAccountPassword = async ({
+    accounts,
+    canUseHostedSessionApi,
+    password,
+    userId,
+    usesStaticHostedBrowserBuild,
+}: {
+    readonly accounts: readonly OperatorAccount[];
+    readonly canUseHostedSessionApi: boolean;
+    readonly password: string;
+    readonly userId: string;
+    readonly usesStaticHostedBrowserBuild: boolean;
+}): Promise<OperatorAccount> => {
+    if (window.vaultBillDesktop) {
+        return window.vaultBillDesktop.resetPassword(userId, password);
+    }
+
+    if (canUseHostedSessionApi) {
+        return requestHostedApi<OperatorAccount>('/accounts/reset-password', 'POST', {
+            userId,
+            password,
+        });
+    }
+
+    if (!usesStaticHostedBrowserBuild) {
+        throw new Error('Password reset is unavailable in this runtime.');
+    }
+
+    const passwordHash = await hashPassword(password);
+    const savedAccount = accounts.find((candidate) => candidate.userId === userId);
+    if (!savedAccount) {
+        throw new Error('The selected operator account is unavailable.');
+    }
+
+    return {
+        ...savedAccount,
+        passwordHash,
+        usesDefaultPassword: passwordHash === defaultPasswordHash,
+    } satisfies OperatorAccount;
+};
+
 export const fetchTrialStatus = async ({
     capabilities,
 }: {
@@ -551,6 +743,137 @@ export const saveIncludeDraftsInReports = async ({
         settings: nextSettings,
     });
     return nextSettings;
+};
+
+export type RuntimeBackupResult = {
+    readonly success: boolean;
+    readonly warning?: string;
+    readonly recoveryKey?: string;
+    readonly filePath?: string;
+    readonly downloadBlob?: Blob;
+    readonly downloadFileName?: string;
+};
+
+export const updateRuntimeBackupPassword = async ({
+    backupPassword,
+    capabilities,
+    remoteAuthorizationPassword,
+}: {
+    readonly backupPassword: string;
+    readonly capabilities: Pick<CapabilityRegistry, 'isHostedWeb'>;
+    readonly remoteAuthorizationPassword: string;
+}): Promise<void> => {
+    if (window.vaultBillDesktop) {
+        await window.vaultBillDesktop.setBackupPassword(backupPassword);
+        return;
+    }
+
+    if (capabilities.isHostedWeb) {
+        await requestHostedApi('/credentials/backup-password', 'POST', {
+            currentPassword: remoteAuthorizationPassword,
+            backupPassword,
+        });
+        return;
+    }
+
+    throw new Error('Backup password updates are unavailable in this runtime.');
+};
+
+export const createRuntimeBackup = async ({
+    capabilities,
+    encryptBackup,
+    remoteAuthorizationPassword,
+}: {
+    readonly capabilities: Pick<CapabilityRegistry, 'isHostedWeb'>;
+    readonly encryptBackup: boolean;
+    readonly remoteAuthorizationPassword: string;
+}): Promise<RuntimeBackupResult> => {
+    if (window.vaultBillDesktop) {
+        const result = await window.vaultBillDesktop.createBackup({ encrypted: encryptBackup });
+        if (result.cancelled) {
+            return { success: false, warning: 'Backup creation cancelled.' };
+        }
+
+        return {
+            success: true,
+            ...(result.filePath ? { filePath: result.filePath } : {}),
+            ...(result.recoveryKey ? { recoveryKey: result.recoveryKey } : {}),
+        };
+    }
+
+    if (capabilities.isHostedWeb) {
+        const result = await createHostedBackup(encryptBackup, remoteAuthorizationPassword);
+        return {
+            success: true,
+            filePath: result.fileName,
+            downloadBlob: result.blob,
+            downloadFileName: result.fileName,
+            ...(result.recoveryKey ? { recoveryKey: result.recoveryKey } : {}),
+        };
+    }
+
+    throw new Error('Backups are unavailable in this runtime.');
+};
+
+export const restoreRuntimeBackup = async ({
+    capabilities,
+    remoteAuthorizationPassword,
+    restoreFile,
+    restorePassword,
+    restoreRecoveryKey,
+}: {
+    readonly capabilities: Pick<CapabilityRegistry, 'isHostedWeb'>;
+    readonly remoteAuthorizationPassword: string;
+    readonly restoreFile: File;
+    readonly restorePassword: string;
+    readonly restoreRecoveryKey: string;
+}): Promise<void> => {
+    if (window.vaultBillDesktop) {
+        await window.vaultBillDesktop.restoreBackup({
+            ...(restorePassword ? { password: restorePassword } : {}),
+            ...(restoreRecoveryKey ? { recoveryKey: restoreRecoveryKey } : {}),
+        });
+        return;
+    }
+
+    if (capabilities.isHostedWeb) {
+        await restoreHostedBackup(restoreFile, {
+            ...(restorePassword ? { backupPassword: restorePassword } : {}),
+            ...(restoreRecoveryKey ? { recoveryKey: restoreRecoveryKey } : {}),
+            sysAdminPassword: remoteAuthorizationPassword,
+        });
+        return;
+    }
+
+    throw new Error('Backup restore is unavailable in this runtime.');
+};
+
+export const resetRuntimeApplicationData = async ({
+    capabilities,
+    resetConfirmation,
+    resetSysAdminPassword,
+}: {
+    readonly capabilities: Pick<CapabilityRegistry, 'isHostedWeb'>;
+    readonly resetConfirmation: string;
+    readonly resetSysAdminPassword: string;
+}): Promise<void> => {
+    if (window.vaultBillDesktop) {
+        await window.vaultBillDesktop.resetApplicationData({
+            password: resetSysAdminPassword,
+            confirmation: resetConfirmation,
+        });
+        return;
+    }
+
+    if (capabilities.isHostedWeb) {
+        await requestHostedApi('/application/reset', 'POST', {
+            currentPassword: resetSysAdminPassword,
+            confirmation: resetConfirmation,
+        });
+        return;
+    }
+
+    throw new Error('Application reset is unavailable in this runtime.');
 };
 
 export const fetchWorkspacePrinters = async (): Promise<

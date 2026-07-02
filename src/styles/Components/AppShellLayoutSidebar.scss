@@ -244,6 +244,13 @@
 
 .app-shell:not(.is-sidebar-expanded) .app-shell-operator-actions {
     justify-content: center;
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.app-shell:not(.is-sidebar-expanded) .app-shell-operator-actions > * {
+    max-width: 100%;
 }
 
 .app-shell-host-status {
@@ -303,6 +310,7 @@
 
 .app-shell:not(.is-sidebar-expanded) .app-shell-operator .theme-palette {
     z-index: 280;
+    max-width: 100%;
 }
 
 .app-shell:not(.is-sidebar-expanded) .app-shell-operator .theme-palette-popover {

@@ -55,9 +55,9 @@
 .app-shell-topbar {
     position: relative;
     z-index: 30;
-    display: flex;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
-    justify-content: space-between;
     gap: var(--space-4);
     min-height: 5.5rem;
     padding: var(--space-4) clamp(var(--space-4), 4vw, var(--space-8));
@@ -105,7 +105,7 @@
     animation: app-shell-topbar-surface 14s ease-in-out infinite alternate;
 }
 .app-shell.has-window-controls .app-shell-topbar {
-    padding-right: clamp(var(--space-5), 3vw, var(--space-8));
+    padding-right: clamp(var(--space-4), 2vw, var(--space-6));
 }
 .app-shell-topbar::before {
     position: absolute;
@@ -246,12 +246,11 @@
     gap: 0.14rem;
 }
 .app-shell-topbar-actions {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     align-self: center;
     gap: clamp(var(--space-4), 2vw, var(--space-7));
-    margin-left: auto;
-    width: auto;
+    justify-self: end;
     min-width: 0;
     min-height: var(--app-shell-window-control-size, 3.45rem);
     flex-wrap: nowrap;
@@ -267,6 +266,7 @@
 .app-shell-topbar-status-group {
     display: inline-flex;
     align-items: center;
+    justify-content: flex-end;
     gap: var(--space-3);
     min-width: 0;
     flex: 0 1 auto;
@@ -276,7 +276,7 @@
     align-items: center;
     justify-content: flex-end;
     flex: 0 0 auto;
-    margin-left: 0;
+    margin-left: clamp(var(--space-4), 2vw, var(--space-6));
 }
 .app-shell-window-chrome {
     --app-shell-window-control-size: 3.45rem;

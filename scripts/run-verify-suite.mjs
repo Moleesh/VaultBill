@@ -29,7 +29,6 @@ const npmRun = (scriptName) => [npmCommand, ['run', scriptName]];
 const npxRun = (...args) => [npxCommand, [...args]];
 
 const commonSteps = [
-    ['Import check', ...npmRun('imports:check')],
     ['Format check', ...npmRun('format:check')],
     ['Lint', ...npmRun('lint')],
     ['Typecheck', ...npmRun('typecheck')],

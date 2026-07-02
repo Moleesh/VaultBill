@@ -12,6 +12,7 @@ import {
     compareImportSources,
     findImportOrderIssue,
     getImportGroupRank,
+    normalizeImportDeclarations,
 } from './scripts/import-order-support.mjs';
 
 const kebabCaseClassNameRule = {
@@ -104,11 +105,13 @@ const importOrderRule = {
             description:
                 'enforce VaultBill import ordering: React, libraries, internal modules, hooks, then styles',
         },
+        fixable: 'code',
         schema: [],
     },
     create(context) {
         return {
             Program(node) {
+                const sourceCode = context.sourceCode;
                 const imports = node.body
                     .filter((statement) => statement.type === 'ImportDeclaration')
                     .map((statement) => ({
@@ -131,6 +134,27 @@ const importOrderRule = {
                     message: sameGroup
                         ? `Import "${issue.current.source}" must be sorted before "${issue.previous.source}" within its group.`
                         : `Import "${issue.current.source}" is in the wrong group order. Expected React imports first, then libraries, internal modules, hooks, and styles last.`,
+                    fix: (fixer) => {
+                        const firstImport = imports[0]?.node;
+                        const lastImport = imports.at(-1)?.node;
+                        if (!firstImport || !lastImport) {
+                            return null;
+                        }
+
+                        const importBlock = sourceCode.text.slice(
+                            firstImport.range[0],
+                            lastImport.range[1],
+                        );
+                        const normalizedImportBlock = normalizeImportDeclarations(importBlock);
+                        if (normalizedImportBlock === importBlock) {
+                            return null;
+                        }
+
+                        return fixer.replaceTextRange(
+                            [firstImport.range[0], lastImport.range[1]],
+                            normalizedImportBlock,
+                        );
+                    },
                 });
 
                 for (let index = 1; index < imports.length; index += 1) {

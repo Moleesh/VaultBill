@@ -7,7 +7,7 @@ import process from 'node:process';
 import prettier from 'prettier';
 import ts from 'typescript';
 
-import { compareImportSources, getImportGroupRank } from './import-order-support.mjs';
+import { normalizeImportDeclarations } from './import-order-support.mjs';
 
 const supportedExtensions = new Set(['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs']);
 const ignoredDirectoryNames = new Set([
@@ -37,6 +37,15 @@ const args = process.argv.slice(2);
 const checkOnly = args.includes('--check');
 const stagedOnly = args.includes('--staged');
 const candidateArgs = args.filter((arg) => !arg.startsWith('--'));
+let prettierConfigPromise;
+
+const getPrettierConfig = async () => {
+    if (!prettierConfigPromise) {
+        prettierConfigPromise = prettier.resolveConfig(process.cwd());
+    }
+
+    return prettierConfigPromise;
+};
 
 const resolveCandidateFiles = async () => {
     if (candidateArgs.length > 0) {
@@ -63,30 +72,49 @@ const resolveCandidateFiles = async () => {
         );
     }
 
-    return walkDirectory(process.cwd());
-};
+    const rgFiles = execFileSync(
+        'rg',
+        [
+            '--files',
+            '--glob',
+            '*.ts',
+            '--glob',
+            '*.tsx',
+            '--glob',
+            '*.js',
+            '--glob',
+            '*.jsx',
+            '--glob',
+            '*.mjs',
+            '--glob',
+            '*.cjs',
+            '--glob',
+            '!coverage/**',
+            '--glob',
+            '!dist/**',
+            '--glob',
+            '!dist-electron/**',
+            '--glob',
+            '!node_modules/**',
+            '--glob',
+            '!release/**',
+            '--glob',
+            '!test-results/**',
+        ],
+        {
+            cwd: process.cwd(),
+            encoding: 'utf8',
+        },
+    )
+        .split(/\r?\n/u)
+        .filter(Boolean);
 
-const walkDirectory = async (directoryPath) => {
-    const entries = await fs.readdir(directoryPath, { withFileTypes: true });
-    const filePaths = await Promise.all(
-        entries.map(async (entry) => {
-            const entryPath = path.join(directoryPath, entry.name);
-
-            if (entry.isDirectory()) {
-                if (ignoredDirectoryNames.has(entry.name)) {
-                    return [];
-                }
-
-                return walkDirectory(entryPath);
-            }
-
-            return supportedExtensions.has(path.extname(entry.name).toLowerCase())
-                ? [entryPath]
-                : [];
-        }),
-    );
-
-    return filePaths.flat();
+    return rgFiles
+        .map((candidate) => path.resolve(process.cwd(), candidate))
+        .filter((candidate) => {
+            const segments = candidate.split(path.sep);
+            return !segments.some((segment) => ignoredDirectoryNames.has(segment));
+        });
 };
 
 const applyTextChanges = (sourceText, textChanges) => {
@@ -103,65 +131,6 @@ const applyTextChanges = (sourceText, textChanges) => {
     }
 
     return updatedText;
-};
-
-const importDeclarationPattern = /^(?:import|export)\s/u;
-
-const normalizeImportChunks = (sourceText) => {
-    const sourceFile = ts.createSourceFile(
-        'imports.ts',
-        sourceText,
-        ts.ScriptTarget.Latest,
-        true,
-        ts.ScriptKind.TSX,
-    );
-    const importStatements = sourceFile.statements.filter((statement) =>
-        ts.isImportDeclaration(statement),
-    );
-
-    if (importStatements.length === 0) {
-        return sourceText;
-    }
-
-    const firstImportStart = importStatements[0].getStart(sourceFile);
-    const trailingText = sourceText.slice(importStatements.at(-1).end);
-    const prefix = sourceText.slice(0, firstImportStart);
-    const chunks = importStatements.map((statement, index) => {
-        const chunkStart = index === 0 ? statement.getStart(sourceFile) : statement.getFullStart();
-        const nextStart =
-            index === importStatements.length - 1
-                ? statement.end
-                : importStatements[index + 1].getFullStart();
-        const chunkText = sourceText.slice(chunkStart, nextStart).trim();
-
-        return {
-            group: getImportGroupRank(statement.moduleSpecifier.text),
-            source: statement.moduleSpecifier.text,
-            text: chunkText,
-        };
-    });
-
-    const sortedChunks = [...chunks].sort((left, right) =>
-        compareImportSources(left.source, right.source),
-    );
-
-    const groupedChunks = [];
-    let currentGroup = -1;
-    for (const chunk of sortedChunks) {
-        if (chunk.group !== currentGroup) {
-            groupedChunks.push([]);
-            currentGroup = chunk.group;
-        }
-
-        groupedChunks.at(-1).push(chunk.text);
-    }
-
-    const importBlock = groupedChunks
-        .map((group) => group.filter((chunk) => importDeclarationPattern.test(chunk)).join('\n'))
-        .filter(Boolean)
-        .join('\n\n');
-
-    return `${prefix}${importBlock}${trailingText}`;
 };
 
 const organizeFileImports = async (filePath) => {
@@ -206,13 +175,15 @@ const organizeFileImports = async (filePath) => {
     }
 
     service.dispose();
-    currentText = normalizeImportChunks(currentText);
+    currentText = normalizeImportDeclarations(currentText);
 
-    const prettierConfig = await prettier.resolveConfig(normalizedFilePath);
-    currentText = await prettier.format(currentText, {
-        ...prettierConfig,
-        filepath: normalizedFilePath,
-    });
+    if (currentText !== sourceText) {
+        const prettierConfig = await getPrettierConfig();
+        currentText = await prettier.format(currentText, {
+            ...prettierConfig,
+            filepath: normalizedFilePath,
+        });
+    }
 
     if (currentText === sourceText) {
         return false;

@@ -267,6 +267,11 @@ and notes. That keeps the release list tidy instead of collecting stale copies.
 
 - intent-based source filenames over milestone or numbered names
 - kebab-case DOM class names so JSX and SCSS stay predictable together
+- import order is a standing rule:
+  React-family first, third-party libraries next, internal repo modules next,
+  internal hooks after other internal modules, and style imports last
+- `npm run imports:write` is the repo-wide normalizer, while ESLint can autofix
+  supported top-level import drift during local editing and pre-commit
 - focused utility comments where behavior is easy to misuse or drift over time
 - README and inline docs updated alongside product-facing cleanup
 

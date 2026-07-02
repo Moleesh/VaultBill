@@ -8,28 +8,25 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useCapabilities } from '../../capability/CapabilityContext';
 import { getRuntimeQueryScope, queryKeys } from '../../query/QueryKeys';
-import { fetchSessionSnapshot } from '../../query/RuntimeQueries';
+import {
+    archiveRuntimeAccount,
+    fetchSessionSnapshot,
+    loginRuntimeSession,
+    logoutRuntimeSession,
+    resetRuntimeAccountPassword,
+    saveRuntimeAccount,
+} from '../../query/RuntimeQueries';
 import {
     canUseLocalHostedApi,
     hostedApiRecoveredEvent,
     hostedApiUnavailableEvent,
-    requestHostedApi,
     setHostedCsrfToken,
 } from '../../runtime/HostedApi';
 import { isStaticHostedBrowserBuild } from '../../runtime/RuntimeMode';
 import { bootstrapOperatorAccounts, createOperatorContext } from './AccountBootstrap';
 import type { OperatorAccount } from './AccountTypes';
 import { SessionContext } from './SessionContextBase';
-import {
-    defaultPasswordHash,
-    demoAccount,
-    fallbackBrowserAccounts,
-    getStoredOperatorId,
-    hashPassword,
-    setStoredOperatorId,
-    validateManagedAccounts,
-    type HostedSessionPayload,
-} from './SessionSupport';
+import { demoAccount, getStoredOperatorId, setStoredOperatorId } from './SessionSupport';
 import type { SessionContextValue } from './SessionTypes';
 
 /** Supplies the active operator session for demo, hosted web, and desktop modes. */
@@ -177,8 +174,6 @@ export const SessionProvider: FC<PropsWithChildren<{ readonly refreshRevision?: 
     const persistAccounts = (nextAccounts: readonly OperatorAccount[]) => {
         setAccounts(nextAccounts);
     };
-    const findAccount = (userId: string | null): OperatorAccount | undefined =>
-        accounts.find((candidate) => candidate.userId === userId && candidate.isActive);
     const loginMutation = useMutation({
         mutationFn: async ({
             password = '',
@@ -186,44 +181,13 @@ export const SessionProvider: FC<PropsWithChildren<{ readonly refreshRevision?: 
         }: {
             readonly password?: string;
             readonly userId: string;
-        }) => {
-            let selectedAccount = findAccount(userId);
-
-            if (!selectedAccount) {
-                throw new Error('The selected operator account is unavailable.');
-            }
-            if (window.vaultBillDesktop) {
-                selectedAccount = await window.vaultBillDesktop.loginAccount(userId, password);
-                return {
-                    account: selectedAccount,
-                    csrfToken: undefined,
-                } as const;
-            }
-            if (canUseHostedSessionApi) {
-                const hostedSession = await requestHostedApi<HostedSessionPayload>(
-                    '/auth/login',
-                    'POST',
-                    {
-                        userId,
-                        password,
-                    },
-                );
-                return {
-                    account: hostedSession.account,
-                    csrfToken: hostedSession.csrfToken,
-                } as const;
-            }
-            if (selectedAccount.passwordHash) {
-                const suppliedHash = await hashPassword(password);
-                if (suppliedHash !== selectedAccount.passwordHash) {
-                    throw new Error('The password is incorrect.');
-                }
-            }
-            return {
-                account: selectedAccount,
-                csrfToken: undefined,
-            } as const;
-        },
+        }) =>
+            loginRuntimeSession({
+                accounts,
+                canUseHostedSessionApi,
+                password,
+                userId,
+            }),
         onSuccess: ({ account: nextAccount, csrfToken }) => {
             setAccount(nextAccount);
             setStoredOperatorId(nextAccount.userId);
@@ -232,11 +196,7 @@ export const SessionProvider: FC<PropsWithChildren<{ readonly refreshRevision?: 
         },
     });
     const logoutMutation = useMutation({
-        mutationFn: async () => {
-            if (canUseHostedSessionApi) {
-                await requestHostedApi('/auth/logout', 'POST');
-            }
-        },
+        mutationFn: () => logoutRuntimeSession({ canUseHostedSessionApi }),
         onSettled: () => {
             setHostedCsrfToken(undefined);
             setAccount(undefined);
@@ -245,44 +205,12 @@ export const SessionProvider: FC<PropsWithChildren<{ readonly refreshRevision?: 
         },
     });
     const saveAccountMutation = useMutation({
-        mutationFn: async (nextAccount: OperatorAccount) => {
-            const existing = accounts.find((candidate) => candidate.userId === nextAccount.userId);
-            const baseAccounts = accounts.length > 0 ? accounts : fallbackBrowserAccounts;
-            const nextAccounts = existing
-                ? baseAccounts.map((candidate) =>
-                      candidate.userId === nextAccount.userId ? nextAccount : candidate,
-                  )
-                : [...baseAccounts, nextAccount];
-            const validation = validateManagedAccounts(nextAccounts);
-            if (validation) throw new Error(validation);
-
-            if (window.vaultBillDesktop) {
-                const saved = await window.vaultBillDesktop.saveAccount(nextAccount);
-                return {
-                    nextAccounts: nextAccounts.map((candidate) =>
-                        candidate.userId === saved.userId ? saved : candidate,
-                    ),
-                    savedAccount: saved,
-                } as const;
-            }
-            if (canUseHostedSessionApi) {
-                const saved = await requestHostedApi<OperatorAccount>(
-                    '/accounts/save',
-                    'POST',
-                    nextAccount,
-                );
-                return {
-                    nextAccounts: nextAccounts.map((candidate) =>
-                        candidate.userId === saved.userId ? saved : candidate,
-                    ),
-                    savedAccount: saved,
-                } as const;
-            }
-            return {
-                nextAccounts,
-                savedAccount: nextAccount,
-            } as const;
-        },
+        mutationFn: (nextAccount: OperatorAccount) =>
+            saveRuntimeAccount({
+                accounts,
+                canUseHostedSessionApi,
+                nextAccount,
+            }),
         onSuccess: ({ nextAccounts, savedAccount }) => {
             persistAccounts(nextAccounts);
             if (account?.userId === savedAccount.userId) {
@@ -293,17 +221,11 @@ export const SessionProvider: FC<PropsWithChildren<{ readonly refreshRevision?: 
         },
     });
     const archiveAccountMutation = useMutation({
-        mutationFn: async (userId: string) => {
-            if (userId === 'sysadmin_1') {
-                throw new Error('The System Administrator cannot be removed.');
-            }
-            if (window.vaultBillDesktop) {
-                await window.vaultBillDesktop.archiveAccount(userId);
-            } else if (canUseHostedSessionApi) {
-                await requestHostedApi('/accounts/archive', 'POST', { userId });
-            }
-            return userId;
-        },
+        mutationFn: (userId: string) =>
+            archiveRuntimeAccount({
+                canUseHostedSessionApi,
+                userId,
+            }),
         onSuccess: (userId) => {
             persistAccounts(
                 accounts.map((candidate) =>
@@ -318,35 +240,20 @@ export const SessionProvider: FC<PropsWithChildren<{ readonly refreshRevision?: 
         },
     });
     const resetPasswordMutation = useMutation({
-        mutationFn: async ({
+        mutationFn: ({
             password,
             userId,
         }: {
             readonly password: string;
             readonly userId: string;
-        }) => {
-            if (window.vaultBillDesktop) {
-                return window.vaultBillDesktop.resetPassword(userId, password);
-            }
-            if (canUseHostedSessionApi) {
-                return requestHostedApi<OperatorAccount>('/accounts/reset-password', 'POST', {
-                    userId,
-                    password,
-                });
-            }
-            if (!usesStaticHostedBrowserBuild) {
-                throw new Error('Password reset is unavailable in this runtime.');
-            }
-
-            const passwordHash = await hashPassword(password);
-            const savedAccount = accounts.find((candidate) => candidate.userId === userId);
-            if (!savedAccount) throw new Error('The selected operator account is unavailable.');
-            return {
-                ...savedAccount,
-                passwordHash,
-                usesDefaultPassword: passwordHash === defaultPasswordHash,
-            } satisfies OperatorAccount;
-        },
+        }) =>
+            resetRuntimeAccountPassword({
+                accounts,
+                canUseHostedSessionApi,
+                password,
+                userId,
+                usesStaticHostedBrowserBuild,
+            }),
         onSuccess: (savedAccount) => {
             persistAccounts(
                 accounts.map((candidate) =>
