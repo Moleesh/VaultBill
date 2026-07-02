@@ -22,6 +22,8 @@ test.beforeEach(async ({ page }) => {
 });
 
 const loginAsAdmin = async (page: Page) => {
+    if (page.url().includes('/app/')) return;
+
     const startDemoButton = page.getByRole('button', { name: /Start demo/u });
     const operatorAccountButton = page.getByRole('button', { name: /Operator account/u });
     const loginPath = await Promise.any([
@@ -91,8 +93,8 @@ test('desktop bridge saves and reloads a draft between refreshes', async ({ page
             ),
         )
         .toContain(customerName);
-    await page.reload();
-    await loginAsAdmin(page);
+    await page.getByRole('button', { name: 'Refresh window' }).click();
+    await expect(page.getByRole('heading', { name: /Welcome back/u })).toBeVisible();
     await expect
         .poll(() =>
             page.evaluate(

@@ -73,6 +73,7 @@ describe('app shell', () => {
             value: {
                 closeWindow: vi.fn(),
                 minimizeWindow: vi.fn(),
+                reloadWindow: vi.fn(),
                 getHostedWebUrl: vi.fn().mockResolvedValue('http://localhost'),
                 openHostedWeb: vi.fn().mockResolvedValue(undefined),
                 getTrialStatus: vi.fn().mockResolvedValue({
@@ -123,6 +124,7 @@ describe('app shell', () => {
         expect(screen.getByRole('navigation', { name: 'Primary' })).toBeVisible();
         expect(screen.getByRole('button', { name: 'Close to tray' })).toBeVisible();
         expect(screen.getByRole('button', { name: 'Minimize to taskbar' })).toBeVisible();
+        expect(screen.getByRole('button', { name: 'Refresh window' })).toBeVisible();
         expect(screen.getByRole('button', { name: 'Open hosted web' })).toBeVisible();
     });
 
@@ -153,6 +155,7 @@ describe('app shell', () => {
 
         expect(screen.getByRole('button', { name: 'Close to tray' })).toBeVisible();
         expect(screen.getByRole('button', { name: 'Minimize to taskbar' })).toBeVisible();
+        expect(screen.getByRole('button', { name: 'Refresh window' })).toBeVisible();
         expect(screen.queryByRole('button', { name: 'Open hosted web' })).toBeNull();
     });
 

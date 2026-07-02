@@ -17,6 +17,7 @@ export const registerMainIpcHandlers = () => {
     ipcMain.handle('vaultbill:runtime:process-info', () => getRuntimeProcessInfo());
     ipcMain.handle('vaultbill:hosted-web:url', () => hostedAppUrl());
     ipcMain.handle('vaultbill:hosted-web:open', () => shell.openExternal(hostedAppUrl()));
+    ipcMain.handle('vaultbill:window:reload', () => mainState.mainWindow?.reload());
     ipcMain.handle('vaultbill:window:minimize', () => mainState.mainWindow?.minimize());
     ipcMain.handle('vaultbill:window:close', () => mainState.mainWindow?.hide());
 

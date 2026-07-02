@@ -2,7 +2,7 @@
 
 /** Theme palette selector that previews and applies application color schemes. */
 
-import { Check, Palette } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { FC } from 'react';
 
@@ -21,6 +21,9 @@ const swatches: Readonly<Record<ThemeId, readonly [string, string]>> = {
     'sandstone-ledger': ['#8a5b32', '#efe1cb'],
     'indigo-mint': ['#4338ca', '#c7f4e5'],
 };
+
+const swatchBackground = (themeId: ThemeId) =>
+    `linear-gradient(135deg, ${swatches[themeId][0]} 50%, ${swatches[themeId][1]} 50%)`;
 
 export const ThemePalette: FC<ThemePaletteProps> = ({ controller }) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -64,8 +67,14 @@ export const ThemePalette: FC<ThemePaletteProps> = ({ controller }) => {
             <IconOnlyButton
                 aria-expanded={isOpen}
                 aria-label="Choose theme"
-                className="icon-button"
-                icon={<Palette aria-hidden="true" size={20} />}
+                className="icon-button theme-palette-trigger"
+                icon={
+                    <span
+                        aria-hidden="true"
+                        className="theme-palette-swatch theme-palette-trigger-swatch"
+                        style={{ background: swatchBackground(controller.themeId) }}
+                    />
+                }
                 ref={triggerRef}
                 onClick={() => {
                     savedTheme.current = controller.themeId;
@@ -94,11 +103,11 @@ export const ThemePalette: FC<ThemePaletteProps> = ({ controller }) => {
                             <span
                                 className="theme-palette-swatch"
                                 style={{
-                                    background: `linear-gradient(135deg, ${swatches[theme.id][0]} 50%, ${swatches[theme.id][1]} 50%)`,
+                                    background: swatchBackground(theme.id),
                                 }}
                             />
                             <span>{theme.label}</span>
-                            {theme.id === savedTheme.current ? (
+                            {theme.id === controller.themeId ? (
                                 <Check aria-hidden="true" size={16} />
                             ) : null}
                         </ActionButton>

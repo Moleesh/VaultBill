@@ -72,8 +72,8 @@
 .login-page-chrome {
     position: fixed;
     z-index: 40;
-    top: var(--space-4);
-    right: var(--space-4);
+    top: calc(var(--space-4) + env(safe-area-inset-top));
+    right: calc(var(--space-4) + env(safe-area-inset-right));
     pointer-events: none;
 }
 

@@ -200,6 +200,10 @@
             platform: 'win32',
             printHtml: () => resolve({ success: true }),
             queryReport: () => resolve({ rows: [], total: 0 }),
+            reloadWindow: () => {
+                window.location.reload();
+                return resolve(undefined);
+            },
             resetApplicationData: () => resolve({ restarting: false }),
             resetPassword: (userId) =>
                 resolve(

@@ -26,7 +26,6 @@ import { AppShellManagedDialogs } from './AppShellManagedDialogs';
 import { AppShellMobileNav } from './AppShellMobileNav';
 import { AppShellSidebar } from './AppShellSidebar';
 import { AppShellTopbar } from './AppShellTopbar';
-import { AppShellWindowChrome } from './AppShellWindowChrome';
 import type { AppRouteId } from '../types/AppTypes';
 import '../styles/Components/AppShell.scss';
 
@@ -129,13 +128,6 @@ export const AppShell: FC = () => {
             <a className="skip-link" href="#main-content">
                 Skip to main content
             </a>
-            {showWindowControls ? (
-                <AppShellWindowChrome
-                    onCloseWindow={shellActions.closeWindow}
-                    onMinimizeWindow={shellActions.minimizeWindow}
-                    onRefreshWindow={shellActions.refreshWindow}
-                />
-            ) : null}
             <AppShellSidebar
                 applicationName={defaultRuntimeBranding.applicationName}
                 isDemoMode={capabilities.isDemoMode}
@@ -175,6 +167,9 @@ export const AppShell: FC = () => {
                     onOpenActivation={shellActions.openActivationDialog}
                     onResetDemo={shellActions.openResetDialog}
                     pageId={pageId}
+                    onCloseWindow={showWindowControls ? shellActions.closeWindow : undefined}
+                    onMinimizeWindow={showWindowControls ? shellActions.minimizeWindow : undefined}
+                    onRefreshWindow={showWindowControls ? shellActions.refreshWindow : undefined}
                     themeController={themeController}
                     trialStatus={trialStatus}
                 />

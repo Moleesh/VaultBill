@@ -58,6 +58,10 @@ export const createAppShellActions = ({
         if (canUseLocalHostedApi()) void requestHostedWindowAction('minimize');
     };
     const refreshWindow = () => {
+        if (window.vaultBillDesktop?.reloadWindow) {
+            void window.vaultBillDesktop.reloadWindow();
+            return;
+        }
         window.location.reload();
     };
     const logOut = () => {

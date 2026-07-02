@@ -5,6 +5,7 @@ import type { FC } from 'react';
 
 import { ActionButton } from './ActionButton';
 import { AppBrandIcon } from './AppBrandIcon/AppBrandIcon';
+import { DesktopWindowControls } from './DesktopWindowControls';
 import { IconOnlyButton } from './IconOnlyButton';
 import { ThemePalette } from './ThemePalette';
 import { shellSections } from '../constants/RuntimeDefaults';
@@ -22,6 +23,9 @@ type AppShellTopbarProps = {
     readonly onResetDemo: () => void;
     readonly onLogout: () => void;
     readonly onOpenActivation: () => void;
+    readonly onRefreshWindow?: (() => void) | undefined;
+    readonly onMinimizeWindow?: (() => void) | undefined;
+    readonly onCloseWindow?: (() => void) | undefined;
 };
 
 /** Renders the shell title area with theme, account, and trial actions. */
@@ -34,6 +38,9 @@ export const AppShellTopbar: FC<AppShellTopbarProps> = ({
     onResetDemo,
     onLogout,
     onOpenActivation,
+    onRefreshWindow,
+    onMinimizeWindow,
+    onCloseWindow,
 }) => {
     const routeId = pageId as AppRouteId;
     const section = shellSections.find((entry) => entry.id === routeId);
@@ -100,6 +107,15 @@ export const AppShellTopbar: FC<AppShellTopbarProps> = ({
                             </small>
                         </span>
                     </ActionButton>
+                ) : null}
+                {onRefreshWindow || onMinimizeWindow || onCloseWindow ? (
+                    <DesktopWindowControls
+                        className="app-shell-window-controls"
+                        isDesktop
+                        onCloseWindow={onCloseWindow}
+                        onMinimizeWindow={onMinimizeWindow}
+                        onRefreshWindow={onRefreshWindow}
+                    />
                 ) : null}
             </div>
         </header>

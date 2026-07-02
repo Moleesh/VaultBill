@@ -203,8 +203,9 @@
     display: grid;
     grid-template-rows: auto auto minmax(0, 1fr) auto auto;
     width: var(--setup-card-width);
-    min-height: var(--setup-card-height);
-    height: var(--setup-card-height);
+    min-height: min(48rem, var(--setup-card-height));
+    height: auto;
+    max-height: var(--setup-card-height);
     gap: var(--space-4);
     overflow: hidden;
     border: var(--line-width) solid var(--color-border);

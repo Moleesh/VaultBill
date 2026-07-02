@@ -28,10 +28,11 @@ export const loadRecordPrintPackage = async (
     formatId: string,
     isHostedWeb: boolean,
 ): Promise<RecordPrintPackage | undefined> => {
-    return (await fetchBuilderPackage({
+    const builderPackage = await fetchBuilderPackage({
         capabilities: { isHostedWeb },
         formatId,
-    })) as RecordPrintPackage | undefined;
+    });
+    return builderPackage ? (builderPackage as RecordPrintPackage) : undefined;
 };
 
 /** Renders one record with template placeholders resolved against the record. */

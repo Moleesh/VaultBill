@@ -28,6 +28,9 @@ export const createDesktopBridge = (ipcRenderer: IpcRenderer): VaultBillDesktopB
     openHostedWeb: async () => {
         await ipcRenderer.invoke('vaultbill:hosted-web:open');
     },
+    reloadWindow: async () => {
+        await ipcRenderer.invoke('vaultbill:window:reload');
+    },
     minimizeWindow: async () => {
         await ipcRenderer.invoke('vaultbill:window:minimize');
     },

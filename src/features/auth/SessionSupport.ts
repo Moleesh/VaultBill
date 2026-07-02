@@ -10,6 +10,7 @@ import type { OperatorAccount } from './AccountTypes';
 /** Default password hash used for the seeded desktop accounts. */
 export const defaultPasswordHash =
     '5e800c5e134b84a0d73bd6f0d0f65b768f8a3afeba9c26ce3fe9b8d58fd027f1';
+export const operatorStorageKey = 'vaultbill.operator';
 
 /** Demo account used when the browser runs without a saved operator session. */
 export const demoAccount: OperatorAccount = {
@@ -49,4 +50,17 @@ export const validateManagedAccounts = (accounts: readonly OperatorAccount[]): s
         return 'VaultBill allows up to five active Users.';
     }
     return '';
+};
+
+export const getStoredOperatorId = (): string | undefined => {
+    const stored = window.localStorage.getItem(operatorStorageKey);
+    return stored && stored.trim().length > 0 ? stored : undefined;
+};
+
+export const setStoredOperatorId = (userId: string | undefined) => {
+    if (userId && userId.trim().length > 0) {
+        window.localStorage.setItem(operatorStorageKey, userId);
+        return;
+    }
+    window.localStorage.removeItem(operatorStorageKey);
 };

@@ -21,7 +21,9 @@ import {
     defaultPasswordHash,
     demoAccount,
     fallbackBrowserAccounts,
+    getStoredOperatorId,
     hashPassword,
+    setStoredOperatorId,
     type HostedSessionPayload,
     validateManagedAccounts,
 } from './SessionSupport';
@@ -82,6 +84,7 @@ export const SessionProvider: FC<PropsWithChildren<{ readonly refreshRevision?: 
         if (usesStaticHostedBrowserBuild) {
             setAccounts([demoAccount]);
             setAccount(undefined);
+            setStoredOperatorId(undefined);
             setHostedCsrfToken(undefined);
             setHostedApiUnavailable(false);
             return;
@@ -89,8 +92,11 @@ export const SessionProvider: FC<PropsWithChildren<{ readonly refreshRevision?: 
 
         if (sessionQuery.data) {
             setAccounts(sessionQuery.data.accounts);
-            if (canUseHostedSessionApi) {
+            if (sessionQuery.data.account) {
                 setAccount(sessionQuery.data.account);
+                setStoredOperatorId(sessionQuery.data.account.userId);
+            } else if (canUseHostedSessionApi) {
+                setAccount(undefined);
             }
             setHostedCsrfToken(sessionQuery.data.csrfToken);
             setHostedApiUnavailable(false);
@@ -102,6 +108,7 @@ export const SessionProvider: FC<PropsWithChildren<{ readonly refreshRevision?: 
         if (canUseHostedSessionApi) {
             setAccounts([]);
             setAccount(undefined);
+            setStoredOperatorId(undefined);
             setHostedCsrfToken(undefined);
             setHostedApiUnavailable(true);
             return;
@@ -218,6 +225,7 @@ export const SessionProvider: FC<PropsWithChildren<{ readonly refreshRevision?: 
         },
         onSuccess: ({ account: nextAccount, csrfToken }) => {
             setAccount(nextAccount);
+            setStoredOperatorId(nextAccount.userId);
             if (csrfToken !== undefined) setHostedCsrfToken(csrfToken);
             void invalidateRuntimeState();
         },
@@ -231,6 +239,7 @@ export const SessionProvider: FC<PropsWithChildren<{ readonly refreshRevision?: 
         onSettled: () => {
             setHostedCsrfToken(undefined);
             setAccount(undefined);
+            setStoredOperatorId(undefined);
             void invalidateRuntimeState();
         },
     });
@@ -275,7 +284,10 @@ export const SessionProvider: FC<PropsWithChildren<{ readonly refreshRevision?: 
         },
         onSuccess: ({ nextAccounts, savedAccount }) => {
             persistAccounts(nextAccounts);
-            if (account?.userId === savedAccount.userId) setAccount(savedAccount);
+            if (account?.userId === savedAccount.userId) {
+                setAccount(savedAccount);
+                setStoredOperatorId(savedAccount.userId);
+            }
             void invalidateRuntimeState();
         },
     });
@@ -297,6 +309,10 @@ export const SessionProvider: FC<PropsWithChildren<{ readonly refreshRevision?: 
                     candidate.userId === userId ? { ...candidate, isActive: false } : candidate,
                 ),
             );
+            if (account?.userId === userId || getStoredOperatorId() === userId) {
+                setAccount(undefined);
+                setStoredOperatorId(undefined);
+            }
             void invalidateRuntimeState();
         },
     });
@@ -336,7 +352,10 @@ export const SessionProvider: FC<PropsWithChildren<{ readonly refreshRevision?: 
                     candidate.userId === savedAccount.userId ? savedAccount : candidate,
                 ),
             );
-            if (account?.userId === savedAccount.userId) setAccount(savedAccount);
+            if (account?.userId === savedAccount.userId) {
+                setAccount(savedAccount);
+                setStoredOperatorId(savedAccount.userId);
+            }
             void invalidateRuntimeState();
         },
     });

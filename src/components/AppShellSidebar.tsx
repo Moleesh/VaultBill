@@ -116,7 +116,7 @@ export const AppShellSidebar: FC<AppShellSidebarProps> = ({
                         rel="noreferrer"
                         title={hostedWebUrl}
                     >
-                        {hostedWebUrl.replace(/^https?:\/\//u, '')}
+                        VaultBill web
                     </a>
                 ) : null}
             </div>

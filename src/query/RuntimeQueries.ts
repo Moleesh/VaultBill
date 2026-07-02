@@ -16,7 +16,7 @@ import {
 import type { OperatorAccount } from '../features/auth/AccountTypes';
 import type { OperatorContext } from '../features/auth/AccountTypes';
 import { bootstrapOperatorAccounts } from '../features/auth/AccountBootstrap';
-import { demoAccount } from '../features/auth/SessionSupport';
+import { demoAccount, getStoredOperatorId } from '../features/auth/SessionSupport';
 import {
     defaultSecretsSettings,
     normalizeSecretsSettings,
@@ -211,10 +211,15 @@ export const fetchSessionSnapshot = async ({
 
     if (window.vaultBillDesktop) {
         const desktopAccounts = await window.vaultBillDesktop.listAccounts();
+        const storedOperatorId = getStoredOperatorId();
+        const restoredAccount =
+            desktopAccounts.find(
+                (account) => account.isActive && account.userId === storedOperatorId,
+            ) ?? undefined;
         if (desktopAccounts.some((account) => account.isActive)) {
             return {
                 accounts: desktopAccounts,
-                account: undefined,
+                account: restoredAccount,
                 csrfToken: undefined,
             };
         }
@@ -535,13 +540,17 @@ export const fetchBuilderPackage = async ({
 }: {
     readonly capabilities: Pick<CapabilityRegistry, 'isHostedWeb'>;
     readonly formatId: string | undefined;
-}): Promise<StoredBuilderPackage | undefined> => {
+}): Promise<StoredBuilderPackage | null> => {
     if (window.vaultBillDesktop) {
-        return window.vaultBillDesktop.loadBuilderPackage(formatId);
+        return (await window.vaultBillDesktop.loadBuilderPackage(formatId)) ?? null;
     }
     if (capabilities.isHostedWeb) {
         const query = formatId ? `?formatId=${encodeURIComponent(formatId)}` : '';
-        return requestHostedApi<StoredBuilderPackage | undefined>(`/builder/package${query}`);
+        return (
+            (await requestHostedApi<StoredBuilderPackage | undefined>(
+                `/builder/package${query}`,
+            )) ?? null
+        );
     }
 
     return {

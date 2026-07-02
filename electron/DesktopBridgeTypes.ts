@@ -27,6 +27,7 @@ export type VaultBillDesktopBridge = {
     }>;
     readonly getHostedWebUrl: () => Promise<string>;
     readonly openHostedWeb: () => Promise<void>;
+    readonly reloadWindow: () => Promise<void>;
     readonly minimizeWindow: () => Promise<void>;
     readonly closeWindow: () => Promise<void>;
     readonly listAccounts: () => Promise<readonly DesktopOperatorAccount[]>;

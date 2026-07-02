@@ -34,7 +34,7 @@ type BuilderDocumentLibraryContext = BuilderDocumentLibrarySetters & {
 };
 
 export const applyStoredBuilderPackage = (
-    stored: StoredBuilderPackage | undefined,
+    stored: StoredBuilderPackage | null | undefined,
     setters: BuilderDocumentLibrarySetters,
 ): boolean => {
     if (!stored) return false;

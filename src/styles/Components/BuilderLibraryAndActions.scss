@@ -214,11 +214,14 @@
 .settings-theme-picker-options {
     display: flex;
     flex-wrap: wrap;
+    align-items: flex-start;
     gap: var(--space-2);
 }
 
 .settings-theme-picker-options button {
+    position: relative;
     display: grid;
+    flex: 0 0 auto;
     width: 3.25rem;
     min-width: 3.25rem;
     gap: var(--space-1);
@@ -245,6 +248,7 @@
     height: 1px;
     overflow: hidden;
     clip-path: inset(50%);
+    pointer-events: none;
 }
 .line-item-grid-item {
     min-width: 62rem;
