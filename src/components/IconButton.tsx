@@ -1,10 +1,10 @@
 /** @format */
 
-import { forwardRef } from 'react';
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
+import { forwardRef } from 'react';
 
-import { Button } from './Button';
 import type { ButtonVariant } from './Button';
+import { Button } from './Button';
 
 type IconButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> & {
     readonly children: ReactNode;

@@ -188,46 +188,29 @@ so stopping the desktop runtime also stops the live hosted workspace.
 
 ## Data Fetching Architecture 🔄
 
-VaultBill is moving onto **TanStack Query** as the single runtime-fetch source of
-truth for browser, hosted local web, and desktop-backed data reads.
+VaultBill uses **TanStack Query** as the standard runtime request layer for
+browser, hosted local web, and desktop-backed workspace data.
 
-Current shared foundation:
+The shared approach is:
 
 - one root `QueryClient` for the app
 - centralized runtime query keys
-- centralized runtime query loaders for setup, session, trial, hosted-web,
-  workspace, secrets, printer, and published-format reads
-- query invalidation after setup completion, hosted-session recovery, and
-  settings saves
+- centralized runtime query and mutation helpers for setup, session, trial,
+  hosted web, workspace settings, security, builder, records, reports, and
+  secrets
+- cache invalidation and refetch after setup completion, login/logout,
+  operator changes, builder publish/delete, record writes, and settings saves
 
-Already migrated to the shared query layer:
+Practical rule of thumb:
 
-- app setup status and first-run defaults
-- session bootstrap and reconnect handling
-- shell trial state and hosted local web status
-- settings business, secrets, and security runtime sections
-- builder inventory, package loading, and publish/delete invalidation
-- builder secret hydration for formula previews
-- record-store loading plus draft, finalize, cancel, and reset cache updates
-- records shared workspace settings, published formats, secret hydration, active
-  print-package loading, and print/download/cancel output mutations
-- reports workspace settings, trial-status reads, server paging, and
-  print/cancel output mutations
-- auth and operator mutations that invalidate shared runtime state after login,
-  logout, save, archive, and password reset
+- workspace data reads should come from a shared query helper
+- workspace writes should use a shared mutation helper when the action maps to
+  runtime state
+- only local UI commands such as desktop window chrome or tray actions should
+  stay as thin imperative runtime adapters
 
-What still remains outside TanStack Query on purpose:
-
-1. desktop window and tray control actions that are imperative UI commands, not
-   server state
-2. backup, restore, and application-reset tasks that run like file or process
-   operations rather than cached runtime data
-3. low-level repository and adapter internals that support Electron or browser
-   persistence beneath the screen-level query and mutation hooks
-
-When adding a new API-backed screen, prefer a query or mutation hook over a
-component-local `useEffect` fetch so reconnect, retry, and cache behavior stay
-consistent.
+This keeps reconnect, retry, cache hydration, and cross-screen consistency in
+one place instead of scattering runtime fetch logic across components.
 
 Useful packaging and smoke commands:
 

@@ -8,9 +8,9 @@
 import type { DocumentFormatConfig } from '../../db/startup/ConfigSchemas';
 import { fetchBuilderPackage } from '../../query/RuntimeQueries';
 import type { WorkspaceSettings } from '../../runtime/WorkspaceSettings';
-import type { AppRecord, EditableRecord } from './RecordStoreContext';
-import { extractDocumentFragment } from './RecordPrintHtmlSupport';
 import { renderRecordHtml as renderRecordDocumentHtml } from './RecordPrintHtmlRender';
+import { extractDocumentFragment } from './RecordPrintHtmlSupport';
+import type { AppRecord, EditableRecord } from './RecordStoreContext';
 
 /** Describes a published document format and the HTML/assets used for print. */
 export type RecordPrintPackage = {

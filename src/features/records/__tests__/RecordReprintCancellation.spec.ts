@@ -7,16 +7,16 @@ import { afterEach, describe, expect, it } from 'vitest';
 import type { SqliteConnection } from '../../../db/sqlite/SqliteConnection';
 import { createOperatorContext } from '../../auth/AccountBootstrap';
 import {
+    cancelFinalizedRecord,
+    finalizeDraftRecord,
+    getRecordForReprint,
+} from '../RecordRepository';
+import {
     createDraft,
     getSampleAccount,
     laterNow,
     openStartedDatabase,
 } from '../RecordRepositoryTestHarness';
-import {
-    cancelFinalizedRecord,
-    finalizeDraftRecord,
-    getRecordForReprint,
-} from '../RecordRepository';
 
 let connection: SqliteConnection | undefined;
 

@@ -1,7 +1,7 @@
 /** @format */
 
-import { forwardRef } from 'react';
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
+import { forwardRef } from 'react';
 
 export type ButtonVariant = 'default' | 'primary' | 'secondary' | 'danger';
 export type ButtonLayout = 'default' | 'icon' | 'icon-only';

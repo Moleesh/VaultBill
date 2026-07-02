@@ -5,19 +5,15 @@
  * web workspace.
  */
 
-import { app, dialog, Menu, safeStorage, session } from 'electron';
 import type { OpenDialogOptions, SaveDialogOptions } from 'electron';
+import { app, dialog, Menu, safeStorage, session } from 'electron';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { BackupService } from './BackupService.js';
-import { getBuildIdentity } from './BuildIdentity.js';
 import { BuilderStore } from './BuilderStore.js';
+import { getBuildIdentity } from './BuildIdentity.js';
 import { CredentialStore } from './CredentialStore.js';
-import { DesktopRecordStore } from './RecordStore.js';
-import { SettingsStore } from './SettingsStore.js';
-import { LocalApiServer } from './server/LocalApiServer.js';
-import { defaultHostedWebPort } from './server/LocalApiSecurity.js';
 import { registerMainIpcHandlers } from './MainIpc.js';
 import {
     closeRuntime,
@@ -27,13 +23,16 @@ import {
     scheduleRuntimeMutation,
 } from './MainRuntime.js';
 import { mainState } from './MainState.js';
-import { printHtmlWithElectron } from './PrintBridge.js';
-import { cancelOutputJob } from './PrintBridge.js';
+import { cancelOutputJob, printHtmlWithElectron } from './PrintBridge.js';
+import { DesktopRecordStore } from './RecordStore.js';
 import {
     clearRuntimeProcessInfoFile,
     runtimeAppUserModelId,
     writeRuntimeProcessInfoFile,
 } from './RuntimeProcessInfo.js';
+import { defaultHostedWebPort } from './server/LocalApiSecurity.js';
+import { LocalApiServer } from './server/LocalApiServer.js';
+import { SettingsStore } from './SettingsStore.js';
 
 mainState.currentDirectory = path.dirname(fileURLToPath(import.meta.url));
 mainState.identity = getBuildIdentity();

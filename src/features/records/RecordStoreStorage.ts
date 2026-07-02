@@ -1,8 +1,8 @@
 /** @format */
 
+import type { OperatorContext } from '../auth/AccountTypes';
 import { demoSeedRecords } from './RecordStoreDemoSeed';
 import { AppRecordSchema, type AppRecord, type EditableRecord } from './RecordStoreSchema';
-import type { OperatorContext } from '../auth/AccountTypes';
 
 /**
  * In-memory helpers for the browser-only demo records store.

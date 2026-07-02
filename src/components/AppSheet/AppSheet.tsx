@@ -4,9 +4,10 @@
 
 import type { FC, PropsWithChildren } from 'react';
 
+import { X } from 'lucide-react';
+
 import { IconOnlyButton } from '../IconOnlyButton';
 import { PopupBase } from '../PopupBase';
-import { X } from 'lucide-react';
 
 type AppSheetProps = PropsWithChildren<{
     readonly isOpen: boolean;

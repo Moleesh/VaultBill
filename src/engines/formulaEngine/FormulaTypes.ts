@@ -1,8 +1,9 @@
 /** @format */
 
+import type { z } from 'zod';
+
 import type { CalculationPolicySchema } from '../../db/startup/ConfigSchemas';
 import type { DecimalValue, RoundingMode } from './DecimalMath';
-import type { z } from 'zod';
 
 export type CalculationPolicy = z.infer<typeof CalculationPolicySchema>;
 

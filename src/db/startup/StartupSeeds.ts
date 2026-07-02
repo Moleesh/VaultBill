@@ -2,16 +2,16 @@
 
 import { z } from 'zod';
 
+import type { SqliteConnection } from '../sqlite/SqliteConnection';
 import { builtInDefaultFormat, defaultRuntimeBrandingSetting } from './BuiltInDefaultFormat';
-import { DocumentFormatConfigSchema, RuntimeBrandingSchema } from './ConfigSchemas';
-import { stringifyValidatedJson } from './JsonParsing';
 import {
     builtInDefaultPrintAsset,
     builtInDefaultPrintTemplateHtml,
     builtInDefaultPrintTemplateJson,
 } from './BuiltInDefaultPrintTemplate';
+import { DocumentFormatConfigSchema, RuntimeBrandingSchema } from './ConfigSchemas';
+import { stringifyValidatedJson } from './JsonParsing';
 import { runtimeBrandingSettingKey } from './StartupSettingKeys';
-import type { SqliteConnection } from '../sqlite/SqliteConnection';
 
 const countRowSchema = z.object({ count: z.number() });
 

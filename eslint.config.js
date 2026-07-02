@@ -8,6 +8,12 @@ import reactRefresh from 'eslint-plugin-react-refresh';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
+import {
+    compareImportSources,
+    findImportOrderIssue,
+    getImportGroupRank,
+} from './scripts/import-order-support.mjs';
+
 const kebabCaseClassNameRule = {
     meta: {
         type: 'problem',
@@ -91,6 +97,54 @@ const kebabCaseClassNameRule = {
     },
 };
 
+const importOrderRule = {
+    meta: {
+        type: 'suggestion',
+        docs: {
+            description:
+                'enforce VaultBill import ordering: React, libraries, internal modules, hooks, then styles',
+        },
+        schema: [],
+    },
+    create(context) {
+        return {
+            Program(node) {
+                const imports = node.body
+                    .filter((statement) => statement.type === 'ImportDeclaration')
+                    .map((statement) => ({
+                        node: statement,
+                        source: statement.source.value,
+                    }))
+                    .filter((entry) => typeof entry.source === 'string');
+
+                const issue = findImportOrderIssue(imports);
+                if (!issue) {
+                    return;
+                }
+
+                const currentGroup = getImportGroupRank(issue.current.source);
+                const previousGroup = getImportGroupRank(issue.previous.source);
+                const sameGroup = currentGroup === previousGroup;
+
+                context.report({
+                    node: issue.current.node,
+                    message: sameGroup
+                        ? `Import "${issue.current.source}" must be sorted before "${issue.previous.source}" within its group.`
+                        : `Import "${issue.current.source}" is in the wrong group order. Expected React imports first, then libraries, internal modules, hooks, and styles last.`,
+                });
+
+                for (let index = 1; index < imports.length; index += 1) {
+                    const previous = imports[index - 1];
+                    const current = imports[index];
+                    if (compareImportSources(previous.source, current.source) > 0) {
+                        break;
+                    }
+                }
+            },
+        };
+    },
+};
+
 const typedTypeScriptConfigs = [
     ...tseslint.configs.strictTypeChecked,
     ...tseslint.configs.stylisticTypeChecked,
@@ -98,6 +152,13 @@ const typedTypeScriptConfigs = [
     ...config,
     files: ['**/*.{ts,tsx}'],
 }));
+
+const vaultbillPlugin = {
+    rules: {
+        'import-order': importOrderRule,
+        'kebab-class-names': kebabCaseClassNameRule,
+    },
+};
 
 export default tseslint.config(
     {
@@ -119,6 +180,12 @@ export default tseslint.config(
                 ...globals.node,
             },
         },
+        plugins: {
+            vaultbill: vaultbillPlugin,
+        },
+        rules: {
+            'vaultbill/import-order': 'error',
+        },
     },
     ...typedTypeScriptConfigs,
     {
@@ -137,11 +204,7 @@ export default tseslint.config(
             react,
             'react-hooks': reactHooks,
             'react-refresh': reactRefresh,
-            vaultbill: {
-                rules: {
-                    'kebab-class-names': kebabCaseClassNameRule,
-                },
-            },
+            vaultbill: vaultbillPlugin,
         },
         rules: {
             ...reactHooks.configs.recommended.rules,
@@ -162,6 +225,7 @@ export default tseslint.config(
             '@typescript-eslint/no-unnecessary-condition': 'error',
             '@typescript-eslint/prefer-nullish-coalescing': 'error',
             '@typescript-eslint/prefer-optional-chain': 'error',
+            'vaultbill/import-order': 'error',
             'vaultbill/kebab-class-names': 'error',
         },
     },

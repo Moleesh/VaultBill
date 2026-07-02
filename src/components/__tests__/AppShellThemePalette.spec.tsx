@@ -2,7 +2,7 @@
 
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { CapabilityRegistry } from '../../capability/Capability.types';
@@ -38,7 +38,7 @@ const sysAdminAccount = {
     isActive: true,
 } as const;
 
-describe('app shell refresh', () => {
+describe('app shell theme palette', () => {
     beforeEach(() => {
         document.body.innerHTML = '<div id="portal-root"></div>';
         window.localStorage.clear();
@@ -70,8 +70,8 @@ describe('app shell refresh', () => {
         delete (window as Partial<Window> & { vaultBillRuntime?: unknown }).vaultBillRuntime;
     });
 
-    it('uses the desktop bridge for refresh instead of dropping to a raw page reload', async () => {
-        render(
+    it('applies a selected sidebar theme palette option instead of closing early', async () => {
+        const { container } = render(
             <MemoryRouter initialEntries={['/app/dashboard']}>
                 <TestQueryProvider>
                     <CapabilityProvider value={desktopCapabilities}>
@@ -93,8 +93,21 @@ describe('app shell refresh', () => {
             expect(window.vaultBillDesktop?.getTrialStatus).toHaveBeenCalledTimes(1);
         });
 
-        screen.getByRole('button', { name: 'Refresh window' }).click();
+        const sidebarThemeTrigger = container.querySelector(
+            '.app-shell-operator-actions .theme-palette-trigger',
+        );
+        expect(sidebarThemeTrigger).not.toBeNull();
 
-        expect(window.vaultBillDesktop?.reloadWindow).toHaveBeenCalledTimes(1);
+        fireEvent.click(sidebarThemeTrigger as HTMLButtonElement);
+
+        await waitFor(() => {
+            expect(screen.getByRole('dialog', { name: 'Theme palette' })).toBeVisible();
+        });
+
+        fireEvent.click(screen.getByRole('button', { name: 'Slate Pro' }));
+
+        await waitFor(() => {
+            expect(document.documentElement.dataset.theme).toBe('slate-pro');
+        });
     });
 });

@@ -1,5 +1,7 @@
 /** @format */
 
+import type { z } from 'zod';
+
 import type { LineItemSectionConfigSchema } from '../../db/startup/ConfigSchemas';
 import type { LineItemRow } from '../schemaEngine/LineItemTypes';
 import type { FieldConfig } from '../schemaEngine/SchemaEngineTypes';
@@ -12,7 +14,6 @@ import type {
     FormulaVariableMap,
 } from './FormulaTypes';
 import { toRoundingMode } from './FormulaTypes';
-import type { z } from 'zod';
 
 export type LineItemSectionConfig = z.infer<typeof LineItemSectionConfigSchema>;
 

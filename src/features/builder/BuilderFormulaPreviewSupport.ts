@@ -1,7 +1,7 @@
 /** @format */
 
-import { evaluateFormula } from '../../engines/formulaEngine/FormulaEngine';
 import type { DocumentFormatConfig } from '../../db/startup/ConfigSchemas';
+import { evaluateFormula } from '../../engines/formulaEngine/FormulaEngine';
 import type { FieldConfig } from './BuilderPageSupport';
 
 const sampleValueFor = (field: FieldConfig): number => {

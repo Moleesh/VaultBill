@@ -2,11 +2,11 @@
 
 import type { FC, KeyboardEvent, RefObject } from 'react';
 
-import { ActionButton } from '../../components/ActionButton';
 import { ActionBar, type RecordActionState } from '../../components/ActionBar';
-import type { AppRecord, EditableRecord, RecordLineItem } from './RecordStoreContext';
-import type { ConfiguredFieldDefinition } from './RecordsPageSupport';
+import { ActionButton } from '../../components/ActionButton';
 import { RecordsFormSection } from './RecordsFormSection';
+import type { ConfiguredFieldDefinition } from './RecordsPageSupport';
+import type { AppRecord, EditableRecord, RecordLineItem } from './RecordStoreContext';
 
 type RecordsWorkspaceProps = {
     readonly activeTab: 'create' | 'reprint';

@@ -1,7 +1,8 @@
 /** @format */
 
-import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
+
+import { fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import type { CapabilityRegistry } from '../../../capability/Capability.types';

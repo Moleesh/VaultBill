@@ -2,8 +2,8 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { calculateRecordTotals } from '../RecordTotals';
 import type { EditableRecord } from '../RecordStoreContext';
+import { calculateRecordTotals } from '../RecordTotals';
 
 const record: EditableRecord = {
     recordId: 'record-1',

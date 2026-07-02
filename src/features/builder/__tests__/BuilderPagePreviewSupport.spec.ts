@@ -7,8 +7,6 @@
 
 import { describe, expect, it, vi } from 'vitest';
 
-import { cloneDefault } from '../BuilderPageSupport';
-import { defaultBuilderPrintSettings } from '../BuilderPageSupport';
 import {
     downloadBase64Asset,
     escapePreviewHtml,
@@ -17,6 +15,7 @@ import {
     renderBuilderPreview,
     updateOptionalNumber,
 } from '../BuilderPagePreviewSupport';
+import { cloneDefault, defaultBuilderPrintSettings } from '../BuilderPageSupport';
 
 describe('BuilderPagePreviewSupport', () => {
     it('renders preview values and escapes markup safely', () => {

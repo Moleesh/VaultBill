@@ -4,6 +4,7 @@
 
 import { DatabaseSync } from 'node:sqlite';
 import { z } from 'zod';
+
 import { defaultHostedWebPort } from './server/LocalApiSecurity.js';
 
 /** Stored business settings shared by runtime branding, printing, and reports. */

@@ -2,7 +2,7 @@
 
 // @vitest-environment node
 
-import { describe, expect, it, afterEach, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { LocalApiServer } from '../../../electron/server/LocalApiServer.js';
 import { createHostedSessionTestHarness, encodeSecret } from './HostedSessionSecuritySupport.js';

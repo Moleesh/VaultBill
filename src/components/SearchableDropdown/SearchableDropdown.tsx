@@ -2,23 +2,24 @@
 
 /** Searchable option picker used for compact form selection across the app. */
 
-import { ChevronDown } from 'lucide-react';
-import { useId, useRef, useState } from 'react';
 import type { FC, ReactNode } from 'react';
+import { useId, useRef, useState } from 'react';
+
+import { ChevronDown } from 'lucide-react';
 
 import { ActionButton } from '../ActionButton';
 import { FormField } from '../FormFields';
 import { SearchableDropdownMenu } from './SearchableDropdownMenu';
-import {
-    createSearchableDropdownKeyDownHandler,
-    type DropdownOption,
-} from './SearchableDropdownSupport';
 import {
     getFilteredDropdownOptions,
     getInitialDropdownActiveIndex,
     resetSearchableDropdownState,
     useSyncSearchableDropdownMenu,
 } from './SearchableDropdownStateSupport';
+import {
+    createSearchableDropdownKeyDownHandler,
+    type DropdownOption,
+} from './SearchableDropdownSupport';
 
 type SearchableDropdownProps = {
     readonly hideLabel?: boolean;

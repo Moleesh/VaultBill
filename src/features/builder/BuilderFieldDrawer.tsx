@@ -1,18 +1,19 @@
 /** @format */
 
-import { useForm } from '@tanstack/react-form';
-import { useEffect } from 'react';
 import type { FC } from 'react';
+import { useEffect } from 'react';
+
+import { useForm } from '@tanstack/react-form';
 
 import { FormField } from '../../components/FormFields';
 import { SearchableDropdown } from '../../components/SearchableDropdown/SearchableDropdown';
 import { FieldTypeSchema } from '../../db/startup/ConfigSchemas';
-import type { FieldConfig } from './BuilderPageSupport';
 import {
     BuilderFieldDrawerActions,
     BuilderFieldFormulaSection,
     BuilderFieldToggles,
 } from './BuilderFieldDrawerSupport';
+import type { FieldConfig } from './BuilderPageSupport';
 
 type BuilderFieldDrawerProps = {
     readonly field: FieldConfig;

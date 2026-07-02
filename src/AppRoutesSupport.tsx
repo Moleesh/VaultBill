@@ -1,7 +1,7 @@
 /** @format */
 
-import { lazy } from 'react';
 import type { ComponentType, FC } from 'react';
+import { lazy } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 
 import { ProtectedRoute } from './features/auth/ProtectedRoute';

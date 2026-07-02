@@ -10,6 +10,11 @@
         "prepare": "husky",
         "dev": "node scripts/start-vite.mjs",
         "dev:electron": "node scripts/dev-electron.mjs",
+        "imports:write": "node scripts/organize-imports.mjs",
+        "imports:check": "node scripts/organize-imports.mjs --check",
+        "verify:demo": "node scripts/run-verify-suite.mjs demo",
+        "verify:release": "node scripts/run-verify-suite.mjs release",
+        "verify:precommit": "node scripts/run-verify-suite.mjs precommit",
         "format": "prettier --write .",
         "format:check": "prettier --check .",
         "lint": "eslint . --max-warnings=0",
@@ -42,7 +47,7 @@
     "lint-staged": {
         "*.{ts,tsx,js,cjs,mjs}": [
             "prettier --write",
-            "eslint --max-warnings=0"
+            "eslint --max-warnings=0 --no-warn-ignored"
         ],
         "*.{json,md,scss,yml,yaml,html}": "prettier --write"
     },

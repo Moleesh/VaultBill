@@ -2,7 +2,7 @@
 
 import { Building2, Sparkles, UserRoundCog } from 'lucide-react';
 
-export { themeStorageKey, isThemeId } from '../../runtime/WorkspaceTheme';
+export { isThemeId, themeStorageKey } from '../../runtime/WorkspaceTheme';
 
 /** Ordered first-run setup steps shown in the wizard header and content area. */
 export const setupSteps = [

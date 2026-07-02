@@ -1,8 +1,8 @@
 /** @format */
 
+import { DatabaseConfigurationError } from '../../db/sqlite/SqliteConnection';
 import { DocumentFormatConfigSchema } from '../../db/startup/ConfigSchemas';
 import { parseJsonWithSchema } from '../../db/startup/JsonParsing';
-import { DatabaseConfigurationError } from '../../db/sqlite/SqliteConnection';
 import type {
     DeleteFormatDecision,
     DocumentFormatRecord,

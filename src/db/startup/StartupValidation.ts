@@ -2,10 +2,10 @@
 
 import { z } from 'zod';
 
+import { DatabaseConfigurationError, type SqliteConnection } from '../sqlite/SqliteConnection';
 import { DocumentFormatConfigSchema, StartupHealthSettingSchema } from './ConfigSchemas';
 import { parseJsonWithSchema, stringifyValidatedJson } from './JsonParsing';
 import { startupHealthSettingKey } from './StartupSettingKeys';
-import { DatabaseConfigurationError, type SqliteConnection } from '../sqlite/SqliteConnection';
 
 const defaultFormatRowSchema = z.object({
     format_id: z.string(),

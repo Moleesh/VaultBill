@@ -5,8 +5,9 @@
  * business metrics.
  */
 
-import { format, parseISO } from 'date-fns';
 import type { FC } from 'react';
+
+import { format, parseISO } from 'date-fns';
 
 import { ActionLink } from '../../components/ActionLink';
 import { useSession } from '../auth/SessionContext';

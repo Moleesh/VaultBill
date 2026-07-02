@@ -8,9 +8,10 @@ import { BuilderFieldsStep } from './BuilderFieldsStep';
 import { BuilderFormatStep } from './BuilderFormatStep';
 import { BuilderLayoutStep } from './BuilderLayoutStep';
 import { BuilderLineItemsStep } from './BuilderLineItemsStep';
-import { BuilderPrintStep } from './BuilderPrintStep';
-import { BuilderPrintPreviewStep } from './BuilderPrintPreviewStep';
 import { newField, type BuilderLayoutConfig, type BuilderPrintConfig } from './BuilderPageSupport';
+import { BuilderPrintPreviewStep } from './BuilderPrintPreviewStep';
+import { BuilderPrintStep } from './BuilderPrintStep';
+
 import type { BuilderPageController } from './useBuilderPageController';
 
 type BuilderPageStepSectionsProps = {

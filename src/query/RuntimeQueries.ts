@@ -2,6 +2,40 @@
 /* eslint-disable max-lines */
 
 import type { CapabilityRegistry } from '../capability/Capability.types';
+import { bootstrapOperatorAccounts } from '../features/auth/AccountBootstrap';
+import type { OperatorAccount, OperatorContext } from '../features/auth/AccountTypes';
+import { demoAccount, getStoredOperatorId } from '../features/auth/SessionSupport';
+import type { BuilderInventoryItem } from '../features/builder/BuilderDocumentLibrarySupport';
+import type { DocumentFormatConfig } from '../features/builder/BuilderPageControllerSupport';
+import type {
+    AssetSummary,
+    SavedPrintTemplate,
+    StoredBuilderPackage,
+} from '../features/builder/BuilderPageSupport';
+import {
+    readBuilderAssets,
+    readConfig,
+    readSavedTemplates,
+    readTemplateHtml,
+    writeBuilderPackage,
+} from '../features/builder/BuilderPageSupport';
+import {
+    AppRecordSchema,
+    buildStoredRecord,
+    readBrowserRecords,
+    sortLatestFirst,
+    type AppRecord,
+    type EditableRecord,
+} from '../features/records/RecordStoreSupport';
+import {
+    defaultSecretsSettings,
+    normalizeSecretsSettings,
+    type SecretsSettings,
+} from '../features/settings/SettingsSecretsSectionSupport';
+import type {
+    CredentialStatus,
+    TrialStatus,
+} from '../features/settings/SettingsSecuritySectionStateSupport';
 import {
     canUseLocalHostedApi,
     isHostedApiErrorStatus,
@@ -13,42 +47,8 @@ import {
     normalizeWorkspaceSettings,
     type WorkspaceSettings,
 } from '../runtime/WorkspaceSettings';
-import type { OperatorAccount } from '../features/auth/AccountTypes';
-import type { OperatorContext } from '../features/auth/AccountTypes';
-import { bootstrapOperatorAccounts } from '../features/auth/AccountBootstrap';
-import { demoAccount, getStoredOperatorId } from '../features/auth/SessionSupport';
-import {
-    defaultSecretsSettings,
-    normalizeSecretsSettings,
-    type SecretsSettings,
-} from '../features/settings/SettingsSecretsSectionSupport';
-import type { BuilderInventoryItem } from '../features/builder/BuilderDocumentLibrarySupport';
-import type {
-    AssetSummary,
-    SavedPrintTemplate,
-    StoredBuilderPackage,
-} from '../features/builder/BuilderPageSupport';
+
 import type { PublishedFormat } from '../features/records/useRecordsPageStateSupport';
-import type {
-    CredentialStatus,
-    TrialStatus,
-} from '../features/settings/SettingsSecuritySectionStateSupport';
-import {
-    AppRecordSchema,
-    buildStoredRecord,
-    readBrowserRecords,
-    sortLatestFirst,
-    type AppRecord,
-    type EditableRecord,
-} from '../features/records/RecordStoreSupport';
-import {
-    readBuilderAssets,
-    readConfig,
-    readSavedTemplates,
-    readTemplateHtml,
-    writeBuilderPackage,
-} from '../features/builder/BuilderPageSupport';
-import type { DocumentFormatConfig } from '../features/builder/BuilderPageControllerSupport';
 
 export type SetupStatusSnapshot = {
     readonly isSetupRequired: boolean;
@@ -73,6 +73,47 @@ export type SessionSnapshot = {
     readonly csrfToken: string | undefined;
 };
 
+export type InventoryItem = {
+    readonly formatId: string;
+    readonly formatName: string;
+    readonly isDefault: boolean;
+    readonly updatedAt: string;
+    readonly templateName?: string;
+    readonly assetCount: number;
+    readonly isValid: boolean;
+};
+
+export type HostedRecordSummary = {
+    readonly status: string;
+};
+
+export type HostedAccountSummary = {
+    readonly isActive: boolean;
+};
+
+export type SysAdminSummary = {
+    readonly formatCount: number;
+    readonly defaultFormatCount: number;
+    readonly templateCount: number;
+    readonly incompleteFormatCount: number;
+    readonly recordCount: number;
+    readonly draftCount: number;
+    readonly finalizedCount: number;
+    readonly cancelledCount: number;
+    readonly accountCount: number;
+    readonly activeAccountCount: number;
+    readonly lastBackupAt: string | null;
+    readonly trialRemainingSeconds: number;
+    readonly isTrialExpired: boolean;
+    readonly isFullVersion: boolean;
+};
+
+export type SysAdminDashboardState = {
+    readonly inventory: readonly InventoryItem[];
+    readonly summary: SysAdminSummary;
+    readonly message: string;
+};
+
 export type ReportPageSnapshot = {
     readonly rows: readonly AppRecord[];
     readonly total: number;
@@ -88,6 +129,50 @@ const canUseHostedRecordsApi = ({
 }) => !usesStaticHostedBrowserBuild && (capabilities.isHostedWeb || canUseLocalHostedApi());
 
 type QueryCapabilities = Pick<CapabilityRegistry, 'isDemoMode' | 'isDesktop' | 'isHostedWeb'>;
+
+const defaultSysAdminSummary: SysAdminSummary = {
+    formatCount: 0,
+    defaultFormatCount: 0,
+    templateCount: 0,
+    incompleteFormatCount: 0,
+    recordCount: 0,
+    draftCount: 0,
+    finalizedCount: 0,
+    cancelledCount: 0,
+    accountCount: 0,
+    activeAccountCount: 0,
+    lastBackupAt: null,
+    trialRemainingSeconds: 0,
+    isTrialExpired: false,
+    isFullVersion: false,
+};
+
+const buildSysAdminSummary = (
+    inventory: readonly InventoryItem[],
+    records: readonly HostedRecordSummary[],
+    accounts: readonly HostedAccountSummary[],
+    backupStatus: { readonly lastBackupAt: string | null },
+    trialStatus: {
+        readonly remainingSeconds: number;
+        readonly isExpired: boolean;
+        readonly isFullVersion: boolean;
+    },
+): SysAdminSummary => ({
+    formatCount: inventory.length,
+    defaultFormatCount: inventory.filter((item) => item.isDefault).length,
+    templateCount: inventory.filter((item) => item.templateName).length,
+    incompleteFormatCount: inventory.filter((item) => !item.isValid || !item.templateName).length,
+    recordCount: records.length,
+    draftCount: records.filter((record) => record.status === 'Draft').length,
+    finalizedCount: records.filter((record) => record.status === 'Finalized').length,
+    cancelledCount: records.filter((record) => record.status === 'Cancelled').length,
+    accountCount: accounts.length,
+    activeAccountCount: accounts.filter((account) => account.isActive).length,
+    lastBackupAt: backupStatus.lastBackupAt,
+    trialRemainingSeconds: trialStatus.remainingSeconds,
+    isTrialExpired: trialStatus.isExpired,
+    isFullVersion: trialStatus.isFullVersion,
+});
 
 const readHostedSessionSnapshot = async (): Promise<SessionSnapshot> => {
     await requestHostedApi('/health');
@@ -194,6 +279,47 @@ export const fetchSetupDefaults = async ({
     };
 };
 
+export const completeRuntimeSetup = async ({
+    capabilities,
+    canUseHostedSetupApi,
+    selectedTheme,
+    value,
+}: {
+    readonly capabilities: Pick<CapabilityRegistry, 'isHostedWeb'>;
+    readonly canUseHostedSetupApi: boolean;
+    readonly selectedTheme: string;
+    readonly value: {
+        readonly companyName: string;
+        readonly address: string;
+        readonly adminUsername: string;
+        readonly adminDisplayName: string;
+        readonly adminPassword: string;
+        readonly clearAdminPassword: boolean;
+    };
+}): Promise<void> => {
+    const request = {
+        companyName: value.companyName.trim(),
+        address: value.address.trim(),
+        theme: selectedTheme,
+        adminUsername: value.adminUsername.trim(),
+        adminDisplayName: value.adminDisplayName.trim(),
+        adminPassword: value.adminPassword.trim(),
+        clearAdminPassword: value.clearAdminPassword,
+    };
+
+    if (window.vaultBillDesktop) {
+        await window.vaultBillDesktop.completeSetup(request);
+        return;
+    }
+
+    if (capabilities.isHostedWeb || canUseHostedSetupApi) {
+        await requestHostedApi('/setup/complete', 'POST', request);
+        return;
+    }
+
+    throw new Error('Setup is only available through VaultBill Desktop.');
+};
+
 export const fetchSessionSnapshot = async ({
     canUseHostedSessionApi,
     usesStaticHostedBrowserBuild,
@@ -280,6 +406,64 @@ export const fetchHostedWebUrl = async ({
     return '';
 };
 
+export const fetchSysAdminDashboardState = async ({
+    capabilities,
+}: {
+    readonly capabilities: Pick<CapabilityRegistry, 'isHostedWeb'>;
+}): Promise<SysAdminDashboardState> => {
+    if (window.vaultBillDesktop) {
+        const [inventory, records, accounts, backupStatus, trialStatus] = await Promise.all([
+            window.vaultBillDesktop.listBuilderInventory(),
+            window.vaultBillDesktop.listRecords(),
+            window.vaultBillDesktop.listAccounts(),
+            window.vaultBillDesktop.getBackupStatus(),
+            window.vaultBillDesktop.getTrialStatus(),
+        ]);
+
+        return {
+            inventory,
+            summary: buildSysAdminSummary(
+                inventory,
+                records as readonly HostedRecordSummary[],
+                accounts,
+                backupStatus,
+                trialStatus,
+            ),
+            message: '',
+        };
+    }
+
+    if (capabilities.isHostedWeb) {
+        const [inventory, records, accounts, backupStatus, trialStatus] = await Promise.all([
+            requestHostedApi<readonly InventoryItem[]>('/builder/inventory'),
+            requestHostedApi<readonly HostedRecordSummary[]>('/records'),
+            requestHostedApi<readonly HostedAccountSummary[]>('/auth/accounts'),
+            requestHostedApi<{ readonly lastBackupAt: string | null }>('/backup/status'),
+            requestHostedApi<{
+                readonly isFullVersion: boolean;
+                readonly isExpired: boolean;
+                readonly remainingSeconds: number;
+            }>('/trial/status'),
+        ]);
+
+        return {
+            inventory,
+            summary: buildSysAdminSummary(inventory, records, accounts, backupStatus, {
+                remainingSeconds: trialStatus.remainingSeconds,
+                isExpired: trialStatus.isExpired,
+                isFullVersion: trialStatus.isFullVersion,
+            }),
+            message: '',
+        };
+    }
+
+    return {
+        inventory: [],
+        summary: defaultSysAdminSummary,
+        message: '',
+    };
+};
+
 export const fetchSecurityRuntimeState = async ({
     capabilities,
 }: {
@@ -351,6 +535,22 @@ export const saveWorkspaceSettings = async ({
     if (capabilities.isHostedWeb) {
         await requestHostedApi('/settings/business', 'POST', settings);
     }
+};
+
+export const saveIncludeDraftsInReports = async ({
+    capabilities,
+    value,
+}: {
+    readonly capabilities: Pick<CapabilityRegistry, 'isHostedWeb'>;
+    readonly value: boolean;
+}): Promise<WorkspaceSettings> => {
+    const current = await fetchWorkspaceSettings({ capabilities });
+    const nextSettings = { ...current, includeDraftsInReports: value };
+    await saveWorkspaceSettings({
+        capabilities,
+        settings: nextSettings,
+    });
+    return nextSettings;
 };
 
 export const fetchWorkspacePrinters = async (): Promise<
@@ -744,4 +944,24 @@ export const saveSecretsSettings = async ({
     if (capabilities.isHostedWeb) {
         await requestHostedApi('/settings/secrets', 'POST', settings);
     }
+};
+
+export const activateRuntimeLicense = async ({
+    capabilities,
+    licenseKey,
+}: {
+    readonly capabilities: Pick<CapabilityRegistry, 'isHostedWeb'>;
+    readonly licenseKey: string;
+}): Promise<void> => {
+    if (window.vaultBillDesktop?.activateLicense) {
+        await window.vaultBillDesktop.activateLicense(licenseKey);
+        return;
+    }
+
+    if (capabilities.isHostedWeb) {
+        await requestHostedApi('/trial/activate', 'POST', { licenseKey });
+        return;
+    }
+
+    throw new Error('License activation is unavailable in this runtime.');
 };

@@ -1,5 +1,5 @@
 /** @format */
 
-export { SessionProvider } from './SessionProvider';
 export { SessionContext } from './SessionContextBase';
+export { SessionProvider } from './SessionProvider';
 export { useSession } from './useSession';

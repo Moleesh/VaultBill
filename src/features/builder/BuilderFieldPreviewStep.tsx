@@ -3,8 +3,8 @@
 import type { CSSProperties, FC } from 'react';
 
 import type { DocumentFormatConfig } from '../../db/startup/ConfigSchemas';
-import type { BuilderLayoutConfig, FieldConfig } from './BuilderPageSupport';
 import { previewValue } from './BuilderPagePreviewSupport';
+import type { BuilderLayoutConfig, FieldConfig } from './BuilderPageSupport';
 
 type LineSection = {
     readonly Label: string;

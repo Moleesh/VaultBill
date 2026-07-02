@@ -1,7 +1,8 @@
 /** @format */
 
-import { Printer, RotateCcw, Sheet } from 'lucide-react';
 import type { FC } from 'react';
+
+import { Printer, RotateCcw, Sheet } from 'lucide-react';
 
 import { ActionButton } from '../../components/ActionButton';
 import { IconButton } from '../../components/IconButton';

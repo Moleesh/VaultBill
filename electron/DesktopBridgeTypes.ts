@@ -1,7 +1,7 @@
 /** @format */
 
-import type { BuildIdentity } from './BuildIdentity.js';
 import type { BuilderInventoryItem, BuilderPackage } from './BuilderStore.js';
+import type { BuildIdentity } from './BuildIdentity.js';
 import type { CredentialStatus, DesktopOperatorAccount } from './CredentialStore.js';
 import type { PdfRequest, PdfResult } from './PdfBridge.js';
 import type { PrintRequest, PrintResult } from './PrintBridge.js';

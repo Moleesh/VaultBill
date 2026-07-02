@@ -42,44 +42,8 @@ jobs:
                     exit 1
                   }
 
-            - name: Format check
-              run: npm run format:check
-
-            - name: Lint
-              run: npm run lint
-
-            - name: Typecheck
-              run: npm run typecheck
-
-            - name: Unit tests
-              run: npm run test:ci
-
-            - name: Coverage
-              run: npm run coverage:ci
-
-            - name: Dependency audit
-              run: npm run audit:security
-
-            - name: Secret scan
-              run: npm run scan:secrets
-
-            - name: Security tests
-              run: npm run test:security
-
-            - name: Security configuration
-              run: npm run security:check
-
-            - name: First-run database smoke
-              run: npm run smoke:first-run-db:ci
-
-            - name: Install Playwright Chromium
-              run: npx playwright install --with-deps chromium
-
-            - name: Browser flows
-              run: npm run test:e2e
-
-            - name: Build web and Electron
-              run: npm run build:desktop
+            - name: Release verify suite
+              run: npm run verify:release
 
             - name: Upload browser failure evidence
               if: failure()

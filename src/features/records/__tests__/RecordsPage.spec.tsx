@@ -1,15 +1,16 @@
 /** @format */
 
-import { render, screen } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
+
+import { render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import type { CapabilityRegistry } from '../../../capability/Capability.types';
 import { CapabilityProvider } from '../../../capability/CapabilityContext';
 import { TestQueryProvider } from '../../../test/TestQueryProvider';
-import { RecordStoreProvider } from '../RecordStoreContext';
-import { RecordsPage } from '../RecordsPage';
 import { SessionProvider } from '../../auth/SessionContext';
+import { RecordsPage } from '../RecordsPage';
+import { RecordStoreProvider } from '../RecordStoreContext';
 
 const desktopCapabilities: CapabilityRegistry = {
     isDesktop: true,

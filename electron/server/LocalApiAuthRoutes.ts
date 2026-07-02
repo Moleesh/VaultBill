@@ -5,19 +5,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import { z } from 'zod';
 
 import { getBuildIdentity } from '../BuildIdentity.js';
-import { isLoopbackAddress, readBody, sendJson } from './LocalApiHttp.js';
-import {
-    ApiError,
-    assertLoginAllowed,
-    getSession,
-    recordFailedLogin,
-    requireDataOperations,
-    requireCsrf,
-    sessionCookie,
-    sessionLifetime,
-    type HostedSession,
-    type LocalApiState,
-} from './LocalApiContext.js';
+import { completeSetup, readSetupStatus } from '../SetupSupport.js';
 import type { LocalApiHealth } from './LocalApi.types.js';
 import {
     accountForSession,
@@ -26,7 +14,19 @@ import {
     assertCanResetPassword,
     findAccount,
 } from './LocalApiAuthRoutesSupport.js';
-import { completeSetup, readSetupStatus } from '../SetupSupport.js';
+import {
+    ApiError,
+    assertLoginAllowed,
+    getSession,
+    recordFailedLogin,
+    requireCsrf,
+    requireDataOperations,
+    sessionCookie,
+    sessionLifetime,
+    type HostedSession,
+    type LocalApiState,
+} from './LocalApiContext.js';
+import { isLoopbackAddress, readBody, sendJson } from './LocalApiHttp.js';
 
 const LoginSchema = z.object({
     userId: z.string().min(1),

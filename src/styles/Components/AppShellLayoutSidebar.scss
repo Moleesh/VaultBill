@@ -43,13 +43,19 @@
     --app-shell-sidebar-icon-size: 3.25rem;
     height: 100vh;
     min-height: 0;
-    overflow-x: visible;
+    overflow-x: hidden;
     overflow-y: auto;
+    scrollbar-width: none;
     padding: var(--space-4) var(--space-3);
     border-right: var(--line-width) solid var(--color-border);
     background: color-mix(in srgb, var(--color-surface) 88%, transparent);
     backdrop-filter: blur(34px) saturate(140%);
     box-shadow: inset -1px 0 0 color-mix(in srgb, var(--color-border) 52%, transparent);
+}
+
+.app-shell-sidebar::-webkit-scrollbar {
+    width: 0;
+    height: 0;
 }
 
 .app-shell-brand {

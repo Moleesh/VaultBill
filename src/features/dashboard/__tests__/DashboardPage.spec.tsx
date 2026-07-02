@@ -1,15 +1,15 @@
 /** @format */
 
-import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
+
+import { render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { CapabilityRegistry } from '../../../capability/Capability.types';
 import { CapabilityProvider } from '../../../capability/CapabilityContext';
 import { TestQueryProvider } from '../../../test/TestQueryProvider';
+import { SessionContext, SessionProvider } from '../../auth/SessionContext';
 import { RecordStoreProvider } from '../../records/RecordStoreContext';
-import { SessionContext } from '../../auth/SessionContext';
-import { SessionProvider } from '../../auth/SessionContext';
 import { DashboardPage } from '../DashboardPage';
 
 const hasFetchCallForAnyPath = (
@@ -125,33 +125,35 @@ describe('dashboard page', () => {
 
         render(
             <MemoryRouter initialEntries={['/app/dashboard']}>
-                <CapabilityProvider
-                    value={{
-                        ...desktopCapabilities,
-                        isDesktop: false,
-                        isHostedWeb: true,
-                        hasLocalDb: false,
-                    }}
-                >
-                    <SessionContext.Provider
+                <TestQueryProvider>
+                    <CapabilityProvider
                         value={{
-                            accounts: [],
-                            operatorContext: undefined,
-                            hostedConnectionState: 'connected',
-                            login: () => Promise.resolve(),
-                            logout: () => undefined,
-                            saveAccount: () => Promise.resolve(),
-                            archiveAccount: () => Promise.resolve(),
-                            resetPassword: () => Promise.resolve(),
+                            ...desktopCapabilities,
+                            isDesktop: false,
+                            isHostedWeb: true,
+                            hasLocalDb: false,
                         }}
                     >
-                        <RecordStoreProvider>
-                            <Routes>
-                                <Route path="/app/dashboard" element={<DashboardPage />} />
-                            </Routes>
-                        </RecordStoreProvider>
-                    </SessionContext.Provider>
-                </CapabilityProvider>
+                        <SessionContext.Provider
+                            value={{
+                                accounts: [],
+                                operatorContext: undefined,
+                                hostedConnectionState: 'connected',
+                                login: () => Promise.resolve(),
+                                logout: () => undefined,
+                                saveAccount: () => Promise.resolve(),
+                                archiveAccount: () => Promise.resolve(),
+                                resetPassword: () => Promise.resolve(),
+                            }}
+                        >
+                            <RecordStoreProvider>
+                                <Routes>
+                                    <Route path="/app/dashboard" element={<DashboardPage />} />
+                                </Routes>
+                            </RecordStoreProvider>
+                        </SessionContext.Provider>
+                    </CapabilityProvider>
+                </TestQueryProvider>
             </MemoryRouter>,
         );
 

@@ -1,7 +1,7 @@
 /** @format */
 
-import type { PrintOutputPlan, PrintOutputTarget, PrintPlatform } from './PrintWorkflowTypes';
 import type { PrintCompileWarning } from './PrintTemplateTypes';
+import type { PrintOutputPlan, PrintOutputTarget, PrintPlatform } from './PrintWorkflowTypes';
 
 export const buildPrintOutputPlan = (
     target: PrintOutputTarget,

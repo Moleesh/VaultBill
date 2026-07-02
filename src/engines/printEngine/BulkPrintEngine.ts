@@ -1,11 +1,11 @@
 /** @format */
 
-import { preparePrintJobFromProfile } from './PrintProfileWorkflow';
 import type {
     BulkPrintProgress,
     PrepareBulkPrintInput,
     PreparedBulkPrintJob,
 } from './BulkPrintTypes';
+import { preparePrintJobFromProfile } from './PrintProfileWorkflow';
 
 export const prepareBulkPrint = (input: PrepareBulkPrintInput): PreparedBulkPrintJob => {
     if (input.records.length === 0) {

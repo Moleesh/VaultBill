@@ -1,7 +1,5 @@
 /** @format */
 
-import { loadWorkspaceSettings } from '../../runtime/WorkspaceSettings';
-
 type HostedDesktopBridge = {
     readonly configureLocalApi: (request: {
         readonly autoStart: boolean;
@@ -41,21 +39,4 @@ export const runHostedWebServerAction = async (
     const bridge = desktopBridge ?? fallbackHostedWebError('Desktop runtime is unavailable.');
     const status = await bridge[action]();
     return status.isRunning;
-};
-
-/** Saves the include-drafts setting through the active runtime. */
-export const saveIncludeDraftsInReportsSetting = async (input: {
-    readonly isHostedWeb: boolean;
-    readonly value: boolean;
-}): Promise<void> => {
-    const current = await loadWorkspaceSettings(input.isHostedWeb);
-    const nextSettings = { ...current, includeDraftsInReports: input.value };
-    if (window.vaultBillDesktop) {
-        await window.vaultBillDesktop.saveBusinessSettings(nextSettings);
-        return;
-    }
-    if (input.isHostedWeb) {
-        const { requestHostedApi } = await import('../../runtime/HostedApi');
-        await requestHostedApi('/settings/business', 'POST', nextSettings);
-    }
 };

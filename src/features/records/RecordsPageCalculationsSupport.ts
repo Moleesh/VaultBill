@@ -1,10 +1,10 @@
 /** @format */
 
-import { evaluateFormula } from '../../engines/formulaEngine/FormulaEngine';
 import type { DocumentFormatConfig } from '../../db/startup/ConfigSchemas';
+import { evaluateFormula } from '../../engines/formulaEngine/FormulaEngine';
+import type { ConfiguredFieldDefinition } from './RecordsPageSupport';
 import type { EditableRecord, RecordLineItem } from './RecordStoreContext';
 import { calculateRecordTotals } from './RecordTotals';
-import type { ConfiguredFieldDefinition } from './RecordsPageSupport';
 
 /** Normalizes field identifiers for stable field lookup. */
 export const normalizeId = (value: string): string =>

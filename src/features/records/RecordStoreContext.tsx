@@ -1,6 +1,6 @@
 /** @format */
 
-export { RecordStoreProvider } from './RecordStoreProvider';
 export { RecordStoreContext } from './RecordStoreContextBase';
-export { useRecordStore } from './useRecordStore';
+export { RecordStoreProvider } from './RecordStoreProvider';
 export type { AppRecord, EditableRecord, RecordLineItem } from './RecordStoreSupport';
+export { useRecordStore } from './useRecordStore';

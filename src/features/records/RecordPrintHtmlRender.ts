@@ -1,13 +1,13 @@
 /** @format */
 
 import type { DocumentFormatConfig } from '../../db/startup/ConfigSchemas';
-import type { AppRecord, EditableRecord } from './RecordStoreContext';
-import { calculateRecordTotals } from './RecordTotals';
 import {
     escapePrintHtml,
     recordFieldValue,
     type PrintBusinessProfile,
 } from './RecordPrintHtmlSupport';
+import type { AppRecord, EditableRecord } from './RecordStoreContext';
+import { calculateRecordTotals } from './RecordTotals';
 
 type PrintPackageLike = {
     readonly config: DocumentFormatConfig;

@@ -1,7 +1,8 @@
 /** @format */
 
-import { Check } from 'lucide-react';
 import type { FC } from 'react';
+
+import { Check } from 'lucide-react';
 
 import { ActionButton } from '../../components/ActionButton';
 import { AppBrandIcon } from '../../components/AppBrandIcon/AppBrandIcon';

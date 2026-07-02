@@ -2,8 +2,8 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { compilePrintTemplate } from '../TemplatePlaceholderCompiler';
 import type { PrintTemplateAsset } from '../PrintTemplateTypes';
+import { compilePrintTemplate } from '../TemplatePlaceholderCompiler';
 
 const createLogoAsset = (): PrintTemplateAsset => ({
     assetId: 'asset_1',

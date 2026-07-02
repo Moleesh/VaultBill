@@ -1,7 +1,8 @@
 /** @format */
 
-import { Copy, FilePlus2, Library, PencilLine, Trash2 } from 'lucide-react';
 import type { FC } from 'react';
+
+import { Copy, FilePlus2, Library, PencilLine, Trash2 } from 'lucide-react';
 
 import { IconButton } from '../../components/IconButton';
 import type { BuilderInventoryItem } from './BuilderDocumentLibrarySupport';

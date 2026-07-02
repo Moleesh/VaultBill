@@ -5,6 +5,7 @@ import type { FC } from 'react';
 import { ActionButton } from '../../components/ActionButton';
 import { AppModal } from '../../components/AppModal/AppModal';
 import { FormField } from '../../components/FormFields';
+
 import type { ActivationFormApi } from './useLoginForms';
 
 type LoginActivationModalProps = {

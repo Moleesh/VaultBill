@@ -1,20 +1,21 @@
 /** @format */
 
-import { Printer } from 'lucide-react';
-import { useRef } from 'react';
 import type { FC } from 'react';
+import { useRef } from 'react';
+
+import { Printer } from 'lucide-react';
 
 import { ActionButton } from '../../components/ActionButton';
 import { FormField } from '../../components/FormFields';
 import { IconButton } from '../../components/IconButton';
 import { SearchableDropdown } from '../../components/SearchableDropdown/SearchableDropdown';
 import type { DocumentFormatConfig } from '../../db/startup/ConfigSchemas';
+import { renderBuilderPreview } from './BuilderPagePreviewSupport';
 import {
     defaultBuilderPrintSettings,
     type AssetSummary,
     type BuilderPrintConfig,
 } from './BuilderPageSupport';
-import { renderBuilderPreview } from './BuilderPagePreviewSupport';
 
 type BuilderPrintPreviewStepProps = {
     readonly config: DocumentFormatConfig;

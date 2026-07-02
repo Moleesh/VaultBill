@@ -2,6 +2,7 @@
 /* eslint-disable max-lines */
 
 import { DatabaseSync } from 'node:sqlite';
+
 import {
     BuilderPackageSchema,
     mapBuilderAssetRows,

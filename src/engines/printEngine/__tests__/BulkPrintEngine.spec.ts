@@ -3,9 +3,9 @@
 import { describe, expect, it } from 'vitest';
 
 import type { DocumentRecord } from '../../../features/records/DocumentRecordSchema';
+import { getBulkPrintProgress, prepareBulkPrint } from '../BulkPrintEngine';
 import type { PrinterProfileConfig } from '../PrinterProfileTypes';
 import type { PrintTemplateRecord } from '../PrintTemplateTypes';
-import { getBulkPrintProgress, prepareBulkPrint } from '../BulkPrintEngine';
 
 const template: PrintTemplateRecord = {
     templateId: 'TaxInvoiceA4',

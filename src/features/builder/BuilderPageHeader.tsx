@@ -1,7 +1,8 @@
 /** @format */
 
-import { Check, ChevronRight, Download, Upload, X } from 'lucide-react';
 import type { FC } from 'react';
+
+import { Check, ChevronRight, Download, Upload, X } from 'lucide-react';
 
 import { ActionButton } from '../../components/ActionButton';
 import { FileSelectButton } from '../../components/FileSelectButton';

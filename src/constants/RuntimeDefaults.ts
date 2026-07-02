@@ -1,7 +1,7 @@
 /** @format */
 
-import { defaultTagline } from './AppIdentity';
 import type { RuntimeBranding, ShellSection, ThemeOption } from '../types/AppTypes';
+import { defaultTagline } from './AppIdentity';
 
 /** Default product branding used before operators customize workspace identity. */
 export const defaultRuntimeBranding: RuntimeBranding = {

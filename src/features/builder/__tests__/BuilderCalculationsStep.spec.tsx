@@ -3,8 +3,8 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
-import { cloneDefault } from '../BuilderPageSupport';
 import { BuilderCalculationsStep } from '../BuilderCalculationsStep';
+import { cloneDefault } from '../BuilderPageSupport';
 
 describe('BuilderCalculationsStep', () => {
     it('supports drag ordering and formula editing', () => {

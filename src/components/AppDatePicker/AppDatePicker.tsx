@@ -1,13 +1,14 @@
 /** @format */
 
-import { addMonths, format, getDay, getDaysInMonth, parseISO, startOfMonth } from 'date-fns';
-import { useEffect, useId, useRef, useState } from 'react';
 import type { FC, ReactNode } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
+
+import { addMonths, format, getDay, getDaysInMonth, parseISO, startOfMonth } from 'date-fns';
 
 import { FormField } from '../FormFields';
 import { IconOnlyButton } from '../IconOnlyButton';
-import { AppDatePickerPopup } from './AppDatePickerPopup';
 import { getDropdownMenuPlacement } from '../SearchableDropdown/SearchableDropdownSupport';
+import { AppDatePickerPopup } from './AppDatePickerPopup';
 
 type AppDatePickerProps = {
     readonly disabled?: boolean;

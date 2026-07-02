@@ -4,8 +4,8 @@ import { describe, expect, it } from 'vitest';
 
 import type { DocumentRecord } from '../../../features/records/DocumentRecordSchema';
 import type { PrinterProfileConfig } from '../PrinterProfileTypes';
-import type { PrintTemplateRecord } from '../PrintTemplateTypes';
 import { preparePrintJobFromProfile } from '../PrintProfileWorkflow';
+import type { PrintTemplateRecord } from '../PrintTemplateTypes';
 
 const template: PrintTemplateRecord = {
     templateId: 'TaxInvoiceA4',

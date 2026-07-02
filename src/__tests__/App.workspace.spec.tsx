@@ -1,19 +1,22 @@
 /** @format */
 
-import { act, fireEvent, render, screen } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
-import { beforeEach, describe, expect, it } from 'vitest';
 import type { ReactNode } from 'react';
+import { MemoryRouter } from 'react-router-dom';
 
-import { CapabilityProvider } from '../capability/CapabilityContext';
+import { act, fireEvent, render, screen } from '@testing-library/react';
+import { beforeEach, describe, expect, it } from 'vitest';
+
 import type { CapabilityRegistry } from '../capability/Capability.types';
+import { CapabilityProvider } from '../capability/CapabilityContext';
 import { SearchableDropdown } from '../components/SearchableDropdown/SearchableDropdown';
 import { SessionContext } from '../features/auth/SessionContext';
 import { demoAccount } from '../features/auth/SessionSupport';
 import { BuilderPage } from '../features/builder/BuilderPage';
 import { RecordsPage } from '../features/records/RecordsPage';
 import { RecordStoreProvider } from '../features/records/RecordStoreContext';
+import { resetBrowserRecords } from '../features/records/RecordStoreSupport';
 import { ReportsPage } from '../features/reports/ReportsPage';
+import { TestQueryProvider } from '../test/TestQueryProvider';
 import { createTestSession } from '../test/TestSession';
 
 const webCapabilities: CapabilityRegistry = {
@@ -36,11 +39,13 @@ const webCapabilities: CapabilityRegistry = {
 const renderPage = (children: ReactNode, capabilities = webCapabilities) =>
     render(
         <MemoryRouter>
-            <CapabilityProvider value={capabilities}>
-                <SessionContext.Provider value={createTestSession(demoAccount)}>
-                    <RecordStoreProvider>{children}</RecordStoreProvider>
-                </SessionContext.Provider>
-            </CapabilityProvider>
+            <TestQueryProvider>
+                <CapabilityProvider value={capabilities}>
+                    <SessionContext.Provider value={createTestSession(demoAccount)}>
+                        <RecordStoreProvider>{children}</RecordStoreProvider>
+                    </SessionContext.Provider>
+                </CapabilityProvider>
+            </TestQueryProvider>
         </MemoryRouter>,
     );
 
@@ -55,6 +60,7 @@ describe('product UI', () => {
     beforeEach(() => {
         document.body.innerHTML = '<div id="portal-root"></div>';
         window.localStorage.clear();
+        resetBrowserRecords();
     });
 
     it('moves a new record into the saved Draft state', async () => {
@@ -71,7 +77,7 @@ describe('product UI', () => {
         expect(screen.getByRole('button', { name: /Finalize/u })).toBeEnabled();
     });
 
-    it('shows demo report data and the builder steps', async () => {
+    it('shows the reports workspace and the builder steps', async () => {
         renderPage(
             <>
                 <ReportsPage />
@@ -79,8 +85,9 @@ describe('product UI', () => {
             </>,
         );
 
-        expect((await screen.findAllByText('Aster Works')).length).toBeGreaterThan(0);
-        await clickAction(/Edit current/u);
+        expect(await screen.findByRole('heading', { name: 'Business reports' })).toBeVisible();
+        expect(screen.getByRole('button', { name: /Report Sales register/u })).toBeVisible();
+        await clickAction(/New document/u);
         expect(await screen.findByRole('heading', { name: 'Document builder' })).toBeVisible();
         await clickAction(/^Print$/u);
         expect(screen.getByRole('heading', { name: 'Print' })).toBeVisible();
@@ -92,7 +99,7 @@ describe('product UI', () => {
     it('shows the document name field without exposing the internal format ID', async () => {
         renderPage(<BuilderPage />);
 
-        await clickAction(/Edit current/u);
+        await clickAction(/New document/u);
         expect(await screen.findByRole('heading', { name: 'Document builder' })).toBeVisible();
         expect(screen.getByRole('heading', { name: 'Format' })).toBeVisible();
         expect(screen.getByText('Document name')).toBeVisible();
@@ -102,17 +109,19 @@ describe('product UI', () => {
     it('hides sample value editing in the field drawer', async () => {
         render(
             <MemoryRouter initialEntries={['/app/builder?step=fields']}>
-                <CapabilityProvider value={webCapabilities}>
-                    <SessionContext.Provider value={createTestSession(demoAccount)}>
-                        <RecordStoreProvider>
-                            <BuilderPage />
-                        </RecordStoreProvider>
-                    </SessionContext.Provider>
-                </CapabilityProvider>
+                <TestQueryProvider>
+                    <CapabilityProvider value={webCapabilities}>
+                        <SessionContext.Provider value={createTestSession(demoAccount)}>
+                            <RecordStoreProvider>
+                                <BuilderPage />
+                            </RecordStoreProvider>
+                        </SessionContext.Provider>
+                    </CapabilityProvider>
+                </TestQueryProvider>
             </MemoryRouter>,
         );
 
-        await clickAction(/Edit current/u);
+        await clickAction(/New document/u);
         expect(await screen.findByRole('heading', { name: 'Document builder' })).toBeVisible();
         await clickAction(/^Fields$/u);
         await clickAction(/^Edit Invoice Date$/u);
@@ -125,7 +134,7 @@ describe('product UI', () => {
     it('shows field and print previews in the builder preview steps', async () => {
         renderPage(<BuilderPage />);
 
-        await clickAction(/Edit current/u);
+        await clickAction(/New document/u);
         expect(await screen.findByRole('heading', { name: 'Document builder' })).toBeVisible();
         await clickAction(/Field Preview/u);
         expect(screen.getByRole('heading', { name: /Field preview/u })).toBeVisible();
@@ -139,17 +148,19 @@ describe('product UI', () => {
     it('can open the print preview step directly from the route', async () => {
         render(
             <MemoryRouter initialEntries={['/app/builder?step=preview']}>
-                <CapabilityProvider value={webCapabilities}>
-                    <SessionContext.Provider value={createTestSession(demoAccount)}>
-                        <RecordStoreProvider>
-                            <BuilderPage />
-                        </RecordStoreProvider>
-                    </SessionContext.Provider>
-                </CapabilityProvider>
+                <TestQueryProvider>
+                    <CapabilityProvider value={webCapabilities}>
+                        <SessionContext.Provider value={createTestSession(demoAccount)}>
+                            <RecordStoreProvider>
+                                <BuilderPage />
+                            </RecordStoreProvider>
+                        </SessionContext.Provider>
+                    </CapabilityProvider>
+                </TestQueryProvider>
             </MemoryRouter>,
         );
 
-        await clickAction(/Edit current/u);
+        await clickAction(/New document/u);
         expect(await screen.findByRole('heading', { name: 'Document builder' })).toBeVisible();
         expect(screen.getByRole('heading', { name: /Print preview/u })).toBeVisible();
     });

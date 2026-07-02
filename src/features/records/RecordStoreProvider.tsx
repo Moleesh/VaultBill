@@ -1,21 +1,21 @@
 /** @format */
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useMemo } from 'react';
 import type { FC, PropsWithChildren } from 'react';
+import { useEffect, useMemo } from 'react';
+
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useCapabilities } from '../../capability/CapabilityContext';
-import { isStaticHostedBrowserBuild } from '../../runtime/RuntimeMode';
-import { useSession } from '../auth/useSession';
-import { RecordStoreContext } from './RecordStoreContextBase';
-import type { OperatorContext } from '../auth/AccountTypes';
+import { getRuntimeQueryScope, queryKeys } from '../../query/QueryKeys';
 import {
     cancelRuntimeRecord,
     fetchStoredRecords,
     finalizeRuntimeRecord,
     saveDraftRuntimeRecord,
 } from '../../query/RuntimeQueries';
-import { getRuntimeQueryScope, queryKeys } from '../../query/QueryKeys';
+import { isStaticHostedBrowserBuild } from '../../runtime/RuntimeMode';
+import type { OperatorContext } from '../auth/AccountTypes';
+import { RecordStoreContext } from './RecordStoreContextBase';
 import {
     recordStoreEventName,
     resetBrowserRecords,
@@ -24,6 +24,8 @@ import {
     type AppRecord,
     type EditableRecord,
 } from './RecordStoreSupport';
+
+import { useSession } from '../auth/useSession';
 
 const mergeRecord = (
     currentRecords: readonly AppRecord[],

@@ -3,6 +3,13 @@
 import type { CapabilityRegistry } from '../../capability/Capability.types';
 import { DocumentFormatConfigSchema } from '../../db/startup/ConfigSchemas';
 import {
+    fetchBuilderInventory,
+    fetchBuilderPackage,
+    removeBuilderPackage,
+} from '../../query/RuntimeQueries';
+import type { BuilderInventoryItem } from './BuilderDocumentLibrarySupport';
+import type { DocumentFormatConfig } from './BuilderPageControllerSupport';
+import {
     base64ByteLength,
     type AssetSummary,
     type SavedPrintTemplate,
@@ -12,13 +19,6 @@ import {
     defaultSavedPrintTemplates,
     normalizeSavedPrintTemplates,
 } from './BuilderSavedTemplatesSupport';
-import type { DocumentFormatConfig } from './BuilderPageControllerSupport';
-import {
-    fetchBuilderInventory,
-    fetchBuilderPackage,
-    removeBuilderPackage,
-} from '../../query/RuntimeQueries';
-import type { BuilderInventoryItem } from './BuilderDocumentLibrarySupport';
 
 export type BuilderDocumentLibrarySetters = {
     readonly setAssets: (value: readonly AssetSummary[]) => void;

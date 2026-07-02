@@ -1,8 +1,9 @@
 /** @format */
 
-import { QueryClientProvider } from '@tanstack/react-query';
-import { useState } from 'react';
 import type { FC, PropsWithChildren } from 'react';
+import { useState } from 'react';
+
+import { QueryClientProvider } from '@tanstack/react-query';
 
 import { createVaultBillQueryClient } from '../query/QueryClient';
 

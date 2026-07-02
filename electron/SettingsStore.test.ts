@@ -7,8 +7,8 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { SettingsStore } from './SettingsStore.js';
 import { defaultHostedWebPort } from './server/LocalApiSecurity.js';
+import { SettingsStore } from './SettingsStore.js';
 
 let directory = '';
 let store: SettingsStore | undefined;

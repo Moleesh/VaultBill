@@ -2,8 +2,8 @@
 
 import { BarChart3, BookOpenText, FileText, Settings, SlidersHorizontal } from 'lucide-react';
 
-import type { AppRouteId, Role } from '../types/AppTypes';
 import { shellSections } from '../constants/RuntimeDefaults';
+import type { AppRouteId, Role } from '../types/AppTypes';
 
 export const appShellIcons = {
     dashboard: BarChart3,

@@ -4,16 +4,16 @@
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { runDatabaseStartupChecks } from '../../startup/DatabaseStartup';
-import { openNodeSqliteConnection } from '../sqliteAdapter';
-import type { SqliteConnection } from '../../sqlite/SqliteConnection';
 import type { PrintTemplateConfig } from '../../../engines/printEngine/PrintTemplateTypes';
+import type { SqliteConnection } from '../../sqlite/SqliteConnection';
+import { runDatabaseStartupChecks } from '../../startup/DatabaseStartup';
 import {
     listPrintTemplateAssets,
     loadPrintTemplate,
     savePrintTemplate,
     savePrintTemplateAsset,
 } from '../printTemplateRepository';
+import { openNodeSqliteConnection } from '../sqliteAdapter';
 
 let connection: SqliteConnection | undefined;
 

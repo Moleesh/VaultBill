@@ -4,9 +4,9 @@ import type { FC } from 'react';
 
 import { ActionButton } from '../../components/ActionButton';
 import { FormField } from '../../components/FormFields';
-import type { FieldConfig } from './BuilderPageSupport';
 import { BuilderFieldEditor } from './BuilderFieldEditor';
 import { BuilderLineItemsPreview } from './BuilderLineItemsStepSupport';
+import type { FieldConfig } from './BuilderPageSupport';
 
 type LineSection = {
     readonly Label: string;

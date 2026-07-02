@@ -17,7 +17,7 @@ import {
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 
-import { embeddedDesktopAppUrl, mainState, hostedAppUrl } from './MainState.js';
+import { embeddedDesktopAppUrl, hostedAppUrl, mainState } from './MainState.js';
 
 const desktopIconPath = () => path.join(mainState.currentDirectory, '../build/icon.png');
 

@@ -5,8 +5,8 @@
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { openNodeSqliteConnection } from '../../../db/adapters/sqliteAdapter';
-import { runDatabaseStartupChecks } from '../../../db/startup/DatabaseStartup';
 import type { SqliteConnection } from '../../../db/sqlite/SqliteConnection';
+import { runDatabaseStartupChecks } from '../../../db/startup/DatabaseStartup';
 import {
     bootstrapOperatorAccounts,
     createOperatorContext,

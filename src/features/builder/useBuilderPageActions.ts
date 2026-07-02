@@ -1,7 +1,8 @@
 /** @format */
 
+import type { ChangeEvent, Dispatch, SetStateAction } from 'react';
+
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import type { Dispatch, SetStateAction, ChangeEvent } from 'react';
 import type { z } from 'zod';
 
 import { DocumentFormatConfigSchema } from '../../db/startup/ConfigSchemas';

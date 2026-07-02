@@ -1,8 +1,9 @@
 /** @format */
 
-import { Eye, EyeOff } from 'lucide-react';
-import { useId, useState } from 'react';
 import type { ComponentPropsWithoutRef, FC, ReactNode } from 'react';
+import { useId, useState } from 'react';
+
+import { Eye, EyeOff } from 'lucide-react';
 
 import { IconOnlyButton } from './IconOnlyButton';
 

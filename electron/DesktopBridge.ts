@@ -2,14 +2,14 @@
 
 import type { IpcRenderer } from 'electron';
 
-import type { BuildIdentity } from './BuildIdentity.js';
 import type { BuilderInventoryItem, BuilderPackage } from './BuilderStore.js';
+import type { BuildIdentity } from './BuildIdentity.js';
 import type { CredentialStatus, DesktopOperatorAccount } from './CredentialStore.js';
+import type { VaultBillDesktopBridge } from './DesktopBridgeTypes.js';
 import type { PdfResult } from './PdfBridge.js';
 import type { PrintResult } from './PrintBridge.js';
 import type { PrinterSummary } from './PrinterBridge.js';
 import type { ReportQueryResult, StoredRecord, TrialStatus } from './RecordStore.js';
-import type { VaultBillDesktopBridge } from './DesktopBridgeTypes.js';
 
 /** Builds the context-bridged desktop API from Electron IPC channels. */
 export const createDesktopBridge = (ipcRenderer: IpcRenderer): VaultBillDesktopBridge => ({

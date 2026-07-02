@@ -1,11 +1,13 @@
 /** @format */
 
-import { ArchiveRestore, HardDriveDownload, RotateCcw, ShieldCheck } from 'lucide-react';
 import type { FC } from 'react';
+
+import { ArchiveRestore, HardDriveDownload, RotateCcw, ShieldCheck } from 'lucide-react';
 
 import { ActionButton } from '../../components/ActionButton';
 import { FormField } from '../../components/FormFields';
 import { IconButton } from '../../components/IconButton';
+
 import type { BackupActionFormApi } from './useSettingsBackupSection';
 
 type SettingsBackupActionsProps = {

@@ -1,18 +1,18 @@
 /** @format */
 /* eslint-disable max-lines */
 
-import { createHash } from 'node:crypto';
+import type { ReactNode } from 'react';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 
 import { fireEvent, render, screen } from '@testing-library/react';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { createHash } from 'node:crypto';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { ReactNode } from 'react';
 
 import type { CapabilityRegistry } from '../../../capability/Capability.types';
 import { CapabilityProvider } from '../../../capability/CapabilityContext';
 import { TestQueryProvider } from '../../../test/TestQueryProvider';
-import { LoginPage } from '../LoginPage';
 import type { OperatorAccount } from '../AccountTypes';
+import { LoginPage } from '../LoginPage';
 import { SessionProvider } from '../SessionContext';
 
 const nonDemoCapabilities: CapabilityRegistry = {
@@ -126,6 +126,12 @@ describe('login UI', () => {
                 name: /Operator account Operations Admin/i,
             }),
         ).toBeVisible();
+        fireEvent.click(
+            screen.getByRole('button', {
+                name: /Operator account Operations Admin/i,
+            }),
+        );
+        fireEvent.click(screen.getByRole('option', { name: /Operations Admin/i }));
         const passwordInput = screen.getByLabelText('Password');
         fireEvent.change(passwordInput, { target: { value: password } });
         fireEvent.keyDown(passwordInput, {

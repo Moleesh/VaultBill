@@ -1,16 +1,17 @@
 /** @format */
 
-import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
+
+import { render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { CapabilityRegistry } from '../../capability/Capability.types';
 import { CapabilityProvider } from '../../capability/CapabilityContext';
-import { AppShell } from '../AppShell';
-import { RecordStoreProvider } from '../../features/records/RecordStoreContext';
 import { SessionContext } from '../../features/auth/SessionContext';
+import { RecordStoreProvider } from '../../features/records/RecordStoreContext';
 import { TestQueryProvider } from '../../test/TestQueryProvider';
 import { createTestSession } from '../../test/TestSession';
+import { AppShell } from '../AppShell';
 
 const hasFetchCallForPath = (
     calls: readonly (readonly [string | URL | Request, ...unknown[]])[],

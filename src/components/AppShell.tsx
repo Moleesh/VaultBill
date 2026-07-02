@@ -5,28 +5,31 @@
  * authenticated chrome in sync while the workspace content changes.
  */
 
+import type { FC } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import type { FC } from 'react';
+
 import { useQuery } from '@tanstack/react-query';
 
-import { shouldRenderDesktopChrome } from '../capability/CapabilityRegistry';
 import { useCapabilities } from '../capability/CapabilityContext';
+import { shouldRenderDesktopChrome } from '../capability/CapabilityRegistry';
 import { defaultRuntimeBranding, shellSections } from '../constants/RuntimeDefaults';
 import { useSession } from '../features/auth/SessionContext';
 import { useRecordStore } from '../features/records/RecordStoreContext';
-import { useThemeController } from '../hooks/useThemeController';
-import { loadResolvedTheme } from '../runtime/WorkspaceTheme';
 import { getRuntimeQueryScope, queryKeys } from '../query/QueryKeys';
 import { fetchHostedWebUrl, fetchTrialStatus } from '../query/RuntimeQueries';
+import { loadResolvedTheme } from '../runtime/WorkspaceTheme';
+import type { AppRouteId } from '../types/AppTypes';
 import { createAppShellActions } from './AppShellActions';
-import { getAllowedSectionIds, getPageId } from './AppShellSupport';
 import { AppShellContentFrame } from './AppShellContentFrame';
 import { AppShellManagedDialogs } from './AppShellManagedDialogs';
 import { AppShellMobileNav } from './AppShellMobileNav';
 import { AppShellSidebar } from './AppShellSidebar';
+import { getAllowedSectionIds, getPageId } from './AppShellSupport';
 import { AppShellTopbar } from './AppShellTopbar';
-import type { AppRouteId } from '../types/AppTypes';
+
+import { useThemeController } from '../hooks/useThemeController';
+
 import '../styles/Components/AppShell.scss';
 
 /** Renders the authenticated desktop application frame and its modal actions. */

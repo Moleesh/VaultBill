@@ -7,8 +7,8 @@ import {
     type PrinterProfileConfig,
     type PrinterProfileRecord,
 } from '../../engines/printEngine/PrinterProfileTypes';
-import { stringifyValidatedJson } from '../startup/JsonParsing';
 import type { SqliteConnection } from '../sqlite/SqliteConnection';
+import { stringifyValidatedJson } from '../startup/JsonParsing';
 
 export type SavePrinterProfileInput = {
     readonly profileId: string;

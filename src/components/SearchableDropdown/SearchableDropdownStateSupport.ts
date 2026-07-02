@@ -1,7 +1,7 @@
 /** @format */
 
-import { useEffect } from 'react';
 import type { Dispatch, RefObject, SetStateAction } from 'react';
+import { useEffect } from 'react';
 
 import {
     getDropdownMenuPlacement,

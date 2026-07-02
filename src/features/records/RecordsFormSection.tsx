@@ -1,15 +1,16 @@
 /** @format */
 
-import { useForm } from '@tanstack/react-form';
 import type { FC } from 'react';
 import { useEffect } from 'react';
+
+import { useForm } from '@tanstack/react-form';
 
 import { AppDatePicker } from '../../components/AppDatePicker/AppDatePicker';
 import { FormField } from '../../components/FormFields';
 import { RecordsFieldControl } from './RecordsFieldControl';
-import type { AppRecord, EditableRecord, RecordLineItem } from './RecordStoreContext';
-import type { ConfiguredFieldDefinition } from './RecordsPageSupport';
 import { RecordsLineItemsSection } from './RecordsLineItemsSection';
+import type { ConfiguredFieldDefinition } from './RecordsPageSupport';
+import type { AppRecord, EditableRecord, RecordLineItem } from './RecordStoreContext';
 
 type RecordsDocumentFormValues = {
     readonly billingAddress: string;

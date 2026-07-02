@@ -1,8 +1,9 @@
 /** @format */
 
-import { X } from 'lucide-react';
-import { useEffect } from 'react';
 import type { FC } from 'react';
+import { useEffect } from 'react';
+
+import { X } from 'lucide-react';
 
 import { IconOnlyButton } from '../../components/IconOnlyButton';
 

@@ -2,24 +2,24 @@
 
 import type { z } from 'zod';
 
+import type { SqliteConnection } from '../sqlite/SqliteConnection';
 import {
     CompanyProfileSchema,
     RuntimeBrandingSchema,
-    SignaturePadSettingsSchema,
     SecretsSettingsSchema,
+    SignaturePadSettingsSchema,
     type CompanyProfileConfig,
     type RuntimeBrandingConfig,
-    type SignaturePadSettings,
     type SecretsSettings,
+    type SignaturePadSettings,
 } from '../startup/ConfigSchemas';
 import { parseJsonWithSchema, stringifyValidatedJson } from '../startup/JsonParsing';
 import {
     companyProfileSettingKey,
     runtimeBrandingSettingKey,
-    signaturePadSettingKey,
     secretsSettingKey,
+    signaturePadSettingKey,
 } from '../startup/StartupSettingKeys';
-import type { SqliteConnection } from '../sqlite/SqliteConnection';
 
 export const saveRuntimeBranding = (
     connection: SqliteConnection,

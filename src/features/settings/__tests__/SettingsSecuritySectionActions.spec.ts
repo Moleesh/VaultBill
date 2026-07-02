@@ -79,20 +79,19 @@ describe('SettingsSecuritySectionActions', () => {
 
     it('activates a hosted license and clears the form after success', async () => {
         const activationForm = createActivationForm('  LICENSE-KEY  ');
-        const activateHosted = vi.fn().mockResolvedValue(undefined);
+        const activate = vi.fn().mockResolvedValue(undefined);
         const setMessage = vi.fn();
 
         activateSecurityLicense({
             activationForm,
-            activateDesktop: undefined,
-            activateHosted,
+            activate,
             setMessage,
         });
         await vi.waitFor(() => {
             expect(activationForm.reset).toHaveBeenCalledTimes(1);
         });
 
-        expect(activateHosted).toHaveBeenCalledWith('LICENSE-KEY');
+        expect(activate).toHaveBeenCalledWith('LICENSE-KEY');
         expect(setMessage).toHaveBeenCalledWith('License accepted. Full access is now enabled.');
     });
 });

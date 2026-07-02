@@ -1,12 +1,13 @@
 /** @format */
 
+import type { FC } from 'react';
+import { useEffect, useState } from 'react';
+
 import { useForm } from '@tanstack/react-form';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
-import type { FC } from 'react';
 
-import { ActionButton } from '../../components/ActionButton';
 import { useCapabilities } from '../../capability/CapabilityContext';
+import { ActionButton } from '../../components/ActionButton';
 import { getRuntimeQueryScope, queryKeys } from '../../query/QueryKeys';
 import { fetchSecretsSettings, saveSecretsSettings } from '../../query/RuntimeQueries';
 import {

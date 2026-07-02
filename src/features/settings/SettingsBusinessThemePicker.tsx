@@ -1,7 +1,8 @@
 /** @format */
 
-import { Palette } from 'lucide-react';
 import type { FC, ReactNode } from 'react';
+
+import { Palette } from 'lucide-react';
 
 import { ActionButton } from '../../components/ActionButton';
 import { FormField } from '../../components/FormFields';

@@ -3,7 +3,6 @@
 import { describe, expect, it } from 'vitest';
 
 import { builtInDefaultFormat } from '../../../db/startup/BuiltInDefaultFormat';
-import { calculateLineItemRows, evaluateFormula } from '../FormulaEngine';
 import {
     addDecimal,
     decimalFromInteger,
@@ -11,6 +10,7 @@ import {
     formatDecimal,
     parseDecimal,
 } from '../DecimalMath';
+import { calculateLineItemRows, evaluateFormula } from '../FormulaEngine';
 import { toRoundingMode } from '../FormulaTypes';
 
 const policy = builtInDefaultFormat.CalculationPolicy;

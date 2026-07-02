@@ -3,8 +3,8 @@
 import { describe, expect, it } from 'vitest';
 
 import type { DocumentRecord } from '../../../features/records/DocumentRecordSchema';
-import { buildRecordPrintValues } from '../PrintValueMapper';
 import type { PrintTemplateConfig } from '../PrintTemplateTypes';
+import { buildRecordPrintValues } from '../PrintValueMapper';
 
 const sampleRecord: DocumentRecord = {
     RecordId: 'Record_01',

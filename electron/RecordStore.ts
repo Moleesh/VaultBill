@@ -4,8 +4,8 @@
  * Desktop record store that persists invoices, statuses, and trial state.
  */
 
-import { DatabaseSync } from 'node:sqlite';
 import { createHash } from 'node:crypto';
+import { DatabaseSync } from 'node:sqlite';
 
 import {
     buildStoredRecord,
@@ -16,10 +16,10 @@ import {
     listStoredRecords,
     parseReportQuery,
     parseStoredRecord,
-    safeBufferEqual,
     RecordCancelRequestSchema,
     RecordWriteRequestSchema,
     type ReportQueryResult,
+    safeBufferEqual,
     type StoredRecord,
     type TrialStatus,
     writeRuntime,
@@ -28,9 +28,9 @@ import {
 
 export type {
     RecordCancelRequest,
+    RecordWriteRequest,
     ReportQuery,
     ReportQueryResult,
-    RecordWriteRequest,
     StoredRecord,
     TrialStatus,
 } from './RecordStoreSupport.js';

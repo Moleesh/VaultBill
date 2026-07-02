@@ -11,6 +11,7 @@ import { SearchableDropdown } from '../../components/SearchableDropdown/Searchab
 import { ReportFieldValueControl } from './ReportsFilterPanelSupport';
 import { reportFieldOptions, reportOptions } from './ReportsPageSupport';
 import type { ReportFieldFilter } from './ReportsPageTypes';
+
 import type { ReportsFilterFormApi } from './useReportsPageFilters';
 
 type ReportsFilterPanelProps = {

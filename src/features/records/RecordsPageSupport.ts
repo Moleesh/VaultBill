@@ -1,7 +1,6 @@
 /** @format */
 
 import type { DocumentFormatConfig } from '../../db/startup/ConfigSchemas';
-import type { AppRecord, EditableRecord, RecordLineItem } from './RecordStoreContext';
 import {
     applyDocumentCalculations,
     calculateConfiguredLineItem,
@@ -11,6 +10,7 @@ import {
     lineItemFieldValue,
     normalizeId,
 } from './RecordsPageCalculationsSupport';
+import type { AppRecord, EditableRecord, RecordLineItem } from './RecordStoreContext';
 
 export type ConfiguredFieldDefinition = DocumentFormatConfig['Fields'][number];
 

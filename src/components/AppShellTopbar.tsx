@@ -1,16 +1,17 @@
 /** @format */
 
-import { KeyRound, LockKeyhole, LogOut, RotateCcw } from 'lucide-react';
 import type { FC } from 'react';
 
+import { KeyRound, LockKeyhole, LogOut, RotateCcw } from 'lucide-react';
+
+import { shellSections } from '../constants/RuntimeDefaults';
+import { formatTrialCountdownParts } from '../features/dashboard/SysAdminDashboardTrialSupport';
+import type { AppRouteId, ThemeController } from '../types/AppTypes';
 import { ActionButton } from './ActionButton';
 import { AppBrandIcon } from './AppBrandIcon/AppBrandIcon';
 import { DesktopWindowControls } from './DesktopWindowControls';
 import { IconOnlyButton } from './IconOnlyButton';
 import { ThemePalette } from './ThemePalette';
-import { shellSections } from '../constants/RuntimeDefaults';
-import { formatTrialCountdownParts } from '../features/dashboard/SysAdminDashboardTrialSupport';
-import type { AppRouteId, ThemeController } from '../types/AppTypes';
 
 type AppShellTopbarProps = {
     readonly pageId: string;
@@ -65,57 +66,62 @@ export const AppShellTopbar: FC<AppShellTopbarProps> = ({
                 </div>
             </div>
             <div className="app-shell-topbar-actions">
-                <div className="app-shell-mobile-account-actions">
-                    <ThemePalette controller={themeController} />
-                    {!isDemoMode ? (
+                <div className="app-shell-topbar-status-group">
+                    <div className="app-shell-mobile-account-actions">
+                        <ThemePalette controller={themeController} />
+                        {!isDemoMode ? (
+                            <IconOnlyButton
+                                aria-label="Change my password"
+                                icon={<LockKeyhole aria-hidden="true" size={19} />}
+                                onClick={onChangePassword}
+                            />
+                        ) : (
+                            <IconOnlyButton
+                                aria-label="Reset demo data"
+                                icon={<RotateCcw aria-hidden="true" size={19} />}
+                                onClick={onResetDemo}
+                            />
+                        )}
                         <IconOnlyButton
-                            aria-label="Change my password"
-                            icon={<LockKeyhole aria-hidden="true" size={19} />}
-                            onClick={onChangePassword}
+                            aria-label="Log out"
+                            icon={<LogOut aria-hidden="true" size={19} />}
+                            onClick={onLogout}
                         />
-                    ) : (
-                        <IconOnlyButton
-                            aria-label="Reset demo data"
-                            icon={<RotateCcw aria-hidden="true" size={19} />}
-                            onClick={onResetDemo}
-                        />
-                    )}
-                    <IconOnlyButton
-                        aria-label="Log out"
-                        icon={<LogOut aria-hidden="true" size={19} />}
-                        onClick={onLogout}
-                    />
+                    </div>
+                    {!isDemoMode && trialStatus && !trialStatus.isFullVersion ? (
+                        <ActionButton
+                            className="app-shell-trial-pill"
+                            onClick={onOpenActivation}
+                            variant={trialStatus.isExpired ? 'danger' : 'default'}
+                        >
+                            <KeyRound aria-hidden="true" size={17} />
+                            <span className="app-shell-trial-pill-copy">
+                                <strong>
+                                    {trialStatus.isExpired
+                                        ? 'Trial expired'
+                                        : formatTrialCountdownParts(trialStatus.remainingSeconds)
+                                              .amount}
+                                </strong>
+                                <small>
+                                    {trialStatus.isExpired
+                                        ? 'Open activation'
+                                        : formatTrialCountdownParts(trialStatus.remainingSeconds)
+                                              .label}
+                                </small>
+                            </span>
+                        </ActionButton>
+                    ) : null}
                 </div>
-                {!isDemoMode && trialStatus && !trialStatus.isFullVersion ? (
-                    <ActionButton
-                        className="app-shell-trial-pill"
-                        onClick={onOpenActivation}
-                        variant={trialStatus.isExpired ? 'danger' : 'default'}
-                    >
-                        <KeyRound aria-hidden="true" size={17} />
-                        <span className="app-shell-trial-pill-copy">
-                            <strong>
-                                {trialStatus.isExpired
-                                    ? 'Trial expired'
-                                    : formatTrialCountdownParts(trialStatus.remainingSeconds)
-                                          .amount}
-                            </strong>
-                            <small>
-                                {trialStatus.isExpired
-                                    ? 'Open activation'
-                                    : formatTrialCountdownParts(trialStatus.remainingSeconds).label}
-                            </small>
-                        </span>
-                    </ActionButton>
-                ) : null}
                 {onRefreshWindow || onMinimizeWindow || onCloseWindow ? (
-                    <DesktopWindowControls
-                        className="app-shell-window-controls"
-                        isDesktop
-                        onCloseWindow={onCloseWindow}
-                        onMinimizeWindow={onMinimizeWindow}
-                        onRefreshWindow={onRefreshWindow}
-                    />
+                    <div className="app-shell-topbar-controls-group">
+                        <DesktopWindowControls
+                            className="app-shell-window-controls"
+                            isDesktop
+                            onCloseWindow={onCloseWindow}
+                            onMinimizeWindow={onMinimizeWindow}
+                            onRefreshWindow={onRefreshWindow}
+                        />
+                    </div>
                 ) : null}
             </div>
         </header>

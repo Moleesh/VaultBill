@@ -1,8 +1,8 @@
 /** @format */
 
 import { calculateLineItemRows } from '../formulaEngine/FormulaEngine';
-import type { LineItemRow } from '../schemaEngine/LineItemTypes';
 import { validateLineItemRows } from '../schemaEngine/LineItemEngine';
+import type { LineItemRow } from '../schemaEngine/LineItemTypes';
 import { validateDocumentValues } from '../schemaEngine/SchemaEngine';
 import {
     findDuplicateExternalNumbers,

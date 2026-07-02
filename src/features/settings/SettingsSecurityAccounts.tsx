@@ -3,8 +3,6 @@
 import type { FC } from 'react';
 
 import type { Role } from '../../types/AppTypes';
-import { SettingsSecurityOperatorPanel } from './SettingsSecurityOperatorPanel';
-import { SettingsSecurityPasswordPanel } from './SettingsSecurityPasswordPanel';
 import {
     useCreateSecurityOperatorForm,
     useCreateSecurityPasswordForm,
@@ -12,6 +10,8 @@ import {
     type OperatorAccount,
     type PasswordFormValues,
 } from './SettingsSecurityAccountsSupport';
+import { SettingsSecurityOperatorPanel } from './SettingsSecurityOperatorPanel';
+import { SettingsSecurityPasswordPanel } from './SettingsSecurityPasswordPanel';
 
 type SettingsSecurityAccountsProps = {
     readonly operatorRole: Role;

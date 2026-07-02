@@ -1,7 +1,8 @@
 /** @format */
 
-import { Download, FileCode2, FileJson2, Plus, Trash2, Upload } from 'lucide-react';
 import type { ChangeEvent, FC } from 'react';
+
+import { Download, FileCode2, FileJson2, Plus, Trash2, Upload } from 'lucide-react';
 
 import { FileSelectButton } from '../../components/FileSelectButton';
 import { IconButton } from '../../components/IconButton';

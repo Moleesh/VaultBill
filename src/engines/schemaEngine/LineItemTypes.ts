@@ -1,8 +1,9 @@
 /** @format */
 
+import type { z } from 'zod';
+
 import type { LineItemSectionConfigSchema } from '../../db/startup/ConfigSchemas';
 import type { FieldValidationIssue } from './SchemaEngineTypes';
-import type { z } from 'zod';
 
 export type LineItemSectionConfig = z.infer<typeof LineItemSectionConfigSchema>;
 

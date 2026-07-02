@@ -3,8 +3,8 @@
 import { z } from 'zod';
 
 import { ReportConfigSchema, type ReportConfig } from '../../engines/reportEngine/ReportTypes';
-import { stringifyValidatedJson } from '../startup/JsonParsing';
 import type { SqliteConnection } from '../sqlite/SqliteConnection';
+import { stringifyValidatedJson } from '../startup/JsonParsing';
 
 export type SaveReportInput = {
     readonly reportId: string;

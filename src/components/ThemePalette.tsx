@@ -2,13 +2,15 @@
 
 /** Theme palette selector that previews and applies application color schemes. */
 
-import { Check } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import type { FC } from 'react';
+import type { CSSProperties, FC } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 
+import { Check } from 'lucide-react';
+
+import type { ThemeController, ThemeId } from '../types/AppTypes';
 import { ActionButton } from './ActionButton';
 import { IconOnlyButton } from './IconOnlyButton';
-import type { ThemeController, ThemeId } from '../types/AppTypes';
 
 type ThemePaletteProps = {
     readonly controller: ThemeController;
@@ -27,9 +29,51 @@ const swatchBackground = (themeId: ThemeId) =>
 
 export const ThemePalette: FC<ThemePaletteProps> = ({ controller }) => {
     const [isOpen, setIsOpen] = useState(false);
+    const [popoverStyle, setPopoverStyle] =
+        useState<Pick<CSSProperties, 'left' | 'top' | 'maxHeight'>>();
     const savedTheme = useRef(controller.themeId);
     const triggerRef = useRef<HTMLButtonElement>(null);
     const rootRef = useRef<HTMLDivElement>(null);
+    const popoverRef = useRef<HTMLDivElement>(null);
+
+    const positionPopover = useCallback(() => {
+        const trigger = triggerRef.current;
+        const popover = popoverRef.current;
+        if (!trigger || !popover) return;
+
+        const triggerRect = trigger.getBoundingClientRect();
+        const popoverRect = popover.getBoundingClientRect();
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+        const gutter = 12;
+        const spacing = 8;
+
+        const preferredLeft =
+            triggerRect.left + popoverRect.width <= viewportWidth - gutter
+                ? triggerRect.left
+                : triggerRect.right - popoverRect.width;
+        const left = Math.max(
+            gutter,
+            Math.min(preferredLeft, viewportWidth - popoverRect.width - gutter),
+        );
+
+        const spaceBelow = viewportHeight - triggerRect.bottom - gutter;
+        const spaceAbove = triggerRect.top - gutter;
+        const openAbove = spaceBelow < popoverRect.height + spacing && spaceAbove > spaceBelow;
+        const unclampedTop = openAbove
+            ? triggerRect.top - popoverRect.height - spacing
+            : triggerRect.bottom + spacing;
+        const top = Math.max(
+            gutter,
+            Math.min(unclampedTop, viewportHeight - popoverRect.height - gutter),
+        );
+        const maxHeight = Math.max(
+            160,
+            (openAbove ? triggerRect.top : viewportHeight - triggerRect.bottom) - gutter - spacing,
+        );
+
+        setPopoverStyle({ left, top, maxHeight });
+    }, []);
 
     const closePalette = useCallback(
         (restoreTheme: boolean) => {
@@ -45,7 +89,13 @@ export const ThemePalette: FC<ThemePaletteProps> = ({ controller }) => {
     useEffect(() => {
         if (!isOpen) return undefined;
         const close = (event: MouseEvent) => {
-            if (event.target instanceof Node && !rootRef.current?.contains(event.target)) {
+            if (!(event.target instanceof Node)) {
+                return;
+            }
+
+            const clickedTrigger = rootRef.current?.contains(event.target) ?? false;
+            const clickedPopover = popoverRef.current?.contains(event.target) ?? false;
+            if (!clickedTrigger && !clickedPopover) {
                 closePalette(true);
             }
         };
@@ -56,11 +106,23 @@ export const ThemePalette: FC<ThemePaletteProps> = ({ controller }) => {
         };
         document.addEventListener('mousedown', close);
         document.addEventListener('keydown', onKeyDown);
+        window.addEventListener('resize', positionPopover);
+        window.addEventListener('scroll', positionPopover, true);
         return () => {
             document.removeEventListener('mousedown', close);
             document.removeEventListener('keydown', onKeyDown);
+            window.removeEventListener('resize', positionPopover);
+            window.removeEventListener('scroll', positionPopover, true);
         };
-    }, [closePalette, isOpen]);
+    }, [closePalette, isOpen, positionPopover]);
+
+    useLayoutEffect(() => {
+        if (!isOpen) {
+            setPopoverStyle(undefined);
+            return;
+        }
+        positionPopover();
+    }, [isOpen, positionPopover]);
 
     return (
         <div className="theme-palette" ref={rootRef}>
@@ -81,39 +143,56 @@ export const ThemePalette: FC<ThemePaletteProps> = ({ controller }) => {
                     setIsOpen((current) => !current);
                 }}
             />
-            {isOpen ? (
-                <div className="theme-palette-popover" role="dialog" aria-label="Theme palette">
-                    {controller.availableThemes.map((theme) => (
-                        <ActionButton
-                            aria-label={theme.label}
-                            className={theme.id === controller.themeId ? 'is-selected' : ''}
-                            key={theme.id}
-                            onClick={() => {
-                                savedTheme.current = theme.id;
-                                controller.setThemeId(theme.id);
-                                closePalette(false);
-                            }}
-                            onFocus={() => {
-                                controller.setThemeId(theme.id);
-                            }}
-                            onMouseEnter={() => {
-                                controller.setThemeId(theme.id);
-                            }}
-                        >
-                            <span
-                                className="theme-palette-swatch"
-                                style={{
-                                    background: swatchBackground(theme.id),
-                                }}
-                            />
-                            <span>{theme.label}</span>
-                            {theme.id === controller.themeId ? (
-                                <Check aria-hidden="true" size={16} />
-                            ) : null}
-                        </ActionButton>
-                    ))}
-                </div>
-            ) : null}
+            {isOpen
+                ? createPortal(
+                      <div
+                          aria-label="Theme palette"
+                          className="theme-palette-popover"
+                          ref={popoverRef}
+                          role="dialog"
+                          style={
+                              popoverStyle
+                                  ? {
+                                        left: popoverStyle.left,
+                                        maxHeight: popoverStyle.maxHeight,
+                                        top: popoverStyle.top,
+                                    }
+                                  : undefined
+                          }
+                      >
+                          {controller.availableThemes.map((theme) => (
+                              <ActionButton
+                                  aria-label={theme.label}
+                                  className={theme.id === controller.themeId ? 'is-selected' : ''}
+                                  key={theme.id}
+                                  onClick={() => {
+                                      savedTheme.current = theme.id;
+                                      controller.setThemeId(theme.id);
+                                      closePalette(false);
+                                  }}
+                                  onFocus={() => {
+                                      controller.setThemeId(theme.id);
+                                  }}
+                                  onMouseEnter={() => {
+                                      controller.setThemeId(theme.id);
+                                  }}
+                              >
+                                  <span
+                                      className="theme-palette-swatch"
+                                      style={{
+                                          background: swatchBackground(theme.id),
+                                      }}
+                                  />
+                                  <span>{theme.label}</span>
+                                  {theme.id === controller.themeId ? (
+                                      <Check aria-hidden="true" size={16} />
+                                  ) : null}
+                              </ActionButton>
+                          ))}
+                      </div>,
+                      document.body,
+                  )
+                : null}
         </div>
     );
 };

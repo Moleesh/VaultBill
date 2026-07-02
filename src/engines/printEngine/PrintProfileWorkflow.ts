@@ -1,7 +1,7 @@
 /** @format */
 
-import type { PrinterProfileConfig, PrinterSummary } from './PrinterProfileTypes';
 import { resolvePrinterProfile } from './PrinterProfileResolver';
+import type { PrinterProfileConfig, PrinterSummary } from './PrinterProfileTypes';
 import { preparePrintJob } from './PrintWorkflow';
 import type { PreparedPrintJob, PreparePrintJobInput } from './PrintWorkflowTypes';
 

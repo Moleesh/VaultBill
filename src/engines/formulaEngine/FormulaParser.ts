@@ -9,9 +9,9 @@ import {
     subtractDecimal,
     type DecimalValue,
 } from './DecimalMath';
+import { tokenizeFormula } from './FormulaTokenizer';
 import type { FormulaToken, FormulaVariableMap } from './FormulaTypes';
 import { toRoundingMode, type CalculationPolicy } from './FormulaTypes';
-import { tokenizeFormula } from './FormulaTokenizer';
 
 type FormulaCursor = {
     readonly tokens: readonly FormulaToken[];

@@ -1,6 +1,7 @@
 /** @format */
 
 import type { FC } from 'react';
+
 import { FormField } from '../../components/FormFields';
 
 type SettingsSecurityReportsSectionProps = {

@@ -6,8 +6,8 @@ import { ActionButton } from '../../components/ActionButton';
 import { FormField } from '../../components/FormFields';
 import { HorizontalProgress } from '../../components/HorizontalProgress/HorizontalProgress';
 import { RecordsFieldControl } from './RecordsFieldControl';
-import type { EditableRecord, RecordLineItem } from './RecordStoreContext';
 import type { ConfiguredFieldDefinition } from './RecordsPageSupport';
+import type { EditableRecord, RecordLineItem } from './RecordStoreContext';
 
 type RecordsLineItemsSectionProps = {
     readonly configuredLineFields: readonly ConfiguredFieldDefinition[];

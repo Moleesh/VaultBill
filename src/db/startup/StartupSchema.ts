@@ -2,11 +2,11 @@
 
 import { z } from 'zod';
 
+import { DatabaseRecoveryError, type SqliteConnection } from '../sqlite/SqliteConnection';
 import { requiredAuxiliaryTables } from './RequiredAuxiliaryTables';
 import { requiredIndexes } from './RequiredIndexes';
 import { requiredTables } from './RequiredTables';
 import type { ColumnPatch } from './StartupTypes';
-import { DatabaseRecoveryError, type SqliteConnection } from '../sqlite/SqliteConnection';
 
 const tableInfoRowSchema = z.object({ name: z.string() }).passthrough();
 

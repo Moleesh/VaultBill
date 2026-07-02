@@ -4,9 +4,9 @@
 
 import type { FC } from 'react';
 
-import { FormField } from './FormFields';
 import type { OperatorContext } from '../features/auth/AccountTypes';
 import type { DocumentFormatSummary } from '../types/AppTypes';
+import { FormField } from './FormFields';
 
 type RecordPreviewProps = {
     readonly activeFormat: DocumentFormatSummary | undefined;

@@ -1,10 +1,12 @@
 /** @format */
 
 import type { RefObject } from 'react';
+
 import type { CapabilityRegistry } from '../../capability/Capability.types';
 import type { WorkspaceSettings } from '../../runtime/WorkspaceSettings';
 import type { AppRecord } from '../records/RecordStoreSupport';
 import type { PrintTask } from './ReportsPageSupport';
+
 import type { ReportsFilterFormApi } from './useReportsPageFilters';
 
 export type ReportFieldFilter = {

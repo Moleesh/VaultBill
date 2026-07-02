@@ -1,9 +1,10 @@
 /** @format */
 /* eslint-disable max-lines */
 
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
 import { act } from 'react';
+import { MemoryRouter } from 'react-router-dom';
+
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { CapabilityRegistry } from '../../../capability/Capability.types';

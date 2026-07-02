@@ -1,10 +1,10 @@
 /** @format */
 
-import { NavLink } from 'react-router-dom';
 import type { FC } from 'react';
+import { NavLink } from 'react-router-dom';
 
-import { appShellIcons } from './AppShellSupport';
 import type { ShellSection } from '../types/AppTypes';
+import { appShellIcons } from './AppShellSupport';
 
 type AppShellMobileNavProps = {
     readonly sections: readonly ShellSection[];

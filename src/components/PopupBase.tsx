@@ -2,9 +2,9 @@
 
 /** Shared positioning and dismissal behavior for floating overlays. */
 
+import type { FC, PropsWithChildren } from 'react';
 import { useRef } from 'react';
 import { createPortal } from 'react-dom';
-import type { FC, PropsWithChildren } from 'react';
 
 import { usePopupFocus } from '../hooks/usePopupFocus';
 

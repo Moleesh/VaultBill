@@ -2,9 +2,10 @@
 
 /** Horizontal progress rail that mirrors task and workflow completion state. */
 
-import { IconOnlyButton } from '../IconOnlyButton';
-import { useEffect, useRef, useState } from 'react';
 import type { FC, PropsWithChildren, UIEvent, WheelEvent } from 'react';
+import { useEffect, useRef, useState } from 'react';
+
+import { IconOnlyButton } from '../IconOnlyButton';
 
 type HorizontalProgressProps = PropsWithChildren<{
     readonly label: string;

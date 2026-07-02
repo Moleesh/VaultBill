@@ -1,8 +1,9 @@
 /** @format */
 
+import type { z } from 'zod';
+
 import type { DocumentFormatConfig, FieldConfigSchema } from '../../db/startup/ConfigSchemas';
 import type { FieldType } from './FieldCatalog';
-import type { z } from 'zod';
 
 export type FieldConfig = z.infer<typeof FieldConfigSchema>;
 

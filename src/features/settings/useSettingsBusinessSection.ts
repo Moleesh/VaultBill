@@ -1,8 +1,9 @@
 /** @format */
 
+import { useEffect, useState } from 'react';
+
 import { useForm } from '@tanstack/react-form';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
 
 import { useCapabilities } from '../../capability/CapabilityContext';
 import { getRuntimeQueryScope, queryKeys } from '../../query/QueryKeys';
@@ -11,12 +12,12 @@ import {
     fetchWorkspaceSettings,
     saveWorkspaceSettings,
 } from '../../query/RuntimeQueries';
+import { defaultWorkspaceSettings } from '../../runtime/WorkspaceSettings';
 import {
     applyTheme,
     loadResolvedTheme,
     resolveThemeFromWorkspaceSettings,
 } from '../../runtime/WorkspaceTheme';
-import { defaultWorkspaceSettings } from '../../runtime/WorkspaceSettings';
 
 export type PrinterSummary = {
     readonly id: string;

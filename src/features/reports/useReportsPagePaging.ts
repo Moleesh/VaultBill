@@ -1,12 +1,13 @@
 /** @format */
 
 import { useEffect, useRef, useState } from 'react';
+
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 
 import { useCapabilities } from '../../capability/CapabilityContext';
-import { canUseLocalHostedApi } from '../../runtime/HostedApi';
 import { getRuntimeQueryScope, queryKeys } from '../../query/QueryKeys';
 import { fetchReportPage, fetchTrialStatus } from '../../query/RuntimeQueries';
+import { canUseLocalHostedApi } from '../../runtime/HostedApi';
 import { isStaticHostedBrowserBuild } from '../../runtime/RuntimeMode';
 import type { AppRecord } from '../records/RecordStoreSupport';
 import { pageSize, requestReportPage, type PrintTask } from './ReportsPageSupport';
@@ -36,8 +37,10 @@ export const useReportsPagePaging = (
     const [task, setTask] = useState<PrintTask>();
     const [printSource, setPrintSource] = useState<readonly AppRecord[]>([]);
     const sentinelRef = useRef<HTMLDivElement>(null);
+    const canReadTrialStatus = window.vaultBillDesktop !== undefined || capabilities.isHostedWeb;
     const trialStatusQuery = useQuery({
         queryKey: queryKeys.trialStatus(runtimeScope, 'reports-page'),
+        enabled: canReadTrialStatus,
         queryFn: () => fetchTrialStatus({ capabilities }),
     });
     const usesServerPaging =

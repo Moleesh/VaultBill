@@ -6,8 +6,8 @@ import type { BuilderStore } from '../BuilderStore.js';
 import type { CredentialStore, DesktopOperatorAccount } from '../CredentialStore.js';
 import type { DesktopRecordStore } from '../RecordStore.js';
 import type { SettingsStore } from '../SettingsStore.js';
-import type { LocalApiConfiguration } from './LocalApiSecurity.js';
 import { ApiError, parseCookies, safeEqual } from './LocalApiHttp.js';
+import type { LocalApiConfiguration } from './LocalApiSecurity.js';
 
 export { ApiError } from './LocalApiHttp.js';
 

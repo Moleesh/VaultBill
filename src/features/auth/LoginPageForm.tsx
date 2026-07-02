@@ -1,16 +1,18 @@
 /** @format */
 
-import { KeyRound } from 'lucide-react';
 import type { FC } from 'react';
 
+import { KeyRound } from 'lucide-react';
+
+import type { CapabilityRegistry } from '../../capability/Capability.types';
 import { ActionButton } from '../../components/ActionButton';
 import { AppModal } from '../../components/AppModal/AppModal';
 import { FormField } from '../../components/FormFields';
 import { IconButton } from '../../components/IconButton';
-import { SearchableDropdown } from '../../components/SearchableDropdown/SearchableDropdown';
-import type { CapabilityRegistry } from '../../capability/Capability.types';
 import type { DropdownOption } from '../../components/SearchableDropdown/SearchableDropdown';
+import { SearchableDropdown } from '../../components/SearchableDropdown/SearchableDropdown';
 import type { OperatorAccount } from './AccountTypes';
+
 import type { LoginFormApi } from './useLoginForms';
 
 type LoginPageFormProps = {

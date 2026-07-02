@@ -1,10 +1,10 @@
 /** @format */
 
-import { createContext, useContext } from 'react';
 import type { FC, PropsWithChildren } from 'react';
+import { createContext, useContext } from 'react';
 
-import { buildCapabilities } from './CapabilityRegistry';
 import type { CapabilityRegistry } from './Capability.types';
+import { buildCapabilities } from './CapabilityRegistry';
 
 const CapabilityContext = createContext<CapabilityRegistry | undefined>(undefined);
 

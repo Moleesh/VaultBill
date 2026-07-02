@@ -5,8 +5,8 @@
  * bookkeeping.
  */
 
-import type { DatabaseSync } from 'node:sqlite';
 import { timingSafeEqual } from 'node:crypto';
+import type { DatabaseSync } from 'node:sqlite';
 
 import {
     parseStoredRecord,

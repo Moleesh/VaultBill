@@ -6,9 +6,9 @@ import type { BackupService } from './BackupService.js';
 import type { BuilderStore } from './BuilderStore.js';
 import type { CredentialStore } from './CredentialStore.js';
 import type { DesktopRecordStore } from './RecordStore.js';
-import type { SettingsStore } from './SettingsStore.js';
-import type { LocalApiServer } from './server/LocalApiServer.js';
 import { defaultHostedWebPort } from './server/LocalApiSecurity.js';
+import type { LocalApiServer } from './server/LocalApiServer.js';
+import type { SettingsStore } from './SettingsStore.js';
 
 export const hostedAppUrl = (): string =>
     `http://127.0.0.1:${String(mainState.hostedWebSettings.port)}/VaultBill/`;

@@ -2,11 +2,12 @@
 
 import type { FC } from 'react';
 
-import { createEmptyRecord, emptyLineItem } from './RecordsPageSupport';
 import { RecordsDialogs } from './RecordsDialogs';
+import { createEmptyRecord, emptyLineItem } from './RecordsPageSupport';
 import { RecordsPageTop } from './RecordsPageTop';
 import { RecordsReprintPanel } from './RecordsReprintPanel';
 import { RecordsWorkspace } from './RecordsWorkspace';
+
 import { useRecordsPageController } from './useRecordsPageController';
 
 /** Renders the record creation and reprint experience. */

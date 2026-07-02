@@ -1,10 +1,10 @@
 /** @format */
 
-import { Navigate, useLocation } from 'react-router-dom';
 import type { FC, PropsWithChildren } from 'react';
+import { Navigate, useLocation } from 'react-router-dom';
 
-import { useSession } from './SessionContext';
 import type { Role } from '../../types/AppTypes';
+import { useSession } from './SessionContext';
 
 type ProtectedRouteProps = PropsWithChildren<{
     readonly roles?: readonly Role[];

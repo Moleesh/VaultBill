@@ -1,11 +1,11 @@
 /** @format */
 
 import type { AnchorHTMLAttributes, FC, ReactNode } from 'react';
-import { Link } from 'react-router-dom';
 import type { LinkProps } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
-import { buttonVariantClassName } from './Button';
 import type { ButtonVariant } from './Button';
+import { buttonVariantClassName } from './Button';
 
 type ActionLinkProps = Omit<LinkProps, 'className'> &
     Omit<AnchorHTMLAttributes<HTMLAnchorElement>, 'href'> & {

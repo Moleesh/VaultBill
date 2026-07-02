@@ -2,12 +2,12 @@
 
 // @vitest-environment node
 
+import { strFromU8, strToU8, unzipSync, zipSync } from 'fflate';
 import { createHash } from 'node:crypto';
-import { DatabaseSync } from 'node:sqlite';
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { strFromU8, strToU8, unzipSync, zipSync } from 'fflate';
+import { DatabaseSync } from 'node:sqlite';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { BackupService } from './BackupService.js';

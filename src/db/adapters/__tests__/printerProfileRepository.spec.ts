@@ -7,12 +7,12 @@ import { afterEach, describe, expect, it } from 'vitest';
 import type { PrinterProfileConfig } from '../../../engines/printEngine/PrinterProfileTypes';
 import type { SqliteConnection } from '../../sqlite/SqliteConnection';
 import { runDatabaseStartupChecks } from '../../startup/DatabaseStartup';
-import { openNodeSqliteConnection } from '../sqliteAdapter';
 import {
     listPrinterProfiles,
     loadDefaultPrinterProfile,
     savePrinterProfile,
 } from '../printerProfileRepository';
+import { openNodeSqliteConnection } from '../sqliteAdapter';
 
 let connection: SqliteConnection | undefined;
 

@@ -1,7 +1,8 @@
 /** @format */
 
-import { KeyRound, Plus } from 'lucide-react';
 import type { FC } from 'react';
+
+import { KeyRound, Plus } from 'lucide-react';
 
 import { FormField } from '../../components/FormFields';
 import { IconButton } from '../../components/IconButton';

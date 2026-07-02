@@ -1,6 +1,5 @@
 /** @format */
 
-import type { FieldConfig } from './SchemaEngineTypes';
 import type {
     LineItemRow,
     LineItemRowDraft,
@@ -9,6 +8,7 @@ import type {
     RowIdFactory,
 } from './LineItemTypes';
 import { validateFieldValue } from './SchemaEngine';
+import type { FieldConfig } from './SchemaEngineTypes';
 
 export const createInitialLineItemRows = (
     section: LineItemSectionConfig,

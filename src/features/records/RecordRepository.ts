@@ -8,9 +8,9 @@ import {
     assertCanFinalizeDraft,
     assertCanSaveDraft,
 } from './RecordPermissions';
-import type { CancelRecordInput, DraftRecordInput, FinalizeRecordInput } from './RecordTypes';
 import { insertRecordRow, updateRecordRow } from './RecordRows';
 import { runRecordTransaction } from './RecordTransactions';
+import type { CancelRecordInput, DraftRecordInput, FinalizeRecordInput } from './RecordTypes';
 import { allocateDocumentNumber } from './SequenceEngine';
 
 export const loadDocumentRecord = (

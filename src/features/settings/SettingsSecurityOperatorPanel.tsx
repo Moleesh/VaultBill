@@ -1,7 +1,8 @@
 /** @format */
 
-import { Plus, Trash2, UserRoundCog } from 'lucide-react';
 import type { FC } from 'react';
+
+import { Plus, Trash2, UserRoundCog } from 'lucide-react';
 
 import { FormField } from '../../components/FormFields';
 import { IconButton } from '../../components/IconButton';

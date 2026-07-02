@@ -5,8 +5,9 @@
  * behavior while staying hidden from the web runtime.
  */
 
-import { Minus, RotateCcw, X } from 'lucide-react';
 import type { FC } from 'react';
+
+import { Minus, RotateCcw, X } from 'lucide-react';
 
 import { IconOnlyButton } from './IconOnlyButton';
 

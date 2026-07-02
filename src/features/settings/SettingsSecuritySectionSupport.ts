@@ -2,41 +2,46 @@
 /* eslint-disable max-lines */
 
 import { useEffect, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
 
-import type { Role } from '../../types/AppTypes';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+
 import { useCapabilities } from '../../capability/CapabilityContext';
-import { requestHostedApi } from '../../runtime/HostedApi';
+import { getRuntimeQueryScope, queryKeys } from '../../query/QueryKeys';
+import {
+    activateRuntimeLicense,
+    fetchSecurityRuntimeState,
+    fetchWorkspaceSettings,
+    saveIncludeDraftsInReports,
+} from '../../query/RuntimeQueries';
+import type { Role } from '../../types/AppTypes';
 import type { OperatorAccount } from '../auth/AccountTypes';
 import { useSession } from '../auth/SessionContext';
-import { getRuntimeQueryScope, queryKeys } from '../../query/QueryKeys';
-import { fetchSecurityRuntimeState, fetchWorkspaceSettings } from '../../query/RuntimeQueries';
-import {
-    getManageableSecurityAccounts,
-    isDefaultCredentialsActive,
-} from './SettingsSecuritySectionHelpers';
 import {
     activateSecurityLicense,
     changeSecurityPassword,
     createSecurityOperator,
 } from './SettingsSecuritySectionActions';
 import {
+    getManageableSecurityAccounts,
+    isDefaultCredentialsActive,
+} from './SettingsSecuritySectionHelpers';
+import {
+    runHostedWebServerAction,
+    saveHostedWebConfiguration,
+} from './SettingsSecuritySectionRuntimeSupport';
+import {
     defaultHostedWebPort,
     useCreateSettingsActivationForm,
     type CredentialStatus,
     type TrialStatus,
 } from './SettingsSecuritySectionStateSupport';
-import {
-    runHostedWebServerAction,
-    saveHostedWebConfiguration,
-    saveIncludeDraftsInReportsSetting,
-} from './SettingsSecuritySectionRuntimeSupport';
 
 export type { SettingsActivationFormApi } from './SettingsSecuritySectionStateSupport';
 
 /** Holds runtime-backed security settings state and actions for the settings screen. */
 export const useSettingsSecuritySectionState = () => {
     const capabilities = useCapabilities();
+    const queryClient = useQueryClient();
     const runtimeScope = getRuntimeQueryScope(capabilities);
     const { accounts, archiveAccount, operatorContext, resetPassword, saveAccount } = useSession();
     const [lanEnabled, setLanEnabled] = useState(false);
@@ -54,6 +59,39 @@ export const useSettingsSecuritySectionState = () => {
     const workspaceSettingsQuery = useQuery({
         queryKey: queryKeys.workspaceSettings(runtimeScope),
         queryFn: () => fetchWorkspaceSettings({ capabilities }),
+    });
+    const activateLicenseMutation = useMutation({
+        mutationFn: (licenseKey: string) =>
+            activateRuntimeLicense({
+                capabilities,
+                licenseKey,
+            }),
+        onSuccess: async () => {
+            await Promise.all([
+                queryClient.invalidateQueries({
+                    queryKey: queryKeys.securityRuntimeState(runtimeScope),
+                }),
+                queryClient.invalidateQueries({
+                    queryKey: queryKeys.trialStatus(
+                        runtimeScope,
+                        operatorContext?.account.userId ?? 'guest',
+                    ),
+                }),
+            ]);
+        },
+    });
+    const saveIncludeDraftsMutation = useMutation({
+        mutationFn: (value: boolean) =>
+            saveIncludeDraftsInReports({
+                capabilities,
+                value,
+            }),
+        onSuccess: async (nextSettings) => {
+            queryClient.setQueryData(queryKeys.workspaceSettings(runtimeScope), nextSettings);
+            await queryClient.invalidateQueries({
+                queryKey: queryKeys.workspaceSettings(runtimeScope),
+            });
+        },
     });
 
     useEffect(() => {
@@ -198,10 +236,7 @@ export const useSettingsSecuritySectionState = () => {
         onIncludeDraftsInReportsChange: (value: boolean) => {
             const previousValue = includeDraftsInReports;
             setIncludeDraftsInReports(value);
-            void saveIncludeDraftsInReportsSetting({
-                isHostedWeb: capabilities.isHostedWeb,
-                value,
-            }).catch((reason: unknown) => {
+            void saveIncludeDraftsMutation.mutateAsync(value).catch((reason: unknown) => {
                 setIncludeDraftsInReports(previousValue);
                 setMessage(
                     reason instanceof Error ? reason.message : 'Could not save the report setting.',
@@ -216,9 +251,7 @@ export const useSettingsSecuritySectionState = () => {
         onActivateLicense: () => {
             activateSecurityLicense({
                 activationForm,
-                activateDesktop: window.vaultBillDesktop?.activateLicense,
-                activateHosted: (licenseKey) =>
-                    requestHostedApi('/trial/activate', 'POST', { licenseKey }),
+                activate: (licenseKey) => activateLicenseMutation.mutateAsync(licenseKey),
                 setMessage,
             });
         },

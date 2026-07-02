@@ -6,6 +6,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import type { SqliteConnection } from '../../../db/sqlite/SqliteConnection';
 import { createOperatorContext } from '../../auth/AccountBootstrap';
+import { finalizeDraftRecord, loadDocumentRecord, saveDraftRecord } from '../RecordRepository';
 import {
     createDraft,
     createOtherUser,
@@ -15,7 +16,6 @@ import {
     openStartedDatabase,
     sampleLineItems,
 } from '../RecordRepositoryTestHarness';
-import { finalizeDraftRecord, loadDocumentRecord, saveDraftRecord } from '../RecordRepository';
 
 let connection: SqliteConnection | undefined;
 

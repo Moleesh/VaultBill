@@ -1,11 +1,14 @@
 /** @format */
 /* eslint-disable max-lines */
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useMemo, useRef, useState } from 'react';
 import type { FC, PropsWithChildren } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useCapabilities } from '../../capability/CapabilityContext';
+import { getRuntimeQueryScope, queryKeys } from '../../query/QueryKeys';
+import { fetchSessionSnapshot } from '../../query/RuntimeQueries';
 import {
     canUseLocalHostedApi,
     hostedApiRecoveredEvent,
@@ -24,12 +27,10 @@ import {
     getStoredOperatorId,
     hashPassword,
     setStoredOperatorId,
-    type HostedSessionPayload,
     validateManagedAccounts,
+    type HostedSessionPayload,
 } from './SessionSupport';
 import type { SessionContextValue } from './SessionTypes';
-import { getRuntimeQueryScope, queryKeys } from '../../query/QueryKeys';
-import { fetchSessionSnapshot } from '../../query/RuntimeQueries';
 
 /** Supplies the active operator session for demo, hosted web, and desktop modes. */
 export const SessionProvider: FC<PropsWithChildren<{ readonly refreshRevision?: number }>> = ({

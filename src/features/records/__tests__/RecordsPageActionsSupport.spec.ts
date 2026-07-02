@@ -7,8 +7,8 @@
 
 import { describe, expect, it, vi } from 'vitest';
 
-import { createEmptyRecord, toEditableRecord } from '../RecordsPageSupport';
 import { handleRecordEntryNavigation, selectRecordForReprint } from '../RecordsPageActionsSupport';
+import { createEmptyRecord, toEditableRecord } from '../RecordsPageSupport';
 
 describe('RecordsPageActionsSupport', () => {
     it('moves focus with Enter and Shift+Enter inside the record form', () => {

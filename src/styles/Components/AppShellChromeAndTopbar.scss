@@ -55,8 +55,7 @@
 .app-shell-topbar {
     position: relative;
     z-index: 30;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
+    display: flex;
     align-items: center;
     justify-content: space-between;
     gap: var(--space-4);
@@ -106,7 +105,7 @@
     animation: app-shell-topbar-surface 14s ease-in-out infinite alternate;
 }
 .app-shell.has-window-controls .app-shell-topbar {
-    padding-right: clamp(12.75rem, 17vw, 14.5rem);
+    padding-right: clamp(var(--space-5), 3vw, var(--space-8));
 }
 .app-shell-topbar::before {
     position: absolute;
@@ -141,10 +140,12 @@
     display: flex;
     align-items: center;
     min-width: 0;
+    flex: 1 1 auto;
     gap: var(--space-3);
     position: relative;
     z-index: 1;
     width: min(100%, 38rem);
+    max-width: 38rem;
     border-radius: 1.35rem;
     background: transparent;
     padding: var(--space-2) clamp(var(--space-3), 1.8vw, var(--space-5));
@@ -248,8 +249,9 @@
     display: flex;
     align-items: center;
     align-self: center;
-    gap: var(--space-3);
-    justify-self: end;
+    gap: clamp(var(--space-4), 2vw, var(--space-7));
+    margin-left: auto;
+    width: auto;
     min-width: 0;
     min-height: var(--app-shell-window-control-size, 3.45rem);
     flex-wrap: nowrap;
@@ -259,8 +261,22 @@
     white-space: nowrap;
 }
 .app-shell.has-window-controls .app-shell-topbar-actions {
-    max-width: min(100%, 42rem);
+    max-width: none;
     padding-block: 0;
+}
+.app-shell-topbar-status-group {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-3);
+    min-width: 0;
+    flex: 0 1 auto;
+}
+.app-shell-topbar-controls-group {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex: 0 0 auto;
+    margin-left: 0;
 }
 .app-shell-window-chrome {
     --app-shell-window-control-size: 3.45rem;
@@ -313,7 +329,7 @@
     gap: var(--space-2);
     max-width: 100%;
     min-width: 0;
-    flex-shrink: 0;
+    flex: 0 0 auto;
     white-space: nowrap;
     min-height: 3.1rem;
     padding-inline: var(--space-4);
@@ -343,6 +359,7 @@
     display: none;
     align-items: center;
     gap: var(--space-1);
+    flex: 0 0 auto;
 }
 .app-shell-content-frame {
     position: relative;
@@ -565,24 +582,25 @@
     z-index: 260;
 }
 .theme-palette-popover {
-    position: absolute;
+    position: fixed;
     z-index: 270;
-    bottom: calc(100% + var(--space-2));
-    left: 0;
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    width: 14rem;
+    width: min(14rem, calc(100vw - 1.5rem));
     gap: var(--space-2);
     border: var(--line-width) solid var(--color-border);
     border-radius: var(--radius-md);
     background: var(--color-surface);
     padding: var(--space-2);
     box-shadow: var(--shadow-popover);
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 .theme-palette-popover button {
     display: grid;
     grid-template-columns: 1.5rem 1fr auto;
     align-items: center;
+    width: 100%;
     gap: var(--space-2);
     border-color: transparent;
     text-align: left;

@@ -1,5 +1,6 @@
 /** @format */
 
+import { strFromU8, strToU8, unzipSync, zipSync } from 'fflate';
 import { randomBytes } from 'node:crypto';
 import {
     copyFileSync,
@@ -13,7 +14,7 @@ import {
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
-import { strFromU8, strToU8, unzipSync, zipSync } from 'fflate';
+
 import {
     ManifestSchema,
     buildChecksums,

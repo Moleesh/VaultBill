@@ -62,16 +62,13 @@ export const changeSecurityPassword = async (input: {
 /** Runs the current runtime's license activation flow. */
 export const activateSecurityLicense = (input: {
     readonly activationForm: SettingsActivationFormApi;
-    readonly activateDesktop: ((licenseKey: string) => Promise<unknown>) | undefined;
-    readonly activateHosted: (licenseKey: string) => Promise<unknown>;
+    readonly activate: (licenseKey: string) => Promise<unknown>;
     readonly setMessage: (message: string) => void;
 }): void => {
     const licenseKey = input.activationForm.state.values.licenseKey.trim();
     if (!licenseKey) return;
-    const activation = input.activateDesktop
-        ? input.activateDesktop(licenseKey)
-        : input.activateHosted(licenseKey);
-    void activation
+    void input
+        .activate(licenseKey)
         .then(() => {
             input.setMessage('License accepted. Full access is now enabled.');
             input.activationForm.reset();

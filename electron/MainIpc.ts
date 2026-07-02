@@ -2,14 +2,14 @@
 
 import { BrowserWindow, ipcMain, shell } from 'electron';
 
-import { cancelOutputJob, printHtmlWithElectron } from './PrintBridge.js';
-import { renderHtmlToPdf } from './PdfBridge.js';
-import { listElectronPrinters } from './PrinterBridge.js';
-import { hostedAppUrl, mainState } from './MainState.js';
+import { registerMainIpcBackupHandlers } from './MainIpcBackupHandlers.js';
 import { refreshTray } from './MainRuntime.js';
+import { hostedAppUrl, mainState } from './MainState.js';
+import { renderHtmlToPdf } from './PdfBridge.js';
+import { cancelOutputJob, printHtmlWithElectron } from './PrintBridge.js';
+import { listElectronPrinters } from './PrinterBridge.js';
 import { getRuntimeProcessInfo } from './RuntimeProcessInfo.js';
 import { LocalApiConfigurationSchema } from './server/LocalApiSecurity.js';
-import { registerMainIpcBackupHandlers } from './MainIpcBackupHandlers.js';
 import { completeSetup } from './SetupSupport.js';
 
 export const registerMainIpcHandlers = () => {

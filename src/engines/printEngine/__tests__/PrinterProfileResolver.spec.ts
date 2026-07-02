@@ -2,8 +2,8 @@
 
 import { describe, expect, it } from 'vitest';
 
-import type { PrinterProfileConfig, PrinterSummary } from '../PrinterProfileTypes';
 import { resolvePrinterProfile } from '../PrinterProfileResolver';
+import type { PrinterProfileConfig, PrinterSummary } from '../PrinterProfileTypes';
 
 const availablePrinters: readonly PrinterSummary[] = [
     { id: 'hp', name: 'HP LaserJet Pro', isDefault: true },

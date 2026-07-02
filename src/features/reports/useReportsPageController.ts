@@ -1,8 +1,9 @@
 /** @format */
 
+import type { ReportsPageController } from './ReportsPageTypes';
+
 import { useReportsPageActions } from './useReportsPageActions';
 import { useReportsPageData } from './useReportsPageData';
-import type { ReportsPageController } from './ReportsPageTypes';
 
 export const useReportsPageController = (): ReportsPageController => {
     const data = useReportsPageData();

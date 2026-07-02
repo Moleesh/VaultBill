@@ -1,9 +1,8 @@
 /** @format */
 
-import { fileURLToPath } from 'node:url';
-
-import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
+import { expect, test } from '@playwright/test';
+import { fileURLToPath } from 'node:url';
 
 const desktopBridgeScriptPath = fileURLToPath(
     new URL('./installDesktopBridge.runtime.js', import.meta.url),

@@ -1,12 +1,12 @@
 /** @format */
 
 import { useMemo, useRef, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
+
+import { useQuery } from '@tanstack/react-query';
 
 import { useCapabilities } from '../../capability/CapabilityContext';
 import { builtInDefaultFormat } from '../../db/startup/BuiltInDefaultFormat';
-import { defaultWorkspaceSettings, type WorkspaceSettings } from '../../runtime/WorkspaceSettings';
 import { getRuntimeQueryScope, queryKeys } from '../../query/QueryKeys';
 import {
     fetchBuilderPackage,
@@ -14,8 +14,12 @@ import {
     fetchSecretsSettings,
     fetchWorkspaceSettings,
 } from '../../query/RuntimeQueries';
+import { isStaticHostedBrowserBuild } from '../../runtime/RuntimeMode';
+import { defaultWorkspaceSettings, type WorkspaceSettings } from '../../runtime/WorkspaceSettings';
 import { useSession } from '../auth/SessionContext';
+import { secretValuesFromSettings } from '../settings/SettingsSecretsSectionSupport';
 import type { RecordPrintPackage } from './RecordPrintHtml';
+import type { OutputTask } from './RecordsPageOutputTypes';
 import {
     createEmptyRecord,
     knownDocumentFields,
@@ -23,17 +27,15 @@ import {
     normalizeId,
     toEditableRecord,
 } from './RecordsPageSupport';
-import type { OutputTask } from './RecordsPageOutputTypes';
-import { calculateRecordTotals } from './RecordTotals';
 import { useRecordStore, type EditableRecord } from './RecordStoreContext';
+import { calculateRecordTotals } from './RecordTotals';
+
 import {
     filterReprintRecords,
     findSelectedStoredRecord,
     resolveRecordsFormatOptions,
     useCreateRecordsReprintSearchForm,
 } from './useRecordsPageStateSupport';
-import { isStaticHostedBrowserBuild } from '../../runtime/RuntimeMode';
-import { secretValuesFromSettings } from '../settings/SettingsSecretsSectionSupport';
 
 /** Holds the record page data, derived values, and server-backed inventory. */
 export const useRecordsPageState = () => {

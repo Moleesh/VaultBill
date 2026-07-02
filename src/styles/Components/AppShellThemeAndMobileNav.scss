@@ -67,17 +67,50 @@
     }
 
     .app-shell-topbar {
+        grid-template-columns: minmax(0, 1fr);
+        align-items: flex-start;
+        gap: var(--space-3);
         min-height: 4.5rem;
     }
 
     .app-shell.has-window-controls .app-shell-topbar {
-        padding-right: clamp(9.5rem, 25vw, 11rem);
+        padding-right: clamp(var(--space-4), 4vw, var(--space-8));
+    }
+
+    .app-shell-topbar-copy {
+        width: 100%;
+    }
+
+    .app-shell-topbar-actions {
+        width: 100%;
+        max-width: none;
+        justify-self: stretch;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+        row-gap: var(--space-2);
     }
 
     .app-shell.has-window-controls .app-shell-topbar-actions {
-        max-width: min(100%, 22rem);
-        margin-left: 0;
+        width: 100%;
+        max-width: none;
         padding-right: 0;
+    }
+
+    .app-shell-topbar-status-group {
+        display: flex;
+        align-items: center;
+        gap: var(--space-3);
+        min-width: 0;
+        flex: 1 1 auto;
+        flex-wrap: wrap;
+    }
+
+    .app-shell-topbar-controls-group {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        flex: 0 0 auto;
+        margin-left: auto;
     }
 
     .app-shell-trial-pill {
@@ -86,6 +119,7 @@
 
     .app-shell-mobile-account-actions {
         display: flex;
+        flex: 0 0 auto;
     }
 
     .app-shell-mobile-account-actions .theme-palette-popover {

@@ -2,8 +2,8 @@
 
 import type { FC } from 'react';
 
-import { SearchableDropdown } from './SearchableDropdown/SearchableDropdown';
 import type { OperatorAccount, OperatorContext } from '../features/auth/AccountTypes';
+import { SearchableDropdown } from './SearchableDropdown/SearchableDropdown';
 
 type AccountSwitcherProps = {
     readonly accounts: readonly OperatorAccount[];

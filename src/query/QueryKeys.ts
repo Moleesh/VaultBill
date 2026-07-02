@@ -20,6 +20,8 @@ export const queryKeys = {
     trialStatus: (scope: RuntimeQueryScope, accountUserId: string) =>
         ['runtime', scope, 'trial-status', accountUserId] as const,
     hostedWebUrl: (scope: RuntimeQueryScope) => ['runtime', scope, 'hosted-web-url'] as const,
+    sysAdminDashboard: (scope: RuntimeQueryScope, accountUserId: string) =>
+        ['runtime', scope, 'sysadmin-dashboard', accountUserId] as const,
     securityRuntimeState: (scope: RuntimeQueryScope) =>
         ['runtime', scope, 'security-runtime-state'] as const,
     workspaceSettings: (scope: RuntimeQueryScope) =>

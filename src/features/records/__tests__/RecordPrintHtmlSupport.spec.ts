@@ -7,8 +7,8 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { calculateRecordTotals } from '../RecordTotals';
 import { extractDocumentFragment, recordFieldValue } from '../RecordPrintHtmlSupport';
+import { calculateRecordTotals } from '../RecordTotals';
 
 describe('RecordPrintHtmlSupport', () => {
     it('resolves print placeholders from records and line items', () => {

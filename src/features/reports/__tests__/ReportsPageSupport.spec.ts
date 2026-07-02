@@ -6,18 +6,19 @@ vi.mock('../../records/RecordPrintHtml', () => ({
     loadRecordPrintPackage: vi.fn(),
 }));
 vi.mock('../../../runtime/HostedApi', () => ({
+    canUseLocalHostedApi: vi.fn(() => true),
     requestHostedApi: vi.fn(),
 }));
 
+import { canUseLocalHostedApi, requestHostedApi } from '../../../runtime/HostedApi';
 import { loadRecordPrintPackage } from '../../records/RecordPrintHtml';
 import type { AppRecord } from '../../records/RecordStoreSupport';
-import { requestHostedApi } from '../../../runtime/HostedApi';
 import {
     loadPrintPackages,
     pageSize,
     printBatchSize,
-    requestReportPage,
     reportOptions,
+    requestReportPage,
 } from '../ReportsPageSupport';
 
 const record = {
@@ -79,6 +80,7 @@ describe('ReportsPageSupport', () => {
 
     it('requests the next report page from the hosted API when desktop is unavailable', async () => {
         delete (window as Partial<Window> & { vaultBillDesktop?: unknown }).vaultBillDesktop;
+        vi.mocked(canUseLocalHostedApi).mockReturnValue(true);
         vi.mocked(requestHostedApi).mockResolvedValueOnce({
             rows: [record],
             total: 1,

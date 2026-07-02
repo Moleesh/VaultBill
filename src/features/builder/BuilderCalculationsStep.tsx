@@ -1,15 +1,16 @@
 /** @format */
 
-import { GripVertical } from 'lucide-react';
-import { useMemo, useState } from 'react';
 import type { DragEvent, FC } from 'react';
+import { useMemo, useState } from 'react';
+
+import { GripVertical } from 'lucide-react';
 
 import { ActionButton } from '../../components/ActionButton';
 import { DragHandleButton } from '../../components/DragHandleButton';
 import type { DocumentFormatConfig } from '../../db/startup/ConfigSchemas';
-import { move } from './BuilderPageSupport';
 import { sampleFormula, type CalculationTarget } from './BuilderPageCalculationSupport';
 import type { FieldConfig } from './BuilderPageSupport';
+import { move } from './BuilderPageSupport';
 
 type BuilderCalculationsStepProps = {
     readonly calculationTargets: readonly CalculationTarget[];

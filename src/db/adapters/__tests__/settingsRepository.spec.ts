@@ -6,17 +6,17 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import type { SqliteConnection } from '../../sqlite/SqliteConnection';
 import { runDatabaseStartupChecks } from '../../startup/DatabaseStartup';
-import { openNodeSqliteConnection } from '../sqliteAdapter';
 import {
     loadCompanyProfile,
     loadRuntimeBranding,
+    loadSecretsSettings,
     loadSignaturePadSettings,
     saveCompanyProfile,
     saveRuntimeBranding,
-    saveSignaturePadSettings,
-    loadSecretsSettings,
     saveSecretsSettings,
+    saveSignaturePadSettings,
 } from '../settingsRepository';
+import { openNodeSqliteConnection } from '../sqliteAdapter';
 
 let connection: SqliteConnection | undefined;
 const fixedNow = '2026-06-04T10:00:00.000Z';

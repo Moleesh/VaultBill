@@ -3,11 +3,11 @@
 import { describe, expect, it } from 'vitest';
 
 import type { DocumentRecord } from '../../../features/records/DocumentRecordSchema';
+import type { PrintTemplateRecord } from '../../printEngine/PrintTemplateTypes';
 import { buildAllReportRows, getReportPage } from '../ReportEngine';
 import { buildCsvReportExport } from '../ReportExport';
 import { prepareReportPrint } from '../ReportPrintEngine';
 import type { ReportConfig } from '../ReportTypes';
-import type { PrintTemplateRecord } from '../../printEngine/PrintTemplateTypes';
 
 const report: ReportConfig = {
     ReportId: 'SalesSummary',

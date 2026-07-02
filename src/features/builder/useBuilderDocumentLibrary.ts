@@ -1,14 +1,22 @@
 /** @format */
 /* eslint-disable max-lines */
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
+
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import type { CapabilityRegistry } from '../../capability/Capability.types';
 import { builtInDefaultPrintTemplateHtml } from '../../db/startup/BuiltInDefaultPrintTemplate';
 import { getRuntimeQueryScope, queryKeys } from '../../query/QueryKeys';
 import { fetchBuilderInventory, fetchBuilderPackage } from '../../query/RuntimeQueries';
+import { applyStoredBuilderPackage, deleteBuilderPackage } from './BuilderDocumentLibraryRuntime';
+import {
+    createNewDocumentDraft,
+    duplicateDocumentDraft,
+    type BuilderInventoryItem,
+} from './BuilderDocumentLibrarySupport';
+import type { DocumentFormatConfig } from './BuilderPageControllerSupport';
 import {
     base64ByteLength,
     builtInSampleAsset,
@@ -20,13 +28,6 @@ import {
     defaultSavedPrintTemplates,
     normalizeSavedPrintTemplates,
 } from './BuilderSavedTemplatesSupport';
-import type { DocumentFormatConfig } from './BuilderPageControllerSupport';
-import {
-    createNewDocumentDraft,
-    duplicateDocumentDraft,
-    type BuilderInventoryItem,
-} from './BuilderDocumentLibrarySupport';
-import { applyStoredBuilderPackage, deleteBuilderPackage } from './BuilderDocumentLibraryRuntime';
 
 type BuilderDocumentLibraryArgs = {
     readonly assets: readonly AssetSummary[];

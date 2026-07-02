@@ -1,18 +1,19 @@
 /** @format */
 
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ReactNode } from 'react';
+import { MemoryRouter } from 'react-router-dom';
+
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { CapabilityRegistry } from '../../../capability/Capability.types';
 import { CapabilityProvider } from '../../../capability/CapabilityContext';
 import { ContextualHelp } from '../../../components/ContextualHelp';
 import { TestQueryProvider } from '../../../test/TestQueryProvider';
-import { SessionContext } from '../../auth/SessionContext';
-import { SettingsPage } from '../SettingsPage';
-import { RecordStoreProvider } from '../../records/RecordStoreContext';
 import { createTestSession } from '../../../test/TestSession';
+import { SessionContext } from '../../auth/SessionContext';
+import { RecordStoreProvider } from '../../records/RecordStoreContext';
+import { SettingsPage } from '../SettingsPage';
 
 const webCapabilities: CapabilityRegistry = {
     isDesktop: false,

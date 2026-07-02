@@ -1,8 +1,8 @@
 /** @format */
 
 import { readFile, stat } from 'node:fs/promises';
-import path from 'node:path';
 import type { IncomingMessage, ServerResponse } from 'node:http';
+import path from 'node:path';
 
 const contentTypes: Readonly<Record<string, string>> = {
     '.css': 'text/css; charset=utf-8',

@@ -1,12 +1,12 @@
 /** @format */
 
-import type { TableDefinition } from './StartupTypes';
 import {
     requiredIntegerColumn,
     requiredJsonColumn,
     requiredTextColumn,
     textColumn,
 } from './RequiredColumnBuilders';
+import type { TableDefinition } from './StartupTypes';
 
 export const requiredAuxiliaryTables: readonly TableDefinition[] = [
     {

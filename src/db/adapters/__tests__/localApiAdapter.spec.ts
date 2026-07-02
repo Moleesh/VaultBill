@@ -2,8 +2,8 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { createLocalApiClient, localApiAdapterStatus } from '../localApiAdapter';
 import type { LocalApiFetch } from '../localApiAdapter';
+import { createLocalApiClient, localApiAdapterStatus } from '../localApiAdapter';
 
 describe('localApiAdapter', () => {
     it('calls typed hosted web endpoints with JSON headers and base URL', async () => {

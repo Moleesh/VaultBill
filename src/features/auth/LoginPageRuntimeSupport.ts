@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 
 import { canUseLocalHostedApi, requestHostedWindowAction } from '../../runtime/HostedApi';
+
 import type { ActivationFormApi } from './useLoginForms';
 
 export const getLoginFooterCopy = (input: {

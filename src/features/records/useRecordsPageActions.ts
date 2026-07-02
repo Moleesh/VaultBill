@@ -3,7 +3,8 @@
 import type { Dispatch, SetStateAction } from 'react';
 
 import type { WorkspaceSettings } from '../../runtime/WorkspaceSettings';
-import { firstMissingRequiredField, toEditableRecord } from './RecordsPageSupport';
+import type { OperatorContext } from '../auth/AccountTypes';
+import type { RecordPrintPackage } from './RecordPrintHtml';
 import {
     confirmCancelRecord,
     confirmFinalizeRecord,
@@ -11,11 +12,11 @@ import {
     selectRecordForReprint,
     updateRecordLineItem,
 } from './RecordsPageActionsSupport';
-import { useRecordsPageOutput } from './useRecordsPageOutput';
+import { firstMissingRequiredField, toEditableRecord } from './RecordsPageSupport';
 import type { AppRecord, EditableRecord } from './RecordStoreContext';
-import type { RecordPrintPackage } from './RecordPrintHtml';
+
+import { useRecordsPageOutput } from './useRecordsPageOutput';
 import type { RecordsReprintSearchFormApi } from './useRecordsPageStateSupport';
-import type { OperatorContext } from '../auth/AccountTypes';
 
 type RecordsPageState = {
     readonly actionState: 'New' | 'DraftDirty' | 'DraftSaved' | 'Finalized' | 'Reprint';

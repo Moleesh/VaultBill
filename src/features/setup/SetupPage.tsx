@@ -2,24 +2,26 @@
 /* eslint-disable max-lines */
 
 /** First-run setup flow for business identity, initial security, and starter configuration. */
-import { useEffect, useRef, useState } from 'react';
 import type { FC } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { shouldRenderDesktopChrome } from '../../capability/CapabilityRegistry';
 import { useCapabilities } from '../../capability/CapabilityContext';
-import { requestHostedApi } from '../../runtime/HostedApi';
-import type { ThemeId } from '../../types/AppTypes';
+import { shouldRenderDesktopChrome } from '../../capability/CapabilityRegistry';
+import { getRuntimeQueryScope, queryKeys } from '../../query/QueryKeys';
+import { completeRuntimeSetup, fetchSetupDefaults } from '../../query/RuntimeQueries';
 import {
     applyTheme,
     getStoredTheme,
     isThemeId,
     loadResolvedTheme,
 } from '../../runtime/WorkspaceTheme';
+import type { ThemeId } from '../../types/AppTypes';
 import { SetupAdminUserStep } from './SetupAdminUserStep';
-import { SetupPageActions } from './SetupPageActions';
 import { SetupBusinessProfileStep } from './SetupBusinessProfileStep';
+import { SetupPageActions } from './SetupPageActions';
 import { SetupPageChrome } from './SetupPageChrome';
 import { SetupPageProvider } from './SetupPageContext';
 import { SetupPageHeader } from './SetupPageHeader';
@@ -32,9 +34,8 @@ import {
     setupSteps,
 } from './SetupPageSupport';
 import { SetupWelcomeStep } from './SetupWelcomeStep';
+
 import { useSetupForm, type SetupFormValues } from './useSetupForm';
-import { getRuntimeQueryScope, queryKeys } from '../../query/QueryKeys';
-import { fetchSetupDefaults } from '../../query/RuntimeQueries';
 
 type SetupPageProps = {
     readonly onComplete?: () => void;
@@ -69,33 +70,13 @@ export const SetupPage: FC<SetupPageProps> = ({ onComplete }) => {
         staleTime: Number.POSITIVE_INFINITY,
     });
     const completeSetupMutation = useMutation({
-        mutationFn: async (value: SetupFormValues) => {
-            if (window.vaultBillDesktop) {
-                await window.vaultBillDesktop.completeSetup({
-                    companyName: value.companyName.trim(),
-                    address: value.address.trim(),
-                    theme: selectedThemeRef.current,
-                    adminUsername: value.adminUsername.trim(),
-                    adminDisplayName: value.adminDisplayName.trim(),
-                    adminPassword: value.adminPassword.trim(),
-                    clearAdminPassword: value.clearAdminPassword,
-                });
-                return;
-            }
-            if (capabilities.isHostedWeb || canUseHostedSetupApi) {
-                await requestHostedApi('/setup/complete', 'POST', {
-                    companyName: value.companyName.trim(),
-                    address: value.address.trim(),
-                    theme: selectedThemeRef.current,
-                    adminUsername: value.adminUsername.trim(),
-                    adminDisplayName: value.adminDisplayName.trim(),
-                    adminPassword: value.adminPassword.trim(),
-                    clearAdminPassword: value.clearAdminPassword,
-                });
-                return;
-            }
-            throw new Error('Setup is only available through VaultBill Desktop.');
-        },
+        mutationFn: (value: SetupFormValues) =>
+            completeRuntimeSetup({
+                capabilities,
+                canUseHostedSetupApi,
+                selectedTheme: selectedThemeRef.current,
+                value,
+            }),
         onSuccess: async () => {
             await Promise.all([
                 queryClient.invalidateQueries({

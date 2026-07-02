@@ -1,14 +1,14 @@
 /** @format */
 
+import type { ReportConfig } from '../../engines/reportEngine/ReportTypes';
+import type { StoredDocumentFormat } from '../../engines/schemaEngine/DocumentFormatTypes';
+import type { OperatorContext } from '../../features/auth/AccountTypes';
 import type { DocumentRecord } from '../../features/records/DocumentRecordSchema';
 import type {
     CancelRecordInput,
     DraftRecordInput,
     FinalizeRecordInput,
 } from '../../features/records/RecordTypes';
-import type { OperatorContext } from '../../features/auth/AccountTypes';
-import type { ReportConfig } from '../../engines/reportEngine/ReportTypes';
-import type { StoredDocumentFormat } from '../../engines/schemaEngine/DocumentFormatTypes';
 import type { AdapterStatus } from '../index';
 
 export const localApiAdapterStatus: AdapterStatus = {

@@ -1,14 +1,16 @@
 /** @format */
 
-import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
+
+import { render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import type { CapabilityRegistry } from '../../../capability/Capability.types';
 import { CapabilityProvider } from '../../../capability/CapabilityContext';
+import { TestQueryProvider } from '../../../test/TestQueryProvider';
+import { createTestSession } from '../../../test/TestSession';
 import { SessionContext } from '../../auth/SessionContext';
 import { SysAdminDashboard } from '../SysAdminDashboard';
-import { createTestSession } from '../../../test/TestSession';
 
 const desktopCapabilities: CapabilityRegistry = {
     isDesktop: true,
@@ -75,16 +77,22 @@ describe('SysAdmin dashboard', () => {
     it('shows the operational summary and trial countdown', async () => {
         render(
             <MemoryRouter>
-                <CapabilityProvider value={desktopCapabilities}>
-                    <SessionContext.Provider value={createTestSession(sysAdminAccount)}>
-                        <SysAdminDashboard />
-                    </SessionContext.Provider>
-                </CapabilityProvider>
+                <TestQueryProvider>
+                    <CapabilityProvider value={desktopCapabilities}>
+                        <SessionContext.Provider value={createTestSession(sysAdminAccount)}>
+                            <SysAdminDashboard />
+                        </SessionContext.Provider>
+                    </CapabilityProvider>
+                </TestQueryProvider>
             </MemoryRouter>,
         );
 
         await waitFor(() => {
-            expect(screen.getByText('Publishing health')).toBeVisible();
+            expect(
+                screen.getByText(
+                    '1 format published, 0 formats need attention, 1 format marked default.',
+                ),
+            ).toBeVisible();
         });
         expect(screen.getByText('Trial countdown')).toBeVisible();
         expect(screen.getByText('Document mix')).toBeVisible();
@@ -92,10 +100,5 @@ describe('SysAdmin dashboard', () => {
         expect(screen.getByText('Users created')).toBeVisible();
         expect(screen.getByText('active users')).toBeVisible();
         expect(screen.getByText('Total records')).toBeVisible();
-        expect(
-            screen.getByText(
-                '1 format published, 0 formats need attention, 1 format marked default.',
-            ),
-        ).toBeVisible();
     });
 });

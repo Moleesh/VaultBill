@@ -1,5 +1,6 @@
 /** @format */
 import type { FC } from 'react';
+
 import { BuilderPageFooter } from './BuilderPageFooter';
 import { BuilderPageStepSections } from './BuilderPageStepSections';
 import {
@@ -8,6 +9,7 @@ import {
     type BuilderLayoutConfig,
     type BuilderPrintConfig,
 } from './BuilderPageSupport';
+
 import type { BuilderPageController } from './useBuilderPageController';
 export type BuilderPageStepContentProps = {
     readonly controller: BuilderPageController;

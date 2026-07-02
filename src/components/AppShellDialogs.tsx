@@ -1,16 +1,17 @@
 /** @format */
 
-import { useForm } from '@tanstack/react-form';
 import type { FC } from 'react';
 import { useEffect } from 'react';
 
+import { useForm } from '@tanstack/react-form';
+
+import type { Role } from '../types/AppTypes';
 import { ActionButton } from './ActionButton';
 import { AppConfirmDialog } from './AppConfirmDialog/AppConfirmDialog';
 import { AppModal } from './AppModal/AppModal';
 import { ContextualHelp } from './ContextualHelp';
 import { DialogActions } from './DialogActions';
 import { FormField } from './FormFields';
-import type { Role } from '../types/AppTypes';
 
 type AppShellDialogsProps = {
     readonly isHelpOpen: boolean;

@@ -4,8 +4,8 @@
 
 import type { FC } from 'react';
 
-import { SearchableDropdown } from './SearchableDropdown/SearchableDropdown';
 import type { DocumentFormatSummary } from '../types/AppTypes';
+import { SearchableDropdown } from './SearchableDropdown/SearchableDropdown';
 
 type FormatSelectorProps = {
     readonly activeFormatId: string;

@@ -1,9 +1,11 @@
 /** @format */
 
-import { format, parseISO } from 'date-fns';
 import type { FC } from 'react';
-import { type SysAdminSummary } from './SysAdminDashboardSupport';
+
+import { format, parseISO } from 'date-fns';
+
 import { buildSysAdminDashboardChartData } from './SysAdminDashboardChartSupport';
+import { type SysAdminSummary } from './SysAdminDashboardSupport';
 
 type SysAdminDashboardChartsProps = {
     readonly summary: SysAdminSummary;

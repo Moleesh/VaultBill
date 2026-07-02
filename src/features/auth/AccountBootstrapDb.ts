@@ -2,9 +2,9 @@
 
 import { z } from 'zod';
 
+import type { SqliteConnection } from '../../db/sqlite/SqliteConnection';
 import { bootstrapOperatorAccounts } from './AccountBootstrap';
 import type { AccountBootstrapResult } from './AccountTypes';
-import type { SqliteConnection } from '../../db/sqlite/SqliteConnection';
 
 const countRowSchema = z.object({ count: z.number() });
 

@@ -1,8 +1,9 @@
 /** @format */
 
-import { Copy, GripVertical, Plus, Trash2 } from 'lucide-react';
-import { useState } from 'react';
 import type { DragEvent, FC } from 'react';
+import { useState } from 'react';
+
+import { Copy, GripVertical, Plus, Trash2 } from 'lucide-react';
 
 import { ActionButton } from '../../components/ActionButton';
 import { DragHandleButton } from '../../components/DragHandleButton';

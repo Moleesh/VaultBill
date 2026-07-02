@@ -2,12 +2,13 @@
 
 import { useQuery } from '@tanstack/react-query';
 
-import { useReportsPageFilters } from './useReportsPageFilters';
-import { useReportsPagePaging } from './useReportsPagePaging';
 import { useCapabilities } from '../../capability/CapabilityContext';
-import { defaultWorkspaceSettings } from '../../runtime/WorkspaceSettings';
 import { getRuntimeQueryScope, queryKeys } from '../../query/QueryKeys';
 import { fetchWorkspaceSettings } from '../../query/RuntimeQueries';
+import { defaultWorkspaceSettings } from '../../runtime/WorkspaceSettings';
+
+import { useReportsPageFilters } from './useReportsPageFilters';
+import { useReportsPagePaging } from './useReportsPagePaging';
 
 export const useReportsPageData = () => {
     const capabilities = useCapabilities();

@@ -9,17 +9,17 @@
 import { useEffect, useRef, useState, type FC } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 
+import { useCapabilities } from '../../capability/CapabilityContext';
+import { shouldRenderDesktopChrome } from '../../capability/CapabilityRegistry';
 import { AppBrandIcon } from '../../components/AppBrandIcon/AppBrandIcon';
 import { AppConfirmDialog } from '../../components/AppConfirmDialog/AppConfirmDialog';
 import { DesktopWindowControls } from '../../components/DesktopWindowControls';
-import { shouldRenderDesktopChrome } from '../../capability/CapabilityRegistry';
-import { useCapabilities } from '../../capability/CapabilityContext';
 import { defaultRuntimeBranding } from '../../constants/RuntimeDefaults';
 import { isStaticHostedBrowserBuild } from '../../runtime/RuntimeMode';
 import { applyTheme, loadResolvedTheme } from '../../runtime/WorkspaceTheme';
 import { LoginActivationModal } from './LoginActivationModal';
 import { LoginHelpModal } from './LoginHelpModal';
-import { buildLoginAccountOptions, findLoginAccount, getLoginAccountId } from './LoginPageSupport';
+import { LoginPageForm } from './LoginPageForm';
 import {
     activateLoginLicense,
     getLoginFooterCopy,
@@ -27,8 +27,9 @@ import {
     requestLoginMinimizeWindow,
     useSetupShortcutConfirmation,
 } from './LoginPageRuntimeSupport';
-import { LoginPageForm } from './LoginPageForm';
+import { buildLoginAccountOptions, findLoginAccount, getLoginAccountId } from './LoginPageSupport';
 import { useSession } from './SessionContext';
+
 import { useActivationForm, useLoginForm } from './useLoginForms';
 import { useSysAdminUnlock } from './useSysAdminUnlock';
 

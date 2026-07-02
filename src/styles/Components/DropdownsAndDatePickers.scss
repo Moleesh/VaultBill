@@ -183,7 +183,8 @@
     display: grid;
     min-height: 100vh;
     min-height: 100dvh;
-    place-items: center;
+    justify-items: center;
+    align-items: start;
     background:
         radial-gradient(
             circle at 26% 14%,
@@ -201,13 +202,13 @@
 
 .setup-card {
     display: grid;
-    grid-template-rows: auto auto minmax(0, 1fr) auto auto;
+    grid-template-rows: auto auto auto auto auto;
     width: var(--setup-card-width);
     min-height: min(48rem, var(--setup-card-height));
     height: auto;
-    max-height: var(--setup-card-height);
+    max-height: none;
     gap: var(--space-4);
-    overflow: hidden;
+    overflow: visible;
     border: var(--line-width) solid var(--color-border);
     border-radius: var(--radius-xl);
     background: linear-gradient(
@@ -375,11 +376,10 @@
 
 .setup-card-content {
     display: grid;
-    min-height: 0;
+    min-height: auto;
     align-content: start;
     gap: var(--space-4);
-    overflow: auto;
-    scrollbar-gutter: stable;
+    overflow: visible;
     border: var(--line-width) solid var(--color-border);
     border-radius: var(--radius-lg);
     background: var(--color-surface-muted);

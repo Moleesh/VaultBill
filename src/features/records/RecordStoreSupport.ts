@@ -5,6 +5,6 @@
  * for the browser, hosted, and desktop runtimes.
  */
 
+export { demoSeedRecords } from './RecordStoreDemoSeed';
 export * from './RecordStoreSchema';
 export * from './RecordStoreStorage';
-export { demoSeedRecords } from './RecordStoreDemoSeed';

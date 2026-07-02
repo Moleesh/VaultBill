@@ -1,8 +1,8 @@
 /** @format */
 
-import { render, screen } from '@testing-library/react';
-import { fireEvent } from '@testing-library/react';
 import { useState } from 'react';
+
+import { fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { builtInDefaultPrintTemplateHtml } from '../../../db/startup/BuiltInDefaultPrintTemplate';

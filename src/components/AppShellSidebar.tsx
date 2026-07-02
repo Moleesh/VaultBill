@@ -1,5 +1,8 @@
 /** @format */
 
+import type { FC } from 'react';
+import { NavLink } from 'react-router-dom';
+
 import {
     ChevronLeft,
     ChevronRight,
@@ -9,15 +12,12 @@ import {
     RotateCcw,
     Server,
 } from 'lucide-react';
-import { NavLink } from 'react-router-dom';
-import type { FC } from 'react';
 
+import type { ShellSection, ThemeController } from '../types/AppTypes';
 import { AppBrandIcon } from './AppBrandIcon/AppBrandIcon';
+import { appShellIcons } from './AppShellSupport';
 import { IconOnlyButton } from './IconOnlyButton';
 import { ThemePalette } from './ThemePalette';
-import { appShellIcons } from './AppShellSupport';
-import type { ThemeController } from '../types/AppTypes';
-import type { ShellSection } from '../types/AppTypes';
 
 type AppShellSidebarProps = {
     readonly applicationName: string;

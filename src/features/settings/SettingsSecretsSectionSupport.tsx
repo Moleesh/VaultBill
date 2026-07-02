@@ -1,7 +1,8 @@
 /** @format */
 
-import { Plus, ShieldCheck, Trash2 } from 'lucide-react';
 import type { FC, ReactNode } from 'react';
+
+import { Plus, ShieldCheck, Trash2 } from 'lucide-react';
 
 import { FormField } from '../../components/FormFields';
 import { IconButton } from '../../components/IconButton';

@@ -7,7 +7,6 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { cloneDefault } from '../BuilderPageSupport';
 import {
     applyCalculationOrder,
     applyCalculationOrderOverride,
@@ -17,6 +16,7 @@ import {
     sampleFormula,
     validateCalculationGraph,
 } from '../BuilderPageCalculationSupport';
+import { cloneDefault } from '../BuilderPageSupport';
 
 describe('BuilderPageCalculationSupport', () => {
     it('extracts formula references and flags bad calculation graphs', () => {

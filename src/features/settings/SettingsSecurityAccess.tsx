@@ -1,7 +1,8 @@
 /** @format */
 
-import { KeyRound, ShieldCheck } from 'lucide-react';
 import type { FC } from 'react';
+
+import { KeyRound, ShieldCheck } from 'lucide-react';
 
 import { ActionButton } from '../../components/ActionButton';
 import { FormField } from '../../components/FormFields';

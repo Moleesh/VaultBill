@@ -1,6 +1,5 @@
 /** @format */
 
-import { createPortal } from 'react-dom';
 import type {
     ChangeEventHandler,
     Dispatch,
@@ -9,6 +8,7 @@ import type {
     RefObject,
     SetStateAction,
 } from 'react';
+import { createPortal } from 'react-dom';
 
 import { ActionButton } from '../ActionButton';
 import { FormField } from '../FormFields';

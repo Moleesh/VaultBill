@@ -1,7 +1,7 @@
 /** @format */
 
-import { openNodeSqliteConnection } from '../../db/adapters/sqliteAdapter';
 import { listStoredDocumentFormats } from '../../db/adapters/documentFormatRepository';
+import { openNodeSqliteConnection } from '../../db/adapters/sqliteAdapter';
 import type { SqliteConnection } from '../../db/sqlite/SqliteConnection';
 import { runDatabaseStartupChecks } from '../../db/startup/DatabaseStartup';
 import { resolveDocumentFormatSelection } from '../../engines/schemaEngine/DocumentFormatResolver';

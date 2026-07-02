@@ -2,16 +2,17 @@
 
 /** Shared helper card and text patterns for inline guidance across the app. */
 
-import { useForm } from '@tanstack/react-form';
-import { useEffect, useState } from 'react';
 import type { FC } from 'react';
+import { useEffect, useState } from 'react';
+
+import { useForm } from '@tanstack/react-form';
 
 import { useCapabilities } from '../capability/CapabilityContext';
 import { getHelpSections } from '../help/HelpContent';
 import type { Role } from '../types/AppTypes';
 import { AppDrawer } from './AppDrawer/AppDrawer';
-import { FormField } from './FormFields';
 import { AppSheet } from './AppSheet/AppSheet';
+import { FormField } from './FormFields';
 
 type ContextualHelpProps = {
     readonly isOpen: boolean;

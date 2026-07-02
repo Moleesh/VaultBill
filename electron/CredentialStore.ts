@@ -2,6 +2,7 @@
 
 import { randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
 import { DatabaseSync } from 'node:sqlite';
+
 import {
     bootstrapCredentialStore,
     defaultCredential,
@@ -11,13 +12,13 @@ import {
     loadCredentialAccount,
     parseCredentialAccount,
     scryptKeyLength,
+    setBackupPassword,
     toBuffer,
+    validateCredentialLimits,
     type AccountRow,
     type CredentialStatus,
     type DesktopOperatorAccount,
     type SecureStringProtector,
-    setBackupPassword,
-    validateCredentialLimits,
 } from './CredentialStoreSupport.js';
 
 export type { CredentialStatus, DesktopOperatorAccount } from './CredentialStoreSupport.js';

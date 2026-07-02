@@ -5,8 +5,8 @@
  * while leaving touch and reduced-precision devices on the native cursor.
  */
 
-import { useEffect, useRef } from 'react';
 import type { FC } from 'react';
+import { useEffect, useRef } from 'react';
 
 type CursorVariant =
     | 'default'

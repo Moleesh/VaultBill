@@ -1,17 +1,32 @@
 /** @format */
 import { useMemo, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
+
+import { useQuery } from '@tanstack/react-query';
+
 import { useCapabilities } from '../../capability/CapabilityContext';
 import { builtInDefaultFormat } from '../../db/startup/BuiltInDefaultFormat';
-import { queryKeys, getRuntimeQueryScope } from '../../query/QueryKeys';
-import { fetchSecretsSettings } from '../../query/RuntimeQueries';
 import { builtInDefaultPrintTemplateHtml } from '../../db/startup/BuiltInDefaultPrintTemplate';
+import { getRuntimeQueryScope, queryKeys } from '../../query/QueryKeys';
+import { fetchSecretsSettings } from '../../query/RuntimeQueries';
+import { secretValuesFromSettings } from '../settings/SettingsSecretsSectionSupport';
+import { collectCalculationTargets } from './BuilderPageCalculationSupport';
+import {
+    collectReferencedFieldIds,
+    validateBuilderConfig,
+} from './BuilderPageControllerStateSupport';
+import {
+    updateBuilderCalculationOrder,
+    updateBuilderFields,
+    type DocumentFormatConfig,
+    type EditingState,
+    type FieldConfig,
+} from './BuilderPageControllerSupport';
 import {
     builtInSampleAsset,
     steps,
-    type BuilderStep,
     type AssetSummary,
+    type BuilderStep,
     type SavedPrintTemplate,
 } from './BuilderPageSupport';
 import {
@@ -19,21 +34,9 @@ import {
     findSavedPrintTemplate,
     removeSavedPrintTemplate,
 } from './BuilderSavedTemplatesSupport';
-import { collectCalculationTargets } from './BuilderPageCalculationSupport';
-import {
-    type DocumentFormatConfig,
-    type EditingState,
-    type FieldConfig,
-    updateBuilderCalculationOrder,
-    updateBuilderFields,
-} from './BuilderPageControllerSupport';
-import {
-    collectReferencedFieldIds,
-    validateBuilderConfig,
-} from './BuilderPageControllerStateSupport';
+
 import { useBuilderDocumentLibrary } from './useBuilderDocumentLibrary';
 import { useBuilderPageActions } from './useBuilderPageActions';
-import { secretValuesFromSettings } from '../settings/SettingsSecretsSectionSupport';
 
 /** Keeps the builder state, loading, and rendering actions in a compact hook. */
 export const useBuilderPageController = () => {

@@ -2,15 +2,15 @@
 
 import type { KeyboardEvent, SetStateAction } from 'react';
 
+import type { OperatorContext } from '../auth/AccountTypes';
+import type { RecordPrintPackage } from './RecordPrintHtml';
 import {
     applyDocumentCalculations,
     calculateConfiguredLineItem,
     calculateItemAmount,
     toEditableRecord,
 } from './RecordsPageSupport';
-import type { RecordPrintPackage } from './RecordPrintHtml';
 import type { AppRecord, EditableRecord, RecordLineItem } from './RecordStoreContext';
-import type { OperatorContext } from '../auth/AccountTypes';
 
 type ActionState = 'New' | 'DraftDirty' | 'DraftSaved' | 'Finalized' | 'Reprint';
 

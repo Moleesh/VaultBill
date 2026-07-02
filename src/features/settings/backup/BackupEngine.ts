@@ -1,9 +1,10 @@
 /** @format */
 
+import { z } from 'zod';
+
 import { buildBackupChecksums } from './BackupChecksums';
 import { fromBytes, toBytes } from './BackupEncoding';
 import { decryptDatabaseBytes, encryptDatabaseBytes } from './BackupEncryption';
-import { z } from 'zod';
 import type {
     BackupCreateInput,
     BackupManifest,

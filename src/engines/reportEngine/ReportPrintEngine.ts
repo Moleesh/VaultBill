@@ -1,12 +1,12 @@
 /** @format */
 
 import { escapeHtml } from '../printEngine/HtmlEscape';
-import { compilePrintTemplate } from '../printEngine/TemplatePlaceholderCompiler';
 import type {
     PrintCompileWarning,
     PrintTemplateAsset,
     PrintTemplateRecord,
 } from '../printEngine/PrintTemplateTypes';
+import { compilePrintTemplate } from '../printEngine/TemplatePlaceholderCompiler';
 import type { ReportConfig, ReportRow } from './ReportTypes';
 
 export type PrepareReportPrintInput = {

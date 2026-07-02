@@ -11,8 +11,8 @@ import {
     type PrintTemplateScope,
 } from '../../engines/printEngine/PrintTemplateTypes';
 import { sanitizeTemplateHtml } from '../../engines/printEngine/TemplateHtmlSanitizer';
-import { stringifyValidatedJson } from '../startup/JsonParsing';
 import type { SqliteConnection } from '../sqlite/SqliteConnection';
+import { stringifyValidatedJson } from '../startup/JsonParsing';
 
 export type SavePrintTemplateInput = {
     readonly templateId: string;

@@ -1,7 +1,7 @@
 /** @format */
 
-import { ApiError, type HostedSession, type LocalApiState } from './LocalApiContext.js';
 import type { DesktopOperatorAccount } from '../CredentialStore.js';
+import { ApiError, type HostedSession, type LocalApiState } from './LocalApiContext.js';
 
 /** Loads one active operator account by id or rejects the hosted session. */
 export const findAccount = (state: LocalApiState, userId: string): DesktopOperatorAccount => {

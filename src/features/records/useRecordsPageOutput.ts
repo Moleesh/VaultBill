@@ -9,8 +9,8 @@ import {
 } from '../../query/RuntimeQueries';
 import type { WorkspaceSettings } from '../../runtime/WorkspaceSettings';
 import { renderRecordHtml, type RecordPrintPackage } from './RecordPrintHtml';
-import type { AppRecord, EditableRecord } from './RecordStoreContext';
 import type { OutputTask } from './RecordsPageOutputTypes';
+import type { AppRecord, EditableRecord } from './RecordStoreContext';
 
 type OutputState = {
     readonly actionState: 'New' | 'DraftDirty' | 'DraftSaved' | 'Finalized' | 'Reprint';

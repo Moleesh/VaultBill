@@ -1,7 +1,7 @@
 /** @format */
 
-import { readFile } from 'node:fs/promises';
 import { execFileSync } from 'node:child_process';
+import { readFile } from 'node:fs/promises';
 
 const files = execFileSync('git', ['ls-files'], { encoding: 'utf8' })
     .split(/\r?\n/u)
