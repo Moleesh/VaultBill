@@ -24,10 +24,9 @@ export const RecordsPageTop: FC<RecordsPageTopProps> = ({
     selectedFormatId,
     recordFormatName,
 }) => (
-    <>
-        <div className="operational-header">
-            <div>
-                <p className="eyebrow">Records</p>
+    <section className="records-page-top">
+        <div className="operational-header records-page-top-header">
+            <div className="records-page-top-copy">
                 <h1>
                     {activeTab === 'create'
                         ? `Create ${recordFormatName}`
@@ -43,7 +42,10 @@ export const RecordsPageTop: FC<RecordsPageTopProps> = ({
                 />
             ) : null}
         </div>
-        <HorizontalProgress className="page-tabs records-tabs" label="Record tabs">
+        <HorizontalProgress
+            className="page-tabs records-tabs records-page-top-tabs"
+            label="Record tabs"
+        >
             {(['create', 'reprint'] as const).map((tab) => (
                 <ActionButton
                     aria-pressed={activeTab === tab}
@@ -56,5 +58,5 @@ export const RecordsPageTop: FC<RecordsPageTopProps> = ({
                 </ActionButton>
             ))}
         </HorizontalProgress>
-    </>
+    </section>
 );

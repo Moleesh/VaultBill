@@ -117,7 +117,9 @@ export const LoginPage: FC<{ readonly onOpenSetupWizard?: () => void }> = ({
 
     useEffect(() => {
         void loadResolvedTheme(capabilities.isHostedWeb)
-            .then(applyTheme)
+            .then((resolvedTheme) => {
+                applyTheme(resolvedTheme);
+            })
             .catch(() => undefined);
     }, [capabilities.isHostedWeb]);
 

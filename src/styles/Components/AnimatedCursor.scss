@@ -127,6 +127,34 @@ body.has-animated-cursor * {
         0 0 1rem color-mix(in srgb, var(--cursor-ring-color) 22%, transparent);
 }
 
+.animated-cursor[data-interaction='field'] .animated-cursor-ring {
+    transform: translate(-50%, -50%) scale(0.82);
+    border-radius: 0.7rem;
+    border-style: solid;
+}
+
+.animated-cursor[data-pressed='true'][data-interaction='field'] .animated-cursor-core {
+    transform: translate(-50%, -50%) scale(0.72);
+}
+
+.animated-cursor[data-interaction='menu'] .animated-cursor-ring {
+    transform: translate(-50%, -50%) scale(1.02) rotate(12deg);
+    border-style: dashed;
+}
+
+.animated-cursor[data-pressed='true'][data-interaction='menu'] .animated-cursor-core {
+    transform: translate(-50%, -50%) scale(0.78) rotate(-12deg);
+}
+
+.animated-cursor[data-pressed='true'][data-interaction='menu'] .animated-cursor-ring {
+    transform: translate(-50%, -50%) scale(0.88) rotate(18deg);
+}
+
+.animated-cursor[data-pressed='true'][data-interaction='menu'] .animated-cursor-spark {
+    transform: translate(-50%, -50%) rotate(72deg)
+        translateX(calc(var(--cursor-orbit-radius) * 1.26)) scale(1.18);
+}
+
 .animated-cursor[data-interaction='link'] .animated-cursor-ring {
     transform: translate(-50%, -50%) scale(1.06);
 }
@@ -148,6 +176,14 @@ body.has-animated-cursor * {
 .animated-cursor[data-interaction='drag'] .animated-cursor-spark,
 .animated-cursor[data-pressed='true'][data-interaction='drag'] .animated-cursor-spark {
     animation-duration: 1.4s;
+}
+
+.animated-cursor[data-pressed='true'][data-interaction='drag'] .animated-cursor-core {
+    transform: translate(-50%, -50%) scale(0.76) rotate(-18deg);
+}
+
+.animated-cursor[data-pressed='true'][data-interaction='drag'] .animated-cursor-ring {
+    transform: translate(-50%, -50%) scale(0.82) rotate(-12deg);
 }
 
 .animated-cursor[data-variant='hand'] {

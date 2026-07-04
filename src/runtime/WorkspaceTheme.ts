@@ -5,6 +5,7 @@ import { type ThemeId } from '../types/AppTypes';
 import { loadWorkspaceSettings, type WorkspaceSettings } from './WorkspaceSettings';
 
 export const themeStorageKey = 'vaultbill.theme';
+export const userThemeStorageKeyPrefix = 'vaultbill.theme.user.';
 
 export const themeSwatches: Readonly<Record<ThemeId, readonly [string, string]>> = {
     'teal-flow': ['#0f766e', '#d9f0ea'],
@@ -25,10 +26,25 @@ export const getStoredTheme = (): ThemeId | undefined => {
     return storedTheme && isThemeId(storedTheme) ? storedTheme : undefined;
 };
 
+export const getUserThemeStorageKey = (userId: string): string =>
+    `${userThemeStorageKeyPrefix}${userId}`;
+
+export const getStoredUserTheme = (userId: string): ThemeId | undefined => {
+    const storedTheme = window.localStorage.getItem(getUserThemeStorageKey(userId));
+    if (storedTheme && isThemeId(storedTheme)) {
+        return storedTheme;
+    }
+
+    return getStoredTheme();
+};
+
+export const saveStoredUserTheme = (userId: string, themeId: ThemeId) => {
+    window.localStorage.setItem(getUserThemeStorageKey(userId), themeId);
+};
+
 export const applyTheme = (theme: string) => {
     if (!isThemeId(theme)) return;
     document.documentElement.dataset.theme = theme;
-    window.localStorage.setItem(themeStorageKey, theme);
 };
 
 export const resolveThemeFromWorkspaceSettings = (
@@ -41,7 +57,7 @@ export const resolveThemeFromWorkspaceSettings = (
         return settings.theme;
     }
 
-    return getStoredTheme() ?? 'teal-flow';
+    return 'teal-flow';
 };
 
 export const loadResolvedTheme = async (isHostedWeb: boolean): Promise<ThemeId> => {

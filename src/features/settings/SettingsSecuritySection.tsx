@@ -15,12 +15,6 @@ export const SettingsSecuritySection: FC = () => {
 
     return (
         <section aria-label="Security settings" className="settings-section" id="security">
-            {state.defaultCredentialsActive ? (
-                <p className="field-note">
-                    Default credentials are still active. Replace the System Administrator and
-                    backup passwords when you are ready.
-                </p>
-            ) : null}
             <SettingsSecurityAccounts
                 manageableAccounts={state.manageableAccounts}
                 operatorRole={state.operatorRole}

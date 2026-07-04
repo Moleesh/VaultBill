@@ -8,9 +8,11 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import type { CapabilityRegistry } from '../../../capability/Capability.types';
 import { CapabilityProvider } from '../../../capability/CapabilityContext';
 import { TestQueryProvider } from '../../../test/TestQueryProvider';
-import { SessionProvider } from '../../auth/SessionContext';
+import { createTestSession } from '../../../test/TestSession';
+import { SessionContext } from '../../auth/SessionContext';
 import { RecordStoreProvider } from '../../records/RecordStoreContext';
 import { ReportsPage } from '../ReportsPage';
+import { createSavedReportDraft, saveCustomSavedReport } from '../SavedReportsSupport';
 
 const demoCapabilities: CapabilityRegistry = {
     isDesktop: false,
@@ -54,23 +56,28 @@ describe('reports page', () => {
             <MemoryRouter initialEntries={['/app/reports']}>
                 <TestQueryProvider>
                     <CapabilityProvider value={demoCapabilities}>
-                        <SessionProvider>
+                        <SessionContext.Provider
+                            value={createTestSession({
+                                userId: 'sysadmin_1',
+                                username: 'sysadmin',
+                                displayName: 'System Administrator',
+                                role: 'SysAdmin',
+                                isActive: true,
+                            })}
+                        >
                             <RecordStoreProvider>
                                 <Routes>
                                     <Route path="/app/reports" element={<ReportsPage />} />
                                 </Routes>
                             </RecordStoreProvider>
-                        </SessionProvider>
+                        </SessionContext.Provider>
                     </CapabilityProvider>
                 </TestQueryProvider>
             </MemoryRouter>,
         );
 
-        expect(
-            await screen.findByText(
-                'Choose a format, run a saved report, or build one with reusable filters.',
-            ),
-        ).toBeVisible();
+        expect(await screen.findByRole('heading', { name: 'Sales register' })).toBeVisible();
+        expect(screen.getByText('Reports workspace')).toBeVisible();
         expect(screen.getByRole('button', { name: 'Print report' })).toBeVisible();
     });
 
@@ -79,39 +86,126 @@ describe('reports page', () => {
             <MemoryRouter initialEntries={['/app/reports']}>
                 <TestQueryProvider>
                     <CapabilityProvider value={demoCapabilities}>
-                        <SessionProvider>
+                        <SessionContext.Provider
+                            value={createTestSession({
+                                userId: 'sysadmin_1',
+                                username: 'sysadmin',
+                                displayName: 'System Administrator',
+                                role: 'SysAdmin',
+                                isActive: true,
+                            })}
+                        >
                             <RecordStoreProvider>
                                 <Routes>
                                     <Route path="/app/reports" element={<ReportsPage />} />
                                 </Routes>
                             </RecordStoreProvider>
-                        </SessionProvider>
+                        </SessionContext.Provider>
                     </CapabilityProvider>
                 </TestQueryProvider>
             </MemoryRouter>,
         );
 
-        expect(
-            await screen.findByText(
-                'Choose a format, run a saved report, or build one with reusable filters.',
-            ),
-        ).toBeVisible();
+        expect(await screen.findByRole('heading', { name: 'Sales register' })).toBeVisible();
         fireEvent.click(screen.getByRole('button', { name: 'Saved report Choose saved report' }));
         fireEvent.click(
-            await screen.findByRole('option', { name: /Today's report - Sales register/u }),
+            await screen.findByRole('option', { name: /Today's report.*Sales register/u }),
         );
 
-        expect(screen.getByText('Built-in report')).toBeVisible();
-        expect(screen.getByRole('button', { name: 'Set as my default' })).toBeEnabled();
-        expect(screen.getByRole('button', { name: 'Duplicate' })).toBeEnabled();
-        expect(screen.queryByRole('button', { name: 'Edit' })).not.toBeInTheDocument();
-        expect(screen.queryByRole('button', { name: 'Delete' })).not.toBeInTheDocument();
+        expect(screen.getByText("Active view: Today's report")).toBeVisible();
 
+        fireEvent.click(screen.getByRole('button', { name: /Saved report /u }));
         fireEvent.click(screen.getByRole('button', { name: 'Create report' }));
 
         expect(screen.getByRole('heading', { name: 'Create report' })).toBeVisible();
         expect(screen.getByRole('heading', { name: 'Display fields' })).toBeVisible();
         expect(screen.getByRole('heading', { name: 'Sorting' })).toBeVisible();
         expect(screen.getByRole('heading', { name: 'Filters' })).toBeVisible();
+    });
+
+    it('limits saved reports to the selected format', async () => {
+        render(
+            <MemoryRouter initialEntries={['/app/reports']}>
+                <TestQueryProvider>
+                    <CapabilityProvider value={demoCapabilities}>
+                        <SessionContext.Provider
+                            value={createTestSession({
+                                userId: 'sysadmin_1',
+                                username: 'sysadmin',
+                                displayName: 'System Administrator',
+                                role: 'SysAdmin',
+                                isActive: true,
+                            })}
+                        >
+                            <RecordStoreProvider>
+                                <Routes>
+                                    <Route path="/app/reports" element={<ReportsPage />} />
+                                </Routes>
+                            </RecordStoreProvider>
+                        </SessionContext.Provider>
+                    </CapabilityProvider>
+                </TestQueryProvider>
+            </MemoryRouter>,
+        );
+
+        expect(await screen.findByRole('heading', { name: 'Sales register' })).toBeVisible();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Saved report Choose saved report' }));
+
+        expect(
+            await screen.findByRole('option', { name: /Today's report.*Sales register/u }),
+        ).toBeVisible();
+        expect(
+            screen.queryByRole('option', { name: /Today's report.*Tax summary/u }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('shows inline edit and delete actions for custom saved reports', async () => {
+        saveCustomSavedReport(
+            createSavedReportDraft({
+                ownerUserId: 'sysadmin_1',
+                name: 'Month end snapshot',
+                formatId: 'sales-register',
+                displayFields: ['customerName', 'grandTotal'],
+                filters: [],
+                preset: 'All',
+                sorts: ['updatedAt:desc'],
+                status: 'All',
+            }),
+        );
+
+        render(
+            <MemoryRouter initialEntries={['/app/reports']}>
+                <TestQueryProvider>
+                    <CapabilityProvider value={demoCapabilities}>
+                        <SessionContext.Provider
+                            value={createTestSession({
+                                userId: 'sysadmin_1',
+                                username: 'sysadmin',
+                                displayName: 'System Administrator',
+                                role: 'SysAdmin',
+                                isActive: true,
+                            })}
+                        >
+                            <RecordStoreProvider>
+                                <Routes>
+                                    <Route path="/app/reports" element={<ReportsPage />} />
+                                </Routes>
+                            </RecordStoreProvider>
+                        </SessionContext.Provider>
+                    </CapabilityProvider>
+                </TestQueryProvider>
+            </MemoryRouter>,
+        );
+
+        expect(await screen.findByRole('heading', { name: 'Sales register' })).toBeVisible();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Saved report Choose saved report' }));
+
+        expect(screen.getByRole('button', { name: 'Edit Month end snapshot' })).toBeVisible();
+        expect(screen.getByRole('button', { name: 'Delete Month end snapshot' })).toBeVisible();
+
+        expect(screen.getByRole('button', { name: 'Edit Month end snapshot' })).toBeEnabled();
+        expect(screen.getByRole('button', { name: 'Delete Month end snapshot' })).toBeEnabled();
     });
 });

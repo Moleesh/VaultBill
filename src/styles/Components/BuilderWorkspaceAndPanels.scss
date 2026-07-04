@@ -109,7 +109,7 @@
     gap: 0.15rem;
     width: 100%;
     min-width: 0;
-    min-height: 2.55rem;
+    min-height: var(--control-height);
     padding-inline: var(--space-3) 0.55rem;
     background: var(--color-surface-raised);
     text-align: left;
@@ -151,6 +151,25 @@
     background: var(--color-surface-raised);
     padding: 0.45rem;
     box-shadow: var(--shadow-popover);
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--color-primary) 88%, white 12%)
+        color-mix(in srgb, var(--color-border-strong) 46%, transparent);
+}
+
+.searchable-dropdown-menu::-webkit-scrollbar {
+    width: 0.35rem;
+    height: 0.35rem;
+}
+
+.searchable-dropdown-menu::-webkit-scrollbar-track {
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--color-border-strong) 46%, transparent);
+}
+
+.searchable-dropdown-menu::-webkit-scrollbar-thumb {
+    min-height: 2.5rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--color-primary) 88%, white 12%);
 }
 
 .searchable-dropdown-menu[data-open-direction='below'] {

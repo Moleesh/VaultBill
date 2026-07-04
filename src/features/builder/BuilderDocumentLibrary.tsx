@@ -2,7 +2,7 @@
 
 import type { FC } from 'react';
 
-import { Copy, FilePlus2, Library, PencilLine, Trash2 } from 'lucide-react';
+import { Copy, FilePlus2, PencilLine, Trash2 } from 'lucide-react';
 
 import { IconButton } from '../../components/IconButton';
 import type { BuilderInventoryItem } from './BuilderDocumentLibrarySupport';
@@ -37,14 +37,7 @@ export const BuilderDocumentLibrary: FC<BuilderDocumentLibraryProps> = ({
         >
             <div className="section-heading">
                 <div>
-                    <p className="eyebrow">
-                        <Library aria-hidden="true" size={14} /> Documents
-                    </p>
                     <h2 id="builder-document-library-title">Document library</h2>
-                    <p>
-                        Review saved formats and manage each one with clear edit, duplicate, and
-                        delete actions.
-                    </p>
                 </div>
                 <div className="builder-document-library-actions">
                     <IconButton

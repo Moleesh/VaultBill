@@ -1,9 +1,11 @@
 /** @format */
 
-[data-theme='sandstone-ledger'] {
+:root[data-theme='sandstone-ledger'] {
     --color-bg: #f3eadc;
     --color-bg-gradient-start: #e4cfb1;
     --color-bg-gradient-end: #fffaf0;
+    --color-page: #f3eadc;
+    --color-page-strong: #e4cfb1;
     --color-surface: #fffaf0;
     --color-surface-raised: #ffffff;
     --color-surface-muted: #efe1cd;

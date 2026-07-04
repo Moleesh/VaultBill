@@ -17,6 +17,8 @@ type ThemePaletteProps = {
     readonly controller: ThemeController;
 };
 
+const renderThemeLabel = (label: string) => <span className="theme-palette-label">{label}</span>;
+
 export const ThemePalette: FC<ThemePaletteProps> = ({ controller }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [popoverStyle, setPopoverStyle] =
@@ -158,7 +160,6 @@ export const ThemePalette: FC<ThemePaletteProps> = ({ controller }) => {
                                   onClick={() => {
                                       savedTheme.current = theme.id;
                                       controller.setThemeId(theme.id);
-                                      closePalette(false);
                                   }}
                               >
                                   <span
@@ -167,7 +168,7 @@ export const ThemePalette: FC<ThemePaletteProps> = ({ controller }) => {
                                           background: getThemeSwatchBackground(theme.id),
                                       }}
                                   />
-                                  <span>{theme.label}</span>
+                                  {renderThemeLabel(theme.label)}
                                   {theme.id === controller.themeId ? (
                                       <Check aria-hidden="true" size={16} />
                                   ) : null}

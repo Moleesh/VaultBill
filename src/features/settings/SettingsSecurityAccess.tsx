@@ -110,36 +110,42 @@ export const SettingsSecurityAccess: FC<SettingsSecurityAccessProps> = ({
                         </div>
                         <KeyRound aria-hidden="true" />
                     </div>
-                    {!trialStatus?.isFullVersion ? (
-                        <div className="operator-create">
-                            <activationForm.Field name="licenseKey">
-                                {(field) => (
-                                    <FormField.TextField
-                                        label="License key"
-                                        onChange={(event) => {
-                                            field.handleChange(event.currentTarget.value);
-                                        }}
-                                        value={field.state.value}
-                                    />
-                                )}
-                            </activationForm.Field>
+                    <div className="settings-subsection-card settings-subsection-card--form">
+                        {!trialStatus?.isFullVersion ? (
+                            <div className="operator-create operator-create--inline">
+                                <activationForm.Field name="licenseKey">
+                                    {(field) => (
+                                        <FormField.TextField
+                                            label="License key"
+                                            onChange={(event) => {
+                                                field.handleChange(event.currentTarget.value);
+                                            }}
+                                            value={field.state.value}
+                                        />
+                                    )}
+                                </activationForm.Field>
+                                <div className="operator-create-action">
+                                    <ActionButton
+                                        disabled={!activationForm.state.values.licenseKey.trim()}
+                                        onClick={onActivateLicense}
+                                        variant="primary"
+                                    >
+                                        Activate full version
+                                    </ActionButton>
+                                </div>
+                            </div>
+                        ) : null}
+                        <div className="settings-subsection-actions settings-subsection-actions--end">
                             <ActionButton
-                                disabled={!activationForm.state.values.licenseKey.trim()}
-                                onClick={onActivateLicense}
-                                variant="primary"
+                                onClick={() => {
+                                    setIsResetTrialConfirmOpen(true);
+                                }}
+                                variant="secondary"
                             >
-                                Activate full version
+                                Reset trial
                             </ActionButton>
                         </div>
-                    ) : null}
-                    <ActionButton
-                        onClick={() => {
-                            setIsResetTrialConfirmOpen(true);
-                        }}
-                        variant="secondary"
-                    >
-                        Reset trial
-                    </ActionButton>
+                    </div>
                 </div>
             ) : null}
             {isSysAdmin ? (
@@ -175,7 +181,7 @@ export const SettingsSecurityAccess: FC<SettingsSecurityAccessProps> = ({
                                 Hosted web is currently{' '}
                                 {hostedWebServerRunning ? 'running' : 'stopped'}.
                             </p>
-                            <div className="operator-create">
+                            <div className="operator-create operator-create--button-row">
                                 <ActionButton
                                     disabled={hostedWebServerRunning}
                                     onClick={onStartHostedWebServer}
@@ -236,7 +242,7 @@ export const SettingsSecurityAccess: FC<SettingsSecurityAccessProps> = ({
                             : 'Android is using its local mobile workspace.'}
                     </p>
                     {androidPairing.discoveredHosts.length ? (
-                        <div className="operator-create">
+                        <div className="operator-create operator-create--button-row">
                             {androidPairing.discoveredHosts.map((host) => (
                                 <ActionButton
                                     key={host}
@@ -252,7 +258,7 @@ export const SettingsSecurityAccess: FC<SettingsSecurityAccessProps> = ({
                             ))}
                         </div>
                     ) : null}
-                    <div className="operator-create">
+                    <div className="operator-create operator-create--button-row">
                         <ActionButton
                             disabled={isPairingScanRunning}
                             onClick={scanAndroidHosts}

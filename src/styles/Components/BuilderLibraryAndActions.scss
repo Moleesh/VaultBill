@@ -156,9 +156,10 @@
     font-size: var(--font-size-xl);
 }
 .settings-jump-links {
+    --settings-sticky-offset: clamp(var(--space-5), 4vw, var(--space-10));
     position: sticky;
     z-index: 20;
-    top: 0;
+    top: calc(var(--settings-sticky-offset) * -1);
     display: flex;
     gap: var(--space-2);
     overflow-x: auto;
@@ -168,38 +169,16 @@
     background: color-mix(in srgb, var(--color-surface) 94%, var(--color-app-background));
     padding: var(--space-2);
     box-shadow: var(--shadow-card);
-    backdrop-filter: blur(18px);
-    isolation: isolate;
     scrollbar-width: none;
 }
 .settings-jump-links::-webkit-scrollbar {
     display: none;
 }
 .settings-jump-links::before {
-    position: absolute;
-    inset: -2.25rem -0.75rem 100%;
-    z-index: -1;
-    background: linear-gradient(
-        180deg,
-        var(--color-app-background) 0%,
-        color-mix(in srgb, var(--color-app-background) 96%, transparent) 72%,
-        transparent 100%
-    );
-    content: '';
-    pointer-events: none;
+    content: none;
 }
 .settings-jump-links::after {
-    position: absolute;
-    inset: 100% -0.75rem -1.75rem;
-    z-index: -1;
-    background: linear-gradient(
-        180deg,
-        color-mix(in srgb, var(--color-app-background) 96%, transparent) 0%,
-        color-mix(in srgb, var(--color-app-background) 72%, transparent) 58%,
-        transparent
-    );
-    content: '';
-    pointer-events: none;
+    content: none;
 }
 .settings-jump-links a {
     flex: 0 0 auto;
@@ -222,12 +201,56 @@
 .settings-section {
     display: grid;
     gap: var(--space-6);
-    scroll-margin-top: 5rem;
+    scroll-margin-top: calc(5rem + var(--settings-sticky-offset));
     border: var(--line-width) solid var(--color-border);
     border-radius: var(--radius-xl);
     background: var(--color-card);
     padding: clamp(var(--space-5), 4vw, var(--space-8));
     box-shadow: var(--shadow-card);
+}
+
+.settings-section-stack {
+    display: grid;
+    gap: var(--space-4);
+}
+
+.settings-section-card {
+    display: grid;
+    gap: var(--space-4);
+    border: var(--line-width) solid color-mix(in srgb, var(--color-border) 72%, transparent);
+    border-radius: var(--radius-lg);
+    background: color-mix(in srgb, var(--color-surface-raised) 80%, white);
+    padding: clamp(var(--space-4), 3vw, var(--space-5));
+}
+
+.settings-section-card--business-details {
+    max-width: 52rem;
+}
+
+.settings-section-card--business-preferences {
+    max-width: 62rem;
+}
+
+.settings-section-grid {
+    display: grid;
+    gap: var(--space-4);
+    align-items: start;
+}
+
+.settings-section-grid--business-core {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+.settings-section-grid--business-preferences {
+    grid-template-columns: minmax(15rem, 20rem) minmax(18rem, 1fr);
+}
+
+.settings-section-grid-span-full {
+    grid-column: 1 / -1;
+}
+
+.settings-inline-actions--end {
+    justify-content: flex-end;
 }
 .settings-theme-picker {
     display: grid;
@@ -277,6 +300,16 @@
     overflow: hidden;
     clip-path: inset(50%);
     pointer-events: none;
+}
+@media (max-width: 52rem) {
+    .settings-section-grid--business-core,
+    .settings-section-grid--business-preferences {
+        grid-template-columns: 1fr;
+    }
+
+    .settings-inline-actions--end {
+        justify-content: stretch;
+    }
 }
 .line-item-grid-item {
     min-width: 62rem;

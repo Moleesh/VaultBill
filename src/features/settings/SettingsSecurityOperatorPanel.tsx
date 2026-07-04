@@ -41,90 +41,100 @@ export const SettingsSecurityOperatorPanel: FC<SettingsSecurityOperatorPanelProp
                 </div>
                 <UserRoundCog aria-hidden="true" />
             </div>
-            <div className="operator-create">
-                <createOperatorForm.Field name="username">
-                    {(field) => (
-                        <FormField.TextField
-                            label="Username"
-                            onBlur={field.handleBlur}
-                            onChange={(event) => {
-                                field.handleChange(event.currentTarget.value);
-                            }}
-                            required
-                            requiredIndicator
-                            value={field.state.value}
-                        />
-                    )}
-                </createOperatorForm.Field>
-                <createOperatorForm.Field name="displayName">
-                    {(field) => (
-                        <FormField.TextField
-                            label="Display name"
-                            onBlur={field.handleBlur}
-                            onChange={(event) => {
-                                field.handleChange(event.currentTarget.value);
-                            }}
-                            required
-                            requiredIndicator
-                            value={field.state.value}
-                        />
-                    )}
-                </createOperatorForm.Field>
-                <createOperatorForm.Field name="password">
-                    {(field) => (
-                        <FormField.PasswordField
-                            autoComplete="new-password"
-                            label="Optional password"
-                            onBlur={field.handleBlur}
-                            onChange={(event) => {
-                                field.handleChange(event.currentTarget.value);
-                            }}
-                            placeholder="Leave blank if you want to add it later"
-                            value={field.state.value}
-                        />
-                    )}
-                </createOperatorForm.Field>
-                {operatorRole === 'SysAdmin' ? (
-                    <createOperatorForm.Field name="role">
-                        {(field) => (
-                            <SearchableDropdown
-                                label="Role"
-                                onChange={(value) => {
-                                    field.handleChange(value as Role);
-                                }}
-                                options={securityOperatorRoleOptions}
-                                value={field.state.value}
-                            />
-                        )}
-                    </createOperatorForm.Field>
-                ) : null}
-                <createOperatorForm.Subscribe
-                    selector={(state) => ({
-                        displayName: state.values.displayName,
-                        password: state.values.password,
-                        role: state.values.role,
-                        username: state.values.username,
-                    })}
-                >
-                    {(values) => (
-                        <IconButton
-                            disabled={
-                                !canSubmitOperatorCreation({
-                                    manageableAccounts,
-                                    operatorRole,
-                                    values,
-                                })
-                            }
-                            icon={<Plus aria-hidden="true" size={18} />}
-                            onClick={() => {
-                                void createOperatorForm.handleSubmit();
-                            }}
-                            variant="primary"
+            <div className="settings-subsection-card settings-subsection-card--form">
+                <div className="operator-create operator-create--operators">
+                    <div
+                        className={`operator-create-fields operator-create-fields--operators${
+                            operatorRole === 'SysAdmin' ? ' operator-create-fields--with-role' : ''
+                        }`}
+                    >
+                        <createOperatorForm.Field name="username">
+                            {(field) => (
+                                <FormField.TextField
+                                    label="Username"
+                                    onBlur={field.handleBlur}
+                                    onChange={(event) => {
+                                        field.handleChange(event.currentTarget.value);
+                                    }}
+                                    required
+                                    requiredIndicator
+                                    value={field.state.value}
+                                />
+                            )}
+                        </createOperatorForm.Field>
+                        <createOperatorForm.Field name="displayName">
+                            {(field) => (
+                                <FormField.TextField
+                                    label="Display name"
+                                    onBlur={field.handleBlur}
+                                    onChange={(event) => {
+                                        field.handleChange(event.currentTarget.value);
+                                    }}
+                                    required
+                                    requiredIndicator
+                                    value={field.state.value}
+                                />
+                            )}
+                        </createOperatorForm.Field>
+                        <createOperatorForm.Field name="password">
+                            {(field) => (
+                                <FormField.PasswordField
+                                    autoComplete="new-password"
+                                    label="Optional password"
+                                    onBlur={field.handleBlur}
+                                    onChange={(event) => {
+                                        field.handleChange(event.currentTarget.value);
+                                    }}
+                                    placeholder="Leave blank if you want to add it later"
+                                    value={field.state.value}
+                                />
+                            )}
+                        </createOperatorForm.Field>
+                        {operatorRole === 'SysAdmin' ? (
+                            <createOperatorForm.Field name="role">
+                                {(field) => (
+                                    <SearchableDropdown
+                                        label="Role"
+                                        onChange={(value) => {
+                                            field.handleChange(value as Role);
+                                        }}
+                                        options={securityOperatorRoleOptions}
+                                        value={field.state.value}
+                                    />
+                                )}
+                            </createOperatorForm.Field>
+                        ) : null}
+                    </div>
+                    <div className="operator-create-action">
+                        <createOperatorForm.Subscribe
+                            selector={(state) => ({
+                                displayName: state.values.displayName,
+                                password: state.values.password,
+                                role: state.values.role,
+                                username: state.values.username,
+                            })}
                         >
-                            Add operator
-                        </IconButton>
-                    )}
-                </createOperatorForm.Subscribe>
+                            {(values) => (
+                                <IconButton
+                                    disabled={
+                                        !canSubmitOperatorCreation({
+                                            manageableAccounts,
+                                            operatorRole,
+                                            values,
+                                        })
+                                    }
+                                    icon={<Plus aria-hidden="true" size={18} />}
+                                    onClick={() => {
+                                        void createOperatorForm.handleSubmit();
+                                    }}
+                                    variant="primary"
+                                >
+                                    Add operator
+                                </IconButton>
+                            )}
+                        </createOperatorForm.Subscribe>
+                    </div>
+                </div>
             </div>
             <div className="operator-list">
                 {manageableAccounts.map((account) => (

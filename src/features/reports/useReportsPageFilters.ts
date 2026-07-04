@@ -76,6 +76,10 @@ export const useReportsPageFilters = (
     const form = useReportsFilterForm();
     const { fromDate, preset, reportField, reportFieldValue, reportId, status, toDate } =
         form.state.values;
+    const filteredSavedReports = useMemo(
+        () => savedReports.filter((report) => report.formatId === reportId),
+        [reportId, savedReports],
+    );
     const reportFilters = useMemo(
         () => [
             { id: 'primary', field: reportField, value: reportFieldValue, ...primaryFilterDetails },
@@ -181,6 +185,16 @@ export const useReportsPageFilters = (
         // Run once after operator/default hydration.
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [operator, savedReports, selectedSavedReportId]);
+    useEffect(() => {
+        if (!selectedSavedReportId) return;
+        const selectedReport = savedReports.find(
+            (report) => report.reportId === selectedSavedReportId,
+        );
+        if (!selectedReport || selectedReport.formatId === reportId) return;
+        setSelectedSavedReportId('');
+        setSelectedDisplayFields(defaultDisplayFieldsForReport(reportId));
+        setIsDynamicPromptOpen(false);
+    }, [reportId, savedReports, selectedSavedReportId]);
     const reset = () => {
         form.reset({
             fromDate: '',
@@ -298,7 +312,7 @@ export const useReportsPageFilters = (
         setVisibleCount,
         updateReportFilter,
         selectedSavedReportId,
-        savedReports,
+        savedReports: filteredSavedReports,
         selectedDisplayFields,
         isDynamicPromptOpen,
         canAddReportFilter: reportFilters.length < 5,
@@ -339,6 +353,10 @@ export const useReportsPageFilters = (
             if (!operator || !selectedSavedReportId) return;
             saveDefaultSavedReportId(operator.userId, selectedSavedReportId);
         },
+        canManageReport: (report: SavedReportDefinition) =>
+            operator
+                ? canManageSavedReport(report, operator.userId, operator.role === 'SysAdmin')
+                : false,
         canManageSelectedSavedReport: () => {
             if (!operator || !selectedSavedReportId) return false;
             const selectedReport = savedReports.find(
@@ -351,6 +369,14 @@ export const useReportsPageFilters = (
                       operator.role === 'SysAdmin',
                   )
                 : false;
+        },
+        deleteSavedReportById: (reportId: string) => {
+            if (!operator) return;
+            deleteCustomSavedReport(reportId, operator.userId, operator.role === 'SysAdmin');
+            setSavedReports(readSavedReports());
+            if (selectedSavedReportId === reportId) {
+                setSelectedSavedReportId('');
+            }
         },
         deleteSelectedSavedReport: () => {
             if (!operator || !selectedSavedReportId) return;

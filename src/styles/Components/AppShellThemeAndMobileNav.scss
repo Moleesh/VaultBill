@@ -28,6 +28,13 @@
     min-width: 0;
 }
 
+.theme-palette-label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .host-reconnect {
     display: grid;
     gap: var(--space-3);

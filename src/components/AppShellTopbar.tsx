@@ -15,6 +15,8 @@ import { ThemePalette } from './ThemePalette';
 
 type AppShellTopbarProps = {
     readonly pageId: string;
+    readonly pageLabelOverride?: string;
+    readonly pageSubtitleOverride?: string;
     readonly isDemoMode: boolean;
     readonly trialStatus:
         | Awaited<ReturnType<NonNullable<typeof window.vaultBillDesktop>['getTrialStatus']>>
@@ -32,6 +34,8 @@ type AppShellTopbarProps = {
 /** Renders the shell title area with theme, account, and trial actions. */
 export const AppShellTopbar: FC<AppShellTopbarProps> = ({
     pageId,
+    pageLabelOverride,
+    pageSubtitleOverride,
     isDemoMode,
     trialStatus,
     themeController,
@@ -45,11 +49,11 @@ export const AppShellTopbar: FC<AppShellTopbarProps> = ({
 }) => {
     const routeId = pageId as AppRouteId;
     const section = shellSections.find((entry) => entry.id === routeId);
-    const pageLabel = section?.label ?? pageId.toLocaleUpperCase();
+    const pageLabel = pageLabelOverride ?? section?.label ?? pageId.toLocaleUpperCase();
     const pageTitle = isDemoMode ? 'VaultBill Demo' : pageLabel;
     const pageSubtitle = isDemoMode
         ? 'Guided browser demo workspace'
-        : (section?.description ?? '');
+        : (pageSubtitleOverride ?? section?.description ?? '');
     const SectionIcon = appShellIcons[routeId];
 
     return (

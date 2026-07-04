@@ -137,11 +137,24 @@
         align-items: start;
     }
 
+    .records-page-top {
+        padding: var(--space-4);
+    }
+
     .records-page .operational-header > *,
     .records-page .searchable-dropdown,
     .records-page .searchable-dropdown-button {
         width: 100%;
         min-width: 0;
+    }
+
+    .reports-hero {
+        grid-template-columns: 1fr;
+        align-items: start;
+    }
+
+    .reports-hero-controls {
+        padding: var(--space-3);
     }
 
     .line-item-grid {

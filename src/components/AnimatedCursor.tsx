@@ -20,12 +20,20 @@ type CursorVariant =
     | 'busy'
     | 'move';
 
-type CursorInteraction = 'idle' | 'button' | 'link' | 'drag';
+type CursorInteraction = 'idle' | 'button' | 'field' | 'link' | 'menu' | 'drag';
 
 const getCursorInteraction = (target: EventTarget | null): CursorInteraction => {
     if (!(target instanceof Element)) return 'idle';
     if (target.closest('[draggable="true"], [data-cursor-drag="true"]')) return 'drag';
     if (target.closest('a[href], [role="link"]')) return 'link';
+    if (
+        target.closest(
+            '[role="option"], [role="menuitem"], [role="tab"], [data-cursor-menu="true"]',
+        )
+    ) {
+        return 'menu';
+    }
+    if (target.closest('input, textarea, select, [contenteditable="true"]')) return 'field';
     if (
         target.closest('button, [type="button"], [type="submit"], [role="button"], summary, label')
     ) {
@@ -80,9 +88,13 @@ export const AnimatedCursor: FC = () => {
             cursor.dataset.interaction = interaction;
         };
 
+        const setVariant = (target: EventTarget | null) => {
+            cursor.dataset.variant = getCursorVariant(target);
+        };
+
         const handlePointerMove = (event: PointerEvent) => {
             positionCursor(event.clientX, event.clientY);
-            cursor.dataset.variant = getCursorVariant(event.target);
+            setVariant(event.target);
             if (cursor.dataset.pressed !== 'true') {
                 setInteraction(getCursorInteraction(event.target));
             }
@@ -91,17 +103,28 @@ export const AnimatedCursor: FC = () => {
 
         const handlePointerDown = (event: PointerEvent) => {
             cursor.dataset.pressed = 'true';
-            cursor.dataset.variant = getCursorVariant(event.target);
+            setVariant(event.target);
             setInteraction(getCursorInteraction(event.target));
         };
 
         const handlePointerUp = (event: PointerEvent) => {
             cursor.dataset.pressed = 'false';
-            cursor.dataset.variant = getCursorVariant(event.target);
+            setVariant(event.target);
             window.clearTimeout(pointerInteractionResetTimeoutRef.current);
             pointerInteractionResetTimeoutRef.current = window.setTimeout(() => {
                 setInteraction(getCursorInteraction(event.target));
             }, 110);
+        };
+
+        const handleDragStart = () => {
+            cursor.dataset.variant = 'dragging';
+            setInteraction('drag');
+        };
+
+        const handleDragEnd = () => {
+            cursor.dataset.variant = 'drag';
+            cursor.dataset.pressed = 'false';
+            setInteraction('idle');
         };
 
         const handlePointerLeave = () => {
@@ -111,7 +134,7 @@ export const AnimatedCursor: FC = () => {
         };
 
         const handlePointerOver = (event: PointerEvent) => {
-            cursor.dataset.variant = getCursorVariant(event.target);
+            setVariant(event.target);
             if (cursor.dataset.pressed !== 'true') {
                 setInteraction(getCursorInteraction(event.target));
             }
@@ -127,6 +150,8 @@ export const AnimatedCursor: FC = () => {
         window.addEventListener('pointerup', handlePointerUp);
         window.addEventListener('pointerleave', handlePointerLeave);
         window.addEventListener('blur', handlePointerLeave);
+        window.addEventListener('dragstart', handleDragStart, true);
+        window.addEventListener('dragend', handleDragEnd, true);
         document.addEventListener('pointerover', handlePointerOver);
 
         return () => {
@@ -137,6 +162,8 @@ export const AnimatedCursor: FC = () => {
             window.removeEventListener('pointerup', handlePointerUp);
             window.removeEventListener('pointerleave', handlePointerLeave);
             window.removeEventListener('blur', handlePointerLeave);
+            window.removeEventListener('dragstart', handleDragStart, true);
+            window.removeEventListener('dragend', handleDragEnd, true);
             document.removeEventListener('pointerover', handlePointerOver);
         };
     }, []);

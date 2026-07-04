@@ -49,46 +49,62 @@ export const SettingsBackupActions: FC<SettingsBackupActionsProps> = ({
                 </div>
                 <ArchiveRestore aria-hidden="true" />
             </div>
-            {canBackup ? (
-                <div className="operator-create">
-                    <FormField.CheckboxField
-                        checked={encryptBackup}
-                        label="Encrypt backup"
-                        onChange={(event) => {
-                            onEncryptBackupChange(event.currentTarget.checked);
-                        }}
-                    />
-                    <IconButton
-                        disabled={Boolean(busyAction)}
-                        icon={<HardDriveDownload aria-hidden="true" size={18} />}
-                        onClick={onCreateBackup}
-                    >
-                        Create backup
-                    </IconButton>
+            {canBackup || canRestore ? (
+                <div className="settings-subsection-card settings-subsection-card--form">
+                    {canBackup ? (
+                        <div className="settings-subsection-actions settings-subsection-actions--between">
+                            <FormField.CheckboxField
+                                checked={encryptBackup}
+                                label="Encrypt backup"
+                                onChange={(event) => {
+                                    onEncryptBackupChange(event.currentTarget.checked);
+                                }}
+                            />
+                            <div className="settings-subsection-actions settings-subsection-actions--row settings-subsection-actions--row-compact">
+                                <IconButton
+                                    disabled={Boolean(busyAction)}
+                                    icon={<HardDriveDownload aria-hidden="true" size={18} />}
+                                    onClick={onCreateBackup}
+                                >
+                                    Create backup
+                                </IconButton>
+                                {canRestore ? (
+                                    <IconButton
+                                        disabled={Boolean(busyAction)}
+                                        icon={<ArchiveRestore aria-hidden="true" size={18} />}
+                                        onClick={onOpenRestore}
+                                    >
+                                        Restore backup
+                                    </IconButton>
+                                ) : null}
+                            </div>
+                        </div>
+                    ) : canRestore ? (
+                        <div className="settings-subsection-actions settings-subsection-actions--row settings-subsection-actions--row-compact">
+                            <IconButton
+                                disabled={Boolean(busyAction)}
+                                icon={<ArchiveRestore aria-hidden="true" size={18} />}
+                                onClick={onOpenRestore}
+                            >
+                                Restore backup
+                            </IconButton>
+                        </div>
+                    ) : null}
+                    {isHostedWeb && (canBackup || canRestore) ? (
+                        <form.Field name="remoteAuthorizationPassword">
+                            {(field) => (
+                                <FormField.PasswordField
+                                    autoComplete="current-password"
+                                    label="System Administrator password for host operations"
+                                    onChange={(event) => {
+                                        field.handleChange(event.currentTarget.value);
+                                    }}
+                                    value={field.state.value}
+                                />
+                            )}
+                        </form.Field>
+                    ) : null}
                 </div>
-            ) : null}
-            {isHostedWeb && (canBackup || canRestore) ? (
-                <form.Field name="remoteAuthorizationPassword">
-                    {(field) => (
-                        <FormField.PasswordField
-                            autoComplete="current-password"
-                            label="System Administrator password for host operations"
-                            onChange={(event) => {
-                                field.handleChange(event.currentTarget.value);
-                            }}
-                            value={field.state.value}
-                        />
-                    )}
-                </form.Field>
-            ) : null}
-            {canRestore ? (
-                <IconButton
-                    disabled={Boolean(busyAction)}
-                    icon={<ArchiveRestore aria-hidden="true" size={18} />}
-                    onClick={onOpenRestore}
-                >
-                    Restore backup
-                </IconButton>
             ) : null}
             {!encryptBackup && canBackup ? (
                 <p className="field-note">
@@ -107,26 +123,30 @@ export const SettingsBackupActions: FC<SettingsBackupActionsProps> = ({
                 </div>
                 <ShieldCheck aria-hidden="true" />
             </div>
-            <div className="operator-create">
-                <form.Field name="backupPassword">
-                    {(field) => (
-                        <FormField.PasswordField
-                            autoComplete="new-password"
-                            label="New backup password"
-                            onChange={(event) => {
-                                field.handleChange(event.currentTarget.value);
-                            }}
-                            value={field.state.value}
-                        />
-                    )}
-                </form.Field>
-                <IconButton
-                    disabled={Boolean(busyAction)}
-                    icon={<ShieldCheck aria-hidden="true" size={18} />}
-                    onClick={onChangeBackupPassword}
-                >
-                    Update backup password
-                </IconButton>
+            <div className="settings-subsection-card settings-subsection-card--form">
+                <div className="operator-create operator-create--inline">
+                    <form.Field name="backupPassword">
+                        {(field) => (
+                            <FormField.PasswordField
+                                autoComplete="new-password"
+                                label="New backup password"
+                                onChange={(event) => {
+                                    field.handleChange(event.currentTarget.value);
+                                }}
+                                value={field.state.value}
+                            />
+                        )}
+                    </form.Field>
+                    <div className="operator-create-action">
+                        <IconButton
+                            disabled={Boolean(busyAction)}
+                            icon={<ShieldCheck aria-hidden="true" size={18} />}
+                            onClick={onChangeBackupPassword}
+                        >
+                            Update backup password
+                        </IconButton>
+                    </div>
+                </div>
             </div>
         </div>
         {isSysAdmin ? (
@@ -140,9 +160,11 @@ export const SettingsBackupActions: FC<SettingsBackupActionsProps> = ({
                     </div>
                     <RotateCcw aria-hidden="true" />
                 </div>
-                <ActionButton disabled={Boolean(busyAction)} onClick={onOpenReset}>
-                    Reset application data
-                </ActionButton>
+                <div className="settings-subsection-card settings-subsection-card--form">
+                    <ActionButton disabled={Boolean(busyAction)} onClick={onOpenReset}>
+                        Reset application data
+                    </ActionButton>
+                </div>
             </div>
         ) : null}
     </>

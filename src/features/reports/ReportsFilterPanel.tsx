@@ -3,10 +3,9 @@
 import type { DragEvent, FC } from 'react';
 import { useState } from 'react';
 
-import { Copy, GripVertical, Pencil, Plus, Trash2 } from 'lucide-react';
+import { GripVertical, Plus } from 'lucide-react';
 
 import { ActionButton } from '../../components/ActionButton';
-import { AppDatePicker } from '../../components/AppDatePicker/AppDatePicker';
 import { AppModal } from '../../components/AppModal/AppModal';
 import { DialogActions } from '../../components/DialogActions';
 import { DragHandleButton } from '../../components/DragHandleButton';
@@ -18,10 +17,10 @@ import { defaultDisplayFieldsForReport, reportDisplayFieldOptionsFor } from './R
 import { createReportFilter } from './ReportsPageFilterSupport';
 import { reportFieldOptions, reportOptions } from './ReportsPageSupport';
 import type { ReportFieldFilter } from './ReportsPageTypes';
+import { SavedReportDropdown } from './SavedReportDropdown';
 import {
     defaultSorts,
     operatorOptionsForReportField,
-    reportSummaryLabel,
     type SavedReportEditorInput,
     type SavedReportDefinition,
 } from './SavedReportsSupport';
@@ -31,20 +30,14 @@ import type { ReportsFilterFormApi } from './useReportsPageFilters';
 type ReportsFilterPanelProps = {
     readonly form: ReportsFilterFormApi;
     readonly reportFilters: readonly ReportFieldFilter[];
-    readonly onAddFilter: () => void;
-    readonly canAddFilter: boolean;
-    readonly canManageSelectedReport: boolean;
+    readonly canManageReport: (report: SavedReportDefinition) => boolean;
     readonly onUpdateFilter: (id: string, next: Partial<ReportFieldFilter>) => void;
-    readonly onRemoveFilter: (id: string) => void;
-    readonly onPresetChange: (value: string) => void;
     readonly customers: readonly string[];
     readonly savedReports: readonly SavedReportDefinition[];
     readonly selectedSavedReportId: string;
     readonly onSelectSavedReport: (reportId: string) => void;
     readonly onSaveReport: (input: SavedReportEditorInput) => void;
-    readonly onSetDefaultReport: () => void;
-    readonly onDuplicateSavedReport: () => void;
-    readonly onDeleteSavedReport: () => void;
+    readonly onDeleteSavedReportById: (reportId: string) => void;
     readonly isDynamicPromptOpen: boolean;
     readonly onCloseDynamicPrompt: () => void;
 };
@@ -88,20 +81,14 @@ const serializeSavedSorts = (sorts: readonly ReportSortRule[]): readonly string[
 export const ReportsFilterPanel: FC<ReportsFilterPanelProps> = ({
     form,
     reportFilters,
-    onAddFilter,
-    canAddFilter,
-    canManageSelectedReport,
+    canManageReport,
     onUpdateFilter,
-    onRemoveFilter,
-    onPresetChange,
     customers,
     savedReports,
     selectedSavedReportId,
     onSelectSavedReport,
     onSaveReport,
-    onSetDefaultReport,
-    onDuplicateSavedReport,
-    onDeleteSavedReport,
+    onDeleteSavedReportById,
     isDynamicPromptOpen,
     onCloseDynamicPrompt,
 }) => {
@@ -129,31 +116,36 @@ export const ReportsFilterPanel: FC<ReportsFilterPanelProps> = ({
             : form.state.values.reportId;
     const wizardDisplayFieldOptions = reportDisplayFieldOptionsFor(wizardFormatId);
     const promptFilters = reportFilters.filter((filter) => filter.promptAtRun);
-    const openWizard = (mode: 'create' | 'edit') => {
+    const activeFormatLabel =
+        reportOptions.find((option) => option.value === form.state.values.reportId)?.label ??
+        form.state.values.reportId;
+    const selectedReportLabel = selectedSavedReport?.name ?? 'Custom filters';
+    const openWizard = (mode: 'create' | 'edit', reportOverride?: SavedReportDefinition) => {
+        const targetReport = reportOverride ?? selectedSavedReport;
         setWizardMode(mode);
-        setReportName(mode === 'edit' ? (selectedSavedReport?.name ?? '') : '');
+        setReportName(mode === 'edit' ? (targetReport?.name ?? '') : '');
         setWizardDisplayFields(
             mode === 'edit'
-                ? selectedSavedReport?.displayFields.length
-                    ? selectedSavedReport.displayFields
+                ? targetReport?.displayFields.length
+                    ? targetReport.displayFields
                     : defaultDisplayFieldsForReport(
-                          selectedSavedReport?.formatId ?? form.state.values.reportId,
+                          targetReport?.formatId ?? form.state.values.reportId,
                       )
                 : defaultDisplayFieldsForReport(form.state.values.reportId),
         );
         setWizardSorts(
             parseSavedSorts(
                 mode === 'edit'
-                    ? selectedSavedReport?.sorts.length
-                        ? selectedSavedReport.sorts
+                    ? targetReport?.sorts.length
+                        ? targetReport.sorts
                         : defaultSorts
                     : defaultSorts,
             ),
         );
         setWizardFilters(
             mode === 'edit'
-                ? selectedSavedReport?.filters.length
-                    ? selectedSavedReport.filters.map((filter) => ({ ...filter }))
+                ? targetReport?.filters.length
+                    ? targetReport.filters.map((filter) => ({ ...filter }))
                     : [createReportFilter()]
                 : reportFilters.some((filter) => filter.field || filter.value.trim())
                   ? reportFilters.map((filter) => ({ ...filter }))
@@ -178,9 +170,20 @@ export const ReportsFilterPanel: FC<ReportsFilterPanelProps> = ({
         <>
             <div className="page-hero page-hero--compact reports-hero">
                 <div className="page-section-intro">
-                    <p>Choose a format, run a saved report, or build one with reusable filters.</p>
+                    <p className="eyebrow">Reports workspace</p>
+                    <h1>{activeFormatLabel}</h1>
+                    <p>
+                        Run saved views fast, or build a focused report with reusable filters and
+                        presets.
+                    </p>
+                    <div className="reports-hero-meta">
+                        <span>{`${String(savedReports.length)} saved reports ready`}</span>
+                        <span>{`Active view: ${selectedReportLabel}`}</span>
+                    </div>
                 </div>
-                <div className="reports-hero-controls">
+            </div>
+            <section className="data-panel">
+                <div className="report-filter-toolbar">
                     <form.Field name="reportId">
                         {(field) => (
                             <SearchableDropdown
@@ -193,230 +196,21 @@ export const ReportsFilterPanel: FC<ReportsFilterPanelProps> = ({
                             />
                         )}
                     </form.Field>
-                    <SearchableDropdown
+                    <SavedReportDropdown
+                        canManageReport={canManageReport}
                         label="Saved report"
-                        onChange={onSelectSavedReport}
-                        options={[
-                            { value: '', label: 'Choose saved report' },
-                            ...savedReports.map((report) => ({
-                                value: report.reportId,
-                                label: `${report.name} - ${reportSummaryLabel(report)}`,
-                            })),
-                        ]}
-                        value={selectedSavedReportId}
-                    />
-                    <IconButton
-                        icon={<Plus aria-hidden="true" size={16} />}
-                        onClick={() => {
+                        onCreateReport={() => {
                             openWizard('create');
                         }}
-                        variant="primary"
-                    >
-                        Create report
-                    </IconButton>
-                </div>
-            </div>
-            {selectedSavedReport ? (
-                <section className="data-panel report-saved-summary">
-                    <div>
-                        <p className="eyebrow">
-                            {selectedSavedReport.isBuiltIn ? 'Built-in report' : 'Saved report'}
-                        </p>
-                        <h2>{selectedSavedReport.name}</h2>
-                        <p>
-                            Format:{' '}
-                            {reportOptions.find(
-                                (option) => option.value === selectedSavedReport.formatId,
-                            )?.label ?? selectedSavedReport.formatId}
-                        </p>
-                    </div>
-                    <div className="operator-create">
-                        <ActionButton onClick={onSetDefaultReport}>Set as my default</ActionButton>
-                        {canManageSelectedReport ? (
-                            <IconButton
-                                icon={<Pencil aria-hidden="true" size={16} />}
-                                onClick={() => {
-                                    openWizard('edit');
-                                }}
-                            >
-                                Edit
-                            </IconButton>
-                        ) : null}
-                        <IconButton
-                            icon={<Copy aria-hidden="true" size={16} />}
-                            onClick={onDuplicateSavedReport}
-                        >
-                            Duplicate
-                        </IconButton>
-                        {!selectedSavedReport.isBuiltIn ? (
-                            <IconButton
-                                disabled={!canManageSelectedReport}
-                                icon={<Trash2 aria-hidden="true" size={16} />}
-                                onClick={onDeleteSavedReport}
-                                variant="secondary"
-                            >
-                                Delete
-                            </IconButton>
-                        ) : null}
-                    </div>
-                </section>
-            ) : null}
-            <section className="data-panel">
-                <div className="report-filter-stack">
-                    {reportFilters.map((filter, index) => (
-                        <div className="report-filter-row" key={filter.id}>
-                            <SearchableDropdown
-                                label="Report field"
-                                onChange={(value) => {
-                                    onUpdateFilter(filter.id, {
-                                        field: value,
-                                        operator: 'contains',
-                                        value: '',
-                                        valueEnd: '',
-                                    });
-                                }}
-                                options={reportFieldOptions.map((option) => ({ ...option }))}
-                                value={filter.field}
-                            />
-                            <SearchableDropdown
-                                label="Operator"
-                                onChange={(value) => {
-                                    onUpdateFilter(filter.id, { operator: value });
-                                }}
-                                options={operatorOptionsForReportField(filter.field).map(
-                                    (option) => ({ ...option }),
-                                )}
-                                value={
-                                    operatorOptionsForReportField(filter.field).some(
-                                        (option) => option.value === filter.operator,
-                                    )
-                                        ? (filter.operator ?? 'contains')
-                                        : (operatorOptionsForReportField(filter.field)[0]?.value ??
-                                          'contains')
-                                }
-                            />
-                            <div className="report-filter-row-value">
-                                {filter.operator === 'is-empty' ||
-                                filter.operator === 'is-not-empty' ? null : (
-                                    <ReportFieldValueControl
-                                        customers={customers}
-                                        filter={filter}
-                                        onUpdateFilter={onUpdateFilter}
-                                    />
-                                )}
-                                {filter.operator === 'between' ? (
-                                    <FormField.TextField
-                                        label="To value"
-                                        onChange={(event) => {
-                                            onUpdateFilter(filter.id, {
-                                                valueEnd: event.currentTarget.value,
-                                            });
-                                        }}
-                                        value={filter.valueEnd ?? ''}
-                                    />
-                                ) : null}
-                                {filter.field ? (
-                                    <div className="report-filter-options">
-                                        <FormField.CheckboxField
-                                            checked={filter.caseInsensitive !== false}
-                                            label="Case-insensitive"
-                                            onChange={(event) => {
-                                                onUpdateFilter(filter.id, {
-                                                    caseInsensitive: event.currentTarget.checked,
-                                                });
-                                            }}
-                                        />
-                                        <FormField.CheckboxField
-                                            checked={filter.promptAtRun === true}
-                                            label="Ask when running"
-                                            onChange={(event) => {
-                                                onUpdateFilter(filter.id, {
-                                                    promptAtRun: event.currentTarget.checked,
-                                                });
-                                            }}
-                                        />
-                                    </div>
-                                ) : null}
-                                <IconButton
-                                    disabled={!canAddFilter}
-                                    icon={<Plus aria-hidden="true" size={16} />}
-                                    onClick={onAddFilter}
-                                >
-                                    Add another filter
-                                </IconButton>
-                            </div>
-                            <div className="report-filter-row-actions">
-                                {index > 0 ? (
-                                    <ActionButton
-                                        onClick={() => {
-                                            onRemoveFilter(filter.id);
-                                        }}
-                                    >
-                                        Remove filter
-                                    </ActionButton>
-                                ) : null}
-                            </div>
-                        </div>
-                    ))}
-                </div>
-                <div className="report-filter-grid report-filter-grid--secondary">
-                    <form.Field name="fromDate">
-                        {(field) => (
-                            <AppDatePicker
-                                label="From"
-                                onChange={(value) => {
-                                    field.handleChange(value);
-                                }}
-                                value={field.state.value}
-                            />
-                        )}
-                    </form.Field>
-                    <form.Field name="toDate">
-                        {(field) => (
-                            <AppDatePicker
-                                label="To"
-                                onChange={(value) => {
-                                    field.handleChange(value);
-                                }}
-                                value={field.state.value}
-                            />
-                        )}
-                    </form.Field>
-                    <form.Field name="status">
-                        {(field) => (
-                            <SearchableDropdown
-                                label="Status"
-                                value={field.state.value}
-                                onChange={(value) => {
-                                    field.handleChange(value);
-                                }}
-                                options={['All', 'Draft', 'Finalized', 'Cancelled'].map(
-                                    (value) => ({
-                                        value,
-                                        label: value,
-                                    }),
-                                )}
-                            />
-                        )}
-                    </form.Field>
-                    <form.Field name="preset">
-                        {(field) => (
-                            <SearchableDropdown
-                                label="Quick filters"
-                                value={field.state.value}
-                                onChange={(value) => {
-                                    onPresetChange(value);
-                                }}
-                                options={[
-                                    { value: 'All', label: 'All time' },
-                                    { value: 'Today', label: 'Today' },
-                                    { value: 'ThisMonth', label: 'This month' },
-                                    { value: 'FinancialYear', label: 'Financial year' },
-                                    { value: 'Last100', label: 'Last 100' },
-                                ]}
-                            />
-                        )}
-                    </form.Field>
+                        onDeleteReport={onDeleteSavedReportById}
+                        onEditReport={(report) => {
+                            onSelectSavedReport(report.reportId);
+                            openWizard('edit', report);
+                        }}
+                        onSelectReport={onSelectSavedReport}
+                        savedReports={savedReports}
+                        selectedSavedReportId={selectedSavedReportId}
+                    />
                 </div>
             </section>
             <AppModal

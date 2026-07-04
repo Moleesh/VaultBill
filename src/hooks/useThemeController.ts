@@ -3,16 +3,21 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { themeOptions } from '../constants/RuntimeDefaults';
-import { applyTheme, getStoredTheme } from '../runtime/WorkspaceTheme';
+import { applyTheme } from '../runtime/WorkspaceTheme';
 import type { ThemeController, ThemeId } from '../types/AppTypes';
 
 export const useThemeController = (
     fallbackTheme: ThemeId,
     onThemeChange?: (themeId: ThemeId) => void,
+    syncedThemeId?: ThemeId,
 ): ThemeController => {
-    const [themeId, setThemeId] = useState<ThemeId>(() => {
-        return getStoredTheme() ?? fallbackTheme;
-    });
+    const [themeId, setThemeId] = useState<ThemeId>(() => syncedThemeId ?? fallbackTheme);
+
+    useEffect(() => {
+        const nextThemeId = syncedThemeId ?? fallbackTheme;
+        if (nextThemeId === themeId) return;
+        setThemeId(nextThemeId);
+    }, [fallbackTheme, syncedThemeId, themeId]);
 
     useEffect(() => {
         applyTheme(themeId);

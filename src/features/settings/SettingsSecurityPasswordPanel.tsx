@@ -27,45 +27,51 @@ export const SettingsSecurityPasswordPanel: FC<SettingsSecurityPasswordPanelProp
             </div>
             <Plus aria-hidden="true" size={18} />
         </div>
-        <div className="operator-create">
-            <passwordForm.Field name="userId">
-                {(field) => (
-                    <SearchableDropdown
-                        label="Account"
-                        onChange={(value) => {
-                            field.handleChange(value);
+        <div className="settings-subsection-card settings-subsection-card--form">
+            <div className="operator-create operator-create--password">
+                <div className="operator-create-fields operator-create-fields--password">
+                    <passwordForm.Field name="userId">
+                        {(field) => (
+                            <SearchableDropdown
+                                label="Account"
+                                onChange={(value) => {
+                                    field.handleChange(value);
+                                }}
+                                options={manageableAccounts.map((account) => ({
+                                    value: account.userId,
+                                    label: account.displayName,
+                                }))}
+                                requiredIndicator
+                                value={field.state.value}
+                            />
+                        )}
+                    </passwordForm.Field>
+                    <passwordForm.Field name="password">
+                        {(field) => (
+                            <FormField.PasswordField
+                                label="New password"
+                                onBlur={field.handleBlur}
+                                onChange={(event) => {
+                                    field.handleChange(event.currentTarget.value);
+                                }}
+                                required
+                                requiredIndicator
+                                value={field.state.value}
+                            />
+                        )}
+                    </passwordForm.Field>
+                </div>
+                <div className="operator-create-action">
+                    <IconButton
+                        icon={<KeyRound aria-hidden="true" size={18} />}
+                        onClick={() => {
+                            void passwordForm.handleSubmit();
                         }}
-                        options={manageableAccounts.map((account) => ({
-                            value: account.userId,
-                            label: account.displayName,
-                        }))}
-                        requiredIndicator
-                        value={field.state.value}
-                    />
-                )}
-            </passwordForm.Field>
-            <passwordForm.Field name="password">
-                {(field) => (
-                    <FormField.PasswordField
-                        label="New password"
-                        onBlur={field.handleBlur}
-                        onChange={(event) => {
-                            field.handleChange(event.currentTarget.value);
-                        }}
-                        required
-                        requiredIndicator
-                        value={field.state.value}
-                    />
-                )}
-            </passwordForm.Field>
-            <IconButton
-                icon={<KeyRound aria-hidden="true" size={18} />}
-                onClick={() => {
-                    void passwordForm.handleSubmit();
-                }}
-            >
-                Update password
-            </IconButton>
+                    >
+                        Update password
+                    </IconButton>
+                </div>
+            </div>
         </div>
     </div>
 );

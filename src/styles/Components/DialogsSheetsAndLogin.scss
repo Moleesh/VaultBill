@@ -379,7 +379,7 @@
 }
 
 .login-password input {
-    min-height: 2.8rem;
+    min-height: var(--control-height);
     border: var(--line-width) solid color-mix(in srgb, var(--color-border) 68%, transparent);
     border-radius: var(--radius-sm);
     background: var(--color-surface-raised);

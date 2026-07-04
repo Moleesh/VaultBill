@@ -630,6 +630,25 @@
     overflow-x: hidden;
     overflow-y: auto;
     overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--color-primary) 88%, white 12%)
+        color-mix(in srgb, var(--color-border-strong) 46%, transparent);
+}
+
+.theme-palette-popover::-webkit-scrollbar {
+    width: 0.35rem;
+    height: 0.35rem;
+}
+
+.theme-palette-popover::-webkit-scrollbar-track {
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--color-border-strong) 46%, transparent);
+}
+
+.theme-palette-popover::-webkit-scrollbar-thumb {
+    min-height: 2.5rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--color-primary) 88%, white 12%);
 }
 .theme-palette-popover button {
     display: grid;

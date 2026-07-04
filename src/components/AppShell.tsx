@@ -18,7 +18,6 @@ import { useSession } from '../features/auth/SessionContext';
 import { useRecordStore } from '../features/records/RecordStoreContext';
 import { getRuntimeQueryScope, queryKeys } from '../query/QueryKeys';
 import { fetchHostedWebUrl, fetchTrialStatus } from '../query/RuntimeQueries';
-import { loadResolvedTheme } from '../runtime/WorkspaceTheme';
 import type { AppRouteId } from '../types/AppTypes';
 import { createAppShellActions } from './AppShellActions';
 import { AppShellContentFrame } from './AppShellContentFrame';
@@ -43,7 +42,6 @@ export const AppShell: FC = () => {
         capabilities,
         operatorContext,
     });
-    const { setThemeId } = themeController;
     const contentRef = useRef<HTMLElement>(null);
     const runtimeScope = getRuntimeQueryScope(capabilities);
     const [isHelpOpen, setIsHelpOpen] = useState(false);
@@ -96,14 +94,6 @@ export const AppShell: FC = () => {
     }, [location.pathname]);
 
     useEffect(() => {
-        void loadResolvedTheme(capabilities.isHostedWeb)
-            .then((resolvedTheme) => {
-                setThemeId(resolvedTheme);
-            })
-            .catch(() => undefined);
-    }, [capabilities.isHostedWeb, setThemeId]);
-
-    useEffect(() => {
         if (!operatorContext) {
             setTrialStatus(undefined);
             return;
@@ -124,6 +114,8 @@ export const AppShell: FC = () => {
         allowedSectionIds.has(section.id as AppRouteId),
     );
     const pageId = getPageId(location.pathname);
+    const builderLibraryMode =
+        pageId === 'builder' && !new URLSearchParams(location.search).get('format');
     const landingRoute = operatorContext.role === 'User' ? '/app/records' : '/app/dashboard';
 
     return (
@@ -174,11 +166,21 @@ export const AppShell: FC = () => {
                     onOpenActivation={shellActions.openActivationDialog}
                     onResetDemo={shellActions.openResetDialog}
                     pageId={pageId}
-                    onCloseWindow={showWindowControls ? shellActions.closeWindow : undefined}
-                    onMinimizeWindow={showWindowControls ? shellActions.minimizeWindow : undefined}
-                    onRefreshWindow={showWindowControls ? shellActions.refreshWindow : undefined}
                     themeController={themeController}
                     trialStatus={trialStatus}
+                    {...(showWindowControls
+                        ? {
+                              onCloseWindow: shellActions.closeWindow,
+                              onMinimizeWindow: shellActions.minimizeWindow,
+                              onRefreshWindow: shellActions.refreshWindow,
+                          }
+                        : {})}
+                    {...(builderLibraryMode
+                        ? {
+                              pageLabelOverride: 'Document library',
+                              pageSubtitleOverride: '',
+                          }
+                        : {})}
                 />
                 <AppShellContentFrame
                     contentRef={contentRef}

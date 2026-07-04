@@ -2,10 +2,14 @@
 
 @use '../Breakpoints' as *;
 
+body {
+    --control-height: 2.8rem;
+}
+
 button,
 .action-link,
 .button-primary {
-    min-height: 2.75rem;
+    min-height: var(--control-height);
     border: var(--line-width) solid var(--color-border-strong);
     border-radius: var(--radius-sm);
     background: var(--color-surface-raised);
@@ -113,11 +117,15 @@ select[aria-invalid='true']:focus-visible {
 .field-input-shell {
     position: relative;
     display: grid;
+    min-height: var(--control-height);
+    align-items: stretch;
 }
 
 .field-input-shell > input {
     width: 100%;
+    height: 100%;
     min-width: 0;
+    min-height: var(--control-height);
 }
 
 .field-input-shell.has-trailing-adornment > input {
@@ -156,6 +164,28 @@ select[aria-invalid='true']:focus-visible {
 
 .button-primary:hover {
     background: var(--color-primary-hover);
+}
+
+body.has-animated-cursor button:hover:not(:disabled) {
+    border-color: var(--color-border-strong);
+}
+
+body.has-animated-cursor .action-link:hover {
+    border-color: var(--color-border-strong);
+    color: var(--color-text-heading);
+}
+
+body.has-animated-cursor .button-primary:hover:not(:disabled) {
+    border-color: var(--color-primary);
+    background: var(--color-primary);
+    color: var(--color-primary-text);
+}
+
+body.has-animated-cursor .button-secondary:hover:not(:disabled),
+body.has-animated-cursor .icon-button:hover:not(:disabled) {
+    border-color: var(--color-border-strong);
+    background: var(--color-surface-raised);
+    color: var(--color-text-body);
 }
 
 .button-danger {
@@ -203,16 +233,80 @@ select[aria-invalid='true']:focus-visible {
 }
 
 .reports-hero {
-    align-items: start;
-    flex-wrap: wrap;
+    display: block;
 }
 
-.reports-hero-controls {
+.reports-hero .page-section-intro {
     display: grid;
-    width: min(100%, 18rem);
-    margin-inline-start: auto;
-    justify-items: stretch;
+    gap: var(--space-3);
+    max-width: 42rem;
+}
+
+.reports-hero .page-section-intro h1 {
+    margin: 0;
+}
+
+.reports-hero .page-section-intro > p:last-of-type {
+    max-width: 34rem;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-lg);
+}
+
+.reports-hero-meta {
+    display: flex;
+    flex-wrap: wrap;
     gap: var(--space-2);
+}
+
+.reports-hero-meta span {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.1rem;
+    border: var(--line-width) solid color-mix(in srgb, var(--color-border) 78%, transparent);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--color-card) 84%, white);
+    color: var(--color-text-heading);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-bold);
+    padding-inline: var(--space-3);
+}
+
+.records-page-top {
+    display: grid;
+    gap: var(--space-4);
+    padding: clamp(var(--space-4), 3vw, var(--space-5));
+    border: var(--line-width) solid color-mix(in srgb, var(--color-border) 86%, transparent);
+    border-radius: var(--radius-lg);
+    background: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--color-surface-raised) 92%, white),
+        color-mix(in srgb, var(--color-surface) 88%, transparent)
+    );
+    box-shadow: var(--shadow-card);
+}
+
+.records-page-top-header {
+    align-items: start;
+    gap: var(--space-4);
+}
+
+.records-page-top-copy {
+    display: grid;
+    gap: var(--space-2);
+    min-width: 0;
+}
+
+.records-page-top-copy h1 {
+    margin: 0;
+    max-width: none;
+}
+
+.records-page-top .searchable-dropdown {
+    min-width: min(100%, 18rem);
+}
+
+.records-page-top-tabs {
+    margin-top: 0;
 }
 
 .page-hero {

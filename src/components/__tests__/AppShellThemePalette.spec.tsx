@@ -9,6 +9,7 @@ import type { CapabilityRegistry } from '../../capability/Capability.types';
 import { CapabilityProvider } from '../../capability/CapabilityContext';
 import { SessionContext } from '../../features/auth/SessionContext';
 import { RecordStoreProvider } from '../../features/records/RecordStoreContext';
+import { getUserThemeStorageKey } from '../../runtime/WorkspaceTheme';
 import { TestQueryProvider } from '../../test/TestQueryProvider';
 import { createTestSession } from '../../test/TestSession';
 import { AppShell } from '../AppShell';
@@ -128,13 +129,11 @@ describe('app shell theme palette', () => {
         await waitFor(() => {
             expect(document.documentElement.dataset.theme).toBe('slate-pro');
         });
-        await waitFor(() => {
-            expect(window.vaultBillDesktop?.saveBusinessSettings).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    theme: 'slate-pro',
-                }),
-            );
-        });
+        expect(screen.getByRole('dialog', { name: 'Theme palette' })).toBeVisible();
+        expect(window.localStorage.getItem(getUserThemeStorageKey(sysAdminAccount.userId))).toBe(
+            'slate-pro',
+        );
+        expect(window.vaultBillDesktop?.saveBusinessSettings).not.toHaveBeenCalled();
     });
 
     it('closes the palette on outside click without changing the active theme', async () => {

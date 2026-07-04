@@ -13,12 +13,7 @@ import { shouldRenderDesktopChrome } from '../../capability/CapabilityRegistry';
 import { getRuntimeQueryScope, queryKeys } from '../../query/QueryKeys';
 import { completeRuntimeSetup, fetchSetupDefaults } from '../../query/RuntimeQueries';
 import { saveAndroidPairingSettings } from '../../runtime/AndroidPairing';
-import {
-    applyTheme,
-    getStoredTheme,
-    isThemeId,
-    loadResolvedTheme,
-} from '../../runtime/WorkspaceTheme';
+import { applyTheme, isThemeId, loadResolvedTheme } from '../../runtime/WorkspaceTheme';
 import type { ThemeId } from '../../types/AppTypes';
 import { SetupAdminUserStep } from './SetupAdminUserStep';
 import { SetupBusinessProfileStep } from './SetupBusinessProfileStep';
@@ -51,7 +46,7 @@ export const SetupPage: FC<SetupPageProps> = ({ onComplete }) => {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
     const [stepIndex, setStepIndex] = useState(0);
-    const [initialTheme] = useState<ThemeId>(() => getStoredTheme() ?? 'teal-flow');
+    const [initialTheme] = useState<ThemeId>('teal-flow');
     const [selectedTheme, setSelectedTheme] = useState<ThemeId>(initialTheme);
     const [message, setMessage] = useState('');
     const steps =

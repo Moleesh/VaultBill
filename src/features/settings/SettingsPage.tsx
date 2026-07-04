@@ -104,13 +104,6 @@ export const SettingsPage: FC = () => {
         <div className="page-stack settings-page">
             {sections.length > 1 ? (
                 <>
-                    <div className="page-section-intro">
-                        <p>
-                            {isSysAdmin
-                                ? 'Choose a workspace section below to manage branding, security, backups, and secrets.'
-                                : 'Choose a workspace section below to manage your password and account access.'}
-                        </p>
-                    </div>
                     <nav className="settings-jump-links" aria-label="Settings sections">
                         {sections.map((section) => (
                             <a

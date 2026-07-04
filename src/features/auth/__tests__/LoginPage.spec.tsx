@@ -307,6 +307,35 @@ describe('login UI', () => {
         ).toBeVisible();
     });
 
+    it('keeps the login page on the workspace theme instead of reusing a personal theme', async () => {
+        Object.defineProperty(window, 'vaultBillDesktop', {
+            configurable: true,
+            value: {
+                activateLicense: vi.fn().mockResolvedValue(undefined),
+                closeWindow: vi.fn().mockResolvedValue(undefined),
+                getBusinessSettings: vi.fn().mockResolvedValue({
+                    companyName: 'VaultBill',
+                    address: 'Chennai',
+                    theme: 'teal-flow',
+                }),
+                listAccounts: vi.fn().mockResolvedValue([adminAccount]),
+                loginAccount: vi.fn().mockResolvedValue(adminAccount),
+                minimizeWindow: vi.fn().mockResolvedValue(undefined),
+            } as const,
+        });
+        window.localStorage.setItem('vaultbill.theme', 'midnight-ink');
+        window.localStorage.setItem('vaultbill.theme.user.admin_1', 'midnight-ink');
+
+        renderPage(<LoginPage />, desktopCapabilities);
+
+        expect(
+            await screen.findByRole('button', {
+                name: /Operator account Operations Admin/i,
+            }),
+        ).toBeVisible();
+        expect(document.documentElement.dataset.theme).toBe('teal-flow');
+    });
+
     it('opens a confirmation before re-entering setup with F9', async () => {
         setDesktopBridge([adminAccount]);
         const openSetupWizard = vi.fn();

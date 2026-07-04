@@ -365,7 +365,7 @@
     display: grid;
     grid-template-columns: auto minmax(0, 1fr);
     align-items: center;
-    min-height: 2.75rem;
+    min-height: var(--control-height);
     gap: var(--space-3);
     cursor: pointer;
     border: var(--line-width) solid var(--color-border-strong);
@@ -442,6 +442,28 @@
     background: color-mix(in srgb, var(--color-surface-muted) 55%, var(--color-surface));
     padding: var(--space-3);
     overflow: auto;
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--color-primary) 88%, white 12%)
+        color-mix(in srgb, var(--color-border-strong) 46%, transparent);
+}
+
+.builder-preview-card-frame::-webkit-scrollbar,
+.builder-preview-card-frame--paper::-webkit-scrollbar {
+    width: 0.35rem;
+    height: 0.35rem;
+}
+
+.builder-preview-card-frame::-webkit-scrollbar-track,
+.builder-preview-card-frame--paper::-webkit-scrollbar-track {
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--color-border-strong) 46%, transparent);
+}
+
+.builder-preview-card-frame::-webkit-scrollbar-thumb,
+.builder-preview-card-frame--paper::-webkit-scrollbar-thumb {
+    min-height: 2.5rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--color-primary) 88%, white 12%);
 }
 .builder-preview-card-frame iframe {
     display: block;
@@ -457,6 +479,9 @@
 }
 .builder-preview-card-frame--paper {
     overflow: auto;
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--color-primary) 88%, white 12%)
+        color-mix(in srgb, var(--color-border-strong) 46%, transparent);
 }
 .builder-preview-surface {
     display: grid;
@@ -610,7 +635,7 @@
     font-family: var(--font-body);
 }
 .builder-preview-grid input {
-    min-height: 2.75rem;
+    min-height: var(--control-height);
     border: var(--line-width) solid var(--color-border);
     border-radius: var(--radius-sm);
     background: var(--color-surface-raised);

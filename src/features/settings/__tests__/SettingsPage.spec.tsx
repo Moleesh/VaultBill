@@ -260,6 +260,62 @@ describe('settings UI', () => {
         expect(secretsTab).toBeVisible();
     });
 
+    it('applies the selected business theme swatch immediately', async () => {
+        Object.defineProperty(window, 'vaultBillDesktop', {
+            configurable: true,
+            value: {
+                activateLicense: vi.fn().mockResolvedValue(undefined),
+                configureLocalApi: vi.fn().mockResolvedValue(undefined),
+                getBusinessSettings: vi.fn().mockResolvedValue({
+                    companyName: 'VaultBill',
+                    address: 'Chennai',
+                    gstin: '',
+                    theme: 'teal-flow',
+                    outputTarget: 'SystemPrinter',
+                    preferredPrinterName: '',
+                    includeDraftsInReports: false,
+                }),
+                getCredentialStatus: vi.fn().mockResolvedValue({
+                    sysAdminUsesDefaultPassword: false,
+                    backupUsesDefaultPassword: false,
+                }),
+                getHostedWebServerStatus: vi.fn().mockResolvedValue({
+                    isRunning: true,
+                    url: 'http://127.0.0.1/VaultBill/',
+                }),
+                getHostedWebSettings: vi.fn().mockResolvedValue({
+                    autoStart: true,
+                    lanEnabled: true,
+                    passwordRequired: false,
+                    port: 80,
+                }),
+                getSecretsSettings: vi.fn().mockResolvedValue({ secrets: [] }),
+                getTrialStatus: vi.fn().mockResolvedValue({
+                    isFullVersion: true,
+                    isExpired: false,
+                    remainingSeconds: 0,
+                }),
+                listPrinters: vi.fn().mockResolvedValue([]),
+                saveBusinessSettings: vi.fn().mockResolvedValue(undefined),
+                saveSecretsSettings: vi.fn().mockResolvedValue(undefined),
+            } as const,
+        });
+
+        await renderPage(
+            <SettingsPage />,
+            createTestSession(sysAdminAccount, [sysAdminAccount]),
+            desktopCapabilities,
+        );
+
+        expect(document.documentElement.dataset.theme).toBe('teal-flow');
+
+        fireEvent.click(await screen.findByRole('radio', { name: 'Sandstone Ledger' }));
+
+        await waitFor(() => {
+            expect(document.documentElement.dataset.theme).toBe('sandstone-ledger');
+        });
+    });
+
     it('limits Admin settings tabs to the security section', async () => {
         await renderPage(<SettingsPage />, createTestSession(adminAccount), desktopCapabilities);
 

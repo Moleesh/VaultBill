@@ -1,18 +1,26 @@
 /** @format */
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useEffect, useMemo, useState } from 'react';
+
+import { useQuery } from '@tanstack/react-query';
 
 import type { CapabilityRegistry } from '../capability/Capability.types';
 import type { OperatorContext } from '../features/auth/AccountTypes';
 import { getRuntimeQueryScope, queryKeys } from '../query/QueryKeys';
-import { fetchWorkspaceSettings, saveWorkspaceSettings } from '../query/RuntimeQueries';
-import type { ThemeController, ThemeId } from '../types/AppTypes';
+import { fetchWorkspaceSettings } from '../query/RuntimeQueries';
+import { defaultWorkspaceSettings } from '../runtime/WorkspaceSettings';
+import {
+    getStoredUserTheme,
+    resolveThemeFromWorkspaceSettings,
+    saveStoredUserTheme,
+} from '../runtime/WorkspaceTheme';
+import type { ThemeController } from '../types/AppTypes';
 
 import { useThemeController } from './useThemeController';
 
 /**
- * Keeps shell theme changes aligned with the persisted workspace theme when the
- * active operator is allowed to update workspace settings.
+ * Keeps the authenticated shell aligned with the workspace theme while allowing
+ * each operator to keep a separate personal theme preference.
  */
 export const usePersistentWorkspaceTheme = ({
     capabilities,
@@ -24,31 +32,43 @@ export const usePersistentWorkspaceTheme = ({
     >;
     readonly operatorContext: OperatorContext | undefined;
 }): ThemeController => {
-    const queryClient = useQueryClient();
     const runtimeScope = getRuntimeQueryScope(capabilities);
-    const persistThemeMutation = useMutation({
-        mutationFn: async (theme: ThemeId) => {
-            if (operatorContext?.role !== 'SysAdmin') return;
-
-            const current = await fetchWorkspaceSettings({ capabilities });
-            const nextSettings = { ...current, theme };
-            await saveWorkspaceSettings({
-                capabilities,
-                settings: nextSettings,
-            });
-            return nextSettings;
-        },
-        onSuccess: async (nextSettings) => {
-            if (!nextSettings) return;
-            queryClient.setQueryData(queryKeys.workspaceSettings(runtimeScope), nextSettings);
-            await queryClient.invalidateQueries({
-                queryKey: queryKeys.workspaceSettings(runtimeScope),
-            });
-        },
+    const [personalThemeId, setPersonalThemeId] = useState(() => {
+        if (!operatorContext) return undefined;
+        return getStoredUserTheme(operatorContext.account.userId);
     });
-
-    return useThemeController('teal-flow', (themeId) => {
-        if (operatorContext?.role !== 'SysAdmin') return;
-        void persistThemeMutation.mutateAsync(themeId);
+    const workspaceSettingsQuery = useQuery({
+        queryKey: queryKeys.workspaceSettings(runtimeScope),
+        enabled: operatorContext !== undefined,
+        queryFn: () => fetchWorkspaceSettings({ capabilities }),
+        staleTime: Number.POSITIVE_INFINITY,
     });
+    const resolvedThemeId = useMemo(() => {
+        if (!operatorContext) return undefined;
+        return resolveThemeFromWorkspaceSettings(
+            workspaceSettingsQuery.data ?? defaultWorkspaceSettings,
+        );
+    }, [operatorContext, workspaceSettingsQuery.data]);
+
+    useEffect(() => {
+        if (!operatorContext) {
+            setPersonalThemeId(undefined);
+            return;
+        }
+
+        setPersonalThemeId(getStoredUserTheme(operatorContext.account.userId));
+    }, [operatorContext]);
+
+    const fallbackThemeId = resolvedThemeId ?? 'teal-flow';
+    const syncedThemeId = personalThemeId ?? resolvedThemeId;
+
+    return useThemeController(
+        fallbackThemeId,
+        (themeId) => {
+            if (!operatorContext) return;
+            saveStoredUserTheme(operatorContext.account.userId, themeId);
+            setPersonalThemeId(themeId);
+        },
+        syncedThemeId,
+    );
 };

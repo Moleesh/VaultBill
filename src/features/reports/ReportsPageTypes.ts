@@ -45,6 +45,7 @@ export type ReportsPageController = {
     readonly exportAll: () => void;
     readonly form: ReportsFilterFormApi;
     readonly fromDate: string;
+    readonly canManageReport: (report: SavedReportDefinition) => boolean;
     readonly reportFilters: readonly ReportFieldFilter[];
     readonly savedReports: readonly SavedReportDefinition[];
     readonly selectedDisplayFields: readonly string[];
@@ -78,6 +79,7 @@ export type ReportsPageController = {
     readonly duplicateSelectedSavedReport: () => void;
     readonly canManageSelectedSavedReport: () => boolean;
     readonly setDefaultSavedReport: () => void;
+    readonly deleteSavedReportById: (reportId: string) => void;
     readonly deleteSelectedSavedReport: () => void;
     readonly closeDynamicPrompt: () => void;
     readonly setReportField: (value: string) => void;

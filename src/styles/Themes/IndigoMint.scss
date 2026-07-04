@@ -1,9 +1,11 @@
 /** @format */
 
-[data-theme='indigo-mint'] {
+:root[data-theme='indigo-mint'] {
     --color-bg: #eef8f4;
     --color-bg-gradient-start: #d9eee7;
     --color-bg-gradient-end: #f8f6ff;
+    --color-page: #eef8f4;
+    --color-page-strong: #d9eee7;
     --color-surface: #fbfffd;
     --color-surface-raised: #ffffff;
     --color-surface-muted: #e7f5ef;

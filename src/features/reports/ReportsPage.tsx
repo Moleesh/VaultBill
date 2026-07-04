@@ -35,18 +35,12 @@ export const ReportsPage: FC = () => {
             <ReportsFilterPanel
                 customers={controller.customers}
                 form={controller.form}
-                canAddFilter={controller.canAddReportFilter}
-                canManageSelectedReport={controller.canManageSelectedSavedReport()}
+                canManageReport={controller.canManageReport}
                 isDynamicPromptOpen={controller.isDynamicPromptOpen}
-                onAddFilter={controller.addReportFilter}
                 onCloseDynamicPrompt={controller.closeDynamicPrompt}
-                onDeleteSavedReport={controller.deleteSelectedSavedReport}
-                onDuplicateSavedReport={controller.duplicateSelectedSavedReport}
-                onPresetChange={controller.applyPreset}
-                onRemoveFilter={controller.removeReportFilter}
+                onDeleteSavedReportById={controller.deleteSavedReportById}
                 onSaveReport={controller.saveCurrentReport}
                 onSelectSavedReport={controller.setSelectedSavedReportId}
-                onSetDefaultReport={controller.setDefaultSavedReport}
                 onUpdateFilter={controller.updateReportFilter}
                 reportFilters={controller.reportFilters}
                 savedReports={controller.savedReports}
