@@ -9,7 +9,7 @@ if (process.platform === 'win32') {
         stdio: 'inherit',
     });
 } else {
-    execFileSync('./gradlew', ['assembleDebug'], {
+    execFileSync('bash', ['./gradlew', 'assembleDebug'], {
         cwd: 'android',
         stdio: 'inherit',
     });
