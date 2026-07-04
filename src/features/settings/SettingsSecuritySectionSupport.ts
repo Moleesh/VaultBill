@@ -11,6 +11,7 @@ import {
     activateRuntimeLicense,
     fetchSecurityRuntimeState,
     fetchWorkspaceSettings,
+    resetRuntimeTrial,
     saveIncludeDraftsInReports,
 } from '../../query/RuntimeQueries';
 import type { Role } from '../../types/AppTypes';
@@ -55,10 +56,12 @@ export const useSettingsSecuritySectionState = () => {
     const securityRuntimeQuery = useQuery({
         queryKey: queryKeys.securityRuntimeState(runtimeScope),
         queryFn: () => fetchSecurityRuntimeState({ capabilities }),
+        staleTime: Number.POSITIVE_INFINITY,
     });
     const workspaceSettingsQuery = useQuery({
         queryKey: queryKeys.workspaceSettings(runtimeScope),
         queryFn: () => fetchWorkspaceSettings({ capabilities }),
+        staleTime: Number.POSITIVE_INFINITY,
     });
     const activateLicenseMutation = useMutation({
         mutationFn: (licenseKey: string) =>
@@ -78,6 +81,32 @@ export const useSettingsSecuritySectionState = () => {
                     ),
                 }),
             ]);
+        },
+    });
+    const resetTrialMutation = useMutation({
+        mutationFn: () => resetRuntimeTrial({ capabilities }),
+        onSuccess: async () => {
+            setMessage('Trial reset. VaultBill is back on a fresh 24-hour trial.');
+            await Promise.all([
+                queryClient.invalidateQueries({
+                    queryKey: queryKeys.securityRuntimeState(runtimeScope),
+                }),
+                queryClient.invalidateQueries({
+                    queryKey: queryKeys.trialStatus(
+                        runtimeScope,
+                        operatorContext?.account.userId ?? 'guest',
+                    ),
+                }),
+                queryClient.invalidateQueries({
+                    queryKey: queryKeys.sysAdminDashboard(
+                        runtimeScope,
+                        operatorContext?.account.userId ?? 'guest',
+                    ),
+                }),
+            ]);
+        },
+        onError: (reason: unknown) => {
+            setMessage(reason instanceof Error ? reason.message : 'Could not reset the trial.');
         },
     });
     const saveIncludeDraftsMutation = useMutation({
@@ -156,6 +185,7 @@ export const useSettingsSecuritySectionState = () => {
             operatorContext?.role ?? 'User',
         ),
         message,
+        runtimePlatform: capabilities.runtimePlatform,
         onChangePassword: (input: { readonly password: string; readonly userId: string }) => {
             void changeSecurityPassword({
                 password: input.password,
@@ -254,6 +284,9 @@ export const useSettingsSecuritySectionState = () => {
                 activate: (licenseKey) => activateLicenseMutation.mutateAsync(licenseKey),
                 setMessage,
             });
+        },
+        onResetTrial: () => {
+            void resetTrialMutation.mutateAsync();
         },
         trialStatus,
     };

@@ -53,7 +53,6 @@ export const AppShellDialogs: FC<AppShellDialogsProps> = ({
     const passwordForm = useForm({
         defaultValues: {
             accountPassword: '',
-            accountPasswordConfirmation: '',
         },
     });
     const activationForm = useForm({
@@ -66,7 +65,6 @@ export const AppShellDialogs: FC<AppShellDialogsProps> = ({
         if (isPasswordOpen) {
             passwordForm.reset({
                 accountPassword: '',
-                accountPasswordConfirmation: '',
             });
         }
     }, [isPasswordOpen, passwordForm]);
@@ -110,18 +108,6 @@ export const AppShellDialogs: FC<AppShellDialogsProps> = ({
                         />
                     )}
                 </passwordForm.Field>
-                <passwordForm.Field name="accountPasswordConfirmation">
-                    {(field) => (
-                        <FormField.PasswordField
-                            autoComplete="new-password"
-                            label="Confirm new password"
-                            onChange={(event) => {
-                                field.handleChange(event.currentTarget.value);
-                            }}
-                            value={field.state.value}
-                        />
-                    )}
-                </passwordForm.Field>
                 {accountPasswordMessage ? (
                     <p className="feedback-info" role="status">
                         {accountPasswordMessage}
@@ -129,19 +115,19 @@ export const AppShellDialogs: FC<AppShellDialogsProps> = ({
                 ) : null}
                 <DialogActions>
                     <ActionButton onClick={onClosePassword}>Cancel</ActionButton>
-                    <ActionButton
-                        disabled={
-                            passwordForm.state.values.accountPassword.length < 8 ||
-                            passwordForm.state.values.accountPassword !==
-                                passwordForm.state.values.accountPasswordConfirmation
-                        }
-                        onClick={() => {
-                            onSubmitPassword(passwordForm.state.values.accountPassword);
-                        }}
-                        variant="primary"
-                    >
-                        Update password
-                    </ActionButton>
+                    <passwordForm.Subscribe selector={(state) => state.values.accountPassword}>
+                        {(accountPassword) => (
+                            <ActionButton
+                                disabled={!accountPassword.trim()}
+                                onClick={() => {
+                                    onSubmitPassword(accountPassword);
+                                }}
+                                variant="primary"
+                            >
+                                Update password
+                            </ActionButton>
+                        )}
+                    </passwordForm.Subscribe>
                 </DialogActions>
             </AppModal>
             <AppModal

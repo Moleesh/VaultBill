@@ -54,7 +54,9 @@ import {
 import { canUseDbBackedRuntime } from '../runtime/RuntimeMode';
 import {
     defaultWorkspaceSettings,
+    loadWorkspaceSettings,
     normalizeWorkspaceSettings,
+    saveLocalWorkspaceSettings,
     type WorkspaceSettings,
 } from '../runtime/WorkspaceSettings';
 
@@ -138,7 +140,10 @@ const canUseHostedRecordsApi = ({
     readonly usesStaticHostedBrowserBuild: boolean;
 }) => !usesStaticHostedBrowserBuild && (capabilities.isHostedWeb || canUseLocalHostedApi());
 
-type QueryCapabilities = Pick<CapabilityRegistry, 'isDemoMode' | 'isDesktop' | 'isHostedWeb'>;
+type QueryCapabilities = Pick<
+    CapabilityRegistry,
+    'hasLocalDb' | 'isDemoMode' | 'isDesktop' | 'isHostedWeb' | 'runtimePlatform'
+>;
 
 const defaultSysAdminSummary: SysAdminSummary = {
     formatCount: 0,
@@ -155,6 +160,25 @@ const defaultSysAdminSummary: SysAdminSummary = {
     trialRemainingSeconds: 0,
     isTrialExpired: false,
     isFullVersion: false,
+};
+
+const localSetupAccountsStorageKey = 'vaultbill.local-setup-accounts';
+
+const readLocalSetupAccounts = (): readonly OperatorAccount[] => {
+    try {
+        return (
+            JSON.parse(
+                window.localStorage.getItem(localSetupAccountsStorageKey) ??
+                    JSON.stringify(bootstrapOperatorAccounts),
+            ) as readonly OperatorAccount[]
+        ).filter((account) => account.userId && account.username && account.displayName);
+    } catch {
+        return bootstrapOperatorAccounts;
+    }
+};
+
+const writeLocalSetupAccounts = (accounts: readonly OperatorAccount[]): void => {
+    window.localStorage.setItem(localSetupAccountsStorageKey, JSON.stringify(accounts));
 };
 
 const buildSysAdminSummary = (
@@ -184,25 +208,24 @@ const buildSysAdminSummary = (
     isFullVersion: trialStatus.isFullVersion,
 });
 
+/** Reads the hosted browser session bootstrap payload without requiring a login. */
 const readHostedSessionSnapshot = async (): Promise<SessionSnapshot> => {
-    await requestHostedApi('/health');
-    const [accounts, session] = await Promise.all([
-        requestHostedApi<readonly OperatorAccount[]>('/auth/accounts'),
-        requestHostedApi<
-            | {
-                  readonly account: OperatorAccount;
-                  readonly csrfToken: string;
-              }
-            | undefined
-        >('/auth/session'),
-    ]);
+    const session = await requestHostedApi<{
+        readonly accounts: readonly OperatorAccount[];
+        readonly account?: OperatorAccount;
+        readonly csrfToken?: string;
+    }>('/auth/snapshot');
 
     return {
-        accounts,
-        account: session?.account,
-        csrfToken: session?.csrfToken,
+        accounts: session.accounts,
+        account: session.account,
+        csrfToken: session.csrfToken,
     };
 };
+
+/** Reuses the hosted session snapshot as the single active-account source for hosted pages. */
+const readHostedAccountsSnapshot = async (): Promise<readonly OperatorAccount[]> =>
+    (await readHostedSessionSnapshot()).accounts;
 
 const readDesktopSetupStatus = async (): Promise<SetupStatusSnapshot> => {
     if (!window.vaultBillDesktop) return { isSetupRequired: false };
@@ -230,7 +253,17 @@ export const fetchSetupStatus = async (
     if (!canUseDbBackedRuntime(capabilities)) return { isSetupRequired: false };
 
     const canUseHostedSetupStatus = capabilities.isHostedWeb || canUseLocalHostedApi();
-    if (!canUseHostedSetupStatus) return readDesktopSetupStatus();
+    if (!canUseHostedSetupStatus) {
+        if (window.vaultBillDesktop) return readDesktopSetupStatus();
+        const business = await loadWorkspaceSettings(false);
+        const accounts = readLocalSetupAccounts();
+        const hasActiveAdmin = accounts.some(
+            (account) => account.role === 'Admin' && account.isActive,
+        );
+        const isConfiguredBusiness =
+            business.companyName.trim().length > 0 && business.address.trim().length > 0;
+        return { isSetupRequired: !hasActiveAdmin || !isConfiguredBusiness };
+    }
 
     try {
         const status = await requestHostedApi<{
@@ -273,9 +306,7 @@ export const fetchSetupDefaults = async ({
     if (capabilities.isHostedWeb || canUseHostedSetupApi) {
         const [business, accounts] = await Promise.all([
             requestHostedApi('/workspace/settings').catch(() => fallbackBusiness),
-            requestHostedApi<readonly OperatorAccount[]>('/auth/accounts').catch(
-                () => fallbackAccounts,
-            ),
+            readHostedAccountsSnapshot().catch(() => fallbackAccounts),
         ]);
         return {
             business: normalizeWorkspaceSettings(business),
@@ -284,8 +315,8 @@ export const fetchSetupDefaults = async ({
     }
 
     return {
-        business: fallbackBusiness,
-        accounts: fallbackAccounts,
+        business: await loadWorkspaceSettings(false),
+        accounts: readLocalSetupAccounts(),
     };
 };
 
@@ -327,7 +358,32 @@ export const completeRuntimeSetup = async ({
         return;
     }
 
-    throw new Error('Setup is only available through VaultBill Desktop.');
+    saveLocalWorkspaceSettings({
+        ...defaultWorkspaceSettings,
+        companyName: request.companyName,
+        address: request.address,
+        theme: request.theme,
+    });
+    writeLocalSetupAccounts([
+        {
+            userId: 'sysadmin_1',
+            username: 'sysadmin',
+            displayName: 'System Administrator',
+            role: 'SysAdmin',
+            isActive: true,
+            ...(request.clearAdminPassword ? {} : { passwordHash: defaultPasswordHash }),
+        },
+        {
+            userId: 'admin_1',
+            username: request.adminUsername,
+            displayName: request.adminDisplayName,
+            role: 'Admin',
+            isActive: true,
+            ...(request.adminPassword
+                ? { passwordHash: await hashPassword(request.adminPassword) }
+                : {}),
+        },
+    ]);
 };
 
 export const fetchSessionSnapshot = async ({
@@ -360,21 +416,11 @@ export const fetchSessionSnapshot = async ({
             };
         }
 
-        try {
-            const hostedAccounts =
-                await requestHostedApi<readonly OperatorAccount[]>('/auth/accounts');
-            return {
-                accounts: hostedAccounts,
-                account: undefined,
-                csrfToken: undefined,
-            };
-        } catch {
-            return {
-                accounts: desktopAccounts,
-                account: undefined,
-                csrfToken: undefined,
-            };
-        }
+        return {
+            accounts: desktopAccounts,
+            account: undefined,
+            csrfToken: undefined,
+        };
     }
 
     if (canUseHostedSessionApi) {
@@ -382,7 +428,7 @@ export const fetchSessionSnapshot = async ({
     }
 
     return {
-        accounts: bootstrapOperatorAccounts,
+        accounts: readLocalSetupAccounts(),
         account: undefined,
         csrfToken: undefined,
     };
@@ -500,6 +546,7 @@ export const saveRuntimeAccount = async ({
         };
     }
 
+    writeLocalSetupAccounts(nextAccounts);
     return {
         nextAccounts,
         savedAccount: nextAccount,
@@ -507,9 +554,11 @@ export const saveRuntimeAccount = async ({
 };
 
 export const archiveRuntimeAccount = async ({
+    accounts,
     canUseHostedSessionApi,
     userId,
 }: {
+    readonly accounts?: readonly OperatorAccount[];
     readonly canUseHostedSessionApi: boolean;
     readonly userId: string;
 }): Promise<string> => {
@@ -524,6 +573,14 @@ export const archiveRuntimeAccount = async ({
 
     if (canUseHostedSessionApi) {
         await requestHostedApi('/accounts/archive', 'POST', { userId });
+    }
+
+    if (accounts) {
+        writeLocalSetupAccounts(
+            accounts.map((account) =>
+                account.userId === userId ? { ...account, isActive: false } : account,
+            ),
+        );
     }
 
     return userId;
@@ -563,11 +620,15 @@ export const resetRuntimeAccountPassword = async ({
         throw new Error('The selected operator account is unavailable.');
     }
 
-    return {
+    const nextAccount = {
         ...savedAccount,
         passwordHash,
         usesDefaultPassword: passwordHash === defaultPasswordHash,
     } satisfies OperatorAccount;
+    writeLocalSetupAccounts(
+        accounts.map((account) => (account.userId === nextAccount.userId ? nextAccount : account)),
+    );
+    return nextAccount;
 };
 
 export const fetchTrialStatus = async ({
@@ -599,8 +660,10 @@ export const fetchHostedWebUrl = async ({
 };
 
 export const fetchSysAdminDashboardState = async ({
+    accounts,
     capabilities,
 }: {
+    readonly accounts?: readonly HostedAccountSummary[];
     readonly capabilities: Pick<CapabilityRegistry, 'isHostedWeb'>;
 }): Promise<SysAdminDashboardState> => {
     if (window.vaultBillDesktop) {
@@ -626,10 +689,10 @@ export const fetchSysAdminDashboardState = async ({
     }
 
     if (capabilities.isHostedWeb) {
-        const [inventory, records, accounts, backupStatus, trialStatus] = await Promise.all([
+        const [inventory, records, hostedAccounts, backupStatus, trialStatus] = await Promise.all([
             requestHostedApi<readonly InventoryItem[]>('/builder/inventory'),
             requestHostedApi<readonly HostedRecordSummary[]>('/records'),
-            requestHostedApi<readonly HostedAccountSummary[]>('/auth/accounts'),
+            accounts ? Promise.resolve(accounts) : readHostedAccountsSnapshot(),
             requestHostedApi<{ readonly lastBackupAt: string | null }>('/backup/status'),
             requestHostedApi<{
                 readonly isFullVersion: boolean;
@@ -640,7 +703,7 @@ export const fetchSysAdminDashboardState = async ({
 
         return {
             inventory,
-            summary: buildSysAdminSummary(inventory, records, accounts, backupStatus, {
+            summary: buildSysAdminSummary(inventory, records, hostedAccounts, backupStatus, {
                 remainingSeconds: trialStatus.remainingSeconds,
                 isExpired: trialStatus.isExpired,
                 isFullVersion: trialStatus.isFullVersion,
@@ -754,6 +817,7 @@ export type RuntimeBackupResult = {
     readonly downloadFileName?: string;
 };
 
+/** Updates the backup encryption password through the active runtime transport. */
 export const updateRuntimeBackupPassword = async ({
     backupPassword,
     capabilities,
@@ -779,6 +843,7 @@ export const updateRuntimeBackupPassword = async ({
     throw new Error('Backup password updates are unavailable in this runtime.');
 };
 
+/** Creates a backup and normalizes desktop and hosted-web results for callers. */
 export const createRuntimeBackup = async ({
     capabilities,
     encryptBackup,
@@ -815,6 +880,7 @@ export const createRuntimeBackup = async ({
     throw new Error('Backups are unavailable in this runtime.');
 };
 
+/** Restores a backup archive through desktop or hosted-web runtime support. */
 export const restoreRuntimeBackup = async ({
     capabilities,
     remoteAuthorizationPassword,
@@ -848,6 +914,7 @@ export const restoreRuntimeBackup = async ({
     throw new Error('Backup restore is unavailable in this runtime.');
 };
 
+/** Resets workspace data after the runtime has confirmed administrator intent. */
 export const resetRuntimeApplicationData = async ({
     capabilities,
     resetConfirmation,
@@ -912,10 +979,7 @@ export const fetchStoredRecords = async ({
 }): Promise<readonly AppRecord[]> => {
     const desktopApi = window.vaultBillDesktop;
     if (desktopApi) {
-        const storedRecords = await requestHostedApi('/records').catch(() =>
-            desktopApi.listRecords(),
-        );
-        return sortLatestFirst(AppRecordSchema.array().parse(storedRecords));
+        return sortLatestFirst(AppRecordSchema.array().parse(await desktopApi.listRecords()));
     }
 
     if (canUseHostedRecordsApi({ capabilities, usesStaticHostedBrowserBuild })) {
@@ -947,9 +1011,7 @@ export const saveDraftRuntimeRecord = async ({
     const desktopApi = window.vaultBillDesktop;
     if (desktopApi) {
         return AppRecordSchema.parse(
-            await requestHostedApi('/records/draft', 'POST', { record: input }).catch(() =>
-                desktopApi.saveDraft({ record: input, operatorContext }),
-            ),
+            await desktopApi.saveDraft({ record: input, operatorContext }),
         );
     }
 
@@ -982,9 +1044,7 @@ export const finalizeRuntimeRecord = async ({
     const desktopApi = window.vaultBillDesktop;
     if (desktopApi) {
         return AppRecordSchema.parse(
-            await requestHostedApi('/records/finalize', 'POST', { record: input }).catch(() =>
-                desktopApi.finalizeRecord({ record: input, operatorContext }),
-            ),
+            await desktopApi.finalizeRecord({ record: input, operatorContext }),
         );
     }
 
@@ -1023,9 +1083,7 @@ export const cancelRuntimeRecord = async ({
     const desktopApi = window.vaultBillDesktop;
     if (desktopApi) {
         return AppRecordSchema.parse(
-            await requestHostedApi('/records/cancel', 'POST', { recordId, reason }).catch(() =>
-                desktopApi.cancelRecord({ recordId, reason, operatorContext }),
-            ),
+            await desktopApi.cancelRecord({ recordId, reason, operatorContext }),
         );
     }
 
@@ -1269,6 +1327,7 @@ export const saveSecretsSettings = async ({
     }
 };
 
+/** Applies a license key through the runtime that owns activation state. */
 export const activateRuntimeLicense = async ({
     capabilities,
     licenseKey,
@@ -1287,4 +1346,23 @@ export const activateRuntimeLicense = async ({
     }
 
     throw new Error('License activation is unavailable in this runtime.');
+};
+
+/** Returns activation state to a fresh unactivated trial in supported runtimes. */
+export const resetRuntimeTrial = async ({
+    capabilities,
+}: {
+    readonly capabilities: Pick<CapabilityRegistry, 'isHostedWeb'>;
+}): Promise<void> => {
+    if (window.vaultBillDesktop?.resetTrial) {
+        await window.vaultBillDesktop.resetTrial();
+        return;
+    }
+
+    if (capabilities.isHostedWeb) {
+        await requestHostedApi('/trial/reset', 'POST');
+        return;
+    }
+
+    throw new Error('Trial reset is unavailable in this runtime.');
 };

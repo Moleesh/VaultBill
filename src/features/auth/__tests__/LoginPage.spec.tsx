@@ -19,6 +19,7 @@ const nonDemoCapabilities: CapabilityRegistry = {
     isDesktop: false,
     isHostedWeb: false,
     isDemoMode: false,
+    runtimePlatform: 'hosted-web',
     canListPrinters: false,
     canSelectExactPrinter: false,
     canBrowserPrint: true,
@@ -35,6 +36,7 @@ const nonDemoCapabilities: CapabilityRegistry = {
 const desktopCapabilities: CapabilityRegistry = {
     ...nonDemoCapabilities,
     isDesktop: true,
+    runtimePlatform: 'desktop',
     canListPrinters: true,
     canSelectExactPrinter: true,
     canDownloadPdf: true,
@@ -211,29 +213,9 @@ describe('login UI', () => {
         expect(screen.getByText(/Choose your account, enter a password/i)).toBeVisible();
     });
 
-    it('falls back to the hosted account list when the desktop bridge returns no active accounts', async () => {
+    it('keeps the desktop runtime on bridge-backed accounts when no active desktop accounts exist', async () => {
         setDesktopBridge([]);
-        const fetchMock = vi.fn().mockImplementation((input: string | URL | Request) => {
-            const url =
-                typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
-            const body = url.includes('/auth/accounts')
-                ? JSON.stringify([adminAccount])
-                : JSON.stringify({
-                      companyName: '',
-                      address: '',
-                      gstin: '',
-                      theme: 'teal-flow',
-                      outputTarget: 'PreviewOnly',
-                      preferredPrinterName: '',
-                      includeDraftsInReports: false,
-                  });
-            return Promise.resolve(
-                new Response(body, {
-                    status: 200,
-                    headers: { 'content-type': 'application/json' },
-                }),
-            );
-        });
+        const fetchMock = vi.fn();
         vi.stubGlobal('fetch', fetchMock);
         Object.defineProperty(window, 'fetch', {
             configurable: true,
@@ -244,16 +226,11 @@ describe('login UI', () => {
 
         expect(
             await screen.findByRole('button', {
-                name: /Operator account Operations Admin/i,
+                name: /Operator account Choose/i,
             }),
         ).toBeVisible();
-        expect(fetchMock).toHaveBeenCalledWith(
-            expect.stringContaining('/auth/accounts'),
-            expect.objectContaining({
-                credentials: 'include',
-                method: 'GET',
-            }),
-        );
+        expect(screen.queryByRole('button', { name: /Operator account .*Admin/i })).toBeNull();
+        expect(fetchMock).not.toHaveBeenCalled();
     });
 
     it('refreshes the login account details after setup data changes', async () => {

@@ -43,7 +43,7 @@
     --app-shell-sidebar-icon-size: 3.25rem;
     height: 100vh;
     min-height: 0;
-    overflow-x: hidden;
+    overflow-x: clip;
     overflow-y: auto;
     scrollbar-width: none;
     padding: var(--space-4) var(--space-3);
@@ -251,6 +251,12 @@
 
 .app-shell:not(.is-sidebar-expanded) .app-shell-operator-actions > * {
     max-width: 100%;
+}
+
+.app-shell:not(.is-sidebar-expanded) .app-shell-operator {
+    width: 100%;
+    max-width: 100%;
+    justify-items: center;
 }
 
 .app-shell-host-status {

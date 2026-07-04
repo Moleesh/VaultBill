@@ -6,7 +6,6 @@ import { z } from 'zod';
 
 import { getBuildIdentity } from '../BuildIdentity.js';
 import { completeSetup, readSetupStatus } from '../SetupSupport.js';
-import type { LocalApiHealth } from './LocalApi.types.js';
 import {
     accountForSession,
     accountsVisibleTo,
@@ -26,8 +25,8 @@ import {
     type HostedSession,
     type LocalApiState,
 } from './LocalApiContext.js';
+import { getLocalApiHealth } from './LocalApiHealthSupport.js';
 import { isLoopbackAddress, readBody, sendJson } from './LocalApiHttp.js';
-
 const LoginSchema = z.object({
     userId: z.string().min(1),
     password: z.string(),
@@ -41,23 +40,6 @@ const ManagedAccountSchema = z.object({
 });
 const AccountIdSchema = z.object({ userId: z.string().min(1) });
 const PasswordResetSchema = AccountIdSchema.extend({ password: z.string() });
-
-/** Returns the local API health payload shown to hosted-web clients. */
-export const getLocalApiHealth = (appName: string, passwordRequired = true): LocalApiHealth => ({
-    appName,
-    capabilities: [
-        'AccountContext',
-        'DocumentFormats',
-        'Records',
-        'PrintPreview',
-        'Reports',
-        'BulkImport',
-        'BackupCapability',
-    ],
-    status: 'Ready',
-    passwordRequired,
-});
-
 /** Handles authentication and account-management routes. */
 export const handleLocalApiAuthRoutes = async (
     state: LocalApiState,
@@ -142,6 +124,18 @@ export const handleLocalApiAuthRoutes = async (
     }
 
     const session = getSession(state, request);
+    if (request.method === 'GET' && request.url === '/auth/snapshot') {
+        sendJson(response, 200, {
+            accounts: state.credentialStore.listAccounts().filter((account) => account.isActive),
+            ...(session
+                ? {
+                      account: accountForSession(state, session),
+                      csrfToken: session.csrfToken,
+                  }
+                : {}),
+        });
+        return true;
+    }
     if (request.method === 'GET' && request.url === '/auth/session') {
         if (!session) {
             response.writeHead(204);

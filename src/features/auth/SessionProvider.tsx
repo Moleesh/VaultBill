@@ -42,6 +42,7 @@ export const SessionProvider: FC<PropsWithChildren<{ readonly refreshRevision?: 
         !usesStaticHostedBrowserBuild &&
         (capabilities.isHostedWeb || canUseLocalHostedApi());
     const runtimeScope = getRuntimeQueryScope(capabilities);
+    const sessionQueryKey = queryKeys.session(runtimeScope);
     const [hostedApiUnavailable, setHostedApiUnavailable] = useState(false);
     const [accounts, setAccounts] = useState<readonly OperatorAccount[]>(() =>
         usesStaticHostedBrowserBuild
@@ -54,9 +55,10 @@ export const SessionProvider: FC<PropsWithChildren<{ readonly refreshRevision?: 
     );
     const [account, setAccount] = useState<OperatorAccount | undefined>();
     const sessionQuery = useQuery({
-        queryKey: queryKeys.session(runtimeScope),
+        queryKey: sessionQueryKey,
         enabled:
             !usesStaticHostedBrowserBuild && (canUseHostedSessionApi || !!window.vaultBillDesktop),
+        staleTime: Number.POSITIVE_INFINITY,
         queryFn: () =>
             fetchSessionSnapshot({
                 canUseHostedSessionApi,
@@ -123,12 +125,6 @@ export const SessionProvider: FC<PropsWithChildren<{ readonly refreshRevision?: 
     useEffect(() => {
         if (usesStaticHostedBrowserBuild) return;
 
-        const refreshOnFocus = () => {
-            if (document.visibilityState === 'hidden') return;
-            void queryClient.invalidateQueries({
-                queryKey: queryKeys.session(runtimeScope),
-            });
-        };
         const handleHostedApiUnavailable = () => {
             setHostedApiUnavailable(true);
         };
@@ -136,34 +132,47 @@ export const SessionProvider: FC<PropsWithChildren<{ readonly refreshRevision?: 
             setHostedApiUnavailable(false);
             if (hostedConnectionStateRef.current === 'connected') return;
             void queryClient.invalidateQueries({
-                queryKey: queryKeys.session(runtimeScope),
+                queryKey: sessionQueryKey,
             });
         };
-        window.addEventListener('focus', refreshOnFocus);
-        document.addEventListener('visibilitychange', refreshOnFocus);
         window.addEventListener(hostedApiUnavailableEvent, handleHostedApiUnavailable);
         window.addEventListener(hostedApiRecoveredEvent, handleHostedApiRecovered);
 
         return () => {
-            window.removeEventListener('focus', refreshOnFocus);
-            document.removeEventListener('visibilitychange', refreshOnFocus);
             window.removeEventListener(hostedApiUnavailableEvent, handleHostedApiUnavailable);
             window.removeEventListener(hostedApiRecoveredEvent, handleHostedApiRecovered);
         };
-    }, [queryClient, runtimeScope, usesStaticHostedBrowserBuild]);
+    }, [queryClient, sessionQueryKey, usesStaticHostedBrowserBuild]);
 
     useEffect(() => {
         if (refreshRevision === 0) return;
         void queryClient.invalidateQueries({
-            queryKey: queryKeys.session(runtimeScope),
+            queryKey: sessionQueryKey,
         });
-    }, [queryClient, refreshRevision, runtimeScope]);
+    }, [queryClient, refreshRevision, sessionQueryKey]);
 
-    const invalidateRuntimeState = () =>
+    const syncSessionSnapshot = ({
+        account: nextAccount,
+        accounts: nextAccounts,
+        csrfToken,
+    }: {
+        readonly account: OperatorAccount | undefined;
+        readonly accounts: readonly OperatorAccount[];
+        readonly csrfToken: string | undefined;
+    }) => {
+        setAccounts(nextAccounts);
+        setAccount(nextAccount);
+        setStoredOperatorId(nextAccount?.userId);
+        setHostedCsrfToken(csrfToken);
+        queryClient.setQueryData(sessionQueryKey, {
+            accounts: nextAccounts,
+            account: nextAccount,
+            csrfToken,
+        });
+    };
+
+    const invalidateSetupState = () =>
         Promise.all([
-            queryClient.invalidateQueries({
-                queryKey: queryKeys.session(runtimeScope),
-            }),
             queryClient.invalidateQueries({
                 queryKey: queryKeys.setupStatus(runtimeScope),
             }),
@@ -171,9 +180,6 @@ export const SessionProvider: FC<PropsWithChildren<{ readonly refreshRevision?: 
                 queryKey: queryKeys.setupDefaults(runtimeScope),
             }),
         ]).then(() => undefined);
-    const persistAccounts = (nextAccounts: readonly OperatorAccount[]) => {
-        setAccounts(nextAccounts);
-    };
     const loginMutation = useMutation({
         mutationFn: async ({
             password = '',
@@ -189,19 +195,24 @@ export const SessionProvider: FC<PropsWithChildren<{ readonly refreshRevision?: 
                 userId,
             }),
         onSuccess: ({ account: nextAccount, csrfToken }) => {
-            setAccount(nextAccount);
-            setStoredOperatorId(nextAccount.userId);
-            if (csrfToken !== undefined) setHostedCsrfToken(csrfToken);
-            void invalidateRuntimeState();
+            const nextAccounts = accounts.map((candidate) =>
+                candidate.userId === nextAccount.userId ? nextAccount : candidate,
+            );
+            syncSessionSnapshot({
+                accounts: nextAccounts,
+                account: nextAccount,
+                csrfToken,
+            });
         },
     });
     const logoutMutation = useMutation({
         mutationFn: () => logoutRuntimeSession({ canUseHostedSessionApi }),
         onSettled: () => {
-            setHostedCsrfToken(undefined);
-            setAccount(undefined);
-            setStoredOperatorId(undefined);
-            void invalidateRuntimeState();
+            syncSessionSnapshot({
+                accounts,
+                account: undefined,
+                csrfToken: undefined,
+            });
         },
     });
     const saveAccountMutation = useMutation({
@@ -212,31 +223,37 @@ export const SessionProvider: FC<PropsWithChildren<{ readonly refreshRevision?: 
                 nextAccount,
             }),
         onSuccess: ({ nextAccounts, savedAccount }) => {
-            persistAccounts(nextAccounts);
-            if (account?.userId === savedAccount.userId) {
-                setAccount(savedAccount);
-                setStoredOperatorId(savedAccount.userId);
-            }
-            void invalidateRuntimeState();
+            syncSessionSnapshot({
+                accounts: nextAccounts,
+                account: account?.userId === savedAccount.userId ? savedAccount : account,
+                csrfToken: window.sessionStorage.getItem('vaultbill.hosted.csrf') ?? undefined,
+            });
+            void invalidateSetupState();
         },
     });
     const archiveAccountMutation = useMutation({
         mutationFn: (userId: string) =>
             archiveRuntimeAccount({
+                accounts,
                 canUseHostedSessionApi,
                 userId,
             }),
         onSuccess: (userId) => {
-            persistAccounts(
-                accounts.map((candidate) =>
-                    candidate.userId === userId ? { ...candidate, isActive: false } : candidate,
-                ),
+            const nextAccounts = accounts.map((candidate) =>
+                candidate.userId === userId ? { ...candidate, isActive: false } : candidate,
             );
-            if (account?.userId === userId || getStoredOperatorId() === userId) {
-                setAccount(undefined);
-                setStoredOperatorId(undefined);
-            }
-            void invalidateRuntimeState();
+            syncSessionSnapshot({
+                accounts: nextAccounts,
+                account:
+                    account?.userId === userId || getStoredOperatorId() === userId
+                        ? undefined
+                        : account,
+                csrfToken:
+                    account?.userId === userId || getStoredOperatorId() === userId
+                        ? undefined
+                        : (window.sessionStorage.getItem('vaultbill.hosted.csrf') ?? undefined),
+            });
+            void invalidateSetupState();
         },
     });
     const resetPasswordMutation = useMutation({
@@ -255,16 +272,15 @@ export const SessionProvider: FC<PropsWithChildren<{ readonly refreshRevision?: 
                 usesStaticHostedBrowserBuild,
             }),
         onSuccess: (savedAccount) => {
-            persistAccounts(
-                accounts.map((candidate) =>
-                    candidate.userId === savedAccount.userId ? savedAccount : candidate,
-                ),
+            const nextAccounts = accounts.map((candidate) =>
+                candidate.userId === savedAccount.userId ? savedAccount : candidate,
             );
-            if (account?.userId === savedAccount.userId) {
-                setAccount(savedAccount);
-                setStoredOperatorId(savedAccount.userId);
-            }
-            void invalidateRuntimeState();
+            syncSessionSnapshot({
+                accounts: nextAccounts,
+                account: account?.userId === savedAccount.userId ? savedAccount : account,
+                csrfToken: window.sessionStorage.getItem('vaultbill.hosted.csrf') ?? undefined,
+            });
+            void invalidateSetupState();
         },
     });
 

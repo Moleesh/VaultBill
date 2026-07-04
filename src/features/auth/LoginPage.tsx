@@ -7,12 +7,13 @@
  */
 
 import { useEffect, useRef, useState, type FC } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 
 import { useCapabilities } from '../../capability/CapabilityContext';
 import { shouldRenderDesktopChrome } from '../../capability/CapabilityRegistry';
 import { AppBrandIcon } from '../../components/AppBrandIcon/AppBrandIcon';
 import { AppConfirmDialog } from '../../components/AppConfirmDialog/AppConfirmDialog';
+import { getSafeAppPathForRole } from '../../components/AppShellSupport';
 import { DesktopWindowControls } from '../../components/DesktopWindowControls';
 import { defaultRuntimeBranding } from '../../constants/RuntimeDefaults';
 import { isStaticHostedBrowserBuild } from '../../runtime/RuntimeMode';
@@ -33,6 +34,15 @@ import { useSession } from './SessionContext';
 import { useActivationForm, useLoginForm } from './useLoginForms';
 import { useSysAdminUnlock } from './useSysAdminUnlock';
 
+const getRequestedAppPath = (state: unknown): string | undefined => {
+    if (typeof state !== 'object' || state === null || !('from' in state)) {
+        return undefined;
+    }
+
+    const { from } = state as Readonly<Record<'from', unknown>>;
+    return typeof from === 'string' ? from : undefined;
+};
+
 /** Renders the compact login experience for the current runtime mode. */
 export const LoginPage: FC<{ readonly onOpenSetupWizard?: () => void }> = ({
     onOpenSetupWizard,
@@ -42,6 +52,7 @@ export const LoginPage: FC<{ readonly onOpenSetupWizard?: () => void }> = ({
     const showDesktopChrome = shouldRenderDesktopChrome(capabilities);
     const allowSetupShortcut = capabilities.isDesktop || window.vaultBillRuntime === 'desktop';
     const { accounts, hostedConnectionState, login, operatorContext } = useSession();
+    const location = useLocation();
     const navigate = useNavigate();
     const loginSubmissionInFlightRef = useRef(false);
     const latestPasswordRef = useRef('');
@@ -68,7 +79,10 @@ export const LoginPage: FC<{ readonly onOpenSetupWizard?: () => void }> = ({
         loginSubmissionInFlightRef.current = true;
         try {
             await login(accountId, password);
-            void navigate('/app/dashboard');
+            const accountRole =
+                accounts.find((account) => account.userId === accountId)?.role ?? 'Admin';
+            const requestedPath = getRequestedAppPath(location.state);
+            void navigate(getSafeAppPathForRole(accountRole, requestedPath));
         } catch (reason) {
             const message = reason instanceof Error ? reason.message : 'Login failed.';
             setError(
@@ -182,7 +196,8 @@ export const LoginPage: FC<{ readonly onOpenSetupWizard?: () => void }> = ({
     ]);
 
     if (operatorContext) {
-        return <Navigate replace to="/app/dashboard" />;
+        const requestedPath = getRequestedAppPath(location.state);
+        return <Navigate replace to={getSafeAppPathForRole(operatorContext.role, requestedPath)} />;
     }
 
     return (

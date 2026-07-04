@@ -33,8 +33,7 @@ import {
     sendLocalApiError,
 } from './LocalApiServerSupport.js';
 import { tryServeStaticApp } from './StaticAppServer.js';
-
-export { getLocalApiHealth } from './LocalApiAuthRoutes.js';
+export { getLocalApiHealth } from './LocalApiHealthSupport.js';
 
 /** Hosts the authenticated local API and the static app bundle. */
 export class LocalApiServer {

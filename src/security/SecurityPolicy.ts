@@ -23,4 +23,5 @@ export const canPermanentlyDelete = (input: {
     input.suppliedPassword === input.configuredPassword &&
     input.confirmation === 'DELETE';
 
-export const isAndroidReleaseAllowed = (): boolean => false;
+/** Android release artifacts are allowed once the Capacitor build gate is present. */
+export const isAndroidReleaseAllowed = (): boolean => true;

@@ -14,11 +14,7 @@ export const SettingsSecuritySection: FC = () => {
     if (!state.operatorContext) return null;
 
     return (
-        <section className="settings-section" id="security">
-            <header>
-                <p className="eyebrow">Security</p>
-                <h2>Accounts and access</h2>
-            </header>
+        <section aria-label="Security settings" className="settings-section" id="security">
             {state.defaultCredentialsActive ? (
                 <p className="field-note">
                     Default credentials are still active. Replace the System Administrator and
@@ -48,10 +44,12 @@ export const SettingsSecuritySection: FC = () => {
                 isDemoMode={state.isDemoMode}
                 isSysAdmin={state.operatorRole === 'SysAdmin'}
                 lanEnabled={state.lanEnabled}
+                runtimePlatform={state.runtimePlatform}
                 onActivateLicense={state.onActivateLicense}
                 onHostedWebAutoStartChange={state.onHostedWebAutoStartChange}
                 onLanEnabledChange={state.onLanEnabledChange}
                 onRestartHostedWebServer={state.onRestartHostedWebServer}
+                onResetTrial={state.onResetTrial}
                 onStartHostedWebServer={state.onStartHostedWebServer}
                 onStopHostedWebServer={state.onStopHostedWebServer}
                 trialStatus={state.trialStatus}

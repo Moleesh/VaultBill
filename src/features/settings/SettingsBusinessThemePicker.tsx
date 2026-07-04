@@ -7,14 +7,7 @@ import { Palette } from 'lucide-react';
 import { ActionButton } from '../../components/ActionButton';
 import { FormField } from '../../components/FormFields';
 import { themeOptions } from '../../constants/RuntimeDefaults';
-
-const themeSwatches = {
-    'teal-flow': ['#0f7f75', '#dff4ef'],
-    'slate-pro': ['#40566f', '#e7edf3'],
-    'midnight-ink': ['#172436', '#4cc9a5'],
-    'sandstone-ledger': ['#9a6b32', '#f1e4c9'],
-    'indigo-mint': ['#4056a1', '#ccefe0'],
-} as const;
+import { getThemeSwatchBackground } from '../../runtime/WorkspaceTheme';
 
 type SettingsBusinessThemePickerProps = {
     readonly note?: ReactNode;
@@ -60,7 +53,7 @@ export const SettingsBusinessThemePicker: FC<SettingsBusinessThemePickerProps> =
                         <span
                             aria-hidden="true"
                             style={{
-                                background: `linear-gradient(135deg, ${themeSwatches[option.id][0]} 50%, ${themeSwatches[option.id][1]} 50%)`,
+                                background: getThemeSwatchBackground(option.id),
                             }}
                         />
                         <small>{option.label}</small>

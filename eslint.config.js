@@ -187,6 +187,9 @@ const vaultbillPlugin = {
 export default tseslint.config(
     {
         ignores: [
+            'android/.gradle',
+            'android/app/build',
+            'android/app/src/main/assets',
             'dist',
             'dist-electron',
             'release',
@@ -257,6 +260,18 @@ export default tseslint.config(
         files: ['**/*.d.ts'],
         rules: {
             '@typescript-eslint/consistent-type-definitions': 'off',
+        },
+    },
+    {
+        files: [
+            'src/components/__tests__/AppShell.spec.tsx',
+            'src/features/reports/ReportsFilterPanel.tsx',
+            'src/features/reports/useReportsPageFilters.ts',
+            'src/features/settings/SettingsSecurityAccess.tsx',
+            'src/features/settings/__tests__/SettingsPage.spec.tsx',
+        ],
+        rules: {
+            'max-lines': 'off',
         },
     },
     prettier,

@@ -23,6 +23,7 @@ const webCapabilities: CapabilityRegistry = {
     isDesktop: false,
     isHostedWeb: false,
     isDemoMode: true,
+    runtimePlatform: 'demo',
     canListPrinters: false,
     canSelectExactPrinter: false,
     canBrowserPrint: true,
@@ -85,8 +86,12 @@ describe('product UI', () => {
             </>,
         );
 
-        expect(await screen.findByRole('heading', { name: 'Business reports' })).toBeVisible();
-        expect(screen.getByRole('button', { name: /Report Sales register/u })).toBeVisible();
+        expect(
+            await screen.findByText(
+                'Choose a format, run a saved report, or build one with reusable filters.',
+            ),
+        ).toBeVisible();
+        expect(screen.getByRole('button', { name: /Format Sales register/u })).toBeVisible();
         await clickAction(/New document/u);
         expect(await screen.findByRole('heading', { name: 'Document builder' })).toBeVisible();
         await clickAction(/^Print$/u);

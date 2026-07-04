@@ -55,7 +55,7 @@ test('operator can log in, create records, and open contextual help', async ({ p
     ).toBeVisible();
 });
 
-test('Admin direct Builder URL is redirected to Records', async ({ page }) => {
+test('Admin direct Builder URL is redirected to Dashboard', async ({ page }) => {
     await loginAsAdmin(page);
     await page.evaluate(() => {
         const currentPath = window.location.pathname;
@@ -64,7 +64,7 @@ test('Admin direct Builder URL is redirected to Records', async ({ page }) => {
         window.history.pushState({}, '', `${basePath}/app/builder`);
         window.dispatchEvent(new PopStateEvent('popstate'));
     });
-    await expect(page.getByRole('heading', { name: /Create GST Invoice/u })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Welcome back/u })).toBeVisible();
 });
 
 test('mobile help opens as a full-screen sheet', async ({ page }) => {
@@ -93,7 +93,7 @@ test('desktop bridge saves and reloads a draft between refreshes', async ({ page
         )
         .toContain(customerName);
     await page.getByRole('button', { name: 'Refresh window' }).click();
-    await expect(page.getByRole('heading', { name: /Welcome back/u })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Create GST Invoice/u })).toBeVisible();
     await expect
         .poll(() =>
             page.evaluate(

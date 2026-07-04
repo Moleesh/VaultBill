@@ -8,11 +8,10 @@ import { ActionButton } from '../../components/ActionButton';
 import { AppBrandIcon } from '../../components/AppBrandIcon/AppBrandIcon';
 import { HorizontalProgress } from '../../components/HorizontalProgress/HorizontalProgress';
 import { useSetupPageContext } from './SetupPageContext';
-import { setupSteps } from './SetupPageSupport';
 
 /** Branded first-run setup header with wizard progress navigation. */
 export const SetupPageHeader: FC = () => {
-    const { clearMessage, setStepIndex, stepIndex } = useSetupPageContext();
+    const { clearMessage, setStepIndex, stepIndex, steps } = useSetupPageContext();
 
     return (
         <>
@@ -31,7 +30,7 @@ export const SetupPageHeader: FC = () => {
                 className="setup-steps wizard-steps"
                 label="Setup steps"
             >
-                {setupSteps.map((step, index) => {
+                {steps.map((step, index) => {
                     const StepIcon = index < stepIndex ? Check : step.icon;
 
                     return (

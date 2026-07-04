@@ -3,6 +3,7 @@
 import type { FC, PropsWithChildren } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 
+import { getDefaultAppRouteForRole } from '../../components/AppShellSupport';
 import type { Role } from '../../types/AppTypes';
 import { useSession } from './SessionContext';
 
@@ -19,12 +20,7 @@ export const ProtectedRoute: FC<ProtectedRouteProps> = ({ children, roles }) => 
     }
 
     if (roles && !roles.includes(operatorContext.role)) {
-        return (
-            <Navigate
-                replace
-                to={operatorContext.role === 'SysAdmin' ? '/app/dashboard' : '/app/records'}
-            />
-        );
+        return <Navigate replace to={`/app/${getDefaultAppRouteForRole(operatorContext.role)}`} />;
     }
 
     return children;

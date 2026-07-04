@@ -24,6 +24,7 @@ const webCapabilities: CapabilityRegistry = {
     isDesktop: false,
     isHostedWeb: true,
     isDemoMode: false,
+    runtimePlatform: 'hosted-web',
     canListPrinters: false,
     canSelectExactPrinter: false,
     canBrowserPrint: true,
@@ -35,6 +36,24 @@ const webCapabilities: CapabilityRegistry = {
     canSmsIntegration: true,
     canGspIntegration: true,
     hasLocalDb: false,
+};
+
+const androidLocalCapabilities: CapabilityRegistry = {
+    isDesktop: false,
+    isHostedWeb: false,
+    isDemoMode: false,
+    runtimePlatform: 'android-local',
+    canListPrinters: false,
+    canSelectExactPrinter: false,
+    canBrowserPrint: true,
+    canDownloadPdf: true,
+    canBackup: true,
+    canRestore: true,
+    canUsbSignaturePad: false,
+    canLanServer: false,
+    canSmsIntegration: true,
+    canGspIntegration: true,
+    hasLocalDb: true,
 };
 
 describe('SetupPage desktop chrome', () => {
@@ -277,6 +296,27 @@ describe('SetupPage desktop chrome', () => {
                 name: 'Admin Access',
             }),
         ).toBeVisible();
+    });
+
+    it('uses the Android-specific four-step flow when the runtime is Android local', async () => {
+        render(
+            <MemoryRouter initialEntries={['/setup']}>
+                <TestQueryProvider>
+                    <CapabilityProvider value={androidLocalCapabilities}>
+                        <SetupPage />
+                    </CapabilityProvider>
+                </TestQueryProvider>
+            </MemoryRouter>,
+        );
+
+        expect(screen.getByText('Step 1 of 4')).toBeVisible();
+        expect(screen.getByRole('heading', { level: 2, name: 'Welcome' })).toBeVisible();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+
+        expect(await screen.findByText('Step 2 of 4')).toBeVisible();
+        expect(screen.getByRole('heading', { level: 2, name: 'Connect to desktop' })).toBeVisible();
+        expect(screen.getByRole('button', { name: 'Skip for local mobile' })).toBeVisible();
     });
 
     it('keeps a manual theme pick even if setup hydration finishes later', async () => {

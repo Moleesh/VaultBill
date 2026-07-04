@@ -51,6 +51,11 @@ export const handleLocalApiAdminRoutes = async (
         sendJson(response, 200, state.recordStore.activateLicense(input.licenseKey));
         return true;
     }
+    if (request.method === 'POST' && request.url === '/trial/reset') {
+        requireSysAdminAccess(account);
+        sendJson(response, 200, state.recordStore.resetTrial());
+        return true;
+    }
     if (request.method === 'POST' && request.url === '/credentials/backup-password') {
         requireSysAdminAccess(account);
         const input = z

@@ -35,11 +35,22 @@ export const ReportsPage: FC = () => {
             <ReportsFilterPanel
                 customers={controller.customers}
                 form={controller.form}
+                canAddFilter={controller.canAddReportFilter}
+                canManageSelectedReport={controller.canManageSelectedSavedReport()}
+                isDynamicPromptOpen={controller.isDynamicPromptOpen}
                 onAddFilter={controller.addReportFilter}
+                onCloseDynamicPrompt={controller.closeDynamicPrompt}
+                onDeleteSavedReport={controller.deleteSelectedSavedReport}
+                onDuplicateSavedReport={controller.duplicateSelectedSavedReport}
                 onPresetChange={controller.applyPreset}
                 onRemoveFilter={controller.removeReportFilter}
+                onSaveReport={controller.saveCurrentReport}
+                onSelectSavedReport={controller.setSelectedSavedReportId}
+                onSetDefaultReport={controller.setDefaultSavedReport}
                 onUpdateFilter={controller.updateReportFilter}
                 reportFilters={controller.reportFilters}
+                savedReports={controller.savedReports}
+                selectedSavedReportId={controller.selectedSavedReportId}
             />
             <section className="data-panel">
                 <ReportsActionBar
@@ -81,6 +92,7 @@ export const ReportsPage: FC = () => {
                     </div>
                 ) : null}
                 <ReportsResults
+                    displayFields={controller.selectedDisplayFields}
                     isLoading={controller.isLoading}
                     matchingCount={controller.matchingRecords.length}
                     nextCursor={controller.nextCursor}

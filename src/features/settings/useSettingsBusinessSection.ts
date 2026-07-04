@@ -47,6 +47,7 @@ export const useSettingsBusinessSection = () => {
     const workspaceSettingsQuery = useQuery({
         queryKey: queryKeys.workspaceSettings(runtimeScope),
         queryFn: () => fetchWorkspaceSettings({ capabilities }),
+        staleTime: Number.POSITIVE_INFINITY,
     });
     const printersQuery = useQuery({
         queryKey: queryKeys.workspacePrinters(runtimeScope),

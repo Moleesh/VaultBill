@@ -1,6 +1,6 @@
 /** @format */
 
-import { Building2, Sparkles, UserRoundCog } from 'lucide-react';
+import { Building2, ServerCog, Sparkles, UserRoundCog } from 'lucide-react';
 
 export { isThemeId, themeStorageKey } from '../../runtime/WorkspaceTheme';
 
@@ -10,6 +10,15 @@ export const setupSteps = [
     { label: 'Workspace Details', icon: Building2 },
     { label: 'Admin Access', icon: UserRoundCog },
 ] as const;
+
+export const androidSetupSteps = [
+    { label: 'Welcome', icon: Sparkles },
+    { label: 'Connect to desktop', icon: ServerCog },
+    { label: 'Workspace Details', icon: Building2 },
+    { label: 'Admin Access', icon: UserRoundCog },
+] as const;
+
+export type SetupStep = (typeof androidSetupSteps)[number];
 
 /** Local host names that are allowed to use the hosted setup completion API. */
 export const localHostedOrigins = new Set(['localhost', '127.0.0.1', '[::1]']);

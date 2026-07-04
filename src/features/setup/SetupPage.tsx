@@ -12,6 +12,7 @@ import { useCapabilities } from '../../capability/CapabilityContext';
 import { shouldRenderDesktopChrome } from '../../capability/CapabilityRegistry';
 import { getRuntimeQueryScope, queryKeys } from '../../query/QueryKeys';
 import { completeRuntimeSetup, fetchSetupDefaults } from '../../query/RuntimeQueries';
+import { saveAndroidPairingSettings } from '../../runtime/AndroidPairing';
 import {
     applyTheme,
     getStoredTheme,
@@ -21,12 +22,14 @@ import {
 import type { ThemeId } from '../../types/AppTypes';
 import { SetupAdminUserStep } from './SetupAdminUserStep';
 import { SetupBusinessProfileStep } from './SetupBusinessProfileStep';
+import { SetupDesktopPairingStep } from './SetupDesktopPairingStep';
 import { SetupPageActions } from './SetupPageActions';
 import { SetupPageChrome } from './SetupPageChrome';
 import { SetupPageProvider } from './SetupPageContext';
 import { SetupPageHeader } from './SetupPageHeader';
 import { SetupPageMessageModal } from './SetupPageMessageModal';
 import {
+    androidSetupSteps,
     getAdminAccessValidationMessage,
     getBusinessProfileValidationMessage,
     localHostedOrigins,
@@ -51,13 +54,18 @@ export const SetupPage: FC<SetupPageProps> = ({ onComplete }) => {
     const [initialTheme] = useState<ThemeId>(() => getStoredTheme() ?? 'teal-flow');
     const [selectedTheme, setSelectedTheme] = useState<ThemeId>(initialTheme);
     const [message, setMessage] = useState('');
+    const steps =
+        capabilities.runtimePlatform === 'android-local' ||
+        capabilities.runtimePlatform === 'android-paired'
+            ? androidSetupSteps
+            : setupSteps;
     const [hasAttemptedBusinessProfileContinue, setHasAttemptedBusinessProfileContinue] =
         useState(false);
     const [hasAttemptedAdminUserFinish, setHasAttemptedAdminUserFinish] = useState(false);
     const [hasExistingAdminPassword, setHasExistingAdminPassword] = useState(false);
     const hydratedSetupDefaultsRef = useRef(false);
     const selectedThemeRef = useRef(initialTheme);
-    const activeStep = setupSteps[stepIndex]?.label ?? 'Welcome';
+    const activeStep = steps[stepIndex]?.label ?? 'Welcome';
     const canUseHostedSetupApi = localHostedOrigins.has(window.location.hostname);
     const runtimeScope = getRuntimeQueryScope(capabilities);
     const setupDefaultsQuery = useQuery({
@@ -127,7 +135,7 @@ export const SetupPage: FC<SetupPageProps> = ({ onComplete }) => {
 
     const isBusinessProfileInvalid = getCurrentBusinessProfileState().isInvalid;
     const isAdminUserInvalid = getCurrentAdminAccessState().isInvalid;
-    const isFinalStep = stepIndex === setupSteps.length - 1;
+    const isFinalStep = stepIndex === steps.length - 1;
 
     useEffect(() => {
         selectedThemeRef.current = selectedTheme;
@@ -218,12 +226,23 @@ export const SetupPage: FC<SetupPageProps> = ({ onComplete }) => {
     };
 
     const handleContinue = () => {
-        if (stepIndex === 1) {
+        if (activeStep === 'Connect to desktop') {
+            saveAndroidPairingSettings({
+                enabled: false,
+                hostTarget: '',
+                connectionStatus: 'disconnected',
+                discoveredHosts: [],
+            });
+            setMessage('');
+            setStepIndex((current) => Math.min(steps.length - 1, current + 1));
+            return;
+        }
+        if (activeStep === 'Workspace Details') {
             const currentBusinessProfile = getCurrentBusinessProfileState();
             if (!currentBusinessProfile.isInvalid) {
                 setHasAttemptedBusinessProfileContinue(false);
                 setMessage('');
-                setStepIndex((current) => Math.min(setupSteps.length - 1, current + 1));
+                setStepIndex((current) => Math.min(steps.length - 1, current + 1));
                 return;
             }
 
@@ -238,7 +257,7 @@ export const SetupPage: FC<SetupPageProps> = ({ onComplete }) => {
         }
         setHasAttemptedBusinessProfileContinue(false);
         setMessage('');
-        setStepIndex((current) => Math.min(setupSteps.length - 1, current + 1));
+        setStepIndex((current) => Math.min(steps.length - 1, current + 1));
     };
 
     const handleFinish = () => {
@@ -281,17 +300,21 @@ export const SetupPage: FC<SetupPageProps> = ({ onComplete }) => {
                         showAdminUserValidation: hasAttemptedAdminUserFinish,
                         showBusinessProfileValidation: hasAttemptedBusinessProfileContinue,
                         stepIndex,
+                        steps,
                     }}
                 >
                     <SetupPageHeader />
                     <section className="setup-card-content" aria-labelledby="setup-step-title">
                         <div>
                             <p className="eyebrow">
-                                Step {stepIndex + 1} of {setupSteps.length}
+                                Step {stepIndex + 1} of {steps.length}
                             </p>
                             <h2 id="setup-step-title">{activeStep}</h2>
                         </div>
                         {activeStep === 'Welcome' ? <SetupWelcomeStep /> : null}
+                        {activeStep === 'Connect to desktop' ? (
+                            <SetupDesktopPairingStep onContinue={handleContinue} />
+                        ) : null}
                         {activeStep === 'Workspace Details' ? <SetupBusinessProfileStep /> : null}
                         {activeStep === 'Admin Access' ? (
                             <SetupAdminUserStep

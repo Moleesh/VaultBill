@@ -74,6 +74,7 @@ const ReportQuerySchema = z.object({
     customer: z.string().default(''),
     invoiceNumber: z.string().default(''),
     reportFilters: z.array(ReportFieldFilterSchema).default([]),
+    sorts: z.array(z.string()).default([]),
     fromDate: z.string().default(''),
     toDate: z.string().default(''),
     status: z.enum(['All', 'Draft', 'Finalized', 'Cancelled']).default('All'),

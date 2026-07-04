@@ -28,3 +28,25 @@ export const getAllowedSectionIds = (isDemoMode: boolean, role: Role) =>
           : role === 'Admin'
             ? new Set<AppRouteId>(['dashboard', 'records', 'reports', 'settings'])
             : new Set<AppRouteId>(['records', 'reports']);
+
+/** Returns the first route each role can actually use after sign-in. */
+export const getDefaultAppRouteForRole = (role: Role): AppRouteId =>
+    role === 'User' ? 'records' : 'dashboard';
+
+/** Extracts the app tab id from nested paths such as /app/records/new. */
+export const getAppRouteIdFromPath = (pathname: string): AppRouteId | undefined => {
+    const [, appSegment, routeSegment] = pathname.split('/');
+    if (appSegment !== 'app') return undefined;
+    return shellSections.some((section) => section.id === routeSegment)
+        ? (routeSegment as AppRouteId)
+        : undefined;
+};
+
+/** Keeps reload/login restoration on an allowed tab for the active role. */
+export const getSafeAppPathForRole = (role: Role, targetPath?: string): string => {
+    const routeId = targetPath ? getAppRouteIdFromPath(targetPath) : undefined;
+    if (routeId && getAllowedSectionIds(false, role).has(routeId)) {
+        return targetPath ?? `/app/${routeId}`;
+    }
+    return `/app/${getDefaultAppRouteForRole(role)}`;
+};

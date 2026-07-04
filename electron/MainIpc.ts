@@ -179,6 +179,10 @@ export const registerMainIpcHandlers = () => {
         }
         return mainState.recordStore.activateLicense(licenseKey);
     });
+    ipcMain.handle('vaultbill:trial:reset', () => {
+        if (!mainState.recordStore) throw new Error('Records are not ready.');
+        return mainState.recordStore.resetTrial();
+    });
 
     ipcMain.handle('vaultbill:builder:load', (_event, formatId: unknown) =>
         mainState.builderStore?.load(typeof formatId === 'string' ? formatId : undefined),

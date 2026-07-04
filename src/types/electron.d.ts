@@ -132,6 +132,12 @@ type VaultBillDesktopBridge = {
         readonly accumulatedSeconds: number;
         readonly remainingSeconds: number;
     }>;
+    readonly resetTrial: () => Promise<{
+        readonly isFullVersion: boolean;
+        readonly isExpired: boolean;
+        readonly accumulatedSeconds: number;
+        readonly remainingSeconds: number;
+    }>;
     readonly loadBuilderPackage: (formatId?: string) => Promise<
         | {
               readonly config: unknown;
@@ -180,8 +186,18 @@ type VaultBillDesktopBridge = {
 
 declare global {
     interface Window {
-        readonly vaultBillRuntime?: 'desktop';
+        readonly vaultBillRuntime?: 'android' | 'desktop';
         readonly vaultBillDesktop?: VaultBillDesktopBridge;
+        readonly vaultBillAndroid?: {
+            readonly getPairingSettings?: () => Promise<{
+                readonly enabled: boolean;
+                readonly hostTarget: string;
+            }>;
+            readonly savePairingSettings?: (settings: {
+                readonly enabled: boolean;
+                readonly hostTarget: string;
+            }) => Promise<void>;
+        };
     }
 }
 

@@ -55,9 +55,9 @@
 .app-shell-topbar {
     position: relative;
     z-index: 30;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
+    display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: var(--space-4);
     min-height: 5.5rem;
     padding: var(--space-4) clamp(var(--space-4), 4vw, var(--space-8));
@@ -144,8 +144,8 @@
     gap: var(--space-3);
     position: relative;
     z-index: 1;
-    width: min(100%, 38rem);
-    max-width: 38rem;
+    width: auto;
+    max-width: min(100%, 38rem);
     border-radius: 1.35rem;
     background: transparent;
     padding: var(--space-2) clamp(var(--space-3), 1.8vw, var(--space-5));
@@ -246,18 +246,18 @@
     gap: 0.14rem;
 }
 .app-shell-topbar-actions {
-    display: inline-flex;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
     align-self: center;
-    gap: clamp(var(--space-4), 2vw, var(--space-7));
-    justify-self: end;
+    gap: clamp(var(--space-3), 1.2vw, var(--space-5));
+    margin-left: auto;
+    width: min(100%, 35rem);
     min-width: 0;
     min-height: var(--app-shell-window-control-size, 3.45rem);
-    flex-wrap: nowrap;
-    justify-content: flex-end;
+    flex: 0 1 35rem;
     position: relative;
     z-index: 1;
-    white-space: nowrap;
 }
 .app-shell.has-window-controls .app-shell-topbar-actions {
     max-width: none;
@@ -267,16 +267,17 @@
     display: inline-flex;
     align-items: center;
     justify-content: flex-end;
-    gap: var(--space-3);
+    gap: clamp(var(--space-3), 1.2vw, var(--space-5));
     min-width: 0;
-    flex: 0 1 auto;
+    width: 100%;
+    justify-self: stretch;
 }
 .app-shell-topbar-controls-group {
     display: inline-flex;
     align-items: center;
     justify-content: flex-end;
     flex: 0 0 auto;
-    margin-left: clamp(var(--space-4), 2vw, var(--space-6));
+    margin-left: clamp(var(--space-3), 1vw, var(--space-4));
 }
 .app-shell-window-chrome {
     --app-shell-window-control-size: 3.45rem;
@@ -337,6 +338,39 @@
 .app-shell-topbar-actions > .app-shell-trial-pill,
 .app-shell-topbar-actions > .app-shell-window-controls {
     align-self: center;
+}
+
+@media (max-width: 1100px) {
+    .app-shell-topbar {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        justify-content: stretch;
+    }
+
+    .app-shell-topbar-copy {
+        max-width: none;
+    }
+
+    .app-shell-topbar-actions {
+        width: 100%;
+        flex: 1 1 auto;
+    }
+}
+
+@media (max-width: 780px) {
+    .app-shell-topbar-actions {
+        grid-template-columns: minmax(0, 1fr);
+        justify-items: end;
+    }
+
+    .app-shell-topbar-status-group {
+        justify-self: end;
+        width: auto;
+    }
+
+    .app-shell-topbar-controls-group {
+        margin-left: 0;
+    }
 }
 .app-shell-trial-pill-copy {
     display: inline-grid;
@@ -595,6 +629,7 @@
     box-shadow: var(--shadow-popover);
     overflow-x: hidden;
     overflow-y: auto;
+    overscroll-behavior: contain;
 }
 .theme-palette-popover button {
     display: grid;
@@ -605,6 +640,7 @@
     border-color: transparent;
     text-align: left;
     min-height: 3rem;
+    min-width: 0;
 }
 .theme-palette-popover button.is-selected {
     background: var(--color-secondary);

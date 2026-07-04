@@ -6,6 +6,7 @@ import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 
 const applicationBasePath = '/VaultBill/';
+const isAndroidBuild = process.env.VAULTBILL_ANDROID === 'true';
 const rootRedirectPlugin = () => ({
     name: 'vaultbill-root-redirect',
     configureServer(server: {
@@ -48,7 +49,7 @@ const rootRedirectPlugin = () => ({
 });
 
 export default defineConfig({
-    base: applicationBasePath,
+    base: isAndroidBuild ? './' : applicationBasePath,
     plugins: [react(), rootRedirectPlugin()],
     define: {
         __APP_NAME__: JSON.stringify('VaultBill'),

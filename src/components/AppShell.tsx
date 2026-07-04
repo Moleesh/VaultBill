@@ -28,7 +28,7 @@ import { AppShellSidebar } from './AppShellSidebar';
 import { getAllowedSectionIds, getPageId } from './AppShellSupport';
 import { AppShellTopbar } from './AppShellTopbar';
 
-import { useThemeController } from '../hooks/useThemeController';
+import { usePersistentWorkspaceTheme } from '../hooks/usePersistentWorkspaceTheme';
 
 import '../styles/Components/AppShell.scss';
 
@@ -39,7 +39,10 @@ export const AppShell: FC = () => {
     const { resetDemoData } = useRecordStore();
     const location = useLocation();
     const navigate = useNavigate();
-    const themeController = useThemeController('teal-flow');
+    const themeController = usePersistentWorkspaceTheme({
+        capabilities,
+        operatorContext,
+    });
     const { setThemeId } = themeController;
     const contentRef = useRef<HTMLElement>(null);
     const runtimeScope = getRuntimeQueryScope(capabilities);
@@ -63,6 +66,7 @@ export const AppShell: FC = () => {
             Boolean(operatorContext) &&
             (Boolean(window.vaultBillDesktop) || capabilities.isHostedWeb),
         queryFn: () => fetchTrialStatus({ capabilities }),
+        staleTime: Number.POSITIVE_INFINITY,
     });
     const hostedWebUrlQuery = useQuery({
         queryKey: queryKeys.hostedWebUrl(runtimeScope),

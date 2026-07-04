@@ -158,20 +158,48 @@
 .settings-jump-links {
     position: sticky;
     z-index: 20;
-    top: calc(var(--space-4) * -1);
+    top: 0;
     display: flex;
     gap: var(--space-2);
     overflow-x: auto;
+    overflow-y: hidden;
     border: var(--line-width) solid var(--color-border);
     border-radius: var(--radius-md);
-    background: linear-gradient(
-        180deg,
-        color-mix(in srgb, var(--color-secondary) 20%, var(--color-surface)),
-        color-mix(in srgb, var(--color-surface) 88%, transparent)
-    );
+    background: color-mix(in srgb, var(--color-surface) 94%, var(--color-app-background));
     padding: var(--space-2);
     box-shadow: var(--shadow-card);
     backdrop-filter: blur(18px);
+    isolation: isolate;
+    scrollbar-width: none;
+}
+.settings-jump-links::-webkit-scrollbar {
+    display: none;
+}
+.settings-jump-links::before {
+    position: absolute;
+    inset: -2.25rem -0.75rem 100%;
+    z-index: -1;
+    background: linear-gradient(
+        180deg,
+        var(--color-app-background) 0%,
+        color-mix(in srgb, var(--color-app-background) 96%, transparent) 72%,
+        transparent 100%
+    );
+    content: '';
+    pointer-events: none;
+}
+.settings-jump-links::after {
+    position: absolute;
+    inset: 100% -0.75rem -1.75rem;
+    z-index: -1;
+    background: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--color-app-background) 96%, transparent) 0%,
+        color-mix(in srgb, var(--color-app-background) 72%, transparent) 58%,
+        transparent
+    );
+    content: '';
+    pointer-events: none;
 }
 .settings-jump-links a {
     flex: 0 0 auto;

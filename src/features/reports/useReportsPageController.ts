@@ -9,6 +9,7 @@ export const useReportsPageController = (): ReportsPageController => {
     const data = useReportsPageData();
     const actions = useReportsPageActions({
         capabilities: data.capabilities,
+        displayFields: data.selectedDisplayFields,
         loadCompleteResult: data.loadCompleteResult,
         printSource: data.printSource,
         reportId: data.reportId,

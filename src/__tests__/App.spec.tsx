@@ -2,7 +2,7 @@
 
 import { MemoryRouter } from 'react-router-dom';
 
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('../AppRoutesSupport', async () => {
@@ -144,6 +144,11 @@ describe('App', () => {
                 fireEvent.change(screen.getByLabelText('Password'), {
                     target: { value: '147085aA' },
                 });
+            });
+            await waitFor(() => {
+                expect(screen.getByLabelText('Password')).toHaveValue('147085aA');
+            });
+            act(() => {
                 fireEvent.click(screen.getByRole('button', { name: 'Log in' }));
             });
 

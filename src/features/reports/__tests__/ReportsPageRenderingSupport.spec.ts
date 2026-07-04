@@ -48,8 +48,24 @@ describe('ReportsPageRenderingSupport', () => {
     });
 
     it('renders CSV and HTML output for each report shape', () => {
-        expect(buildReportCsv('sales-register', records as never)).toContain('"INV-1"');
-        expect(buildReportCsv('customer-ledger', records as never)).toContain('"Cancelled"');
-        expect(renderReportHtml('tax-summary', records as never)).toContain('matching records');
+        expect(
+            buildReportCsv('sales-register', records as never, ['documentNumber', 'status']),
+        ).toContain('"INV-1"');
+        expect(
+            buildReportCsv('customer-ledger', records as never, ['customerName', 'cancelledCount']),
+        ).toContain('"1"');
+        expect(
+            renderReportHtml('tax-summary', records as never, ['taxRate', 'taxAmount']),
+        ).toContain('matching records');
+    });
+
+    it('limits rendered sales-register output to the selected fields', () => {
+        const csv = buildReportCsv('sales-register', records as never, [
+            'customerName',
+            'grandTotal',
+        ]);
+
+        expect(csv).toContain('"Customer name","Grand total"');
+        expect(csv).not.toContain('"Record number"');
     });
 });

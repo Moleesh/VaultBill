@@ -9,13 +9,15 @@ workspace with two clearly different modes:
   resets.
 - 🖥️ **Full desktop app** for Electron + SQLite on Windows and Linux, with a
   hosted local web workspace while VaultBill is running.
+- 🤖 **Android app** for a local mobile workspace, with optional pairing to a
+  live desktop host when the operator wants to work against that session.
 
 The repo documents the product directly through the app, docs, and workflows.
 Nice and tidy. 🙂
 
 [![Demo Pages](https://img.shields.io/github/actions/workflow/status/Moleesh/VaultBill/demo-pages.yml?branch=main&label=demo%20pages)](https://github.com/Moleesh/VaultBill/actions/workflows/demo-pages.yml)
 [![Release App](https://img.shields.io/github/actions/workflow/status/Moleesh/VaultBill/release-app.yml?branch=main&label=release%20app)](https://github.com/Moleesh/VaultBill/actions/workflows/release-app.yml)
-[![Platforms](https://img.shields.io/badge/platforms-Windows%20%7C%20Linux-167d73)](https://github.com/Moleesh/VaultBill/actions/workflows/release-app.yml)
+[![Platforms](https://img.shields.io/badge/platforms-Windows%20%7C%20Linux%20%7C%20Android-167d73)](https://github.com/Moleesh/VaultBill/actions/workflows/release-app.yml)
 [![Tests](https://img.shields.io/badge/tests-Vitest%20%2B%20Playwright-f0a202)](https://github.com/Moleesh/VaultBill/actions)
 
 ## What VaultBill Does 🚀
@@ -54,8 +56,16 @@ The desktop build owns the local business data and system features:
   sits in the tray
 - optional LAN hosting, disabled by default and stored in SQLite
 
-Windows installer and Linux AppImage are the current release targets. macOS and
-native Android remain future scope.
+Windows installer, Linux AppImage, and unsigned Android APK artifacts are the
+current release targets. macOS remains future scope.
+
+## Android Runtime 🤖
+
+Android runs as a DB-backed local workspace by default. During Android first-run
+setup, operators can optionally connect to a live VaultBill Desktop host by
+entering or scanning for a LAN host. Skipping pairing keeps the mobile workspace
+local; pairing does not add sync or merge behavior. SysAdmin settings can change
+or remove the pairing later.
 
 ## Roles And Access 🔐
 
@@ -136,9 +146,15 @@ finalizing is unavailable.
 
 ## Reports And Filters 📊
 
-Reports support customer, invoice number, date range, status, and presets such
-as Today, This Month, Financial Year, and Last 100. Results load progressively
-in batches, and the complete filtered result is used for printing and export.
+Reports are built from reusable saved definitions. The **Format** dropdown picks
+the output family, while the **Saved report** dropdown chooses a shared report
+definition that can be run, duplicated, edited, deleted when permitted, or set
+as the operator's personal default.
+
+Each report definition owns display fields, sorting, and up to five filters.
+Prompt-at-run filters ask the operator for values before execution, while
+built-in reports such as Today's report and This month report stay undeletable
+and outside the per-operator custom-report quota.
 
 Available report views:
 
@@ -219,6 +235,7 @@ Useful packaging and smoke commands:
 | `npm run build:web`                 | Build the browser bundle                 |
 | `npm run build:electron`            | Compile Electron TypeScript              |
 | `npm run build:desktop`             | Build the web bundle and Electron output |
+| `npm run build:android`             | Build and sync the Android APK locally   |
 | `npm run package:desktop`           | Build an unpacked desktop directory      |
 | `npm run package:desktop:installer` | Build the current platform installer     |
 | `npm run smoke:first-run-db:ci`     | Verify SQLite first-run startup          |
@@ -247,8 +264,9 @@ The repository intentionally keeps exactly two workflows:
   typecheck, unit/security/browser gates, builds the `/VaultBill/` bundle, and
   deploys to the `VaultBill` environment.
 - **Release App** runs on every `main` push, `v*` tag, and manual dispatch. It
-  verifies once, builds Windows and Linux in separate jobs, uploads workflow
-  artifacts on `main`, and publishes GitHub Releases for tags and manual runs.
+  verifies once, builds Windows, Linux, and Android in separate jobs, uploads
+  workflow artifacts on `main`, and publishes GitHub Releases for tags and
+  manual runs.
 
 When a release already exists for the current package version, Release App
 replaces the previous release and tag before publishing fresh assets, checksums,
@@ -283,12 +301,16 @@ VaultBill is developed with AI coding support from
 ## Troubleshooting 🧯
 
 - **Blank Pages refresh:** confirm the URL begins with `/VaultBill/`.
-- **No desktop artifact:** review both Windows and Linux jobs in Release App.
+- **Missing release artifact:** review the Windows, Linux, and Android jobs in
+  Release App.
 - **Installer smoke fails:** run `npm run build:desktop`, package again, then
   `npm run smoke:installer:required`.
 - **Demo data looks odd:** use the confirmed Reset demo action.
 - **Hosted browser cannot reconnect:** open VaultBill Desktop on the host and
   confirm the hosted-web / LAN status in Settings or the tray menu.
+- **Android build cannot find the SDK:** set `ANDROID_HOME` or create
+  `android/local.properties` with `sdk.dir=...`; CI configures this in the
+  Android release job.
 - **SQLite startup fails:** run `npm run smoke:first-run-db:ci` and review the
   startup patch test.
 

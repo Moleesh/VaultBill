@@ -6,6 +6,17 @@ import { loadWorkspaceSettings, type WorkspaceSettings } from './WorkspaceSettin
 
 export const themeStorageKey = 'vaultbill.theme';
 
+export const themeSwatches: Readonly<Record<ThemeId, readonly [string, string]>> = {
+    'teal-flow': ['#0f766e', '#d9f0ea'],
+    'slate-pro': ['#334155', '#dbe4ee'],
+    'midnight-ink': ['#101827', '#60a5fa'],
+    'sandstone-ledger': ['#8a5b32', '#efe1cb'],
+    'indigo-mint': ['#4338ca', '#c7f4e5'],
+};
+
+export const getThemeSwatchBackground = (themeId: ThemeId): string =>
+    `linear-gradient(135deg, ${themeSwatches[themeId][0]} 50%, ${themeSwatches[themeId][1]} 50%)`;
+
 export const isThemeId = (value: string): value is ThemeId =>
     themeOptions.some((theme) => theme.id === value);
 

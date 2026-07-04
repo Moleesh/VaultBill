@@ -20,6 +20,7 @@ export const reportFieldOptions = [
     { value: 'invoiceDate', label: 'Invoice date' },
     { value: 'grandTotal', label: 'Grand total' },
     { value: 'status', label: 'Status' },
+    { value: 'updatedAt', label: 'Last updated' },
 ] as const;
 export const reportOptions = [
     { value: 'sales-register', label: 'Sales register' },

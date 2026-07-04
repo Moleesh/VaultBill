@@ -169,6 +169,11 @@ select[aria-invalid='true']:focus-visible {
     gap: var(--space-6);
 }
 
+.page-section-intro {
+    color: var(--color-text-muted);
+    max-width: 64ch;
+}
+
 .operational-header {
     display: flex;
     align-items: end;

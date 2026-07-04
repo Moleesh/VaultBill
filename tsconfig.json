@@ -21,5 +21,11 @@
         "noUnusedParameters": true,
         "jsx": "react-jsx"
     },
-    "include": ["src", "vite.config.ts", "playwright.config.ts", "vitest.setup.ts"]
+    "include": [
+        "src",
+        "capacitor.config.ts",
+        "vite.config.ts",
+        "playwright.config.ts",
+        "vitest.setup.ts"
+    ]
 }

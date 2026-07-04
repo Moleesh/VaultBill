@@ -22,6 +22,8 @@ export const defaultWorkspaceSettings: WorkspaceSettings = {
     includeDraftsInReports: false,
 };
 
+const localWorkspaceSettingsStorageKey = 'vaultbill.workspace-settings';
+
 export const normalizeWorkspaceSettings = (value: unknown): WorkspaceSettings => {
     if (!value || typeof value !== 'object') return defaultWorkspaceSettings;
     const settings = value as Partial<WorkspaceSettings>;
@@ -56,6 +58,10 @@ export const loadWorkspaceSettings = async (
     isHostedWeb: boolean,
     path = '/workspace/settings',
 ): Promise<WorkspaceSettings> => {
+    if (window.vaultBillDesktop && !isHostedWeb) {
+        return normalizeWorkspaceSettings(await window.vaultBillDesktop.getBusinessSettings());
+    }
+
     if (isHostedWeb || canUseLocalHostedApi()) {
         try {
             return normalizeWorkspaceSettings(await requestHostedApi(path));
@@ -70,5 +76,21 @@ export const loadWorkspaceSettings = async (
     if (window.vaultBillDesktop) {
         return normalizeWorkspaceSettings(await window.vaultBillDesktop.getBusinessSettings());
     }
-    return defaultWorkspaceSettings;
+    try {
+        return normalizeWorkspaceSettings(
+            JSON.parse(
+                window.localStorage.getItem(localWorkspaceSettingsStorageKey) ??
+                    JSON.stringify(defaultWorkspaceSettings),
+            ),
+        );
+    } catch {
+        return defaultWorkspaceSettings;
+    }
+};
+
+export const saveLocalWorkspaceSettings = (settings: WorkspaceSettings): void => {
+    window.localStorage.setItem(
+        localWorkspaceSettingsStorageKey,
+        JSON.stringify(normalizeWorkspaceSettings(settings)),
+    );
 };

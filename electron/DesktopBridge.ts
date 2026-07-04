@@ -129,6 +129,7 @@ export const createDesktopBridge = (ipcRenderer: IpcRenderer): VaultBillDesktopB
         ipcRenderer.invoke('vaultbill:trial:status') as Promise<TrialStatus>,
     activateLicense: async (licenseKey) =>
         ipcRenderer.invoke('vaultbill:trial:activate', licenseKey) as Promise<TrialStatus>,
+    resetTrial: async () => ipcRenderer.invoke('vaultbill:trial:reset') as Promise<TrialStatus>,
     loadBuilderPackage: async (formatId) =>
         ipcRenderer.invoke('vaultbill:builder:load', formatId) as Promise<
             BuilderPackage | undefined

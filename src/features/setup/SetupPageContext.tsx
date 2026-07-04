@@ -3,10 +3,13 @@
 import type { Dispatch, FC, PropsWithChildren, SetStateAction } from 'react';
 import { createContext, useContext } from 'react';
 
+import type { SetupStep } from './SetupPageSupport';
+
 import type { SetupFormApi } from './useSetupForm';
 
 type SetupPageContextValue = {
     readonly form: SetupFormApi;
+    readonly steps: readonly SetupStep[];
     readonly stepIndex: number;
     readonly setStepIndex: Dispatch<SetStateAction<number>>;
     readonly clearMessage: () => void;

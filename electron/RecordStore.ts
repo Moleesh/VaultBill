@@ -25,6 +25,7 @@ import {
     writeRuntime,
     writeStoredRecord,
 } from './RecordStoreSupport.js';
+import { compareStoredReportRecordsBySorts } from './ReportQuerySorting.js';
 
 export type {
     RecordCancelRequest,
@@ -89,6 +90,14 @@ export class DesktopRecordStore {
         return this.getTrialStatus();
     };
 
+    /** Clears activation and accumulated time so the workspace starts a fresh trial. */
+    public resetTrial = (): TrialStatus => {
+        this.#lastTrialCheckpoint = Date.now();
+        writeRuntime(this.#database, 'trial_seconds', '0');
+        writeRuntime(this.#database, 'activated', 'false');
+        return this.getTrialStatus();
+    };
+
     /** Lists all stored records ordered by most recent updates first. */
     public list = (): readonly StoredRecord[] => listStoredRecords(this.#database);
 
@@ -98,6 +107,7 @@ export class DesktopRecordStore {
         const customer = query.customer.trim().toLocaleLowerCase();
         const invoiceNumber = query.invoiceNumber.trim().toLocaleLowerCase();
         const reportFilters = query.reportFilters.filter((filter) => filter.value.trim());
+        const reportSorts = query.sorts.length > 0 ? query.sorts : ['updatedAt:desc'];
         let records = this.list()
             .filter((record) => query.includeDraftsInReports || record.status !== 'Draft')
             .filter((record) => query.status === 'All' || record.status === query.status)
@@ -119,17 +129,17 @@ export class DesktopRecordStore {
             )
             .filter((record) => !query.fromDate || record.invoiceDate >= query.fromDate)
             .filter((record) => !query.toDate || record.invoiceDate <= query.toDate)
-            .sort(
-                (left, right) =>
-                    right.updatedAt.localeCompare(left.updatedAt) ||
-                    left.recordId.localeCompare(right.recordId),
-            );
+            .sort((left, right) => compareStoredReportRecordsBySorts(left, right, reportSorts));
         if (query.preset === 'Last100') records = records.slice(0, 100);
         const total = records.length;
         const offset = Math.max(0, Number.parseInt(query.cursor ?? '0', 10) || 0);
         const rows = records.slice(offset, offset + query.limit);
         const nextOffset = offset + rows.length;
-        return { rows, total, ...(nextOffset < total ? { nextCursor: String(nextOffset) } : {}) };
+        return {
+            rows,
+            total,
+            ...(nextOffset < total ? { nextCursor: String(nextOffset) } : {}),
+        };
     };
 
     /** Maps one report filter field to its comparable stored record value. */
@@ -140,6 +150,7 @@ export class DesktopRecordStore {
         if (field === 'invoiceDate') return record.invoiceDate;
         if (field === 'status') return record.status;
         if (field === 'grandTotal') return record.grandTotal;
+        if (field === 'updatedAt') return record.updatedAt;
         return '';
     };
 

@@ -30,6 +30,7 @@ const AppRoutes: FC = () => {
         queryKey: queryKeys.setupStatus(runtimeScope),
         enabled: !usesStaticHostedBrowserBuild && canUseDbBackedRuntime(capabilities),
         queryFn: () => fetchSetupStatus(capabilities),
+        staleTime: Number.POSITIVE_INFINITY,
     });
     const setupRequired = setupStatusQuery.data?.isSetupRequired ?? false;
 

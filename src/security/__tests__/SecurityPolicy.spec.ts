@@ -34,7 +34,7 @@ describe('release security policy', () => {
         ).toBe(false);
     });
 
-    it('blocks Android releases until the separate gate exists', () => {
-        expect(isAndroidReleaseAllowed()).toBe(false);
+    it('allows Android releases after the dedicated build gate exists', () => {
+        expect(isAndroidReleaseAllowed()).toBe(true);
     });
 });

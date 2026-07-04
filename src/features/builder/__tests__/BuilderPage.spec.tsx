@@ -14,6 +14,7 @@ const demoCapabilities: CapabilityRegistry = {
     isDesktop: false,
     isHostedWeb: false,
     isDemoMode: true,
+    runtimePlatform: 'demo',
     canListPrinters: false,
     canSelectExactPrinter: false,
     canBrowserPrint: true,

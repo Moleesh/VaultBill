@@ -8,24 +8,14 @@ import { createPortal } from 'react-dom';
 
 import { Check } from 'lucide-react';
 
-import type { ThemeController, ThemeId } from '../types/AppTypes';
+import { getThemeSwatchBackground } from '../runtime/WorkspaceTheme';
+import type { ThemeController } from '../types/AppTypes';
 import { ActionButton } from './ActionButton';
 import { IconOnlyButton } from './IconOnlyButton';
 
 type ThemePaletteProps = {
     readonly controller: ThemeController;
 };
-
-const swatches: Readonly<Record<ThemeId, readonly [string, string]>> = {
-    'teal-flow': ['#0f766e', '#d9f0ea'],
-    'slate-pro': ['#334155', '#dbe4ee'],
-    'midnight-ink': ['#101827', '#60a5fa'],
-    'sandstone-ledger': ['#8a5b32', '#efe1cb'],
-    'indigo-mint': ['#4338ca', '#c7f4e5'],
-};
-
-const swatchBackground = (themeId: ThemeId) =>
-    `linear-gradient(135deg, ${swatches[themeId][0]} 50%, ${swatches[themeId][1]} 50%)`;
 
 export const ThemePalette: FC<ThemePaletteProps> = ({ controller }) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -88,7 +78,7 @@ export const ThemePalette: FC<ThemePaletteProps> = ({ controller }) => {
 
     useEffect(() => {
         if (!isOpen) return undefined;
-        const close = (event: MouseEvent) => {
+        const close = (event: PointerEvent) => {
             if (!(event.target instanceof Node)) {
                 return;
             }
@@ -96,7 +86,7 @@ export const ThemePalette: FC<ThemePaletteProps> = ({ controller }) => {
             const clickedTrigger = rootRef.current?.contains(event.target) ?? false;
             const clickedPopover = popoverRef.current?.contains(event.target) ?? false;
             if (!clickedTrigger && !clickedPopover) {
-                closePalette(true);
+                closePalette(false);
             }
         };
         const onKeyDown = (event: KeyboardEvent) => {
@@ -104,12 +94,12 @@ export const ThemePalette: FC<ThemePaletteProps> = ({ controller }) => {
                 closePalette(true);
             }
         };
-        document.addEventListener('mousedown', close);
+        document.addEventListener('pointerdown', close, true);
         document.addEventListener('keydown', onKeyDown);
         window.addEventListener('resize', positionPopover);
         window.addEventListener('scroll', positionPopover, true);
         return () => {
-            document.removeEventListener('mousedown', close);
+            document.removeEventListener('pointerdown', close, true);
             document.removeEventListener('keydown', onKeyDown);
             window.removeEventListener('resize', positionPopover);
             window.removeEventListener('scroll', positionPopover, true);
@@ -134,7 +124,7 @@ export const ThemePalette: FC<ThemePaletteProps> = ({ controller }) => {
                     <span
                         aria-hidden="true"
                         className="theme-palette-swatch theme-palette-trigger-swatch"
-                        style={{ background: swatchBackground(controller.themeId) }}
+                        style={{ background: getThemeSwatchBackground(controller.themeId) }}
                     />
                 }
                 ref={triggerRef}
@@ -174,7 +164,7 @@ export const ThemePalette: FC<ThemePaletteProps> = ({ controller }) => {
                                   <span
                                       className="theme-palette-swatch"
                                       style={{
-                                          background: swatchBackground(theme.id),
+                                          background: getThemeSwatchBackground(theme.id),
                                       }}
                                   />
                                   <span>{theme.label}</span>

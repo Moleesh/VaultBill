@@ -1,6 +1,7 @@
 /** @format */
 
 export type CapabilityRegistry = {
+    readonly runtimePlatform: RuntimePlatform;
     readonly isDesktop: boolean;
     readonly isDemoMode: boolean;
     readonly isHostedWeb: boolean;
@@ -16,3 +17,10 @@ export type CapabilityRegistry = {
     readonly canGspIntegration: boolean;
     readonly hasLocalDb: boolean;
 };
+
+export type RuntimePlatform =
+    | 'demo'
+    | 'desktop'
+    | 'hosted-web'
+    | 'android-local'
+    | 'android-paired';

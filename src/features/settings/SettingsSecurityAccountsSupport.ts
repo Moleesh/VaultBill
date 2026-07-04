@@ -75,18 +75,18 @@ export const useCreateSecurityPasswordForm = (
 
 /** Returns whether the operator-creation form currently satisfies local enablement rules. */
 export const canSubmitOperatorCreation = ({
-    form,
     manageableAccounts,
     operatorRole,
+    values,
 }: {
-    readonly form: CreateOperatorFormApi;
     readonly manageableAccounts: readonly OperatorAccount[];
     readonly operatorRole: Role;
+    readonly values: CreateOperatorFormValues;
 }): boolean =>
-    form.state.values.username.trim().length > 0 &&
-    form.state.values.displayName.trim().length > 0 &&
+    values.username.trim().length > 0 &&
+    values.displayName.trim().length > 0 &&
     !(
-        form.state.values.role === 'User' &&
+        values.role === 'User' &&
         operatorRole === 'SysAdmin' &&
         manageableAccounts.filter((account) => account.role === 'User' && account.isActive)
             .length >= 5

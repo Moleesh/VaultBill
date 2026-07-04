@@ -81,6 +81,7 @@ export type VaultBillDesktopBridge = {
     readonly restartHostedWebServer: () => Promise<{ readonly isRunning: boolean }>;
     readonly getTrialStatus: () => Promise<TrialStatus>;
     readonly activateLicense: (licenseKey: string) => Promise<TrialStatus>;
+    readonly resetTrial: () => Promise<TrialStatus>;
     readonly loadBuilderPackage: (formatId?: string) => Promise<BuilderPackage | undefined>;
     readonly listBuilderInventory: () => Promise<readonly BuilderInventoryItem[]>;
     readonly deleteBuilderPackage: (formatId: string) => Promise<void>;

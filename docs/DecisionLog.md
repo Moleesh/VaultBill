@@ -137,7 +137,7 @@
 ## 2026-06-07 Consolidated baseline
 
 - Replaced fragmented earlier phase plans with the live implementation baseline and synchronized the repo docs to match it.
-- Limited current desktop releases to Windows and Linux; macOS and native Android moved to future scope.
+- Expanded release targets to Windows, Linux, and unsigned Android APK artifacts; macOS remains future scope.
 - Reduced first-run setup to Welcome, required Business Profile, and SysAdmin security. Admin/User creation moved to authorized Settings.
 - Defined role-based navigation and account limits: one Admin and five Users.
 - Added accumulated-use desktop trial state and package-time license verifier.

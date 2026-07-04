@@ -2,11 +2,20 @@
 
 import type { CapabilityRegistry } from '../capability/Capability.types';
 
-export type RuntimeQueryScope = 'desktop' | 'hosted-web' | 'static-hosted-browser' | 'browser';
+export type RuntimeQueryScope =
+    | 'android-local'
+    | 'android-paired'
+    | 'desktop'
+    | 'hosted-web'
+    | 'static-hosted-browser'
+    | 'browser';
 
 export const getRuntimeQueryScope = (
-    capabilities: Pick<CapabilityRegistry, 'isDesktop' | 'isHostedWeb' | 'isDemoMode'>,
+    capabilities: Pick<CapabilityRegistry, 'isDesktop' | 'isHostedWeb' | 'isDemoMode'> &
+        Partial<Pick<CapabilityRegistry, 'runtimePlatform'>>,
 ): RuntimeQueryScope => {
+    if (capabilities.runtimePlatform === 'android-local') return 'android-local';
+    if (capabilities.runtimePlatform === 'android-paired') return 'android-paired';
     if (capabilities.isDesktop || window.vaultBillDesktop) return 'desktop';
     if (capabilities.isHostedWeb) return 'hosted-web';
     if (capabilities.isDemoMode) return 'static-hosted-browser';

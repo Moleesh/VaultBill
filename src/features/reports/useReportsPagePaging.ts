@@ -42,6 +42,7 @@ export const useReportsPagePaging = (
         queryKey: queryKeys.trialStatus(runtimeScope, 'reports-page'),
         enabled: canReadTrialStatus,
         queryFn: () => fetchTrialStatus({ capabilities }),
+        staleTime: Number.POSITIVE_INFINITY,
     });
     const usesServerPaging =
         window.vaultBillDesktop !== undefined ||

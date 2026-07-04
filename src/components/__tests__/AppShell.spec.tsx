@@ -23,10 +23,23 @@ const hasFetchCallForPath = (
         return url.includes(path);
     });
 
+const expectAvailableTab = (name: string) => {
+    const links = screen.getAllByRole('link', { name });
+    expect(links.length).toBeGreaterThan(0);
+    links.forEach((link) => {
+        expect(link).toBeVisible();
+    });
+};
+
+const expectUnavailableTab = (name: string) => {
+    expect(screen.queryAllByRole('link', { name })).toHaveLength(0);
+};
+
 const desktopCapabilities: CapabilityRegistry = {
     isDesktop: true,
     isHostedWeb: false,
     isDemoMode: false,
+    runtimePlatform: 'desktop',
     canListPrinters: true,
     canSelectExactPrinter: true,
     canBrowserPrint: true,
@@ -44,6 +57,7 @@ const hostedCapabilities: CapabilityRegistry = {
     isDesktop: false,
     isHostedWeb: true,
     isDemoMode: false,
+    runtimePlatform: 'hosted-web',
     canListPrinters: false,
     canSelectExactPrinter: false,
     canBrowserPrint: true,
@@ -65,6 +79,14 @@ const sysAdminAccount = {
     isActive: true,
 } as const;
 
+const userAccount = {
+    userId: 'user_1',
+    username: 'frontdesk',
+    displayName: 'Front Desk',
+    role: 'User',
+    isActive: true,
+} as const;
+
 describe('app shell', () => {
     beforeEach(() => {
         document.body.innerHTML = '<div id="portal-root"></div>';
@@ -75,6 +97,16 @@ describe('app shell', () => {
                 closeWindow: vi.fn(),
                 minimizeWindow: vi.fn(),
                 reloadWindow: vi.fn(),
+                getBusinessSettings: vi.fn().mockResolvedValue({
+                    companyName: 'VaultBill',
+                    address: 'Chennai',
+                    gstin: '',
+                    theme: 'teal-flow',
+                    outputTarget: 'SystemPrinter',
+                    preferredPrinterName: '',
+                    includeDraftsInReports: false,
+                }),
+                saveBusinessSettings: vi.fn().mockResolvedValue(undefined),
                 getHostedWebUrl: vi.fn().mockResolvedValue('http://localhost'),
                 openHostedWeb: vi.fn().mockResolvedValue(undefined),
                 getTrialStatus: vi.fn().mockResolvedValue({
@@ -98,6 +130,7 @@ describe('app shell', () => {
     });
 
     it('shows desktop window controls in the shell top bar', async () => {
+        const fetchSpy = vi.spyOn(window, 'fetch');
         render(
             <MemoryRouter initialEntries={['/app/dashboard']}>
                 <TestQueryProvider>
@@ -119,14 +152,19 @@ describe('app shell', () => {
         await waitFor(() => {
             expect(window.vaultBillDesktop?.getTrialStatus).toHaveBeenCalledTimes(1);
             expect(window.vaultBillDesktop?.getHostedWebUrl).toHaveBeenCalledTimes(1);
+            expect(window.vaultBillDesktop?.getBusinessSettings).toHaveBeenCalled();
             expect(window.vaultBillDesktop?.listRecords).toHaveBeenCalledTimes(1);
         });
+        expect(hasFetchCallForPath(fetchSpy.mock.calls, '/workspace/settings')).toBe(false);
+        fetchSpy.mockRestore();
 
         expect(screen.getByRole('navigation', { name: 'Primary' })).toBeVisible();
         expect(screen.getByRole('button', { name: 'Close to tray' })).toBeVisible();
         expect(screen.getByRole('button', { name: 'Minimize to taskbar' })).toBeVisible();
         expect(screen.getByRole('button', { name: 'Refresh window' })).toBeVisible();
-        expect(screen.getByRole('button', { name: 'Open hosted web' })).toBeVisible();
+        await waitFor(() => {
+            expect(screen.getByRole('button', { name: 'Open hosted web' })).toBeVisible();
+        });
     });
 
     it('keeps shell window controls visible when the hosted desktop runtime marker is present', async () => {
@@ -196,5 +234,59 @@ describe('app shell', () => {
         });
 
         fetchSpy.mockRestore();
+    });
+
+    it('shows only the tabs available to SysAdmin operators', async () => {
+        render(
+            <MemoryRouter initialEntries={['/app/dashboard']}>
+                <TestQueryProvider>
+                    <CapabilityProvider value={desktopCapabilities}>
+                        <SessionContext.Provider value={createTestSession(sysAdminAccount)}>
+                            <RecordStoreProvider>
+                                <Routes>
+                                    <Route path="/app/*" element={<AppShell />}>
+                                        <Route index element={<h1>Dashboard</h1>} />
+                                    </Route>
+                                </Routes>
+                            </RecordStoreProvider>
+                        </SessionContext.Provider>
+                    </CapabilityProvider>
+                </TestQueryProvider>
+            </MemoryRouter>,
+        );
+
+        await screen.findAllByRole('link', { name: 'Dashboard' });
+        expectAvailableTab('Dashboard');
+        expectAvailableTab('Builder');
+        expectAvailableTab('Settings');
+        expectUnavailableTab('Records');
+        expectUnavailableTab('Reports');
+    });
+
+    it('shows only the tabs available to User operators', async () => {
+        render(
+            <MemoryRouter initialEntries={['/app/records']}>
+                <TestQueryProvider>
+                    <CapabilityProvider value={desktopCapabilities}>
+                        <SessionContext.Provider value={createTestSession(userAccount)}>
+                            <RecordStoreProvider>
+                                <Routes>
+                                    <Route path="/app/*" element={<AppShell />}>
+                                        <Route index element={<h1>Records</h1>} />
+                                    </Route>
+                                </Routes>
+                            </RecordStoreProvider>
+                        </SessionContext.Provider>
+                    </CapabilityProvider>
+                </TestQueryProvider>
+            </MemoryRouter>,
+        );
+
+        await screen.findAllByRole('link', { name: 'Records' });
+        expectAvailableTab('Records');
+        expectAvailableTab('Reports');
+        expectUnavailableTab('Dashboard');
+        expectUnavailableTab('Builder');
+        expectUnavailableTab('Settings');
     });
 });

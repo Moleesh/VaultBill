@@ -9,6 +9,7 @@ const desktopCapabilities: CapabilityRegistry = {
     isDesktop: true,
     isHostedWeb: false,
     isDemoMode: false,
+    runtimePlatform: 'desktop',
     canListPrinters: true,
     canSelectExactPrinter: true,
     canBrowserPrint: true,

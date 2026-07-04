@@ -4,7 +4,9 @@ import type { ComponentType, FC } from 'react';
 import { lazy } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 
+import { getDefaultAppRouteForRole } from './components/AppShellSupport';
 import { ProtectedRoute } from './features/auth/ProtectedRoute';
+import { useSession } from './features/auth/SessionContext';
 
 const lazyRouteReloadSessionKey = 'vaultbill.lazy-route-reload';
 
@@ -76,6 +78,18 @@ export const SetupPage = lazyRoute(async () =>
 /** Lightweight fallback shown while route-level chunks are loading. */
 export const AppRouteFallback: FC = () => <div className="app-screen-state" aria-busy="true" />;
 
+/** Sends signed-in operators to the first tab available for their role. */
+export const AppIndexRedirect: FC = () => {
+    const { operatorContext } = useSession();
+
+    return (
+        <Navigate
+            replace
+            to={operatorContext ? getDefaultAppRouteForRole(operatorContext.role) : '/login'}
+        />
+    );
+};
+
 type AppRouteTreeProps = {
     readonly isStaticHostedBrowserBuild: boolean;
     readonly shouldAllowSetupWizard: boolean;
@@ -135,7 +149,7 @@ export const AppRouteTree: FC<AppRouteTreeProps> = ({
                 )
             }
         >
-            <Route index element={<Navigate replace to="dashboard" />} />
+            <Route index element={<AppIndexRedirect />} />
             <Route
                 path="dashboard"
                 element={

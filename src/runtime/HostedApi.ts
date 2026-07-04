@@ -1,11 +1,11 @@
 /** @format */
 
 /** Fetch helper that routes browser-hosted calls to the desktop Local API when available. */
+import { readAndroidPairingSettings } from './AndroidPairing';
 
 const hostedDevApiPort = import.meta.env.DEV && window.location.port === '5173' ? '8000' : '';
 const defaultLocalApiBaseUrl =
     hostedDevApiPort.length > 0 ? `http://127.0.0.1:${hostedDevApiPort}` : window.location.origin;
-const localApiBaseUrl = defaultLocalApiBaseUrl;
 const csrfStorageKey = 'vaultbill.hosted.csrf';
 const localHostedOrigins = new Set(['localhost', '127.0.0.1', '[::1]']);
 export const hostedApiUnavailableEvent = 'vaultbill-hosted-api-unavailable';
@@ -22,7 +22,21 @@ export class HostedApiError extends Error {
     }
 }
 
-export const canUseLocalHostedApi = (): boolean => localHostedOrigins.has(window.location.hostname);
+const getPairedAndroidApiBaseUrl = (): string => {
+    if (window.vaultBillRuntime !== 'android') return '';
+    const settings = readAndroidPairingSettings();
+    if (!settings.enabled || !settings.hostTarget.trim()) return '';
+    try {
+        return new URL(settings.hostTarget).origin;
+    } catch {
+        return '';
+    }
+};
+
+const getLocalApiBaseUrl = (): string => getPairedAndroidApiBaseUrl() || defaultLocalApiBaseUrl;
+
+export const canUseLocalHostedApi = (): boolean =>
+    localHostedOrigins.has(window.location.hostname) || getPairedAndroidApiBaseUrl().length > 0;
 
 export const isHostedApiErrorStatus = (
     error: unknown,
@@ -42,7 +56,7 @@ export const requestHostedApi = async <T>(
     const csrfToken = window.sessionStorage.getItem(csrfStorageKey);
     let response: Response;
     try {
-        response = await fetch(`${localApiBaseUrl}${path}`, {
+        response = await fetch(`${getLocalApiBaseUrl()}${path}`, {
             method,
             credentials: 'include',
             headers: {
@@ -104,7 +118,7 @@ export const createHostedBackup = async (
     readonly fileName: string;
     readonly recoveryKey?: string;
 }> => {
-    const response = await fetch(`${localApiBaseUrl}/backup/create`, {
+    const response = await fetch(`${getLocalApiBaseUrl()}/backup/create`, {
         method: 'POST',
         credentials: 'include',
         headers: hostedMutationHeaders({ 'content-type': 'application/json' }),
@@ -129,7 +143,7 @@ export const restoreHostedBackup = async (
         readonly recoveryKey?: string;
     },
 ): Promise<void> => {
-    const response = await fetch(`${localApiBaseUrl}/backup/restore`, {
+    const response = await fetch(`${getLocalApiBaseUrl()}/backup/restore`, {
         method: 'POST',
         credentials: 'include',
         headers: hostedMutationHeaders({

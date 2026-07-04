@@ -6,19 +6,25 @@ import type { CapabilityRegistry } from '../../capability/Capability.types';
 import type { WorkspaceSettings } from '../../runtime/WorkspaceSettings';
 import type { AppRecord } from '../records/RecordStoreSupport';
 import type { PrintTask } from './ReportsPageSupport';
+import type { SavedReportDefinition, SavedReportEditorInput } from './SavedReportsSupport';
 
 import type { ReportsFilterFormApi } from './useReportsPageFilters';
 
 export type ReportFieldFilter = {
     readonly id: string;
     readonly field: string;
+    readonly operator?: string;
     readonly value: string;
+    readonly valueEnd?: string;
+    readonly caseInsensitive?: boolean;
+    readonly promptAtRun?: boolean;
 };
 
 export type ReportsPageActionInput = {
     readonly capabilities: {
         readonly isHostedWeb: boolean;
     };
+    readonly displayFields: readonly string[];
     readonly loadCompleteResult: () => Promise<readonly AppRecord[]>;
     readonly reportId: string;
     readonly totalRecords: number;
@@ -40,6 +46,11 @@ export type ReportsPageController = {
     readonly form: ReportsFilterFormApi;
     readonly fromDate: string;
     readonly reportFilters: readonly ReportFieldFilter[];
+    readonly savedReports: readonly SavedReportDefinition[];
+    readonly selectedDisplayFields: readonly string[];
+    readonly selectedSavedReportId: string;
+    readonly isDynamicPromptOpen: boolean;
+    readonly canAddReportFilter: boolean;
     readonly reportField: string;
     readonly reportFieldValue: string;
     readonly isLoading: boolean;
@@ -62,6 +73,13 @@ export type ReportsPageController = {
     readonly setPreset: (value: string) => void;
     readonly setPrintSource: (records: readonly AppRecord[]) => void;
     readonly setReportId: (value: string) => void;
+    readonly setSelectedSavedReportId: (value: string) => void;
+    readonly saveCurrentReport: (input: SavedReportEditorInput) => void;
+    readonly duplicateSelectedSavedReport: () => void;
+    readonly canManageSelectedSavedReport: () => boolean;
+    readonly setDefaultSavedReport: () => void;
+    readonly deleteSelectedSavedReport: () => void;
+    readonly closeDynamicPrompt: () => void;
     readonly setReportField: (value: string) => void;
     readonly setReportFieldValue: (value: string) => void;
     readonly setServerRecords: (records: readonly AppRecord[]) => void;

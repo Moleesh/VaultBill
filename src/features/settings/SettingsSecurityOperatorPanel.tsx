@@ -32,12 +32,6 @@ export const SettingsSecurityOperatorPanel: FC<SettingsSecurityOperatorPanelProp
     onSetAccountActive,
     operatorRole,
 }) => {
-    const canCreateOperator = canSubmitOperatorCreation({
-        form: createOperatorForm,
-        manageableAccounts,
-        operatorRole,
-    });
-
     return (
         <div className="settings-subsection">
             <div className="section-heading">
@@ -104,16 +98,33 @@ export const SettingsSecurityOperatorPanel: FC<SettingsSecurityOperatorPanelProp
                         )}
                     </createOperatorForm.Field>
                 ) : null}
-                <IconButton
-                    disabled={!canCreateOperator}
-                    icon={<Plus aria-hidden="true" size={18} />}
-                    onClick={() => {
-                        void createOperatorForm.handleSubmit();
-                    }}
-                    variant="primary"
+                <createOperatorForm.Subscribe
+                    selector={(state) => ({
+                        displayName: state.values.displayName,
+                        password: state.values.password,
+                        role: state.values.role,
+                        username: state.values.username,
+                    })}
                 >
-                    Add operator
-                </IconButton>
+                    {(values) => (
+                        <IconButton
+                            disabled={
+                                !canSubmitOperatorCreation({
+                                    manageableAccounts,
+                                    operatorRole,
+                                    values,
+                                })
+                            }
+                            icon={<Plus aria-hidden="true" size={18} />}
+                            onClick={() => {
+                                void createOperatorForm.handleSubmit();
+                            }}
+                            variant="primary"
+                        >
+                            Add operator
+                        </IconButton>
+                    )}
+                </createOperatorForm.Subscribe>
             </div>
             <div className="operator-list">
                 {manageableAccounts.map((account) => (

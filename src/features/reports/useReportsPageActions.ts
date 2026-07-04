@@ -30,7 +30,7 @@ export const useReportsPageActions = (input: ReportsPageActionInput) => {
         void input
             .loadCompleteResult()
             .then((completeRecords) => {
-                const csv = buildReportCsv(input.reportId, completeRecords);
+                const csv = buildReportCsv(input.reportId, completeRecords, input.displayFields);
                 const url = URL.createObjectURL(
                     new Blob([csv], { type: 'text/csv;charset=utf-8' }),
                 );
@@ -72,7 +72,7 @@ export const useReportsPageActions = (input: ReportsPageActionInput) => {
             .loadCompleteResult()
             .then(async (completeRecords) => {
                 await printOutputMutation.mutateAsync({
-                    html: renderReportHtml(input.reportId, completeRecords),
+                    html: renderReportHtml(input.reportId, completeRecords, input.displayFields),
                     jobId,
                 });
                 return completeRecords;

@@ -41,7 +41,7 @@ const defaultSummary: SysAdminSummary = {
 export const useSysAdminDashboardState = (): SysAdminDashboardState => {
     const capabilities = useCapabilities();
     const runtimeScope = getRuntimeQueryScope(capabilities);
-    const { operatorContext } = useSession();
+    const { accounts, operatorContext } = useSession();
     const dashboardQuery = useQuery({
         queryKey: queryKeys.sysAdminDashboard(
             runtimeScope,
@@ -50,8 +50,10 @@ export const useSysAdminDashboardState = (): SysAdminDashboardState => {
         enabled: Boolean(operatorContext),
         queryFn: () =>
             fetchSysAdminDashboardState({
+                accounts,
                 capabilities,
             }),
+        staleTime: Number.POSITIVE_INFINITY,
     });
 
     if (!operatorContext) {

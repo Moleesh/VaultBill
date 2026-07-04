@@ -10,9 +10,21 @@ import {
     updateRuntimeBackupPassword,
 } from '../RuntimeQueries';
 
+const hostedAdminAccount = {
+    userId: 'admin_1',
+    username: 'admin',
+    displayName: 'Operations Admin',
+    role: 'Admin',
+    isActive: true,
+    passwordConfigured: true,
+    usesDefaultPassword: false,
+} as const;
+
 describe('RuntimeQueries', () => {
     beforeEach(() => {
         window.localStorage.clear();
+        window.sessionStorage.clear();
+        vi.unstubAllGlobals();
     });
 
     afterEach(() => {
@@ -48,6 +60,47 @@ describe('RuntimeQueries', () => {
             account: adminAccount,
             csrfToken: undefined,
         });
+    });
+
+    it('reads the hosted session snapshot through one hosted request', async () => {
+        const fetchMock = vi.fn().mockResolvedValue(
+            new Response(
+                JSON.stringify({
+                    accounts: [hostedAdminAccount],
+                    account: hostedAdminAccount,
+                    csrfToken: 'csrf-token',
+                }),
+                {
+                    status: 200,
+                    headers: { 'content-type': 'application/json' },
+                },
+            ),
+        );
+        vi.stubGlobal('fetch', fetchMock);
+        Object.defineProperty(window, 'fetch', {
+            configurable: true,
+            value: fetchMock,
+        });
+
+        await expect(
+            fetchSessionSnapshot({
+                canUseHostedSessionApi: true,
+                usesStaticHostedBrowserBuild: false,
+            }),
+        ).resolves.toMatchObject({
+            accounts: [hostedAdminAccount],
+            account: hostedAdminAccount,
+            csrfToken: 'csrf-token',
+        });
+
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+        expect(fetchMock).toHaveBeenCalledWith(
+            expect.stringContaining('/auth/snapshot'),
+            expect.objectContaining({
+                credentials: 'include',
+                method: 'GET',
+            }),
+        );
     });
 
     it('routes backup maintenance flows through the desktop bridge when available', async () => {

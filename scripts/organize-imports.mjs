@@ -5,13 +5,13 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
 import prettier from 'prettier';
-import ts from 'typescript';
 
 import { normalizeImportDeclarations } from './import-order-support.mjs';
 
 const supportedExtensions = new Set(['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs']);
 const ignoredDirectoryNames = new Set([
     '.git',
+    '.gradle',
     'coverage',
     'dist',
     'dist-electron',
@@ -19,19 +19,6 @@ const ignoredDirectoryNames = new Set([
     'release',
     'test-results',
 ]);
-
-const compilerOptions = {
-    allowJs: true,
-    checkJs: false,
-    jsx: ts.JsxEmit.Preserve,
-    module: ts.ModuleKind.ESNext,
-    target: ts.ScriptTarget.ESNext,
-};
-
-const formatOptions = ts.getDefaultFormatCodeSettings();
-const preferences = {
-    providePrefixAndSuffixTextForRename: false,
-};
 
 const args = process.argv.slice(2);
 const checkOnly = args.includes('--check');
@@ -89,6 +76,12 @@ const resolveCandidateFiles = async () => {
             '--glob',
             '*.cjs',
             '--glob',
+            '!android/.gradle/**',
+            '--glob',
+            '!android/app/build/**',
+            '--glob',
+            '!android/app/src/main/assets/**',
+            '--glob',
             '!coverage/**',
             '--glob',
             '!dist/**',
@@ -117,65 +110,10 @@ const resolveCandidateFiles = async () => {
         });
 };
 
-const applyTextChanges = (sourceText, textChanges) => {
-    const orderedChanges = [...textChanges].sort(
-        (left, right) => right.span.start - left.span.start,
-    );
-
-    let updatedText = sourceText;
-    for (const change of orderedChanges) {
-        updatedText =
-            updatedText.slice(0, change.span.start) +
-            change.newText +
-            updatedText.slice(change.span.start + change.span.length);
-    }
-
-    return updatedText;
-};
-
 const organizeFileImports = async (filePath) => {
     const sourceText = await fs.readFile(filePath, 'utf8');
     const normalizedFilePath = path.resolve(filePath);
-    let currentText = sourceText;
-
-    const languageServiceHost = {
-        fileExists: (candidate) => candidate === normalizedFilePath || ts.sys.fileExists(candidate),
-        getCompilationSettings: () => compilerOptions,
-        getCurrentDirectory: () => process.cwd(),
-        getDefaultLibFileName: (options) => ts.getDefaultLibFilePath(options),
-        getDirectories: ts.sys.getDirectories,
-        getScriptFileNames: () => [normalizedFilePath],
-        getScriptSnapshot: (candidate) => {
-            if (candidate === normalizedFilePath) {
-                return ts.ScriptSnapshot.fromString(currentText);
-            }
-
-            const candidateText = ts.sys.readFile(candidate);
-            return candidateText === undefined
-                ? undefined
-                : ts.ScriptSnapshot.fromString(candidateText);
-        },
-        getScriptVersion: () => '1',
-        readDirectory: ts.sys.readDirectory,
-        readFile: ts.sys.readFile,
-    };
-
-    const service = ts.createLanguageService(languageServiceHost);
-    const changes = service.organizeImports(
-        {
-            fileName: normalizedFilePath,
-            type: 'file',
-        },
-        formatOptions,
-        preferences,
-    );
-
-    for (const change of changes) {
-        currentText = applyTextChanges(currentText, change.textChanges);
-    }
-
-    service.dispose();
-    currentText = normalizeImportDeclarations(currentText);
+    let currentText = normalizeImportDeclarations(sourceText);
 
     if (currentText !== sourceText) {
         const prettierConfig = await getPrettierConfig();

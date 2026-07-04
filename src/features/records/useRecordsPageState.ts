@@ -60,15 +60,18 @@ export const useRecordsPageState = () => {
     const workspaceSettingsQuery = useQuery({
         queryKey: queryKeys.workspaceSettings(runtimeScope),
         queryFn: () => fetchWorkspaceSettings({ capabilities }),
+        staleTime: Number.POSITIVE_INFINITY,
     });
     const publishedFormatsQuery = useQuery({
         queryKey: queryKeys.publishedFormats(runtimeScope),
         queryFn: () => fetchPublishedFormats({ capabilities }),
+        staleTime: Number.POSITIVE_INFINITY,
     });
     const secretValuesQuery = useQuery({
         queryKey: queryKeys.secretsSettings(runtimeScope),
         queryFn: () => fetchSecretsSettings({ capabilities }),
         select: (settings) => secretValuesFromSettings(settings.secrets),
+        staleTime: Number.POSITIVE_INFINITY,
     });
     const activePrintPackageQuery = useQuery({
         queryKey: queryKeys.builderPackage(runtimeScope, record.formatId || '__current__'),

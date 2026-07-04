@@ -19,6 +19,7 @@ const webCapabilities: CapabilityRegistry = {
     isDesktop: false,
     isHostedWeb: false,
     isDemoMode: true,
+    runtimePlatform: 'demo',
     canListPrinters: false,
     canSelectExactPrinter: false,
     canBrowserPrint: true,
@@ -36,6 +37,7 @@ const desktopCapabilities: CapabilityRegistry = {
     ...webCapabilities,
     isDesktop: true,
     isDemoMode: false,
+    runtimePlatform: 'desktop',
     canListPrinters: true,
     canSelectExactPrinter: true,
     canDownloadPdf: true,
@@ -87,6 +89,7 @@ describe('settings UI', () => {
     beforeEach(() => {
         document.body.innerHTML = '<div id="portal-root"></div>';
         window.localStorage.clear();
+        window.history.replaceState(null, '', '/');
     });
 
     afterEach(() => {
@@ -116,7 +119,7 @@ describe('settings UI', () => {
             fullWebCapabilities,
         );
 
-        expect(screen.getByRole('heading', { name: 'Accounts and access' })).toBeVisible();
+        expect(screen.queryByRole('navigation', { name: 'Settings sections' })).toBeNull();
         expect(screen.queryByRole('button', { name: 'Create backup' })).not.toBeInTheDocument();
         expect(screen.queryByRole('link', { name: 'Business' })).not.toBeInTheDocument();
         fireEvent.change(screen.getByPlaceholderText('Search actions and topics'), {
@@ -192,5 +195,140 @@ describe('settings UI', () => {
         expect(screen.getByRole('heading', { name: 'Backup and restore' })).toBeVisible();
         expect(screen.getByRole('heading', { name: 'Backup password' })).toBeVisible();
         expect(screen.getByRole('button', { name: /Add operator/i })).toBeDisabled();
+    });
+
+    it('keeps SysAdmin settings tabs clickable and active', async () => {
+        window.HTMLElement.prototype.scrollIntoView = vi.fn();
+        Object.defineProperty(window, 'vaultBillDesktop', {
+            configurable: true,
+            value: {
+                activateLicense: vi.fn().mockResolvedValue(undefined),
+                configureLocalApi: vi.fn().mockResolvedValue(undefined),
+                getBusinessSettings: vi.fn().mockResolvedValue({
+                    companyName: 'VaultBill',
+                    address: 'Chennai',
+                    gstin: '',
+                    theme: 'teal-flow',
+                    outputTarget: 'SystemPrinter',
+                    preferredPrinterName: '',
+                    includeDraftsInReports: false,
+                }),
+                getCredentialStatus: vi.fn().mockResolvedValue({
+                    sysAdminUsesDefaultPassword: false,
+                    backupUsesDefaultPassword: false,
+                }),
+                getHostedWebServerStatus: vi.fn().mockResolvedValue({
+                    isRunning: true,
+                    url: 'http://127.0.0.1/VaultBill/',
+                }),
+                getHostedWebSettings: vi.fn().mockResolvedValue({
+                    autoStart: true,
+                    lanEnabled: true,
+                    passwordRequired: false,
+                    port: 80,
+                }),
+                getSecretsSettings: vi.fn().mockResolvedValue({ secrets: [] }),
+                getTrialStatus: vi.fn().mockResolvedValue({
+                    isFullVersion: true,
+                    isExpired: false,
+                    remainingSeconds: 0,
+                }),
+                listPrinters: vi.fn().mockResolvedValue([]),
+                saveBusinessSettings: vi.fn().mockResolvedValue(undefined),
+                saveSecretsSettings: vi.fn().mockResolvedValue(undefined),
+            } as const,
+        });
+
+        await renderPage(
+            <SettingsPage />,
+            createTestSession(sysAdminAccount, [sysAdminAccount]),
+            desktopCapabilities,
+        );
+
+        const businessTab = await screen.findByRole('link', { name: 'Business' });
+        const securityTab = screen.getByRole('link', { name: 'Security' });
+        const backupTab = screen.getByRole('link', { name: 'Backup' });
+        const secretsTab = screen.getByRole('link', { name: 'Secrets' });
+
+        expect(businessTab).toHaveAttribute('aria-current', 'page');
+        fireEvent.click(backupTab);
+        expect(backupTab).toHaveAttribute('aria-current', 'page');
+        expect(window.location.hash).toBe('#backup');
+        fireEvent.click(securityTab);
+        expect(securityTab).toHaveAttribute('aria-current', 'page');
+        expect(window.location.hash).toBe('#security');
+        expect(secretsTab).toBeVisible();
+    });
+
+    it('limits Admin settings tabs to the security section', async () => {
+        await renderPage(<SettingsPage />, createTestSession(adminAccount), desktopCapabilities);
+
+        expect(screen.queryByRole('link', { name: 'Security' })).not.toBeInTheDocument();
+        expect(screen.queryByRole('link', { name: 'Business' })).not.toBeInTheDocument();
+        expect(screen.queryByRole('link', { name: 'Backup' })).not.toBeInTheDocument();
+        expect(screen.queryByRole('link', { name: 'Secrets' })).not.toBeInTheDocument();
+        expect(screen.queryByRole('navigation', { name: 'Settings sections' })).toBeNull();
+    });
+
+    it('enables Add operator as soon as the required operator fields are filled', async () => {
+        Object.defineProperty(window, 'vaultBillDesktop', {
+            configurable: true,
+            value: {
+                activateLicense: vi.fn().mockResolvedValue(undefined),
+                configureLocalApi: vi.fn().mockResolvedValue(undefined),
+                getBusinessSettings: vi.fn().mockResolvedValue({
+                    companyName: 'VaultBill',
+                    address: 'Chennai',
+                    gstin: '',
+                    theme: 'teal-flow',
+                    outputTarget: 'SystemPrinter',
+                    preferredPrinterName: '',
+                    includeDraftsInReports: false,
+                }),
+                getCredentialStatus: vi.fn().mockResolvedValue({
+                    sysAdminUsesDefaultPassword: false,
+                    backupUsesDefaultPassword: false,
+                }),
+                getHostedWebServerStatus: vi.fn().mockResolvedValue({
+                    isRunning: true,
+                    url: 'http://127.0.0.1/VaultBill/',
+                }),
+                getHostedWebSettings: vi.fn().mockResolvedValue({
+                    autoStart: true,
+                    lanEnabled: true,
+                    passwordRequired: false,
+                    port: 80,
+                }),
+                getSecretsSettings: vi.fn().mockResolvedValue({ secrets: [] }),
+                getTrialStatus: vi.fn().mockResolvedValue({
+                    isFullVersion: true,
+                    isExpired: false,
+                    remainingSeconds: 0,
+                }),
+                listPrinters: vi.fn().mockResolvedValue([]),
+                saveBusinessSettings: vi.fn().mockResolvedValue(undefined),
+                saveSecretsSettings: vi.fn().mockResolvedValue(undefined),
+            } as const,
+        });
+
+        await renderPage(
+            <SettingsPage />,
+            createTestSession(sysAdminAccount, [sysAdminAccount]),
+            desktopCapabilities,
+        );
+
+        const addOperatorButton = await screen.findByRole('button', { name: /Add operator/i });
+        expect(addOperatorButton).toBeDisabled();
+
+        fireEvent.change(screen.getByLabelText('Username'), {
+            target: { value: 'operator-one' },
+        });
+        fireEvent.change(screen.getByLabelText('Display name'), {
+            target: { value: 'Operator One' },
+        });
+
+        await waitFor(() => {
+            expect(addOperatorButton).toBeEnabled();
+        });
     });
 });
