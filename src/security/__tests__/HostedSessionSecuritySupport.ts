@@ -1,6 +1,7 @@
 /** @format */
 
 import { mkdtempSync, rmSync } from 'node:fs';
+import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 
@@ -48,3 +49,27 @@ export const createHostedSessionTestHarness = (): HostedSessionTestHarness => {
 
 export const encodeSecret = (value: string): string =>
     Buffer.from(value, 'utf8').toString('base64');
+
+export const getAvailablePort = async (): Promise<number> =>
+    await new Promise<number>((resolve, reject) => {
+        const server = createServer();
+        server.once('error', (error) => {
+            reject(error);
+        });
+        server.listen(0, '127.0.0.1', () => {
+            const address = server.address();
+            if (!address || typeof address === 'string') {
+                server.close(() => {
+                    reject(new Error('Unable to reserve a local test port.'));
+                });
+                return;
+            }
+            server.close((error) => {
+                if (error) {
+                    reject(error);
+                    return;
+                }
+                resolve(address.port);
+            });
+        });
+    });

@@ -88,7 +88,7 @@ describe('product UI', () => {
 
         expect(
             await screen.findByText(
-                'Choose a format, run a saved report, or build one with reusable filters.',
+                'Run saved views fast, or build a focused report with reusable filters and presets.',
             ),
         ).toBeVisible();
         expect(screen.getByRole('button', { name: /Format Sales register/u })).toBeVisible();

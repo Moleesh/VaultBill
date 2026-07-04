@@ -5,9 +5,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { LocalApiServer } from '../../../electron/server/LocalApiServer.js';
-import { createHostedSessionTestHarness, encodeSecret } from './HostedSessionSecuritySupport.js';
+import {
+    createHostedSessionTestHarness,
+    encodeSecret,
+    getAvailablePort,
+} from './HostedSessionSecuritySupport.js';
 
-const port = 43_918;
 let server: LocalApiServer | undefined;
 let harness = createHostedSessionTestHarness();
 
@@ -20,6 +23,7 @@ afterEach(async () => {
 
 describe('hosted Local API maintenance', () => {
     it('protects hosted backup, restore, credential, and reset operations', async () => {
+        const port = await getAvailablePort();
         const restoreBackup = vi.fn();
         const resetApplicationData = vi.fn();
         const setBackupPassword = vi.fn((currentPassword: string, backupPassword: string) => {
@@ -62,7 +66,7 @@ describe('hosted Local API maintenance', () => {
             },
         );
         await server.start();
-        const baseUrl = `http://127.0.0.1:${String(port)}`;
+        const baseUrl = `http://127.0.0.1:${String(server.getConfiguration().port)}`;
         const login = await fetch(`${baseUrl}/auth/login`, {
             method: 'POST',
             headers: { 'content-type': 'application/json' },

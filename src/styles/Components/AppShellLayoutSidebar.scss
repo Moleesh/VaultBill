@@ -246,7 +246,7 @@
     justify-content: center;
     width: 100%;
     max-width: 100%;
-    overflow: hidden;
+    overflow: visible;
 }
 
 .app-shell:not(.is-sidebar-expanded) .app-shell-operator-actions > * {

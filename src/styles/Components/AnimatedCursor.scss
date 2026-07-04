@@ -159,6 +159,26 @@ body.has-animated-cursor * {
     transform: translate(-50%, -50%) scale(1.06);
 }
 
+.animated-cursor[data-pressed='false'][data-interaction='button'] .animated-cursor-core,
+.animated-cursor[data-pressed='false'][data-interaction='link'] .animated-cursor-core,
+.animated-cursor[data-pressed='false'][data-interaction='menu'] .animated-cursor-core {
+    animation: cursor-hover-core 1.2s ease-in-out infinite;
+}
+
+.animated-cursor[data-pressed='false'][data-interaction='button'] .animated-cursor-ring,
+.animated-cursor[data-pressed='false'][data-interaction='link'] .animated-cursor-ring,
+.animated-cursor[data-pressed='false'][data-interaction='menu'] .animated-cursor-ring {
+    animation: cursor-hover-ring 1.35s ease-in-out infinite;
+}
+
+.animated-cursor[data-pressed='false'][data-interaction='button'] .animated-cursor-spark,
+.animated-cursor[data-pressed='false'][data-interaction='link'] .animated-cursor-spark,
+.animated-cursor[data-pressed='false'][data-interaction='menu'] .animated-cursor-spark {
+    animation:
+        cursor-spark-orbit 1.8s linear infinite,
+        cursor-hover-spark 1.15s ease-in-out infinite alternate;
+}
+
 .animated-cursor[data-pressed='true'][data-interaction='link'] .animated-cursor-core {
     transform: translate(-50%, -50%) scale(0.8) rotate(-18deg);
 }
@@ -282,6 +302,45 @@ body.has-animated-cursor * {
     --cursor-color: color-mix(in srgb, var(--color-primary) 74%, black 26%);
     --cursor-ring-color: color-mix(in srgb, var(--color-primary) 66%, transparent);
     --cursor-spark-color: color-mix(in srgb, white 52%, var(--color-primary) 48%);
+}
+
+@keyframes cursor-hover-core {
+    0%,
+    100% {
+        transform: translate(-50%, -50%) scale(1);
+    }
+    50% {
+        transform: translate(-50%, -50%) scale(1.14);
+    }
+}
+
+@keyframes cursor-hover-ring {
+    0%,
+    100% {
+        transform: translate(-50%, -50%) scale(1);
+        box-shadow:
+            inset 0 1px 0 color-mix(in srgb, white 14%, transparent),
+            0 0 0 1px color-mix(in srgb, white 52%, transparent),
+            0 0 0.64rem color-mix(in srgb, var(--cursor-ring-color) 14%, transparent);
+    }
+    50% {
+        transform: translate(-50%, -50%) scale(1.12);
+        box-shadow:
+            inset 0 1px 0 color-mix(in srgb, white 22%, transparent),
+            0 0 0 1px color-mix(in srgb, white 64%, transparent),
+            0 0 1rem color-mix(in srgb, var(--cursor-ring-color) 24%, transparent);
+    }
+}
+
+@keyframes cursor-hover-spark {
+    0% {
+        opacity: 0.88;
+        filter: brightness(1);
+    }
+    100% {
+        opacity: 1;
+        filter: brightness(1.18);
+    }
 }
 
 @keyframes cursor-spark-orbit {

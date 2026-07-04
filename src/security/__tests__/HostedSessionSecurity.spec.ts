@@ -5,9 +5,11 @@
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { LocalApiServer } from '../../../electron/server/LocalApiServer.js';
-import { createHostedSessionTestHarness } from './HostedSessionSecuritySupport.js';
+import {
+    createHostedSessionTestHarness,
+    getAvailablePort,
+} from './HostedSessionSecuritySupport.js';
 
-const port = 43_917;
 let server: LocalApiServer | undefined;
 let harness = createHostedSessionTestHarness();
 
@@ -20,6 +22,7 @@ afterEach(async () => {
 
 describe('hosted Local API sessions', () => {
     it('requires cookie sessions and CSRF instead of trusted role headers', async () => {
+        const port = await getAvailablePort();
         harness.credentialStore.saveAccount({
             userId: 'admin_1',
             username: 'admin',
@@ -37,7 +40,7 @@ describe('hosted Local API sessions', () => {
             { port },
         );
         await server.start();
-        const baseUrl = `http://127.0.0.1:${String(port)}`;
+        const baseUrl = `http://127.0.0.1:${String(server.getConfiguration().port)}`;
 
         const spoofed = await fetch(`${baseUrl}/records`, {
             headers: { 'x-vaultbill-role': 'Admin' },

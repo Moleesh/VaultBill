@@ -166,7 +166,7 @@
     overflow-y: hidden;
     border: var(--line-width) solid var(--color-border);
     border-radius: var(--radius-md);
-    background: color-mix(in srgb, var(--color-surface) 94%, var(--color-app-background));
+    background: var(--color-card);
     padding: var(--space-2);
     box-shadow: var(--shadow-card);
     scrollbar-width: none;
@@ -309,6 +309,21 @@
 
     .settings-inline-actions--end {
         justify-content: stretch;
+    }
+}
+
+@media (max-width: 72rem) {
+    .settings-jump-links {
+        background: var(--color-card);
+    }
+
+    .settings-section-card--business-details,
+    .settings-section-card--business-preferences {
+        max-width: none;
+    }
+
+    .settings-section-grid--business-preferences {
+        grid-template-columns: 1fr;
     }
 }
 .line-item-grid-item {
