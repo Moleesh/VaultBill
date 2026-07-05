@@ -1,5 +1,4 @@
 # @format
-
 name: Demo Pages
 
 on:
@@ -12,7 +11,7 @@ permissions:
     id-token: write
 
 concurrency:
-    group: pages
+    group: pages-${{ github.ref }}
     cancel-in-progress: true
 
 jobs:
@@ -25,16 +24,16 @@ jobs:
 
         steps:
             - name: Checkout
-              uses: actions/checkout@v5
+              uses: actions/checkout@v7
 
             - name: Setup Node
-              uses: actions/setup-node@v5
+              uses: actions/setup-node@v6
               with:
                   node-version: 24
                   cache: npm
 
             - name: Configure GitHub Pages
-              uses: actions/configure-pages@v5
+              uses: actions/configure-pages@v6
 
             - name: Install
               run: npm ci
@@ -57,7 +56,7 @@ jobs:
                   if-no-files-found: ignore
 
             - name: Upload GitHub Pages artifact
-              uses: actions/upload-pages-artifact@v4
+              uses: actions/upload-pages-artifact@v5.0.0
               with:
                   path: dist
 
@@ -71,4 +70,4 @@ jobs:
         steps:
             - name: Deploy to GitHub Pages
               id: deployment
-              uses: actions/deploy-pages@v4
+              uses: actions/deploy-pages@v5.0.0
