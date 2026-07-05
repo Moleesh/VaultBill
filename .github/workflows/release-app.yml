@@ -46,7 +46,7 @@ jobs:
 
             - name: Upload browser failure evidence
               if: failure()
-              uses: actions/upload-artifact@v5
+              uses: actions/upload-artifact@v7.0.1
               with:
                   name: playwright-failure-${{ github.run_id }}
                   path: |
@@ -86,7 +86,7 @@ jobs:
               run: npm run smoke:installer:required
 
             - name: Upload Windows artifacts
-              uses: actions/upload-artifact@v5
+              uses: actions/upload-artifact@v7.0.1
               with:
                   name: vaultbill-windows-${{ github.sha }}
                   path: |
@@ -127,7 +127,7 @@ jobs:
               run: npm run smoke:installer:required
 
             - name: Upload Linux artifacts
-              uses: actions/upload-artifact@v5
+              uses: actions/upload-artifact@v7.0.1
               with:
                   name: vaultbill-linux-${{ github.sha }}
                   path: |
@@ -150,13 +150,13 @@ jobs:
                   cache: npm
 
             - name: Setup Java
-              uses: actions/setup-java@v4
+              uses: actions/setup-java@v5.4.0
               with:
                   distribution: temurin
                   java-version: 21
 
             - name: Setup Android SDK
-              uses: android-actions/setup-android@v3
+              uses: android-actions/setup-android@v4.0.1
 
             - name: Install
               run: npm ci
@@ -165,7 +165,7 @@ jobs:
               run: npm run build:android:ci
 
             - name: Upload Android artifacts
-              uses: actions/upload-artifact@v5
+              uses: actions/upload-artifact@v7.0.1
               with:
                   name: vaultbill-android-${{ github.sha }}
                   path: android/app/build/outputs/apk/debug/*.apk
@@ -200,6 +200,7 @@ jobs:
               run: |
                   npm run release:notes
                   npm run release:checksums
+                  mkdir -p artifacts
                   printf '\n## Signing status\n\n- Windows, Linux, and Android artifacts are unsigned unless signing credentials were configured by the repository owner.\n' >> artifacts/release-notes.md
 
             - name: Replace same-version release
