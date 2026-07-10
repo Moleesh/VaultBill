@@ -1,4 +1,5 @@
 /** @format */
+/* eslint-disable max-lines */
 
 type DesktopBuildIdentity = {
     readonly appName: string;
@@ -160,10 +161,13 @@ type VaultBillDesktopBridge = {
             readonly formatId: string;
             readonly formatName: string;
             readonly isDefault: boolean;
+            readonly isBuiltIn: boolean;
+            readonly isEnabled: boolean;
             readonly updatedAt: string;
             readonly templateName?: string;
             readonly assetCount: number;
             readonly isValid: boolean;
+            readonly sortOrder: number;
         }[]
     >;
     readonly deleteBuilderPackage: (formatId: string) => Promise<void>;

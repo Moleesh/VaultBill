@@ -128,6 +128,14 @@ select[aria-invalid='true']:focus-visible {
     min-height: var(--control-height);
 }
 
+.form-field textarea {
+    width: 100%;
+    min-width: 0;
+    min-height: 7.5rem;
+    line-height: 1.5;
+    resize: vertical;
+}
+
 .field-input-shell.has-trailing-adornment > input {
     padding-inline-end: 3.35rem;
 }

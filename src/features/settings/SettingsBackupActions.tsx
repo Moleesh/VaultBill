@@ -50,9 +50,9 @@ export const SettingsBackupActions: FC<SettingsBackupActionsProps> = ({
                 <ArchiveRestore aria-hidden="true" />
             </div>
             {canBackup || canRestore ? (
-                <div className="settings-subsection-card settings-subsection-card--form">
+                <div className="settings-subsection-card settings-subsection-card--form settings-subsection-card--backup-panel">
                     {canBackup ? (
-                        <div className="settings-subsection-actions settings-subsection-actions--between">
+                        <div className="settings-subsection-actions settings-subsection-actions--backup">
                             <FormField.CheckboxField
                                 checked={encryptBackup}
                                 label="Encrypt backup"
@@ -123,8 +123,8 @@ export const SettingsBackupActions: FC<SettingsBackupActionsProps> = ({
                 </div>
                 <ShieldCheck aria-hidden="true" />
             </div>
-            <div className="settings-subsection-card settings-subsection-card--form">
-                <div className="operator-create operator-create--inline">
+            <div className="settings-subsection-card settings-subsection-card--form settings-subsection-card--backup-panel">
+                <div className="operator-create operator-create--inline operator-create--backup-password">
                     <form.Field name="backupPassword">
                         {(field) => (
                             <FormField.PasswordField
@@ -160,7 +160,7 @@ export const SettingsBackupActions: FC<SettingsBackupActionsProps> = ({
                     </div>
                     <RotateCcw aria-hidden="true" />
                 </div>
-                <div className="settings-subsection-card settings-subsection-card--form">
+                <div className="settings-subsection-card settings-subsection-card--form settings-subsection-card--backup-panel">
                     <ActionButton disabled={Boolean(busyAction)} onClick={onOpenReset}>
                         Reset application data
                     </ActionButton>

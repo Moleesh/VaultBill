@@ -52,11 +52,51 @@ export type BuilderInventoryItem = {
     readonly formatId: string;
     readonly formatName: string;
     readonly isDefault: boolean;
+    readonly isBuiltIn: boolean;
+    readonly isEnabled: boolean;
     readonly updatedAt: string;
     readonly templateName?: string;
     readonly assetCount: number;
     readonly isValid: boolean;
+    readonly sortOrder: number;
 };
+
+export type BuilderLibraryMeta = {
+    readonly isEnabled: boolean;
+    readonly isFavorite: boolean;
+    readonly sortOrder: number;
+};
+
+export const builtInFormatIds = new Set(['TaxInvoice', 'Bill', 'DeliveryNote']);
+
+export const readBuilderLibraryMeta = (config: unknown): BuilderLibraryMeta => {
+    const parsedConfig =
+        typeof config === 'object' && config !== null ? (config as Record<string, unknown>) : {};
+    const parsedMeta =
+        typeof parsedConfig.LibraryMeta === 'object' && parsedConfig.LibraryMeta !== null
+            ? (parsedConfig.LibraryMeta as Record<string, unknown>)
+            : {};
+
+    return {
+        isEnabled: parsedMeta.isEnabled !== false,
+        isFavorite: parsedMeta.isFavorite === true,
+        sortOrder:
+            typeof parsedMeta.sortOrder === 'number' && Number.isFinite(parsedMeta.sortOrder)
+                ? parsedMeta.sortOrder
+                : Number.MAX_SAFE_INTEGER,
+    };
+};
+
+export const writeBuilderLibraryMeta = (
+    config: BuilderPackage['config'],
+    nextMeta: Partial<BuilderLibraryMeta>,
+): BuilderPackage['config'] => ({
+    ...config,
+    LibraryMeta: {
+        ...readBuilderLibraryMeta(config),
+        ...nextMeta,
+    },
+});
 
 /** Raw format row returned from SQLite. */
 export type FormatRow = {
@@ -128,22 +168,33 @@ export const mapSavedPrintTemplateRows = (
 export const mapBuilderInventoryRows = (
     rows: readonly Record<string, unknown>[],
 ): readonly BuilderInventoryItem[] =>
-    rows.map((row) => {
-        let isValid = Boolean(row.template_html);
-        try {
-            JSON.parse(String(row.format_json));
-        } catch {
-            isValid = false;
-        }
-        return {
-            formatId: String(row.format_id),
-            formatName: String(row.format_name),
-            isDefault: Number(row.is_default) === 1,
-            updatedAt: String(row.updated_at),
-            ...(typeof row.template_name === 'string' && row.template_name.length > 0
-                ? { templateName: row.template_name }
-                : {}),
-            assetCount: Number(row.asset_count),
-            isValid,
-        };
-    });
+    rows
+        .map((row) => {
+            let parsedConfig: BuilderPackage['config'] | undefined;
+            let isValid = Boolean(row.template_html);
+            try {
+                parsedConfig = JSON.parse(String(row.format_json)) as BuilderPackage['config'];
+            } catch {
+                isValid = false;
+            }
+            const libraryMeta = readBuilderLibraryMeta(parsedConfig);
+            return {
+                formatId: String(row.format_id),
+                formatName: String(row.format_name),
+                isDefault: Number(row.is_default) === 1,
+                isBuiltIn: builtInFormatIds.has(String(row.format_id)),
+                isEnabled: libraryMeta.isEnabled,
+                updatedAt: String(row.updated_at),
+                ...(typeof row.template_name === 'string' && row.template_name.length > 0
+                    ? { templateName: row.template_name }
+                    : {}),
+                assetCount: Number(row.asset_count),
+                isValid,
+                sortOrder: libraryMeta.sortOrder,
+            };
+        })
+        .sort((left, right) => {
+            if (left.sortOrder !== right.sortOrder) return left.sortOrder - right.sortOrder;
+            if (left.isDefault !== right.isDefault) return left.isDefault ? -1 : 1;
+            return left.formatName.localeCompare(right.formatName);
+        });

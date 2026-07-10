@@ -1,5 +1,7 @@
 /** @format */
+/* eslint-disable max-lines */
 
+import { builtInStoredFormats } from '../../constants/BuiltInDocumentFormats';
 import { builtInDefaultFormat } from '../../db/startup/BuiltInDefaultFormat';
 import {
     builtInDefaultPrintAsset,
@@ -9,6 +11,13 @@ import {
     DocumentFormatConfigSchema,
     type DocumentFormatConfig,
 } from '../../db/startup/ConfigSchemas';
+import {
+    isBuiltInBuilderFormat,
+    readBuilderLibraryMeta,
+    sortBuilderInventory,
+    writeBuilderLibraryMeta,
+    type BuilderInventoryItem,
+} from './BuilderDocumentLibrarySupport';
 
 /** Ordered builder steps used by the document-format wizard. */
 export const steps = [
@@ -84,6 +93,52 @@ let browserBuilderConfig = cloneDefault();
 let browserBuilderTemplateHtml = builtInDefaultPrintTemplateHtml;
 let browserBuilderAssets: readonly AssetSummary[] = [builtInSampleAsset];
 let browserSavedTemplates: readonly SavedPrintTemplate[] = [];
+const browserBuilderPackages = new Map<string, StoredBuilderPackage>();
+
+const createBrowserSavedTemplates = (formatName: string): readonly SavedPrintTemplate[] => [
+    {
+        name: `${formatName} Shared HTML`,
+        templateHtml: builtInDefaultPrintTemplateHtml,
+        updatedAt: new Date().toISOString(),
+    },
+];
+
+const normalizeStoredBuilderPackage = (
+    builderPackage: StoredBuilderPackage,
+): StoredBuilderPackage => ({
+    ...builderPackage,
+    savedTemplates: [...(builderPackage.savedTemplates ?? [])],
+    assets: [...builderPackage.assets],
+});
+
+const initializeBrowserBuilderPackages = () => {
+    if (browserBuilderPackages.size > 0) return;
+    for (const [index, storedFormat] of builtInStoredFormats.entries()) {
+        const parsed = JSON.parse(storedFormat.formatJson) as DocumentFormatConfig;
+        const config = writeBuilderLibraryMeta(parsed, {
+            isEnabled: true,
+            isFavorite: storedFormat.isDefault,
+            sortOrder: index,
+        });
+        browserBuilderPackages.set(storedFormat.formatId, {
+            config,
+            templateHtml: builtInDefaultPrintTemplateHtml,
+            savedTemplates: createBrowserSavedTemplates(storedFormat.formatName),
+            assets: [builtInSampleAsset],
+        });
+    }
+};
+
+const updateBrowserDefaultMetadata = (favoriteFormatId: string) => {
+    for (const [formatId, storedPackage] of browserBuilderPackages.entries()) {
+        browserBuilderPackages.set(formatId, {
+            ...storedPackage,
+            config: writeBuilderLibraryMeta(storedPackage.config as DocumentFormatConfig, {
+                isFavorite: formatId === favoriteFormatId,
+            }),
+        });
+    }
+};
 
 /** Reads the current in-memory builder config for demo-mode editing. */
 export const readConfig = (): DocumentFormatConfig => {
@@ -106,12 +161,62 @@ export const writeBuilderPackage = (builderPackage: {
     readonly assets: readonly AssetSummary[];
     readonly savedTemplates: readonly SavedPrintTemplate[];
 }) => {
+    initializeBrowserBuilderPackages();
     browserBuilderConfig = DocumentFormatConfigSchema.parse(
         JSON.parse(JSON.stringify(builderPackage.config)) as unknown,
     );
     browserBuilderTemplateHtml = builderPackage.templateHtml;
     browserBuilderAssets = [...builderPackage.assets];
     browserSavedTemplates = [...builderPackage.savedTemplates];
+    const configWithLibraryMeta = builderPackage.config;
+    const libraryMeta = readBuilderLibraryMeta(configWithLibraryMeta);
+    browserBuilderPackages.set(configWithLibraryMeta.FormatId, {
+        config: DocumentFormatConfigSchema.parse(
+            JSON.parse(JSON.stringify(configWithLibraryMeta)) as unknown,
+        ),
+        templateHtml: builderPackage.templateHtml,
+        savedTemplates: [...builderPackage.savedTemplates],
+        assets: [...builderPackage.assets],
+    });
+    if (libraryMeta.isFavorite) updateBrowserDefaultMetadata(configWithLibraryMeta.FormatId);
+};
+
+export const listBrowserBuilderInventory = (): readonly BuilderInventoryItem[] => {
+    initializeBrowserBuilderPackages();
+    const now = new Date().toISOString();
+    return sortBuilderInventory(
+        [...browserBuilderPackages.values()].map((storedPackage) => {
+            const config = DocumentFormatConfigSchema.parse(storedPackage.config);
+            const libraryMeta = readBuilderLibraryMeta(config);
+            return {
+                formatId: config.FormatId,
+                formatName: config.FormatName,
+                isDefault: libraryMeta.isFavorite,
+                isBuiltIn: isBuiltInBuilderFormat(config.FormatId),
+                isEnabled: libraryMeta.isEnabled,
+                updatedAt: storedPackage.savedTemplates?.[0]?.updatedAt ?? now,
+                templateName: `${config.FormatName} Print`,
+                assetCount: storedPackage.assets.length,
+                isValid: Boolean(storedPackage.templateHtml),
+                sortOrder: libraryMeta.sortOrder,
+            } satisfies BuilderInventoryItem;
+        }),
+    );
+};
+
+export const readBrowserBuilderPackage = (formatId?: string): StoredBuilderPackage | null => {
+    initializeBrowserBuilderPackages();
+    const inventory = listBrowserBuilderInventory();
+    const resolvedFormatId = formatId ?? inventory.find((item) => item.isDefault)?.formatId;
+    if (!resolvedFormatId) return null;
+    const storedPackage = browserBuilderPackages.get(resolvedFormatId);
+    if (!storedPackage) return null;
+    return normalizeStoredBuilderPackage(storedPackage);
+};
+
+export const removeBrowserBuilderPackage = (formatId: string): void => {
+    initializeBrowserBuilderPackages();
+    browserBuilderPackages.delete(formatId);
 };
 
 /** Creates a starter field configuration for ad-hoc builder additions. */

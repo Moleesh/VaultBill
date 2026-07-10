@@ -29,10 +29,13 @@ describe('BuilderDocumentLibrarySupport', () => {
                 formatId: 'TaxInvoice',
                 formatName: 'GST Invoice',
                 isDefault: true,
+                isBuiltIn: true,
+                isEnabled: true,
                 updatedAt: '2026-06-14T00:00:00.000Z',
                 templateName: 'GST Invoice Print',
                 assetCount: 2,
                 isValid: true,
+                sortOrder: 0,
             }),
         ).toContain('Default document');
     });

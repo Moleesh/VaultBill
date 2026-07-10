@@ -197,11 +197,14 @@ const CheckboxField: FC<CheckboxFieldProps> = ({
 }) => (
     <label className={wrapperClassName ? `checkbox-field ${wrapperClassName}` : 'checkbox-field'}>
         <input {...inputProps} type="checkbox" />
-        <span>
-            {label}
-            {requiredIndicator ? <RequiredIndicator /> : null}
+        <span aria-hidden="true" className="checkbox-field-control" />
+        <span className="checkbox-field-copy">
+            <span className="checkbox-field-label">
+                {label}
+                {requiredIndicator ? <RequiredIndicator /> : null}
+            </span>
+            {note ? <p className="field-note">{note}</p> : null}
         </span>
-        {note ? <p className="field-note">{note}</p> : null}
     </label>
 );
 

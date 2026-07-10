@@ -46,7 +46,7 @@ describe('builder page', () => {
             </MemoryRouter>,
         );
 
-        expect(await screen.findByRole('heading', { name: 'Document library' })).toBeVisible();
+        expect(await screen.findByRole('heading', { name: 'Available documents' })).toBeVisible();
         fireEvent.click(screen.getByRole('button', { name: /New document/u }));
         expect(await screen.findByRole('heading', { name: 'Document builder' })).toBeVisible();
     });

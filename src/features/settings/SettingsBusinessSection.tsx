@@ -16,6 +16,7 @@ import { useSettingsBusinessSection } from './useSettingsBusinessSection';
 export const SettingsBusinessSection: FC = () => {
     const { availablePrinters, capabilities, form, message, saveBusiness } =
         useSettingsBusinessSection();
+    const printerUnavailableInBrowser = !capabilities.isDesktop && availablePrinters.length === 0;
 
     return (
         <form
@@ -61,17 +62,15 @@ export const SettingsBusinessSection: FC = () => {
                 </div>
                 <div className="settings-section-card settings-section-card--business-preferences">
                     <div className="settings-section-grid settings-section-grid--business-preferences">
-                        <SettingsBusinessThemePicker
-                            note="Pick the theme you want on the sign-in screen and across the workspace."
-                            onThemeChange={(value) => {
-                                form.setFieldValue('theme', value);
-                                applyTheme(value);
-                            }}
-                            theme={form.state.values.theme}
-                        />
                         <SearchableDropdown
                             label="Preferred printer"
+                            disabled={printerUnavailableInBrowser}
                             loading={capabilities.isDesktop && availablePrinters.length === 0}
+                            note={
+                                printerUnavailableInBrowser
+                                    ? 'Available in VaultBill Desktop only.'
+                                    : 'Choose only from installed printers.'
+                            }
                             onChange={(value) => {
                                 form.setFieldValue('preferredPrinterName', value);
                             }}
@@ -95,17 +94,26 @@ export const SettingsBusinessSection: FC = () => {
                                       ]
                             }
                             value={form.state.values.preferredPrinterName}
+                            wrapperClassName={
+                                printerUnavailableInBrowser
+                                    ? 'settings-business-preference settings-business-preference--disabled'
+                                    : 'settings-business-preference'
+                            }
                         />
-                        <p className="field-note settings-section-grid-span-full">
-                            Choose only from installed printers. Print behavior is defined with each
-                            document format. Business profile details and printer defaults are saved
-                            together here.
-                        </p>
-                    </div>
-                    <div className="settings-inline-actions settings-inline-actions--end">
-                        <ActionButton type="submit" variant="primary">
-                            Save business
-                        </ActionButton>
+                        <SettingsBusinessThemePicker
+                            note="Used on the sign-in screen and across the workspace."
+                            onThemeChange={(value) => {
+                                form.setFieldValue('theme', value);
+                                applyTheme(value);
+                            }}
+                            theme={form.state.values.theme}
+                            wrapperClassName="settings-business-preference"
+                        />
+                        <div className="settings-inline-actions settings-inline-actions--business-save">
+                            <ActionButton type="submit" variant="primary">
+                                Save business
+                            </ActionButton>
+                        </div>
                     </div>
                 </div>
             </div>

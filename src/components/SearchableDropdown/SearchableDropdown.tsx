@@ -22,6 +22,7 @@ import {
 } from './SearchableDropdownSupport';
 
 type SearchableDropdownProps = {
+    readonly disabled?: boolean;
     readonly hideLabel?: boolean;
     readonly invalid?: boolean;
     readonly label: string;
@@ -36,6 +37,7 @@ type SearchableDropdownProps = {
 
 /** Renders a searchable select control with shared form-field labeling and portal menu behavior. */
 export const SearchableDropdown: FC<SearchableDropdownProps> = ({
+    disabled = false,
     hideLabel = false,
     invalid = false,
     label,
@@ -79,6 +81,7 @@ export const SearchableDropdown: FC<SearchableDropdownProps> = ({
 
     const portalRoot = document.getElementById('portal-root');
     const selectedLabel = loading ? 'Loading…' : (selectedOption?.label ?? 'Choose');
+    const isDisabled = disabled || loading;
 
     return (
         <FormField.Wrapper
@@ -95,8 +98,11 @@ export const SearchableDropdown: FC<SearchableDropdownProps> = ({
                     aria-expanded={isOpen}
                     aria-haspopup="listbox"
                     className="searchable-dropdown-trigger"
-                    disabled={loading}
+                    disabled={isDisabled}
                     onClick={() => {
+                        if (isDisabled) {
+                            return;
+                        }
                         setIsOpen((current) => {
                             const next = !current;
                             if (next) {

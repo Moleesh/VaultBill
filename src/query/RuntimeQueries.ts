@@ -21,8 +21,11 @@ import type {
     StoredBuilderPackage,
 } from '../features/builder/BuilderPageSupport';
 import {
+    listBrowserBuilderInventory,
+    readBrowserBuilderPackage,
     readBuilderAssets,
     readConfig,
+    removeBrowserBuilderPackage,
     readSavedTemplates,
     readTemplateHtml,
     writeBuilderPackage,
@@ -1112,7 +1115,7 @@ export const fetchBuilderInventory = async ({
     if (capabilities.isHostedWeb) {
         return requestHostedApi<readonly BuilderInventoryItem[]>('/builder/inventory');
     }
-    return [];
+    return listBrowserBuilderInventory();
 };
 
 export const fetchBuilderPackage = async ({
@@ -1133,13 +1136,12 @@ export const fetchBuilderPackage = async ({
             )) ?? null
         );
     }
-
-    return {
+    return (readBrowserBuilderPackage(formatId) ?? {
         config: readConfig(),
         templateHtml: readTemplateHtml(),
         savedTemplates: readSavedTemplates(),
         assets: readBuilderAssets(),
-    } satisfies StoredBuilderPackage;
+    }) satisfies StoredBuilderPackage;
 };
 
 export const removeBuilderPackage = async ({
@@ -1160,7 +1162,7 @@ export const removeBuilderPackage = async ({
         );
         return;
     }
-    throw new Error('Document deletion is only available through VaultBill Desktop.');
+    removeBrowserBuilderPackage(formatId);
 };
 
 export const saveBuilderPackage = async ({

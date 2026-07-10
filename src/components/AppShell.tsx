@@ -114,8 +114,7 @@ export const AppShell: FC = () => {
         allowedSectionIds.has(section.id as AppRouteId),
     );
     const pageId = getPageId(location.pathname);
-    const builderLibraryMode =
-        pageId === 'builder' && !new URLSearchParams(location.search).get('format');
+    const builderLibraryMode = pageId === 'builder';
     const landingRoute = operatorContext.role === 'User' ? '/app/records' : '/app/dashboard';
 
     return (

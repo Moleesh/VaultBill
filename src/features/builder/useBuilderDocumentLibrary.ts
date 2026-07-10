@@ -9,17 +9,26 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { CapabilityRegistry } from '../../capability/Capability.types';
 import { builtInDefaultPrintTemplateHtml } from '../../db/startup/BuiltInDefaultPrintTemplate';
 import { getRuntimeQueryScope, queryKeys } from '../../query/QueryKeys';
-import { fetchBuilderInventory, fetchBuilderPackage } from '../../query/RuntimeQueries';
+import {
+    fetchBuilderInventory,
+    fetchBuilderPackage,
+    saveBuilderPackage,
+} from '../../query/RuntimeQueries';
 import { applyStoredBuilderPackage, deleteBuilderPackage } from './BuilderDocumentLibraryRuntime';
 import {
     createNewDocumentDraft,
     duplicateDocumentDraft,
+    readBuilderLibraryMeta,
+    sortBuilderInventory,
+    writeBuilderLibraryMeta,
     type BuilderInventoryItem,
 } from './BuilderDocumentLibrarySupport';
 import type { DocumentFormatConfig } from './BuilderPageControllerSupport';
+import { renderBuilderPreview } from './BuilderPagePreviewSupport';
 import {
     base64ByteLength,
     builtInSampleAsset,
+    defaultBuilderPrintSettings,
     type AssetSummary,
     type SavedPrintTemplate,
     type StoredBuilderPackage,
@@ -38,6 +47,7 @@ type BuilderDocumentLibraryArgs = {
     readonly setConfig: (value: DocumentFormatConfig) => void;
     readonly setMessage: (value: string) => void;
     readonly setSavedTemplates: (value: readonly SavedPrintTemplate[]) => void;
+    readonly setStepIndex: (value: number) => void;
     readonly setTemplateHtml: (value: string) => void;
     readonly setViewMode: (value: 'library' | 'builder') => void;
     readonly templateHtml: string;
@@ -53,6 +63,7 @@ export const useBuilderDocumentLibrary = ({
     setConfig,
     setMessage,
     setSavedTemplates,
+    setStepIndex,
     setTemplateHtml,
     setViewMode,
     templateHtml,
@@ -80,7 +91,10 @@ export const useBuilderDocumentLibrary = ({
             });
         },
     });
-    const inventory = useMemo(() => inventoryQuery.data ?? [], [inventoryQuery.data]);
+    const inventory = useMemo(
+        () => sortBuilderInventory(inventoryQuery.data ?? []),
+        [inventoryQuery.data],
+    );
 
     const normalizeLoadedAssets = useCallback(
         (loadedPackage: StoredBuilderPackage): readonly AssetSummary[] =>
@@ -108,6 +122,7 @@ export const useBuilderDocumentLibrary = ({
             formatId?: string,
             options?: {
                 readonly openBuilder?: boolean;
+                readonly stepIndex?: number;
                 readonly syncSearchParam?: boolean;
             },
         ) => {
@@ -129,7 +144,10 @@ export const useBuilderDocumentLibrary = ({
                 setMessage('The selected document could not be loaded.');
                 return;
             }
-            if (shouldOpenBuilder) setViewMode('builder');
+            if (shouldOpenBuilder) {
+                setViewMode('builder');
+                setStepIndex(options?.stepIndex ?? 0);
+            }
             if (shouldSyncSearchParam) syncFormatSearchParam(formatId);
             setMessage('');
         },
@@ -139,6 +157,7 @@ export const useBuilderDocumentLibrary = ({
             setConfig,
             setMessage,
             setSavedTemplates,
+            setStepIndex,
             setTemplateHtml,
             setViewMode,
             syncFormatSearchParam,
@@ -195,6 +214,7 @@ export const useBuilderDocumentLibrary = ({
         setAssets([builtInSampleAsset]);
         setMessage('A new document draft is ready. Publish it when it looks right.');
         setViewMode('builder');
+        setStepIndex(0);
         syncFormatSearchParam(nextConfig.FormatId);
     }, [
         inventory,
@@ -202,6 +222,7 @@ export const useBuilderDocumentLibrary = ({
         setConfig,
         setMessage,
         setSavedTemplates,
+        setStepIndex,
         setTemplateHtml,
         setViewMode,
         syncFormatSearchParam,
@@ -216,6 +237,7 @@ export const useBuilderDocumentLibrary = ({
         setSavedTemplates(normalizeSavedPrintTemplates(savedTemplates));
         setMessage(`Copied ${config.FormatName}. Publish the new document to save it.`);
         setViewMode('builder');
+        setStepIndex(0);
         syncFormatSearchParam(nextConfig.FormatId);
     }, [
         config,
@@ -224,6 +246,7 @@ export const useBuilderDocumentLibrary = ({
         setConfig,
         setMessage,
         setSavedTemplates,
+        setStepIndex,
         setViewMode,
         syncFormatSearchParam,
     ]);
@@ -265,6 +288,7 @@ export const useBuilderDocumentLibrary = ({
                 `Copied ${(sourcePackage.config as DocumentFormatConfig).FormatName}. Publish the new document to save it.`,
             );
             setViewMode('builder');
+            setStepIndex(0);
             syncFormatSearchParam(nextConfig.FormatId);
         },
         [
@@ -280,6 +304,7 @@ export const useBuilderDocumentLibrary = ({
             setConfig,
             setMessage,
             setSavedTemplates,
+            setStepIndex,
             setTemplateHtml,
             setViewMode,
             syncFormatSearchParam,
@@ -287,17 +312,221 @@ export const useBuilderDocumentLibrary = ({
         ],
     );
 
-    const deleteDocument = useCallback(
+    const persistDocumentPackage = useCallback(
+        async (builderPackage: StoredBuilderPackage) => {
+            const normalizedPackage = {
+                config: builderPackage.config as DocumentFormatConfig,
+                templateHtml: builderPackage.templateHtml,
+                savedTemplates: normalizeSavedPrintTemplates(
+                    builderPackage.savedTemplates ?? defaultSavedPrintTemplates(),
+                ),
+                assets: normalizeLoadedAssets(builderPackage),
+            };
+            await saveBuilderPackage({
+                capabilities,
+                config: normalizedPackage.config,
+                templateHtml: normalizedPackage.templateHtml,
+                savedTemplates: normalizedPackage.savedTemplates,
+                assets: normalizedPackage.assets,
+            });
+            queryClient.setQueryData(
+                queryKeys.builderPackage(runtimeScope, normalizedPackage.config.FormatId),
+                normalizedPackage,
+            );
+            await queryClient.invalidateQueries({
+                queryKey: queryKeys.builderInventory(runtimeScope),
+            });
+            return normalizedPackage;
+        },
+        [capabilities, normalizeLoadedAssets, queryClient, runtimeScope],
+    );
+
+    const fetchDocumentPackage = useCallback(
+        async (formatId: string): Promise<StoredBuilderPackage | null> => {
+            if (formatId === config.FormatId) {
+                return {
+                    config,
+                    templateHtml,
+                    savedTemplates,
+                    assets,
+                };
+            }
+            return (
+                (await queryClient.fetchQuery({
+                    queryKey: queryKeys.builderPackage(runtimeScope, formatId),
+                    queryFn: () => fetchBuilderPackage({ capabilities, formatId }),
+                })) ?? null
+            );
+        },
+        [assets, capabilities, config, queryClient, runtimeScope, savedTemplates, templateHtml],
+    );
+
+    const setDefaultDocument = useCallback(
         async (item: BuilderInventoryItem) => {
-            if (item.isDefault) {
-                setMessage('The default document stays in the library.');
+            const sourcePackage = await fetchDocumentPackage(item.formatId);
+            if (!sourcePackage) {
+                setMessage('The selected document could not be updated.');
                 return;
             }
-            const confirmed = window.confirm(
-                `Delete "${item.formatName}" from the document library?`,
+            const nextConfig = writeBuilderLibraryMeta(
+                sourcePackage.config as DocumentFormatConfig,
+                {
+                    isEnabled: true,
+                    isFavorite: true,
+                    sortOrder: item.sortOrder,
+                },
             );
-            if (!confirmed) return;
+            const savedPackage = await persistDocumentPackage({
+                ...sourcePackage,
+                config: nextConfig,
+            });
+            if (item.formatId === config.FormatId) {
+                setConfig(savedPackage.config);
+            }
+            setMessage(`${item.formatName} is now the default document.`);
+        },
+        [config.FormatId, fetchDocumentPackage, persistDocumentPackage, setConfig, setMessage],
+    );
 
+    const setDocumentEnabled = useCallback(
+        async (item: BuilderInventoryItem, isEnabled: boolean) => {
+            if (item.isBuiltIn) {
+                setMessage('Built-in documents remain available.');
+                return;
+            }
+            if (item.isDefault) {
+                setMessage('The default document must stay enabled.');
+                return;
+            }
+            if (!isEnabled && inventory.filter((candidate) => candidate.isEnabled).length <= 1) {
+                setMessage('Keep at least one document enabled.');
+                return;
+            }
+            const sourcePackage = await fetchDocumentPackage(item.formatId);
+            if (!sourcePackage) {
+                setMessage('The selected document could not be updated.');
+                return;
+            }
+            const nextConfig = writeBuilderLibraryMeta(
+                sourcePackage.config as DocumentFormatConfig,
+                {
+                    isEnabled,
+                    isFavorite: false,
+                    sortOrder: item.sortOrder,
+                },
+            );
+            const savedPackage = await persistDocumentPackage({
+                ...sourcePackage,
+                config: nextConfig,
+            });
+            if (item.formatId === config.FormatId) {
+                setConfig(savedPackage.config);
+            }
+            setMessage(
+                isEnabled ? `${item.formatName} is enabled.` : `${item.formatName} is disabled.`,
+            );
+        },
+        [
+            config.FormatId,
+            fetchDocumentPackage,
+            inventory,
+            persistDocumentPackage,
+            setConfig,
+            setMessage,
+        ],
+    );
+
+    const reorderDocuments = useCallback(
+        async (draggedFormatId: string, targetFormatId: string) => {
+            if (!draggedFormatId || draggedFormatId === targetFormatId) return;
+            const fromIndex = inventory.findIndex((item) => item.formatId === draggedFormatId);
+            const toIndex = inventory.findIndex((item) => item.formatId === targetFormatId);
+            if (fromIndex < 0 || toIndex < 0) return;
+            const nextInventory = [...inventory];
+            const [movedItem] = nextInventory.splice(fromIndex, 1);
+            if (!movedItem) return;
+            nextInventory.splice(toIndex, 0, movedItem);
+            for (const [index, item] of nextInventory.entries()) {
+                const sourcePackage = await fetchDocumentPackage(item.formatId);
+                if (!sourcePackage) continue;
+                const nextConfig = writeBuilderLibraryMeta(
+                    sourcePackage.config as DocumentFormatConfig,
+                    {
+                        isEnabled: readBuilderLibraryMeta(sourcePackage.config).isEnabled,
+                        isFavorite: item.isDefault,
+                        sortOrder: index,
+                    },
+                );
+                const savedPackage = await persistDocumentPackage({
+                    ...sourcePackage,
+                    config: nextConfig,
+                });
+                if (item.formatId === config.FormatId) {
+                    setConfig(savedPackage.config);
+                }
+            }
+            setMessage('Document order updated.');
+        },
+        [
+            config.FormatId,
+            fetchDocumentPackage,
+            inventory,
+            persistDocumentPackage,
+            setConfig,
+            setMessage,
+        ],
+    );
+
+    const openDocumentAtStep = useCallback(
+        async (formatId: string, stepIndex: number) => {
+            await loadDocument(formatId, {
+                openBuilder: true,
+                stepIndex,
+                syncSearchParam: true,
+            });
+        },
+        [loadDocument],
+    );
+
+    const testPrintDocument = useCallback(
+        async (formatId: string) => {
+            const sourcePackage = await fetchDocumentPackage(formatId);
+            if (!sourcePackage) {
+                setMessage('The selected document could not be printed.');
+                return;
+            }
+            const previewHtml = renderBuilderPreview(
+                sourcePackage.templateHtml,
+                sourcePackage.config as DocumentFormatConfig,
+                normalizeLoadedAssets(sourcePackage),
+                (sourcePackage.config as DocumentFormatConfig).Print ?? defaultBuilderPrintSettings,
+            );
+            const iframe = document.createElement('iframe');
+            iframe.style.position = 'fixed';
+            iframe.style.width = '1px';
+            iframe.style.height = '1px';
+            iframe.style.opacity = '0';
+            iframe.style.pointerEvents = 'none';
+            iframe.srcdoc = previewHtml;
+            document.body.appendChild(iframe);
+            iframe.onload = () => {
+                iframe.contentWindow?.focus();
+                iframe.contentWindow?.print();
+                window.setTimeout(() => {
+                    iframe.remove();
+                }, 1000);
+            };
+            setMessage(`Printing ${(sourcePackage.config as DocumentFormatConfig).FormatName}.`);
+        },
+        [fetchDocumentPackage, normalizeLoadedAssets, setMessage],
+    );
+
+    const deleteDocument = useCallback(
+        async (item: BuilderInventoryItem) => {
+            if (item.isDefault || item.isBuiltIn) {
+                setMessage('This document stays in the library.');
+                return;
+            }
             await deletePackageMutation.mutateAsync(item.formatId);
             const nextInventory = await refreshInventory();
 
@@ -333,6 +562,11 @@ export const useBuilderDocumentLibrary = ({
         duplicateCurrentDocument,
         inventory,
         loadDocument,
+        openDocumentAtStep,
         refreshInventory,
+        reorderDocuments,
+        setDefaultDocument,
+        setDocumentEnabled,
+        testPrintDocument,
     };
 };

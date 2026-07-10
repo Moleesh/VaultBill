@@ -5,11 +5,14 @@ import { DatabaseSync } from 'node:sqlite';
 
 import {
     BuilderPackageSchema,
+    builtInFormatIds,
     mapBuilderAssetRows,
     mapBuilderInventoryRows,
     mapSavedPrintTemplateRows,
+    readBuilderLibraryMeta,
     sanitizeSvg,
     sanitizeTemplateHtml,
+    writeBuilderLibraryMeta,
     type BuilderInventoryItem,
     type BuilderPackage,
     type FormatRow,
@@ -83,15 +86,35 @@ export class BuilderStore {
         const templateHtml = sanitizeTemplateHtml(builderPackage.templateHtml);
         const now = new Date().toISOString();
         const { FormatId: formatId, FormatName: formatName } = builderPackage.config;
+        const existingFormat = this.#database
+            .prepare(
+                `SELECT is_default
+                 FROM document_formats
+                 WHERE format_id = ?;`,
+            )
+            .get(formatId) as { readonly is_default: unknown } | undefined;
         const hasDefault =
             Number(
                 this.#database
                     .prepare('SELECT COUNT(*) AS count FROM document_formats WHERE is_default = 1;')
                     .get()?.count ?? 0,
             ) > 0;
+        const libraryMeta = readBuilderLibraryMeta(builderPackage.config);
+        const shouldBeDefault =
+            libraryMeta.isFavorite ||
+            (!hasDefault && !existingFormat) ||
+            Number(existingFormat?.is_default ?? 0) === 1;
+        const normalizedConfig = writeBuilderLibraryMeta(builderPackage.config, {
+            isFavorite: shouldBeDefault,
+        });
 
         this.#database.exec('BEGIN IMMEDIATE;');
         try {
+            if (shouldBeDefault) {
+                this.#database
+                    .prepare('UPDATE document_formats SET is_default = 0 WHERE format_id <> ?;')
+                    .run(formatId);
+            }
             this.#database
                 .prepare(
                     `INSERT INTO document_formats
@@ -105,10 +128,36 @@ export class BuilderStore {
                 .run(
                     formatId,
                     formatName,
-                    JSON.stringify(builderPackage.config),
-                    hasDefault ? 0 : 1,
+                    JSON.stringify(normalizedConfig),
+                    shouldBeDefault ? 1 : 0,
                     now,
                 );
+            if (shouldBeDefault) {
+                const formats = this.#database
+                    .prepare(
+                        `SELECT format_id, format_json
+                         FROM document_formats
+                         WHERE format_id <> ?;`,
+                    )
+                    .all(formatId) as unknown as readonly {
+                    readonly format_id: unknown;
+                    readonly format_json: unknown;
+                }[];
+                const updateFormat = this.#database.prepare(
+                    `UPDATE document_formats
+                     SET format_json = ?
+                     WHERE format_id = ?;`,
+                );
+                for (const format of formats) {
+                    const config = JSON.parse(
+                        String(format.format_json),
+                    ) as BuilderPackage['config'];
+                    updateFormat.run(
+                        JSON.stringify(writeBuilderLibraryMeta(config, { isFavorite: false })),
+                        String(format.format_id),
+                    );
+                }
+            }
             this.#database
                 .prepare(
                     `INSERT INTO print_templates
@@ -176,6 +225,7 @@ export class BuilderStore {
             this.#database.exec('COMMIT;');
             return {
                 ...builderPackage,
+                config: normalizedConfig,
                 templateHtml,
                 savedTemplates: normalizedTemplates,
             };
@@ -207,17 +257,24 @@ export class BuilderStore {
     public delete = (formatId: string): void => {
         const format = this.#database
             .prepare(
-                `SELECT format_id, is_default
+                `SELECT format_id, is_default, format_json
                  FROM document_formats
                  WHERE format_id = ?;`,
             )
             .get(formatId) as
-            | { readonly format_id: unknown; readonly is_default: unknown }
+            | {
+                  readonly format_id: unknown;
+                  readonly is_default: unknown;
+                  readonly format_json: unknown;
+              }
             | undefined;
 
         if (!format) throw new Error('The selected document could not be found.');
         if (Number(format.is_default) === 1) {
             throw new Error('The default document cannot be deleted.');
+        }
+        if (builtInFormatIds.has(String(format.format_id))) {
+            throw new Error('Built-in document formats cannot be deleted.');
         }
 
         this.#database.exec('BEGIN IMMEDIATE;');

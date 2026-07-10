@@ -1,16 +1,26 @@
 /** @format */
 
 import { fireEvent, render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { BuilderDocumentLibrary } from '../BuilderDocumentLibrary';
 
 describe('BuilderDocumentLibrary', () => {
+    beforeEach(() => {
+        document.body.innerHTML = '<div id="portal-root"></div>';
+    });
+
     it('lists documents and exposes row-level create, edit, duplicate, and delete actions', () => {
         const onCreateNew = vi.fn();
         const onDeleteDocument = vi.fn();
         const onDuplicateDocument = vi.fn();
-        const onLoadDocument = vi.fn();
+        const onEditDocument = vi.fn();
+        const onOpenFormatPreview = vi.fn();
+        const onOpenPrintPreview = vi.fn();
+        const onReorderDocuments = vi.fn();
+        const onSetDefaultDocument = vi.fn();
+        const onSetDocumentEnabled = vi.fn();
+        const onTestPrintDocument = vi.fn();
 
         render(
             <BuilderDocumentLibrary
@@ -21,29 +31,41 @@ describe('BuilderDocumentLibrary', () => {
                         formatId: 'TaxInvoice',
                         formatName: 'GST Invoice',
                         isDefault: true,
+                        isBuiltIn: true,
+                        isEnabled: true,
                         updatedAt: '2026-06-14T00:00:00.000Z',
                         templateName: 'GST Invoice Print',
                         assetCount: 1,
                         isValid: true,
+                        sortOrder: 0,
                     },
                     {
                         formatId: 'RetailInvoice',
                         formatName: 'Retail Invoice',
                         isDefault: false,
+                        isBuiltIn: false,
+                        isEnabled: true,
                         updatedAt: '2026-06-15T00:00:00.000Z',
                         templateName: 'Retail Invoice Print',
                         assetCount: 2,
                         isValid: true,
+                        sortOrder: 1,
                     },
                 ]}
                 onCreateNew={onCreateNew}
                 onDeleteDocument={onDeleteDocument}
                 onDuplicateDocument={onDuplicateDocument}
-                onLoadDocument={onLoadDocument}
+                onEditDocument={onEditDocument}
+                onOpenFormatPreview={onOpenFormatPreview}
+                onOpenPrintPreview={onOpenPrintPreview}
+                onReorderDocuments={onReorderDocuments}
+                onSetDefaultDocument={onSetDefaultDocument}
+                onSetDocumentEnabled={onSetDocumentEnabled}
+                onTestPrintDocument={onTestPrintDocument}
             />,
         );
 
-        expect(screen.getByRole('heading', { name: 'Document library' })).toBeVisible();
+        expect(screen.getByRole('heading', { name: 'Available documents' })).toBeVisible();
         expect(screen.getByRole('button', { name: /New document/u })).toBeVisible();
         expect(screen.getByText('Current')).toBeVisible();
         expect(screen.getByText('Default')).toBeVisible();
@@ -63,7 +85,7 @@ describe('BuilderDocumentLibrary', () => {
         }
 
         fireEvent.click(firstEditButton);
-        expect(onLoadDocument).toHaveBeenCalledWith('TaxInvoice');
+        expect(onEditDocument).toHaveBeenCalledWith('TaxInvoice');
 
         fireEvent.click(screen.getByRole('button', { name: /New document/u }));
         fireEvent.click(firstDuplicateButton);
@@ -71,8 +93,11 @@ describe('BuilderDocumentLibrary', () => {
 
         expect(onCreateNew).toHaveBeenCalledTimes(1);
         expect(onDuplicateDocument).toHaveBeenCalledWith('TaxInvoice');
+        expect(screen.getByRole('heading', { name: 'Delete document?' })).toBeVisible();
+        fireEvent.click(screen.getByRole('button', { name: 'Delete document' }));
+
         expect(onDeleteDocument).toHaveBeenCalledWith(
-            expect.objectContaining({ formatId: 'RetailInvoice' }),
+            expect.objectContaining({ formatId: 'RetailInvoice', isEnabled: true }),
         );
     });
 });

@@ -8,6 +8,30 @@
     color: var(--color-secondary-text);
 }
 
+.builder-modal {
+    width: min(100vw - 1.5rem, 96rem);
+    height: calc(100vh - 1.5rem);
+    max-width: none;
+    max-height: none;
+    padding: 0;
+    border: var(--line-width) solid color-mix(in srgb, var(--color-border-strong) 68%, transparent);
+    border-radius: var(--radius-xl);
+    background: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--color-surface-raised) 92%, white 8%),
+        color-mix(in srgb, var(--color-surface) 96%, transparent)
+    );
+    box-shadow: 0 1.2rem 3rem color-mix(in srgb, var(--color-panel-shadow) 20%, transparent);
+}
+
+.builder-modal-shell {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    height: 100%;
+    overflow: hidden;
+    padding: clamp(var(--space-4), 3vw, var(--space-6));
+}
+
 .builder-panel,
 .builder-workspace {
     display: grid;
@@ -33,6 +57,11 @@
     background: var(--color-card);
     padding: clamp(var(--space-4), 4vw, var(--space-6));
     box-shadow: var(--shadow-card);
+}
+
+.builder-modal .builder-workspace {
+    min-height: 0;
+    overflow: auto;
 }
 
 .builder-field-list {
@@ -64,15 +93,150 @@
 }
 
 .checkbox-field {
-    display: flex !important;
+    position: relative;
+    display: inline-grid !important;
+    grid-template-columns: auto minmax(0, 1fr);
     align-items: center;
     gap: var(--space-3);
+    min-width: 0;
+    cursor: pointer;
 }
 
 .checkbox-field input {
-    width: 1.2rem;
-    min-height: auto;
-    height: 1.2rem;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.checkbox-field-control {
+    position: relative;
+    display: inline-grid;
+    width: 1.45rem;
+    min-width: 1.45rem;
+    height: 1.45rem;
+    place-items: center;
+    border: var(--line-width) solid
+        color-mix(in srgb, var(--color-primary) 26%, var(--color-border-strong));
+    border-radius: 0.5rem;
+    background:
+        radial-gradient(
+            circle at 28% 24%,
+            color-mix(in srgb, white 48%, transparent),
+            transparent 42%
+        ),
+        linear-gradient(
+            180deg,
+            color-mix(in srgb, var(--color-surface-raised) 96%, white 4%),
+            color-mix(in srgb, var(--color-surface) 92%, transparent)
+        );
+    box-shadow:
+        inset 0 1px 0 color-mix(in srgb, white 28%, transparent),
+        0 0.22rem 0.6rem color-mix(in srgb, var(--color-panel-shadow) 8%, transparent);
+    transition:
+        border-color var(--motion-fast),
+        background var(--motion-fast),
+        box-shadow var(--motion-fast),
+        transform var(--motion-fast);
+}
+
+.checkbox-field-control::after {
+    content: '';
+    width: 0.42rem;
+    height: 0.76rem;
+    border-right: 0.16rem solid transparent;
+    border-bottom: 0.16rem solid transparent;
+    transform: translateY(-0.04rem) rotate(45deg) scale(0.84);
+    opacity: 0;
+    transition:
+        opacity var(--motion-fast),
+        border-color var(--motion-fast),
+        transform var(--motion-fast);
+}
+
+.checkbox-field-control::before {
+    position: absolute;
+    inset: 0.18rem;
+    border-radius: 0.34rem;
+    background: color-mix(in srgb, var(--color-primary) 6%, transparent);
+    content: '';
+    opacity: 0.9;
+    transition:
+        background var(--motion-fast),
+        opacity var(--motion-fast),
+        transform var(--motion-fast);
+}
+
+.checkbox-field-copy {
+    display: grid;
+    gap: 0.16rem;
+    min-width: 0;
+}
+
+.checkbox-field-label {
+    color: var(--color-text-heading);
+    font-weight: var(--font-weight-semibold);
+}
+
+.checkbox-field .field-note {
+    margin: 0;
+}
+
+.checkbox-field:hover .checkbox-field-control {
+    border-color: color-mix(in srgb, var(--color-primary) 72%, transparent);
+    box-shadow:
+        inset 0 1px 0 color-mix(in srgb, white 30%, transparent),
+        0 0.3rem 0.8rem color-mix(in srgb, var(--color-primary) 14%, transparent);
+    transform: translateY(-1px);
+}
+
+.checkbox-field input:focus-visible + .checkbox-field-control {
+    border-color: color-mix(in srgb, var(--color-primary) 78%, transparent);
+    box-shadow:
+        0 0 0 0.16rem color-mix(in srgb, var(--color-primary) 18%, transparent),
+        inset 0 1px 0 color-mix(in srgb, white 30%, transparent);
+}
+
+.checkbox-field input:checked + .checkbox-field-control {
+    border-color: color-mix(in srgb, var(--color-primary) 92%, transparent);
+    background:
+        radial-gradient(
+            circle at 28% 24%,
+            color-mix(in srgb, white 34%, transparent),
+            transparent 44%
+        ),
+        linear-gradient(
+            180deg,
+            color-mix(in srgb, var(--color-primary) 88%, white 12%),
+            color-mix(in srgb, var(--color-primary) 96%, black 4%)
+        );
+    box-shadow:
+        inset 0 1px 0 color-mix(in srgb, white 26%, transparent),
+        0 0.4rem 1rem color-mix(in srgb, var(--color-primary) 18%, transparent);
+}
+
+.checkbox-field input:checked + .checkbox-field-control::before {
+    background: color-mix(in srgb, var(--color-primary) 18%, white 82%);
+    opacity: 0.22;
+}
+
+.checkbox-field input:checked + .checkbox-field-control::after {
+    border-color: var(--color-primary-text);
+    transform: translateY(-0.08rem) rotate(45deg) scale(1);
+    opacity: 1;
+}
+
+.checkbox-field input:disabled + .checkbox-field-control {
+    border-style: dashed;
+    background: color-mix(in srgb, var(--color-surface-muted) 82%, transparent);
+    box-shadow: none;
+}
+
+.checkbox-field input:disabled ~ .checkbox-field-copy {
+    opacity: 0.72;
 }
 
 .settings-actions,

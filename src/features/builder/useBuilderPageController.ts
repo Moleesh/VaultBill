@@ -104,6 +104,7 @@ export const useBuilderPageController = () => {
         setConfig,
         setMessage,
         setSavedTemplates,
+        setStepIndex,
         setTemplateHtml,
         setViewMode,
         templateHtml,

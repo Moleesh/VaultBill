@@ -26,6 +26,11 @@
     padding: clamp(var(--space-4), 4vw, var(--space-6));
     box-shadow: var(--shadow-card);
 }
+.builder-document-library-intro {
+    display: grid;
+    gap: var(--space-2);
+    max-width: 52rem;
+}
 .builder-document-library-actions {
     display: flex;
     flex-wrap: wrap;
@@ -63,9 +68,9 @@
 }
 .builder-document-library-row {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1.15fr) minmax(22rem, 1fr);
     gap: var(--space-4);
-    align-items: center;
+    align-items: start;
     border: var(--line-width) solid var(--color-border);
     border-radius: var(--radius-lg);
     background: var(--color-surface-raised);
@@ -77,10 +82,24 @@
     background: color-mix(in srgb, var(--color-secondary) 18%, var(--color-surface));
     box-shadow: var(--shadow-card);
 }
+.builder-document-library-row.is-disabled {
+    opacity: 0.88;
+}
+.builder-document-library-row-main {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: start;
+    gap: var(--space-3);
+    min-width: 0;
+}
 .builder-document-library-row-copy {
     display: grid;
     gap: var(--space-2);
     min-width: 0;
+}
+.builder-document-library-row-side {
+    display: grid;
+    gap: var(--space-3);
 }
 .builder-document-library-row-title {
     display: flex;
@@ -110,15 +129,47 @@
     background: color-mix(in srgb, var(--color-surface-muted) 78%, transparent);
     color: var(--color-text-muted);
 }
+.builder-document-library-badge--muted {
+    background: color-mix(in srgb, var(--color-surface-muted) 78%, transparent);
+    color: var(--color-text-muted);
+}
 .builder-document-library-item-meta {
     color: var(--color-text-muted);
     font-size: var(--font-size-sm);
+    line-height: 1.55;
 }
 .builder-document-library-row-actions {
     display: flex;
     flex-wrap: wrap;
-    justify-content: flex-end;
+    justify-content: flex-start;
     gap: var(--space-2);
+}
+.builder-document-library-row-foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-3);
+    border-top: var(--line-width) solid color-mix(in srgb, var(--color-border) 76%, transparent);
+    padding-top: var(--space-3);
+}
+.builder-document-library-toggle {
+    max-width: 22rem;
+}
+.builder-document-library-drag-handle {
+    display: inline-grid;
+    width: 2.7rem;
+    min-width: 2.7rem;
+    height: 2.7rem;
+    place-items: center;
+    border: var(--line-width) dashed color-mix(in srgb, var(--color-border) 78%, transparent);
+    border-radius: var(--radius-md);
+    background: color-mix(in srgb, var(--color-surface-muted) 76%, transparent);
+    color: var(--color-text-muted);
+    cursor: grab;
+}
+.builder-document-library-drag-handle:active {
+    cursor: grabbing;
 }
 .builder-document-library-empty {
     border-radius: var(--radius-lg);
@@ -156,10 +207,10 @@
     font-size: var(--font-size-xl);
 }
 .settings-jump-links {
-    --settings-sticky-offset: clamp(var(--space-5), 4vw, var(--space-10));
+    --settings-sticky-offset: 0px;
     position: sticky;
     z-index: 20;
-    top: calc(var(--settings-sticky-offset) * -1);
+    top: var(--settings-sticky-offset);
     display: flex;
     gap: var(--space-2);
     overflow-x: auto;
@@ -201,7 +252,7 @@
 .settings-section {
     display: grid;
     gap: var(--space-6);
-    scroll-margin-top: calc(5rem + var(--settings-sticky-offset));
+    scroll-margin-top: 5rem;
     border: var(--line-width) solid var(--color-border);
     border-radius: var(--radius-xl);
     background: var(--color-card);
@@ -223,12 +274,9 @@
     padding: clamp(var(--space-4), 3vw, var(--space-5));
 }
 
-.settings-section-card--business-details {
-    max-width: 52rem;
-}
-
+.settings-section-card--business-details,
 .settings-section-card--business-preferences {
-    max-width: 62rem;
+    width: 100%;
 }
 
 .settings-section-grid {
@@ -239,10 +287,16 @@
 
 .settings-section-grid--business-core {
     grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-5);
+}
+
+.settings-section-card--business-details .form-field {
+    gap: var(--space-2);
 }
 
 .settings-section-grid--business-preferences {
-    grid-template-columns: minmax(15rem, 20rem) minmax(18rem, 1fr);
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-4);
 }
 
 .settings-section-grid-span-full {
@@ -251,6 +305,33 @@
 
 .settings-inline-actions--end {
     justify-content: flex-end;
+}
+
+.settings-inline-actions--business-save {
+    justify-content: flex-start;
+}
+
+.settings-business-preference {
+    gap: var(--space-2);
+}
+
+.settings-business-preference .field-note {
+    max-width: 52ch;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    line-height: 1.55;
+}
+
+.settings-business-preference--disabled .searchable-dropdown-trigger {
+    border-style: dashed;
+    border-color: color-mix(in srgb, var(--color-border) 72%, transparent);
+    background: color-mix(in srgb, var(--color-surface-muted) 78%, transparent);
+    color: var(--color-text-muted);
+    box-shadow: none;
+}
+
+.settings-business-preference--disabled .searchable-dropdown-caret {
+    color: color-mix(in srgb, var(--color-text-muted) 72%, transparent);
 }
 .settings-theme-picker {
     display: grid;
@@ -301,13 +382,27 @@
     clip-path: inset(50%);
     pointer-events: none;
 }
+
 @media (max-width: 52rem) {
+    .builder-document-library-row {
+        grid-template-columns: 1fr;
+    }
+
+    .builder-document-library-row-foot {
+        justify-content: stretch;
+    }
+
+    .builder-document-library-toggle {
+        max-width: none;
+    }
+
     .settings-section-grid--business-core,
     .settings-section-grid--business-preferences {
         grid-template-columns: 1fr;
     }
 
-    .settings-inline-actions--end {
+    .settings-inline-actions--end,
+    .settings-inline-actions--business-save {
         justify-content: stretch;
     }
 }
@@ -315,11 +410,6 @@
 @media (max-width: 72rem) {
     .settings-jump-links {
         background: var(--color-card);
-    }
-
-    .settings-section-card--business-details,
-    .settings-section-card--business-preferences {
-        max-width: none;
     }
 
     .settings-section-grid--business-preferences {
