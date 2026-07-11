@@ -6,7 +6,11 @@ import { builtInDocumentFormatSummaries } from '../../constants/BuiltInDocumentF
 import { type AppRecord, type EditableRecord } from './RecordStoreContext';
 
 /** Minimal published-format shape used by the records page picker and reprint flow. */
-export type PublishedFormat = { readonly formatId: string; readonly formatName: string };
+export type PublishedFormat = {
+    readonly formatId: string;
+    readonly formatName: string;
+    readonly isDefault?: boolean;
+};
 
 type RecordsReprintSearchFormValues = {
     readonly searchQuery: string;
@@ -31,7 +35,10 @@ export const resolveRecordsFormatOptions = (
     usesStaticHostedBrowserBuild: boolean,
 ) =>
     (publishedFormats.length > 0
-        ? publishedFormats
+        ? [...publishedFormats].sort((left, right) => {
+              if (left.isDefault !== right.isDefault) return left.isDefault ? -1 : 1;
+              return left.formatName.localeCompare(right.formatName);
+          })
         : usesStaticHostedBrowserBuild
           ? builtInDocumentFormatSummaries.slice(0, 1)
           : builtInDocumentFormatSummaries

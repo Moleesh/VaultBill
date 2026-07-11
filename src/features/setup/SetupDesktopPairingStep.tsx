@@ -11,6 +11,7 @@ import {
     readAndroidPairingSettings,
     saveAndroidPairingSettings,
     scanAndroidPairingHosts,
+    testAndroidPairingHost,
 } from '../../runtime/AndroidPairing';
 
 type SetupDesktopPairingStepProps = {
@@ -23,6 +24,7 @@ export const SetupDesktopPairingStep: FC<SetupDesktopPairingStepProps> = ({ onCo
     const [message, setMessage] = useState('');
     const [discoveredHosts, setDiscoveredHosts] = useState<readonly string[]>([]);
     const [isScanning, setIsScanning] = useState(false);
+    const [isTesting, setIsTesting] = useState(false);
 
     useEffect(() => {
         const settings = readAndroidPairingSettings();
@@ -30,19 +32,41 @@ export const SetupDesktopPairingStep: FC<SetupDesktopPairingStepProps> = ({ onCo
         setDiscoveredHosts(settings.discoveredHosts);
     }, []);
 
-    const savePairing = (enabled: boolean) => {
+    const saveLocalWorkspace = () => {
         saveAndroidPairingSettings({
-            enabled,
-            hostTarget: enabled ? hostTarget.trim() : '',
-            connectionStatus: enabled ? 'unknown' : 'disconnected',
+            enabled: false,
+            hostTarget: '',
+            connectionStatus: 'disconnected',
             discoveredHosts,
         });
-        setMessage(
-            enabled
-                ? 'Desktop pairing saved for this device.'
-                : 'Using this device as a local mobile workspace.',
-        );
+        setMessage('Using this device as a standalone mobile workspace.');
         onContinue();
+    };
+
+    const testAndSavePairing = () => {
+        setIsTesting(true);
+        setMessage('Checking the desktop host...');
+        void testAndroidPairingHost(hostTarget)
+            .then((pairedHostTarget) => {
+                if (!pairedHostTarget) {
+                    setMessage(
+                        'Could not reach VaultBill Desktop. Check the address and same network.',
+                    );
+                    return;
+                }
+                saveAndroidPairingSettings({
+                    enabled: true,
+                    hostTarget: pairedHostTarget,
+                    connectionStatus: 'connected',
+                    discoveredHosts,
+                });
+                setHostTarget(pairedHostTarget);
+                setMessage('Desktop pairing saved for this device.');
+                onContinue();
+            })
+            .finally(() => {
+                setIsTesting(false);
+            });
     };
 
     const scanForHosts = () => {
@@ -114,20 +138,13 @@ export const SetupDesktopPairingStep: FC<SetupDesktopPairingStepProps> = ({ onCo
                     {isScanning ? 'Scanning...' : 'Scan LAN'}
                 </ActionButton>
                 <ActionButton
-                    disabled={!hostTarget.trim()}
-                    onClick={() => {
-                        savePairing(true);
-                    }}
+                    disabled={!hostTarget.trim() || isTesting}
+                    onClick={testAndSavePairing}
                     variant="primary"
                 >
-                    Use desktop host
+                    {isTesting ? 'Testing...' : 'Test and use desktop host'}
                 </ActionButton>
-                <ActionButton
-                    onClick={() => {
-                        savePairing(false);
-                    }}
-                    variant="secondary"
-                >
+                <ActionButton onClick={saveLocalWorkspace} variant="secondary">
                     Skip for local mobile
                 </ActionButton>
             </div>

@@ -127,14 +127,12 @@ describe('RuntimeQueries', () => {
         await updateRuntimeBackupPassword({
             backupPassword: 'backup-secret',
             capabilities: { isHostedWeb: false },
-            remoteAuthorizationPassword: 'ignored-for-desktop',
         });
 
         await expect(
             createRuntimeBackup({
                 capabilities: { isHostedWeb: false },
                 encryptBackup: true,
-                remoteAuthorizationPassword: 'ignored-for-desktop',
             }),
         ).resolves.toMatchObject({
             success: true,
@@ -147,7 +145,6 @@ describe('RuntimeQueries', () => {
         });
         await restoreRuntimeBackup({
             capabilities: { isHostedWeb: false },
-            remoteAuthorizationPassword: 'ignored-for-desktop',
             restoreFile,
             restorePassword: 'restore-secret',
             restoreRecoveryKey: 'restore-key',

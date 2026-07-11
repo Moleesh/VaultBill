@@ -62,6 +62,22 @@ describe('SettingsSecuritySectionActions', () => {
         );
     });
 
+    it('shows a useful message when operator creation fails', async () => {
+        const setMessage = vi.fn();
+        const saveAccount = vi.fn().mockRejectedValue(new Error('Username already exists.'));
+
+        await createSecurityOperator({
+            displayName: 'Desk Admin',
+            password: '',
+            role: 'Admin',
+            saveAccount,
+            setMessage,
+            username: 'desk',
+        });
+
+        expect(setMessage).toHaveBeenCalledWith('Username already exists.');
+    });
+
     it('requires an account and password before changing credentials', async () => {
         const setMessage = vi.fn();
         const resetPassword = vi.fn();
@@ -93,5 +109,22 @@ describe('SettingsSecuritySectionActions', () => {
 
         expect(activate).toHaveBeenCalledWith('LICENSE-KEY');
         expect(setMessage).toHaveBeenCalledWith('License accepted. Full access is now enabled.');
+    });
+
+    it('reports activation failures without clearing the form', async () => {
+        const activationForm = createActivationForm('BROKEN-KEY');
+        const activate = vi.fn().mockRejectedValue(new Error('License expired.'));
+        const setMessage = vi.fn();
+
+        activateSecurityLicense({
+            activationForm,
+            activate,
+            setMessage,
+        });
+        await vi.waitFor(() => {
+            expect(setMessage).toHaveBeenCalledWith('License expired.');
+        });
+
+        expect(activationForm.reset).not.toHaveBeenCalled();
     });
 });

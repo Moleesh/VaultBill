@@ -22,7 +22,6 @@ import {
 export const localApiCorsHeaders = [
     'content-type',
     'x-vaultbill-csrf',
-    'x-vaultbill-sysadmin-password',
     'x-vaultbill-backup-password',
     'x-vaultbill-recovery-key',
 ].join(', ');

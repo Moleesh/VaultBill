@@ -1,6 +1,6 @@
 /** @format */
 
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 import { useQuery } from '@tanstack/react-query';
@@ -88,6 +88,7 @@ export const useRecordsPageState = () => {
     const publishedFormats = publishedFormatsQuery.data ?? [];
     const secretValues = secretValuesQuery.data ?? {};
     const activePrintPackage = activePrintPackageQuery.data as RecordPrintPackage | undefined;
+    const defaultFormat = publishedFormats.find((format) => format.isDefault);
     const formatOptions = resolveRecordsFormatOptions(
         publishedFormats,
         usesStaticHostedBrowserBuild,
@@ -117,6 +118,20 @@ export const useRecordsPageState = () => {
     const showShortcuts =
         !window.matchMedia('(pointer: coarse)').matches &&
         (capabilities.isDesktop || capabilities.isHostedWeb || capabilities.isDemoMode);
+
+    useEffect(() => {
+        if (!defaultFormat || actionState !== 'New') return;
+        setRecord((current) => {
+            if (current.formatId === defaultFormat.formatId || current.customerName.trim()) {
+                return current;
+            }
+            return {
+                ...current,
+                formatId: defaultFormat.formatId,
+                formatName: defaultFormat.formatName,
+            };
+        });
+    }, [actionState, defaultFormat]);
 
     return {
         actionState,

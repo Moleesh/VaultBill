@@ -90,9 +90,11 @@ export const SettingsSecretsSection: FC = () => {
                     secrets={form.state.values.secrets}
                 />
             </SecretsSectionCard>
-            <ActionButton onClick={saveSecrets} variant="primary">
-                Save secrets
-            </ActionButton>
+            <div className="settings-inline-actions settings-inline-actions--secrets-save">
+                <ActionButton onClick={saveSecrets} variant="primary">
+                    Save secrets
+                </ActionButton>
+            </div>
             {message ? (
                 <p className="feedback-info" role="status">
                     {message}

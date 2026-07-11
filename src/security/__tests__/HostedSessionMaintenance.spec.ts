@@ -26,8 +26,7 @@ describe('hosted Local API maintenance', () => {
         const port = await getAvailablePort();
         const restoreBackup = vi.fn();
         const resetApplicationData = vi.fn();
-        const setBackupPassword = vi.fn((currentPassword: string, backupPassword: string) => {
-            void currentPassword;
+        const setBackupPassword = vi.fn((backupPassword: string) => {
             void backupPassword;
             return {
                 sysAdminUsesDefaultPassword: true,
@@ -42,8 +41,7 @@ describe('hosted Local API maintenance', () => {
             harness.directory,
             { port },
             {
-                createBackup: (_encrypted, password) => {
-                    if (password !== '147085aA') throw new Error('The password is incorrect.');
+                createBackup: () => {
                     return {
                         bytes: new Uint8Array([1, 2, 3]),
                         fileName: 'vaultbill-backup.zip',
@@ -82,7 +80,7 @@ describe('hosted Local API maintenance', () => {
         const backup = await fetch(`${baseUrl}/backup/create`, {
             method: 'POST',
             headers: { ...mutationHeaders, 'content-type': 'application/json' },
-            body: JSON.stringify({ encrypted: true, currentPassword: '147085aA' }),
+            body: JSON.stringify({ encrypted: true }),
         });
         expect(backup.status).toBe(200);
         expect(backup.headers.get('content-type')).toBe('application/zip');
@@ -94,29 +92,22 @@ describe('hosted Local API maintenance', () => {
             headers: {
                 ...mutationHeaders,
                 'content-type': 'application/zip',
-                'x-vaultbill-sysadmin-password': encodeSecret('147085aA'),
                 'x-vaultbill-backup-password': encodeSecret('backup-secret'),
             },
             body: new Uint8Array([4, 5, 6]),
         });
         expect(restore.status).toBe(202);
-        expect(restoreBackup).toHaveBeenCalledWith(
-            new Uint8Array([4, 5, 6]),
-            '147085aA',
-            'backup-secret',
-            '',
-        );
+        expect(restoreBackup).toHaveBeenCalledWith(new Uint8Array([4, 5, 6]), 'backup-secret', '');
 
         const credentials = await fetch(`${baseUrl}/credentials/backup-password`, {
             method: 'POST',
             headers: { ...mutationHeaders, 'content-type': 'application/json' },
             body: JSON.stringify({
-                currentPassword: '147085aA',
                 backupPassword: 'changed-backup-password',
             }),
         });
         expect(credentials.status).toBe(200);
-        expect(setBackupPassword).toHaveBeenCalledWith('147085aA', 'changed-backup-password');
+        expect(setBackupPassword).toHaveBeenCalledWith('changed-backup-password');
 
         const reset = await fetch(`${baseUrl}/application/reset`, {
             method: 'POST',

@@ -59,9 +59,14 @@
     border-color: transparent;
     background: color-mix(in srgb, var(--color-surface-raised) 92%, transparent);
     color: var(--color-text-body);
+    cursor: pointer;
     text-align: left;
     white-space: normal;
     padding-block: 0.64rem;
+}
+
+.searchable-dropdown-menu [role='option']:disabled {
+    cursor: not-allowed;
 }
 
 .searchable-dropdown-menu [role='option'] strong {

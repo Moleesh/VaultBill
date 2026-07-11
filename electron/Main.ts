@@ -44,11 +44,10 @@ const createBackupHandlers = () => ({
     closeWindow: () => {
         mainState.mainWindow?.hide();
     },
-    createBackup: (encrypted: boolean, sysAdminPassword: string) => {
+    createBackup: (encrypted: boolean) => {
         if (!mainState.credentialStore || !mainState.backupService) {
             throw new Error('Backup services are not ready.');
         }
-        mainState.credentialStore.authenticate('sysadmin_1', sysAdminPassword);
         const archive = mainState.backupService.createArchive(
             encrypted,
             encrypted ? mainState.credentialStore.getBackupPassword() : undefined,
@@ -63,16 +62,10 @@ const createBackupHandlers = () => ({
             .replaceAll(':', '-');
         return { ...archive, fileName: `vaultbill-backup-${timestamp}.zip` };
     },
-    restoreBackup: (
-        bytes: Uint8Array,
-        sysAdminPassword: string,
-        backupPassword?: string,
-        recoveryKey?: string,
-    ) => {
+    restoreBackup: (bytes: Uint8Array, backupPassword?: string, recoveryKey?: string) => {
         if (!mainState.credentialStore || !mainState.backupService) {
             throw new Error('Restore services are not ready.');
         }
-        mainState.credentialStore.authenticate('sysadmin_1', sysAdminPassword);
         const preparedPath = mainState.backupService.prepareRestoreArchive(
             bytes,
             backupPassword?.length ? backupPassword : mainState.credentialStore.getBackupPassword(),
@@ -97,9 +90,8 @@ const createBackupHandlers = () => ({
         if (!mainState.credentialStore) throw new Error('Desktop credentials are not ready.');
         return mainState.credentialStore.getCredentialStatus();
     },
-    setBackupPassword: (sysAdminPassword: string, backupPassword: string) => {
+    setBackupPassword: (backupPassword: string) => {
         if (!mainState.credentialStore) throw new Error('Desktop credentials are not ready.');
-        mainState.credentialStore.authenticate('sysadmin_1', sysAdminPassword);
         mainState.credentialStore.setBackupPassword(backupPassword);
         return mainState.credentialStore.getCredentialStatus();
     },

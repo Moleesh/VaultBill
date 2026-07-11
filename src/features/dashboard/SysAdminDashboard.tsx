@@ -4,6 +4,7 @@ import type { FC } from 'react';
 
 import { format, parseISO } from 'date-fns';
 
+import { ActionLink } from '../../components/ActionLink';
 import { DashboardMetric } from './DashboardMetric';
 import { DashboardTrialCountdown } from './DashboardTrialCountdown';
 import { SysAdminDashboardCharts } from './SysAdminDashboardCharts';
@@ -20,6 +21,20 @@ export const SysAdminDashboard: FC = () => {
 
     return (
         <div className="page-stack">
+            <section className="page-hero page-hero--compact">
+                <div>
+                    <p className="eyebrow">SysAdmin</p>
+                    <h1>Workspace health</h1>
+                    <p>Document formats, people, backups, and activation readiness in one place.</p>
+                </div>
+                <div className="dashboard-quick-actions">
+                    <ActionLink to="/app/builder">Document library</ActionLink>
+                    <ActionLink to="/app/settings#backup">Backup</ActionLink>
+                    <ActionLink to="/app/records" variant="primary">
+                        Create record
+                    </ActionLink>
+                </div>
+            </section>
             <DashboardTrialCountdown
                 isFullVersion={summary.isFullVersion}
                 isTrialExpired={summary.isTrialExpired}

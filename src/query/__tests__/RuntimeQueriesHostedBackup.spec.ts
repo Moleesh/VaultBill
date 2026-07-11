@@ -42,14 +42,12 @@ describe('RuntimeQueries hosted backup maintenance', () => {
         await updateRuntimeBackupPassword({
             backupPassword: 'backup-secret',
             capabilities: { isHostedWeb: true },
-            remoteAuthorizationPassword: 'sysadmin-secret',
         });
 
         await expect(
             createRuntimeBackup({
                 capabilities: { isHostedWeb: true },
                 encryptBackup: true,
-                remoteAuthorizationPassword: 'sysadmin-secret',
             }),
         ).resolves.toMatchObject({
             success: true,
@@ -63,7 +61,6 @@ describe('RuntimeQueries hosted backup maintenance', () => {
         });
         await restoreRuntimeBackup({
             capabilities: { isHostedWeb: true },
-            remoteAuthorizationPassword: 'sysadmin-secret',
             restoreFile: backupFile,
             restorePassword: 'restore-secret',
             restoreRecoveryKey: 'restore-key',
@@ -79,15 +76,13 @@ describe('RuntimeQueries hosted backup maintenance', () => {
             '/credentials/backup-password',
             'POST',
             {
-                currentPassword: 'sysadmin-secret',
                 backupPassword: 'backup-secret',
             },
         );
-        expect(hostedApiMocks.createHostedBackup).toHaveBeenCalledWith(true, 'sysadmin-secret');
+        expect(hostedApiMocks.createHostedBackup).toHaveBeenCalledWith(true);
         expect(hostedApiMocks.restoreHostedBackup).toHaveBeenCalledWith(backupFile, {
             backupPassword: 'restore-secret',
             recoveryKey: 'restore-key',
-            sysAdminPassword: 'sysadmin-secret',
         });
         expect(hostedApiMocks.requestHostedApi).toHaveBeenCalledWith('/application/reset', 'POST', {
             currentPassword: 'sysadmin-secret',

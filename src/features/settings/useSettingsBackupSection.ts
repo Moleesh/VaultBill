@@ -17,7 +17,6 @@ import {
 
 type BackupActionFormValues = {
     readonly backupPassword: string;
-    readonly remoteAuthorizationPassword: string;
 };
 
 type RestoreFormValues = {
@@ -34,7 +33,6 @@ const useBackupActionForm = () =>
     useForm({
         defaultValues: {
             backupPassword: '',
-            remoteAuthorizationPassword: '',
         } satisfies BackupActionFormValues,
     });
 
@@ -86,17 +84,10 @@ export const useSettingsBackupSection = () => {
         ]).then(() => undefined);
 
     const backupPasswordMutation = useMutation({
-        mutationFn: ({
-            backupPassword,
-            remoteAuthorizationPassword,
-        }: {
-            readonly backupPassword: string;
-            readonly remoteAuthorizationPassword: string;
-        }) =>
+        mutationFn: ({ backupPassword }: { readonly backupPassword: string }) =>
             updateRuntimeBackupPassword({
                 backupPassword,
                 capabilities,
-                remoteAuthorizationPassword,
             }),
         onSuccess: async () => {
             backupActionForm.setFieldValue('backupPassword', '');
@@ -106,17 +97,10 @@ export const useSettingsBackupSection = () => {
     });
 
     const createBackupMutation = useMutation({
-        mutationFn: ({
-            encryptBackup,
-            remoteAuthorizationPassword,
-        }: {
-            readonly encryptBackup: boolean;
-            readonly remoteAuthorizationPassword: string;
-        }) =>
+        mutationFn: ({ encryptBackup }: { readonly encryptBackup: boolean }) =>
             createRuntimeBackup({
                 capabilities,
                 encryptBackup,
-                remoteAuthorizationPassword,
             }),
         onSuccess: async (result) => {
             if (!result.success) {
@@ -136,19 +120,16 @@ export const useSettingsBackupSection = () => {
 
     const restoreBackupMutation = useMutation({
         mutationFn: ({
-            remoteAuthorizationPassword,
             restoreFile,
             restorePassword,
             restoreRecoveryKey,
         }: {
-            readonly remoteAuthorizationPassword: string;
             readonly restoreFile: File;
             readonly restorePassword: string;
             readonly restoreRecoveryKey: string;
         }) =>
             restoreRuntimeBackup({
                 capabilities,
-                remoteAuthorizationPassword,
                 restoreFile,
                 restorePassword,
                 restoreRecoveryKey,
@@ -182,7 +163,7 @@ export const useSettingsBackupSection = () => {
     });
 
     const changeBackupPassword = () => {
-        const { backupPassword, remoteAuthorizationPassword } = backupActionForm.state.values;
+        const { backupPassword } = backupActionForm.state.values;
         if (!backupPassword.trim()) {
             setMessage('Enter a new backup password.');
             return;
@@ -192,7 +173,6 @@ export const useSettingsBackupSection = () => {
         void backupPasswordMutation
             .mutateAsync({
                 backupPassword,
-                remoteAuthorizationPassword,
             })
             .catch((reason: unknown) => {
                 setMessage(
@@ -207,7 +187,6 @@ export const useSettingsBackupSection = () => {
     };
 
     const createBackup = () => {
-        const { remoteAuthorizationPassword } = backupActionForm.state.values;
         if (!encryptBackup && !window.confirm('Create an unencrypted backup?')) {
             return;
         }
@@ -216,7 +195,6 @@ export const useSettingsBackupSection = () => {
         void createBackupMutation
             .mutateAsync({
                 encryptBackup,
-                remoteAuthorizationPassword,
             })
             .catch((reason: unknown) => {
                 setMessage(
@@ -230,7 +208,6 @@ export const useSettingsBackupSection = () => {
 
     const restoreBackup = () => {
         const { password, recoveryKey } = restoreForm.state.values;
-        const { remoteAuthorizationPassword } = backupActionForm.state.values;
         if (!restoreFile) {
             setMessage('Choose a VaultBill backup ZIP to restore.');
             return;
@@ -239,7 +216,6 @@ export const useSettingsBackupSection = () => {
         setBusyAction('Validating and restoring backup');
         void restoreBackupMutation
             .mutateAsync({
-                remoteAuthorizationPassword,
                 restoreFile,
                 restorePassword: password,
                 restoreRecoveryKey: recoveryKey,

@@ -7,12 +7,14 @@ const androidPairingMocks = vi.hoisted(() => ({
     readAndroidPairingSettings: vi.fn(),
     saveAndroidPairingSettings: vi.fn(),
     scanAndroidPairingHosts: vi.fn(),
+    testAndroidPairingHost: vi.fn(),
 }));
 
 vi.mock('../../../runtime/AndroidPairing', () => ({
     readAndroidPairingSettings: androidPairingMocks.readAndroidPairingSettings,
     saveAndroidPairingSettings: androidPairingMocks.saveAndroidPairingSettings,
     scanAndroidPairingHosts: androidPairingMocks.scanAndroidPairingHosts,
+    testAndroidPairingHost: androidPairingMocks.testAndroidPairingHost,
 }));
 
 import { SetupDesktopPairingStep } from '../SetupDesktopPairingStep';
@@ -29,6 +31,9 @@ describe('SetupDesktopPairingStep', () => {
         androidPairingMocks.scanAndroidPairingHosts.mockResolvedValue([
             'http://192.168.1.10:80/VaultBill/',
         ]);
+        androidPairingMocks.testAndroidPairingHost.mockResolvedValue(
+            'http://192.168.1.10:80/VaultBill/',
+        );
     });
 
     it('loads saved pairing data and saves desktop pairing when requested', async () => {
@@ -40,13 +45,13 @@ describe('SetupDesktopPairingStep', () => {
         fireEvent.change(screen.getByLabelText('Desktop host'), {
             target: { value: '192.168.1.10:80' },
         });
-        fireEvent.click(screen.getByRole('button', { name: 'Use desktop host' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Test and use desktop host' }));
 
         await waitFor(() => {
             expect(androidPairingMocks.saveAndroidPairingSettings).toHaveBeenCalledWith({
                 enabled: true,
-                hostTarget: '192.168.1.10:80',
-                connectionStatus: 'unknown',
+                hostTarget: 'http://192.168.1.10:80/VaultBill/',
+                connectionStatus: 'connected',
                 discoveredHosts: [],
             });
         });

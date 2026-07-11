@@ -168,7 +168,7 @@ jobs:
               uses: actions/upload-artifact@v7.0.1
               with:
                   name: vaultbill-android-${{ github.sha }}
-                  path: android/app/build/outputs/apk/debug/*.apk
+                  path: release/vaultbill-*-android-debug.apk
                   if-no-files-found: error
 
     publish:

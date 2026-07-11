@@ -8,6 +8,7 @@ import { ActionButton } from '../../components/ActionButton';
 import { FileSelectButton } from '../../components/FileSelectButton';
 import { HorizontalProgress } from '../../components/HorizontalProgress/HorizontalProgress';
 import { IconButton } from '../../components/IconButton';
+import { IconOnlyButton } from '../../components/IconOnlyButton';
 import { steps } from './BuilderPageSupport';
 
 type BuilderPageHeaderProps = {
@@ -27,22 +28,22 @@ export const BuilderPageHeader: FC<BuilderPageHeaderProps> = ({
     onClose,
 }) => (
     <>
-        <div className="operational-header">
+        <div className="operational-header builder-page-header">
             <div>
                 <p className="eyebrow">Builder</p>
                 <h1>Document builder</h1>
                 <p>Build the document structure, preview it, and publish when it is ready.</p>
             </div>
+            {onClose ? (
+                <IconOnlyButton
+                    aria-label="Close builder"
+                    className="builder-close-button"
+                    icon={<X aria-hidden="true" size={18} />}
+                    onClick={onClose}
+                    title="Close builder"
+                />
+            ) : null}
             <div className="builder-header-actions">
-                {onClose ? (
-                    <IconButton
-                        icon={<X aria-hidden="true" size={18} />}
-                        onClick={onClose}
-                        variant="secondary"
-                    >
-                        Close
-                    </IconButton>
-                ) : null}
                 <FileSelectButton accept=".json,application/json" onChange={onImportJson}>
                     <Upload aria-hidden="true" size={18} /> Import JSON
                 </FileSelectButton>

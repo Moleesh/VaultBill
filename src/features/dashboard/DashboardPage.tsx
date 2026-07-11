@@ -57,11 +57,15 @@ export const DashboardPage: FC = () => {
                 <div>
                     <p className="eyebrow">{format(new Date(), 'EEEE, d MMMM')}</p>
                     <h1>Welcome back, {operatorContext?.account.displayName}.</h1>
-                    <p>Invoices, customers, and the numbers worth noticing today.</p>
+                    <p>Draft, finalize, reprint, and review the records that need attention.</p>
                 </div>
-                <ActionLink to="/app/records/new" variant="primary">
-                    Create document
-                </ActionLink>
+                <div className="dashboard-quick-actions">
+                    <ActionLink to="/app/records" variant="primary">
+                        Create document
+                    </ActionLink>
+                    <ActionLink to="/app/records?tab=reprint">Reprint records</ActionLink>
+                    <ActionLink to="/app/reports">Open reports</ActionLink>
+                </div>
             </section>
 
             <section className="dashboard-metrics" aria-label="Business summary">
@@ -72,6 +76,25 @@ export const DashboardPage: FC = () => {
             </section>
 
             <section className="dashboard-grid">
+                <article className="data-panel dashboard-workbench">
+                    <div className="section-heading">
+                        <div>
+                            <p className="eyebrow">Workbench</p>
+                            <h2>Today&apos;s flow</h2>
+                        </div>
+                    </div>
+                    <p>
+                        {draftCount > 0
+                            ? `${String(draftCount)} draft${draftCount === 1 ? '' : 's'} can be finished or cleaned up.`
+                            : 'No drafts are waiting. Start a fresh document when the next customer arrives.'}
+                    </p>
+                    <div className="dashboard-workbench-actions">
+                        <ActionLink to="/app/records" variant="primary">
+                            New record
+                        </ActionLink>
+                        <ActionLink to="/app/records?tab=reprint">Find reprint</ActionLink>
+                    </div>
+                </article>
                 <article className="data-panel dashboard-chart">
                     <div className="section-heading">
                         <div>

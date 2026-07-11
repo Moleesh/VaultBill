@@ -37,6 +37,6 @@ describe('BuilderDocumentLibrarySupport', () => {
                 isValid: true,
                 sortOrder: 0,
             }),
-        ).toContain('Default document');
+        ).toContain('Template: GST Invoice Print');
     });
 });

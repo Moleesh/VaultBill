@@ -1,10 +1,5 @@
 /** @format */
 
-/**
- * Desktop shell coordinator that keeps the route frame, scroll rail, and
- * authenticated chrome in sync while the workspace content changes.
- */
-
 import type { FC } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
@@ -24,14 +19,14 @@ import { AppShellContentFrame } from './AppShellContentFrame';
 import { AppShellManagedDialogs } from './AppShellManagedDialogs';
 import { AppShellMobileNav } from './AppShellMobileNav';
 import { AppShellSidebar } from './AppShellSidebar';
-import { getAllowedSectionIds, getPageId } from './AppShellSupport';
+import type { DesktopTrialStatus } from './AppShellSupport';
+import { getAllowedSectionIds, getPageId, rememberDesktopLastAppTab } from './AppShellSupport';
 import { AppShellTopbar } from './AppShellTopbar';
 
 import { usePersistentWorkspaceTheme } from '../hooks/usePersistentWorkspaceTheme';
 
 import '../styles/Components/AppShell.scss';
 
-/** Renders the authenticated desktop application frame and its modal actions. */
 export const AppShell: FC = () => {
     const capabilities = useCapabilities();
     const { logout, operatorContext, resetPassword } = useSession();
@@ -51,10 +46,7 @@ export const AppShell: FC = () => {
     const [isPasswordOpen, setIsPasswordOpen] = useState(false);
     const [accountPasswordMessage, setAccountPasswordMessage] = useState('');
     const [hostedWebUrl, setHostedWebUrl] = useState('');
-    const [trialStatus, setTrialStatus] =
-        useState<
-            Awaited<ReturnType<NonNullable<typeof window.vaultBillDesktop>['getTrialStatus']>>
-        >();
+    const [trialStatus, setTrialStatus] = useState<DesktopTrialStatus>();
     const [scrollProgress, setScrollProgress] = useState(0);
     const [isExpanded, setIsExpanded] = useState(false);
     const showWindowControls = shouldRenderDesktopChrome(capabilities);
@@ -92,6 +84,11 @@ export const AppShell: FC = () => {
         }
         setScrollProgress(0);
     }, [location.pathname]);
+
+    useEffect(() => {
+        if (!capabilities.isDesktop || !operatorContext) return;
+        rememberDesktopLastAppTab(location.pathname);
+    }, [capabilities.isDesktop, location.pathname, operatorContext]);
 
     useEffect(() => {
         if (!operatorContext) {
@@ -177,7 +174,7 @@ export const AppShell: FC = () => {
                     {...(builderLibraryMode
                         ? {
                               pageLabelOverride: 'Document library',
-                              pageSubtitleOverride: '',
+                              pageSubtitleOverride: 'Manage document formats and print templates.',
                           }
                         : {})}
                 />

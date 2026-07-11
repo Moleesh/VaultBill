@@ -60,27 +60,17 @@ export const handleLocalApiAdminRoutes = async (
         requireSysAdminAccess(account);
         const input = z
             .object({
-                currentPassword: z.string(),
                 backupPassword: z.string().min(8),
             })
             .parse(await readBody(request));
-        sendJson(
-            response,
-            200,
-            getDataOperations(state).setBackupPassword(input.currentPassword, input.backupPassword),
-        );
+        sendJson(response, 200, getDataOperations(state).setBackupPassword(input.backupPassword));
         return true;
     }
     if (request.method === 'POST' && request.url === '/backup/create') {
         requireSysAdminAccess(account);
         assertWritableTrial(state, 'create backups');
-        const input = z
-            .object({ encrypted: z.boolean(), currentPassword: z.string() })
-            .parse(await readBody(request));
-        sendArchive(
-            response,
-            getDataOperations(state).createBackup(input.encrypted, input.currentPassword),
-        );
+        const input = z.object({ encrypted: z.boolean() }).parse(await readBody(request));
+        sendArchive(response, getDataOperations(state).createBackup(input.encrypted));
         return true;
     }
     if (request.method === 'GET' && request.url === '/backup/status') {
@@ -91,18 +81,10 @@ export const handleLocalApiAdminRoutes = async (
     if (request.method === 'POST' && request.url === '/backup/restore') {
         requireSysAdminAccess(account);
         assertWritableTrial(state, 'restore backups');
-        const sysAdminPassword = decodeHeaderSecret(
-            request.headers['x-vaultbill-sysadmin-password'],
-        );
         const backupPassword = decodeHeaderSecret(request.headers['x-vaultbill-backup-password']);
         const recoveryKey = decodeHeaderSecret(request.headers['x-vaultbill-recovery-key']);
         const bytes = await readRawBody(request);
-        getDataOperations(state).restoreBackup(
-            bytes,
-            sysAdminPassword,
-            backupPassword,
-            recoveryKey,
-        );
+        getDataOperations(state).restoreBackup(bytes, backupPassword, recoveryKey);
         sendJson(response, 202, { restarting: true });
         return true;
     }

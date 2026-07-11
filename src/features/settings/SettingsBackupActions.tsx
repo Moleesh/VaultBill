@@ -14,7 +14,6 @@ type SettingsBackupActionsProps = {
     readonly canBackup: boolean;
     readonly canRestore: boolean;
     readonly isSysAdmin: boolean;
-    readonly isHostedWeb: boolean;
     readonly encryptBackup: boolean;
     readonly busyAction: string;
     readonly form: BackupActionFormApi;
@@ -30,7 +29,6 @@ export const SettingsBackupActions: FC<SettingsBackupActionsProps> = ({
     canBackup,
     canRestore,
     isSysAdmin,
-    isHostedWeb,
     encryptBackup,
     busyAction,
     form,
@@ -89,20 +87,6 @@ export const SettingsBackupActions: FC<SettingsBackupActionsProps> = ({
                                 Restore backup
                             </IconButton>
                         </div>
-                    ) : null}
-                    {isHostedWeb && (canBackup || canRestore) ? (
-                        <form.Field name="remoteAuthorizationPassword">
-                            {(field) => (
-                                <FormField.PasswordField
-                                    autoComplete="current-password"
-                                    label="System Administrator password for host operations"
-                                    onChange={(event) => {
-                                        field.handleChange(event.currentTarget.value);
-                                    }}
-                                    value={field.state.value}
-                                />
-                            )}
-                        </form.Field>
                     ) : null}
                 </div>
             ) : null}

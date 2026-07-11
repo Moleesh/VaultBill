@@ -8,30 +8,6 @@
     color: var(--color-secondary-text);
 }
 
-.builder-modal {
-    width: min(100vw - 1.5rem, 96rem);
-    height: calc(100vh - 1.5rem);
-    max-width: none;
-    max-height: none;
-    padding: 0;
-    border: var(--line-width) solid color-mix(in srgb, var(--color-border-strong) 68%, transparent);
-    border-radius: var(--radius-xl);
-    background: linear-gradient(
-        180deg,
-        color-mix(in srgb, var(--color-surface-raised) 92%, white 8%),
-        color-mix(in srgb, var(--color-surface) 96%, transparent)
-    );
-    box-shadow: 0 1.2rem 3rem color-mix(in srgb, var(--color-panel-shadow) 20%, transparent);
-}
-
-.builder-modal-shell {
-    display: grid;
-    grid-template-rows: auto minmax(0, 1fr);
-    height: 100%;
-    overflow: hidden;
-    padding: clamp(var(--space-4), 3vw, var(--space-6));
-}
-
 .builder-panel,
 .builder-workspace {
     display: grid;
@@ -57,11 +33,6 @@
     background: var(--color-card);
     padding: clamp(var(--space-4), 4vw, var(--space-6));
     box-shadow: var(--shadow-card);
-}
-
-.builder-modal .builder-workspace {
-    min-height: 0;
-    overflow: auto;
 }
 
 .builder-field-list {
@@ -277,9 +248,24 @@
     padding-inline: var(--space-3) 0.55rem;
     background: var(--color-surface-raised);
     text-align: left;
+    cursor: pointer;
     box-shadow:
         inset 0 0 0 1px color-mix(in srgb, var(--color-border) 16%, transparent),
         0 0.18rem 0.6rem color-mix(in srgb, var(--color-panel-shadow) 5%, transparent);
+}
+
+.searchable-dropdown-trigger:hover:not(:disabled) {
+    border-color: color-mix(in srgb, var(--color-primary) 72%, var(--color-border-strong));
+    background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface-raised));
+    color: var(--color-primary-strong);
+}
+
+.searchable-dropdown-trigger:hover:not(:disabled) .searchable-dropdown-caret {
+    color: var(--color-primary);
+}
+
+.searchable-dropdown-trigger:disabled {
+    cursor: not-allowed;
 }
 
 .searchable-dropdown-trigger span:first-child {

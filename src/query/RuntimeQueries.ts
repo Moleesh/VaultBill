@@ -13,7 +13,10 @@ import {
     validateManagedAccounts,
     type HostedSessionPayload,
 } from '../features/auth/SessionSupport';
-import type { BuilderInventoryItem } from '../features/builder/BuilderDocumentLibrarySupport';
+import {
+    sortBuilderInventory,
+    type BuilderInventoryItem,
+} from '../features/builder/BuilderDocumentLibrarySupport';
 import type { DocumentFormatConfig } from '../features/builder/BuilderPageControllerSupport';
 import type {
     AssetSummary,
@@ -824,11 +827,9 @@ export type RuntimeBackupResult = {
 export const updateRuntimeBackupPassword = async ({
     backupPassword,
     capabilities,
-    remoteAuthorizationPassword,
 }: {
     readonly backupPassword: string;
     readonly capabilities: Pick<CapabilityRegistry, 'isHostedWeb'>;
-    readonly remoteAuthorizationPassword: string;
 }): Promise<void> => {
     if (window.vaultBillDesktop) {
         await window.vaultBillDesktop.setBackupPassword(backupPassword);
@@ -836,10 +837,7 @@ export const updateRuntimeBackupPassword = async ({
     }
 
     if (capabilities.isHostedWeb) {
-        await requestHostedApi('/credentials/backup-password', 'POST', {
-            currentPassword: remoteAuthorizationPassword,
-            backupPassword,
-        });
+        await requestHostedApi('/credentials/backup-password', 'POST', { backupPassword });
         return;
     }
 
@@ -850,11 +848,9 @@ export const updateRuntimeBackupPassword = async ({
 export const createRuntimeBackup = async ({
     capabilities,
     encryptBackup,
-    remoteAuthorizationPassword,
 }: {
     readonly capabilities: Pick<CapabilityRegistry, 'isHostedWeb'>;
     readonly encryptBackup: boolean;
-    readonly remoteAuthorizationPassword: string;
 }): Promise<RuntimeBackupResult> => {
     if (window.vaultBillDesktop) {
         const result = await window.vaultBillDesktop.createBackup({ encrypted: encryptBackup });
@@ -870,7 +866,7 @@ export const createRuntimeBackup = async ({
     }
 
     if (capabilities.isHostedWeb) {
-        const result = await createHostedBackup(encryptBackup, remoteAuthorizationPassword);
+        const result = await createHostedBackup(encryptBackup);
         return {
             success: true,
             filePath: result.fileName,
@@ -886,13 +882,11 @@ export const createRuntimeBackup = async ({
 /** Restores a backup archive through desktop or hosted-web runtime support. */
 export const restoreRuntimeBackup = async ({
     capabilities,
-    remoteAuthorizationPassword,
     restoreFile,
     restorePassword,
     restoreRecoveryKey,
 }: {
     readonly capabilities: Pick<CapabilityRegistry, 'isHostedWeb'>;
-    readonly remoteAuthorizationPassword: string;
     readonly restoreFile: File;
     readonly restorePassword: string;
     readonly restoreRecoveryKey: string;
@@ -909,7 +903,6 @@ export const restoreRuntimeBackup = async ({
         await restoreHostedBackup(restoreFile, {
             ...(restorePassword ? { backupPassword: restorePassword } : {}),
             ...(restoreRecoveryKey ? { recoveryKey: restoreRecoveryKey } : {}),
-            sysAdminPassword: remoteAuthorizationPassword,
         });
         return;
     }
@@ -957,18 +950,58 @@ export const fetchWorkspacePrinters = async (): Promise<
     return window.vaultBillDesktop.listPrinters();
 };
 
+const mergeBuiltInBuilderInventory = (
+    inventory: readonly BuilderInventoryItem[],
+): readonly BuilderInventoryItem[] => {
+    const storedDefault = inventory.find((item) => item.isDefault);
+    const merged = new Map<string, BuilderInventoryItem>();
+    for (const builtIn of listBrowserBuilderInventory()) {
+        merged.set(builtIn.formatId, builtIn);
+    }
+    for (const item of inventory) {
+        merged.set(item.formatId, item);
+    }
+    if (storedDefault) {
+        return sortBuilderInventory(
+            [...merged.values()].map((item) => ({
+                ...item,
+                isDefault: item.formatId === storedDefault.formatId,
+                isEnabled: item.formatId === storedDefault.formatId ? true : item.isEnabled,
+            })),
+        );
+    }
+    return sortBuilderInventory(
+        [...merged.values()].map((item, index) => ({
+            ...item,
+            isDefault: index === 0,
+            isEnabled: item.isEnabled || index === 0,
+        })),
+    );
+};
+
 export const fetchPublishedFormats = async ({
     capabilities,
 }: {
     readonly capabilities: Pick<CapabilityRegistry, 'isHostedWeb'>;
 }): Promise<readonly PublishedFormat[]> => {
+    const toEnabledFormats = (inventory: readonly BuilderInventoryItem[]) =>
+        mergeBuiltInBuilderInventory(inventory)
+            .filter((format) => format.isEnabled)
+            .map((format) => ({
+                formatId: format.formatId,
+                formatName: format.formatName,
+                isDefault: format.isDefault,
+            }));
+
     if (window.vaultBillDesktop) {
-        return window.vaultBillDesktop.listBuilderInventory();
+        return toEnabledFormats(await window.vaultBillDesktop.listBuilderInventory());
     }
     if (capabilities.isHostedWeb) {
-        return requestHostedApi<readonly PublishedFormat[]>('/print/formats');
+        return toEnabledFormats(
+            await requestHostedApi<readonly BuilderInventoryItem[]>('/print/formats'),
+        );
     }
-    return [];
+    return toEnabledFormats(listBrowserBuilderInventory());
 };
 
 export const fetchStoredRecords = async ({
@@ -1110,10 +1143,12 @@ export const fetchBuilderInventory = async ({
     readonly capabilities: Pick<CapabilityRegistry, 'isHostedWeb'>;
 }): Promise<readonly BuilderInventoryItem[]> => {
     if (window.vaultBillDesktop) {
-        return window.vaultBillDesktop.listBuilderInventory();
+        return mergeBuiltInBuilderInventory(await window.vaultBillDesktop.listBuilderInventory());
     }
     if (capabilities.isHostedWeb) {
-        return requestHostedApi<readonly BuilderInventoryItem[]>('/builder/inventory');
+        return mergeBuiltInBuilderInventory(
+            await requestHostedApi<readonly BuilderInventoryItem[]>('/builder/inventory'),
+        );
     }
     return listBrowserBuilderInventory();
 };
@@ -1125,18 +1160,21 @@ export const fetchBuilderPackage = async ({
     readonly capabilities: Pick<CapabilityRegistry, 'isHostedWeb'>;
     readonly formatId: string | undefined;
 }): Promise<StoredBuilderPackage | null> => {
+    const fallbackBuiltInPackage = readBrowserBuilderPackage(formatId);
     if (window.vaultBillDesktop) {
-        return (await window.vaultBillDesktop.loadBuilderPackage(formatId)) ?? null;
+        return (
+            (await window.vaultBillDesktop.loadBuilderPackage(formatId)) ?? fallbackBuiltInPackage
+        );
     }
     if (capabilities.isHostedWeb) {
         const query = formatId ? `?formatId=${encodeURIComponent(formatId)}` : '';
         return (
             (await requestHostedApi<StoredBuilderPackage | undefined>(
                 `/builder/package${query}`,
-            )) ?? null
+            )) ?? fallbackBuiltInPackage
         );
     }
-    return (readBrowserBuilderPackage(formatId) ?? {
+    return (fallbackBuiltInPackage ?? {
         config: readConfig(),
         templateHtml: readTemplateHtml(),
         savedTemplates: readSavedTemplates(),

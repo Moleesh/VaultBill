@@ -30,17 +30,13 @@ export type LoginAttempts = {
 export type LocalApiDataOperations = {
     readonly minimizeWindow?: () => void;
     readonly closeWindow?: () => void;
-    readonly createBackup: (
-        encrypted: boolean,
-        sysAdminPassword: string,
-    ) => {
+    readonly createBackup: (encrypted: boolean) => {
         readonly bytes: Uint8Array;
         readonly fileName: string;
         readonly recoveryKey?: string;
     };
     readonly restoreBackup: (
         bytes: Uint8Array,
-        sysAdminPassword: string,
         backupPassword?: string,
         recoveryKey?: string,
     ) => void;
@@ -49,10 +45,7 @@ export type LocalApiDataOperations = {
         readonly sysAdminUsesDefaultPassword: boolean;
         readonly backupUsesDefaultPassword: boolean;
     };
-    readonly setBackupPassword: (
-        sysAdminPassword: string,
-        backupPassword: string,
-    ) => {
+    readonly setBackupPassword: (backupPassword: string) => {
         readonly sysAdminUsesDefaultPassword: boolean;
         readonly backupUsesDefaultPassword: boolean;
     };

@@ -13,6 +13,7 @@ import {
     readAndroidPairingSettings,
     saveAndroidPairingSettings,
     scanAndroidPairingHosts,
+    testAndroidPairingHost,
 } from '../../runtime/AndroidPairing';
 import { formatTrialCountdown } from '../dashboard/SysAdminDashboardTrialSupport';
 import type { SettingsActivationFormApi } from './SettingsSecuritySectionSupport';
@@ -63,7 +64,9 @@ export const SettingsSecurityAccess: FC<SettingsSecurityAccessProps> = ({
 }) => {
     const [isResetTrialConfirmOpen, setIsResetTrialConfirmOpen] = useState(false);
     const [androidPairing, setAndroidPairing] = useState(() => readAndroidPairingSettings());
+    const [androidPairingMessage, setAndroidPairingMessage] = useState('');
     const [isPairingScanRunning, setIsPairingScanRunning] = useState(false);
+    const [isPairingTestRunning, setIsPairingTestRunning] = useState(false);
     const isAndroidRuntime =
         runtimePlatform === 'android-local' || runtimePlatform === 'android-paired';
     const saveAndroidPairing = (enabled: boolean) => {
@@ -75,6 +78,39 @@ export const SettingsSecurityAccess: FC<SettingsSecurityAccessProps> = ({
         } as const;
         saveAndroidPairingSettings(nextSettings);
         setAndroidPairing(nextSettings);
+        setAndroidPairingMessage('Android is using its standalone mobile workspace.');
+    };
+    const testAndSaveAndroidPairing = () => {
+        setIsPairingTestRunning(true);
+        setAndroidPairingMessage('Checking the desktop host...');
+        void testAndroidPairingHost(androidPairing.hostTarget)
+            .then((hostTarget) => {
+                if (!hostTarget) {
+                    const nextSettings = {
+                        ...androidPairing,
+                        enabled: false,
+                        connectionStatus: 'disconnected',
+                    } as const;
+                    saveAndroidPairingSettings(nextSettings);
+                    setAndroidPairing(nextSettings);
+                    setAndroidPairingMessage(
+                        'Could not reach VaultBill Desktop. Check the address and same-network access.',
+                    );
+                    return;
+                }
+                const nextSettings = {
+                    ...androidPairing,
+                    enabled: true,
+                    hostTarget,
+                    connectionStatus: 'connected',
+                } as const;
+                saveAndroidPairingSettings(nextSettings);
+                setAndroidPairing(nextSettings);
+                setAndroidPairingMessage('Android is paired to this VaultBill Desktop host.');
+            })
+            .finally(() => {
+                setIsPairingTestRunning(false);
+            });
     };
     const scanAndroidHosts = () => {
         setIsPairingScanRunning(true);
@@ -112,7 +148,7 @@ export const SettingsSecurityAccess: FC<SettingsSecurityAccessProps> = ({
                     </div>
                     <div className="settings-subsection-card settings-subsection-card--form">
                         {!trialStatus?.isFullVersion ? (
-                            <div className="operator-create operator-create--inline">
+                            <div className="settings-activation-row">
                                 <activationForm.Field name="licenseKey">
                                     {(field) => (
                                         <FormField.TextField
@@ -124,7 +160,7 @@ export const SettingsSecurityAccess: FC<SettingsSecurityAccessProps> = ({
                                         />
                                     )}
                                 </activationForm.Field>
-                                <div className="operator-create-action">
+                                <div className="settings-activation-actions">
                                     <ActionButton
                                         disabled={!activationForm.state.values.licenseKey.trim()}
                                         onClick={onActivateLicense}
@@ -132,19 +168,28 @@ export const SettingsSecurityAccess: FC<SettingsSecurityAccessProps> = ({
                                     >
                                         Activate full version
                                     </ActionButton>
+                                    <ActionButton
+                                        onClick={() => {
+                                            setIsResetTrialConfirmOpen(true);
+                                        }}
+                                        variant="secondary"
+                                    >
+                                        Reset trial
+                                    </ActionButton>
                                 </div>
                             </div>
-                        ) : null}
-                        <div className="settings-subsection-actions settings-subsection-actions--end">
-                            <ActionButton
-                                onClick={() => {
-                                    setIsResetTrialConfirmOpen(true);
-                                }}
-                                variant="secondary"
-                            >
-                                Reset trial
-                            </ActionButton>
-                        </div>
+                        ) : (
+                            <div className="settings-subsection-actions settings-subsection-actions--end">
+                                <ActionButton
+                                    onClick={() => {
+                                        setIsResetTrialConfirmOpen(true);
+                                    }}
+                                    variant="secondary"
+                                >
+                                    Reset trial
+                                </ActionButton>
+                            </div>
+                        )}
                     </div>
                 </div>
             ) : null}
@@ -237,9 +282,10 @@ export const SettingsSecurityAccess: FC<SettingsSecurityAccessProps> = ({
                         value={androidPairing.hostTarget}
                     />
                     <p className="field-note" role="status">
-                        {androidPairing.enabled
-                            ? 'Android is paired to a desktop host for this session.'
-                            : 'Android is using its local mobile workspace.'}
+                        {androidPairingMessage ||
+                            (androidPairing.enabled
+                                ? 'Android is paired to a desktop host for this session.'
+                                : 'Android is using its standalone mobile workspace.')}
                     </p>
                     {androidPairing.discoveredHosts.length ? (
                         <div className="operator-create operator-create--button-row">
@@ -267,13 +313,11 @@ export const SettingsSecurityAccess: FC<SettingsSecurityAccessProps> = ({
                             {isPairingScanRunning ? 'Scanning...' : 'Scan LAN'}
                         </ActionButton>
                         <ActionButton
-                            disabled={!androidPairing.hostTarget.trim()}
-                            onClick={() => {
-                                saveAndroidPairing(true);
-                            }}
+                            disabled={!androidPairing.hostTarget.trim() || isPairingTestRunning}
+                            onClick={testAndSaveAndroidPairing}
                             variant="primary"
                         >
-                            Save pairing
+                            {isPairingTestRunning ? 'Testing...' : 'Test and save pairing'}
                         </ActionButton>
                         <ActionButton
                             disabled={!androidPairing.enabled && !androidPairing.hostTarget}

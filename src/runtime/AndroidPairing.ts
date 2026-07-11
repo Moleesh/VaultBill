@@ -27,6 +27,9 @@ const normalizePairingHost = (hostTarget: string): string => {
         : `${withProtocol.replace(/\/+$/, '')}/VaultBill/`;
 };
 
+export const normalizeAndroidPairingHost = (hostTarget: string): string =>
+    normalizePairingHost(hostTarget);
+
 /** Reads the persisted Android pairing target and connection metadata. */
 export const readAndroidPairingSettings = (): AndroidPairingSettings => {
     try {
@@ -81,6 +84,10 @@ const probePairingHost = async (hostTarget: string): Promise<string | undefined>
         return undefined;
     }
 };
+
+/** Tests a manually entered host and returns the normalized desktop URL when reachable. */
+export const testAndroidPairingHost = async (hostTarget: string): Promise<string | undefined> =>
+    probePairingHost(hostTarget);
 
 /** Builds the small LAN candidate set used by the manual pairing scanner. */
 /** Builds the small LAN probe set used by Android pairing discovery. */

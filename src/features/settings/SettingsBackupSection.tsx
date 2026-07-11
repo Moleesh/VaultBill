@@ -44,7 +44,6 @@ export const SettingsBackupSection: FC = () => {
                 canRestore={capabilities.canRestore}
                 encryptBackup={encryptBackup}
                 form={backupActionForm}
-                isHostedWeb={capabilities.isHostedWeb}
                 isSysAdmin={true}
                 onChangeBackupPassword={changeBackupPassword}
                 onCreateBackup={createBackup}

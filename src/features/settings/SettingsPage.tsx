@@ -19,10 +19,10 @@ export const SettingsPage: FC = () => {
             [
                 isSysAdmin ? { id: 'business', label: 'Business' } : null,
                 { id: 'security', label: 'Security' },
+                isSysAdmin ? { id: 'secrets', label: 'Secrets' } : null,
                 isSysAdmin && (capabilities.isDesktop || capabilities.isHostedWeb)
                     ? { id: 'backup', label: 'Backup' }
                     : null,
-                isSysAdmin ? { id: 'secrets', label: 'Secrets' } : null,
             ].filter((section): section is { id: string; label: string } => section !== null),
         [capabilities.isDesktop, capabilities.isHostedWeb, isSysAdmin],
     );
@@ -123,10 +123,10 @@ export const SettingsPage: FC = () => {
             ) : null}
             {isSysAdmin ? <SettingsBusinessSection /> : null}
             <SettingsSecuritySection />
+            {isSysAdmin ? <SettingsSecretsSection /> : null}
             {isSysAdmin && (capabilities.isDesktop || capabilities.isHostedWeb) ? (
                 <SettingsBackupSection />
             ) : null}
-            {isSysAdmin ? <SettingsSecretsSection /> : null}
         </div>
     );
 };

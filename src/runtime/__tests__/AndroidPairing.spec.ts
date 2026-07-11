@@ -8,6 +8,7 @@ import {
     readAndroidPairingSettings,
     saveAndroidPairingSettings,
     scanAndroidPairingHosts,
+    testAndroidPairingHost,
 } from '../AndroidPairing';
 
 describe('AndroidPairing', () => {
@@ -60,5 +61,18 @@ describe('AndroidPairing', () => {
         expect(fetchMock).toHaveBeenCalled();
         expect(fetchMock).toHaveBeenCalledWith(targetHealthUrl, expect.anything());
         expect(hosts).toEqual([targetHost]);
+    });
+
+    it('tests a manually entered host before pairing is saved', async () => {
+        const fetchMock = vi.fn(() => Promise.resolve({ ok: true } as Response));
+        vi.stubGlobal('fetch', fetchMock);
+        vi.spyOn(window, 'setTimeout').mockImplementation(
+            (() => 0) as unknown as typeof window.setTimeout,
+        );
+
+        await expect(testAndroidPairingHost('192.168.1.20:80')).resolves.toBe(
+            'http://192.168.1.20:80/VaultBill/',
+        );
+        expect(fetchMock).toHaveBeenCalledWith('http://192.168.1.20/health', expect.anything());
     });
 });

@@ -102,4 +102,38 @@ describe('SysAdmin dashboard', () => {
         expect(screen.getByText('active users')).toBeVisible();
         expect(screen.getByText('Total records')).toBeVisible();
     });
+
+    it('uses compact empty chart states when there is no dashboard activity', async () => {
+        Object.defineProperty(window, 'vaultBillDesktop', {
+            configurable: true,
+            value: {
+                ...window.vaultBillDesktop,
+                listBuilderInventory: () => Promise.resolve([]),
+                listRecords: () => Promise.resolve([]),
+                listAccounts: () => Promise.resolve([]),
+                getBackupStatus: () => Promise.resolve({ lastBackupAt: null }),
+            },
+        });
+
+        const { container } = render(
+            <MemoryRouter>
+                <TestQueryProvider>
+                    <CapabilityProvider value={desktopCapabilities}>
+                        <SessionContext.Provider value={createTestSession(sysAdminAccount)}>
+                            <SysAdminDashboard />
+                        </SessionContext.Provider>
+                    </CapabilityProvider>
+                </TestQueryProvider>
+            </MemoryRouter>,
+        );
+
+        await waitFor(() => {
+            expect(screen.getByText('formats published')).toBeVisible();
+        });
+
+        expect(screen.getByText('No records yet')).toBeVisible();
+        expect(screen.getByText('active users')).toBeVisible();
+        expect(container.querySelectorAll('.dashboard-chart-card--empty')).toHaveLength(3);
+        expect(container.querySelectorAll('.dashboard-chart-ring')).toHaveLength(0);
+    });
 });

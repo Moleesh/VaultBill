@@ -5,6 +5,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { fetchSecretsSettings } from '../../../query/RuntimeQueries';
 import { HostedApiError } from '../../../runtime/HostedApi';
 
+import { resolveRecordsFormatOptions } from '../useRecordsPageStateSupport';
+
 vi.mock('../../../runtime/HostedApi', async () => {
     const actual = await vi.importActual('../../../runtime/HostedApi');
     return {
@@ -28,5 +30,20 @@ describe('useRecordsPageStateSupport', () => {
         await expect(
             fetchSecretsSettings({ capabilities: { isHostedWeb: true } }),
         ).resolves.toEqual(expect.objectContaining({ secrets: [] }));
+    });
+
+    it('places the shared default document first in the records format picker', () => {
+        expect(
+            resolveRecordsFormatOptions(
+                [
+                    { formatId: 'DeliveryNote', formatName: 'Delivery Note' },
+                    { formatId: 'Bill', formatName: 'Bill', isDefault: true },
+                ],
+                false,
+            ),
+        ).toEqual([
+            { value: 'Bill', label: 'Bill' },
+            { value: 'DeliveryNote', label: 'Delivery Note' },
+        ]);
     });
 });

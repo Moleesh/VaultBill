@@ -150,6 +150,37 @@ describe('login UI', () => {
         expect(await screen.findByRole('heading', { name: 'Dashboard' })).toBeVisible();
     });
 
+    it('restores the remembered desktop tab after logging back in', async () => {
+        setDesktopBridge([adminAccount]);
+        window.localStorage.setItem('vaultbill.desktop.last-app-tab', '/app/settings');
+
+        render(
+            <MemoryRouter initialEntries={['/login']}>
+                <TestQueryProvider>
+                    <CapabilityProvider value={desktopCapabilities}>
+                        <SessionProvider>
+                            <Routes>
+                                <Route path="/login" element={<LoginPage />} />
+                                <Route path="/app/dashboard" element={<h1>Dashboard</h1>} />
+                                <Route path="/app/settings" element={<h1>Settings</h1>} />
+                            </Routes>
+                        </SessionProvider>
+                    </CapabilityProvider>
+                </TestQueryProvider>
+            </MemoryRouter>,
+        );
+
+        fireEvent.click(
+            await screen.findByRole('button', {
+                name: /Operator account Operations Admin/i,
+            }),
+        );
+        fireEvent.click(screen.getByRole('option', { name: /Operations Admin/i }));
+        fireEvent.click(screen.getByRole('button', { name: 'Log in' }));
+
+        expect(await screen.findByRole('heading', { name: 'Settings' })).toBeVisible();
+    });
+
     it('shows the account username as supporting detail in the operator selector', async () => {
         setDesktopBridge([adminAccount]);
 

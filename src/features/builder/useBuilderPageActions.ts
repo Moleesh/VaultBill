@@ -80,6 +80,9 @@ export const useBuilderPageActions = ({
             await queryClient.invalidateQueries({
                 queryKey: queryKeys.builderInventory(runtimeScope),
             });
+            await queryClient.invalidateQueries({
+                queryKey: queryKeys.publishedFormats(runtimeScope),
+            });
         },
     });
 

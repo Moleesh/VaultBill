@@ -112,7 +112,6 @@ export const requestHostedWindowAction = async (action: 'close' | 'minimize'): P
 
 export const createHostedBackup = async (
     encrypted: boolean,
-    currentPassword: string,
 ): Promise<{
     readonly blob: Blob;
     readonly fileName: string;
@@ -122,7 +121,7 @@ export const createHostedBackup = async (
         method: 'POST',
         credentials: 'include',
         headers: hostedMutationHeaders({ 'content-type': 'application/json' }),
-        body: JSON.stringify({ encrypted, currentPassword }),
+        body: JSON.stringify({ encrypted }),
     });
     if (!response.ok) throw new Error(await hostedErrorMessage(response));
     const disposition = response.headers.get('content-disposition') ?? '';
@@ -138,7 +137,6 @@ export const createHostedBackup = async (
 export const restoreHostedBackup = async (
     file: File,
     secrets: {
-        readonly sysAdminPassword: string;
         readonly backupPassword?: string;
         readonly recoveryKey?: string;
     },
@@ -148,7 +146,6 @@ export const restoreHostedBackup = async (
         credentials: 'include',
         headers: hostedMutationHeaders({
             'content-type': 'application/zip',
-            'x-vaultbill-sysadmin-password': encodeHeaderSecret(secrets.sysAdminPassword),
             ...(secrets.backupPassword
                 ? { 'x-vaultbill-backup-password': encodeHeaderSecret(secrets.backupPassword) }
                 : {}),

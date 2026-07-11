@@ -2,7 +2,6 @@
 
 import type { FC } from 'react';
 
-import { PopupBase } from '../../components/PopupBase';
 import { BuilderDocumentLibrary } from './BuilderDocumentLibrary';
 import { BuilderPageDrawer } from './BuilderPageDrawer';
 import { BuilderPageHeader } from './BuilderPageHeader';
@@ -21,33 +20,30 @@ export const BuilderPageWorkspace: FC<{ readonly controller: BuilderPageControll
 
     return (
         <div className="page-stack builder-page">
-            <BuilderDocumentLibrary
-                currentFormatId={controller.config.FormatId}
-                currentFormatName={controller.config.FormatName}
-                inventory={controller.inventory}
-                onCreateNew={controller.createNewDocument}
-                onDeleteDocument={controller.deleteDocument}
-                onDuplicateDocument={controller.duplicateDocument}
-                onEditDocument={controller.loadDocument}
-                onOpenFormatPreview={(formatId) => {
-                    void controller.openDocumentAtStep(formatId, 6);
-                }}
-                onOpenPrintPreview={(formatId) => {
-                    void controller.openDocumentAtStep(formatId, 7);
-                }}
-                onReorderDocuments={controller.reorderDocuments}
-                onSetDefaultDocument={controller.setDefaultDocument}
-                onSetDocumentEnabled={controller.setDocumentEnabled}
-                onTestPrintDocument={controller.testPrintDocument}
-            />
-            <PopupBase
-                className="builder-modal"
-                closeOnBackdrop={false}
-                isOpen={controller.viewMode === 'builder'}
-                label="Document builder"
-                onClose={controller.closeBuilder}
-            >
-                <div className="builder-modal-shell">
+            {controller.viewMode === 'library' ? (
+                <BuilderDocumentLibrary
+                    currentFormatId={controller.config.FormatId}
+                    currentFormatName={controller.config.FormatName}
+                    inventory={controller.inventory}
+                    onCreateNew={() => {
+                        void controller.createNewDocument();
+                    }}
+                    onDeleteDocument={controller.deleteDocument}
+                    onDuplicateDocument={controller.duplicateDocument}
+                    onEditDocument={controller.loadDocument}
+                    onOpenFormatPreview={(formatId) => {
+                        void controller.openDocumentAtStep(formatId, 6);
+                    }}
+                    onOpenPrintPreview={(formatId) => {
+                        void controller.openDocumentAtStep(formatId, 7);
+                    }}
+                    onReorderDocuments={controller.reorderDocuments}
+                    onSetDefaultDocument={controller.setDefaultDocument}
+                    onSetDocumentEnabled={controller.setDocumentEnabled}
+                    onTestPrintDocument={controller.testPrintDocument}
+                />
+            ) : (
+                <>
                     <BuilderPageHeader
                         activeStepIndex={controller.stepIndex}
                         onClose={controller.closeBuilder}
@@ -67,8 +63,8 @@ export const BuilderPageWorkspace: FC<{ readonly controller: BuilderPageControll
                         referencedFieldIds={referencedFieldIds}
                     />
                     <BuilderPageDrawer controller={controller} lineSection={lineSection} />
-                </div>
-            </PopupBase>
+                </>
+            )}
         </div>
     );
 };

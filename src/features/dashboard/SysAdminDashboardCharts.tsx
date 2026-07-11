@@ -11,15 +11,36 @@ type SysAdminDashboardChartsProps = {
     readonly summary: SysAdminSummary;
 };
 
+type EmptyChartCalloutProps = {
+    readonly label: string;
+    readonly title: string;
+};
+
+const EmptyChartCallout: FC<EmptyChartCalloutProps> = ({ label, title }) => (
+    <div className="dashboard-chart-empty" aria-label={label}>
+        <strong>0</strong>
+        <span>{title}</span>
+    </div>
+);
+
 export const SysAdminDashboardCharts: FC<SysAdminDashboardChartsProps> = ({ summary }) => {
     const chartData = buildSysAdminDashboardChartData(summary);
+    const hasFormatData =
+        summary.formatCount > 0 ||
+        summary.incompleteFormatCount > 0 ||
+        summary.defaultFormatCount > 0;
+    const hasRecordData = summary.recordCount > 0;
+    const hasUserData = summary.accountCount > 0;
+
     return (
         <>
             <section
                 className="dashboard-charts dashboard-charts--sysadmin"
                 aria-label="SysAdmin summary charts"
             >
-                <article className="dashboard-chart-card">
+                <article
+                    className={`dashboard-chart-card${hasFormatData ? '' : ' dashboard-chart-card--empty'}`}
+                >
                     <div className="section-heading">
                         <div>
                             <p className="eyebrow">Formats</p>
@@ -30,26 +51,37 @@ export const SysAdminDashboardCharts: FC<SysAdminDashboardChartsProps> = ({ summ
                         </div>
                     </div>
                     <div className="dashboard-chart-card-body">
-                        <div
-                            className="dashboard-chart-ring"
-                            aria-label="Document format health chart"
-                            style={{ background: chartData.formatRingBackground }}
-                        >
-                            <strong>{summary.formatCount}</strong>
-                            <span>formats</span>
-                        </div>
-                        <ul className="dashboard-chart-legend">
-                            {chartData.formatSegments.map((segment) => (
-                                <li key={segment.label}>
-                                    <span className={segment.className} />
-                                    <strong>{segment.label}</strong>
-                                    <small>{String(segment.value)}</small>
-                                </li>
-                            ))}
-                        </ul>
+                        {hasFormatData ? (
+                            <>
+                                <div
+                                    className="dashboard-chart-ring"
+                                    aria-label="Document format health chart"
+                                    style={{ background: chartData.formatRingBackground }}
+                                >
+                                    <strong>{summary.formatCount}</strong>
+                                    <span>formats</span>
+                                </div>
+                                <ul className="dashboard-chart-legend">
+                                    {chartData.formatSegments.map((segment) => (
+                                        <li key={segment.label}>
+                                            <span className={segment.className} />
+                                            <strong>{segment.label}</strong>
+                                            <small>{String(segment.value)}</small>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </>
+                        ) : (
+                            <EmptyChartCallout
+                                label="No document formats are published yet"
+                                title="formats published"
+                            />
+                        )}
                     </div>
                 </article>
-                <article className="dashboard-chart-card">
+                <article
+                    className={`dashboard-chart-card${hasRecordData ? '' : ' dashboard-chart-card--empty'}`}
+                >
                     <div className="section-heading">
                         <div>
                             <p className="eyebrow">Records</p>
@@ -61,21 +93,23 @@ export const SysAdminDashboardCharts: FC<SysAdminDashboardChartsProps> = ({ summ
                     </div>
                     <div className="dashboard-chart-card-body">
                         <div
-                            className="dashboard-chart-stack"
+                            className={`dashboard-chart-stack${hasRecordData ? '' : ' dashboard-chart-stack--empty'}`}
                             aria-label="Record status distribution"
                         >
-                            {chartData.recordSegments.map((segment) => (
-                                <span
-                                    className={segment.className}
-                                    key={segment.label}
-                                    style={{
-                                        width: `${String(
-                                            (segment.value / chartData.recordTotal) * 100,
-                                        )}%`,
-                                    }}
-                                    title={`${segment.label}: ${String(segment.value)}`}
-                                />
-                            ))}
+                            {hasRecordData
+                                ? chartData.recordSegments.map((segment) => (
+                                      <span
+                                          className={segment.className}
+                                          key={segment.label}
+                                          style={{
+                                              width: `${String(
+                                                  (segment.value / chartData.recordTotal) * 100,
+                                              )}%`,
+                                          }}
+                                          title={`${segment.label}: ${String(segment.value)}`}
+                                      />
+                                  ))
+                                : 'No records yet'}
                         </div>
                         <dl className="dashboard-chart-list">
                             <div>
@@ -93,7 +127,9 @@ export const SysAdminDashboardCharts: FC<SysAdminDashboardChartsProps> = ({ summ
                         </dl>
                     </div>
                 </article>
-                <article className="dashboard-chart-card">
+                <article
+                    className={`dashboard-chart-card${hasUserData ? '' : ' dashboard-chart-card--empty'}`}
+                >
                     <div className="section-heading">
                         <div>
                             <p className="eyebrow">Operations</p>
@@ -102,23 +138,32 @@ export const SysAdminDashboardCharts: FC<SysAdminDashboardChartsProps> = ({ summ
                         </div>
                     </div>
                     <div className="dashboard-chart-card-body">
-                        <div
-                            className="dashboard-chart-ring dashboard-chart-ring--secondary"
-                            aria-label="Account activity chart"
-                            style={{ background: chartData.userRingBackground }}
-                        >
-                            <strong>{summary.activeAccountCount}</strong>
-                            <span>active users</span>
-                        </div>
-                        <ul className="dashboard-chart-legend">
-                            {chartData.userSegments.map((segment) => (
-                                <li key={segment.label}>
-                                    <span className={segment.className} />
-                                    <strong>{segment.label}</strong>
-                                    <small>{String(segment.value)}</small>
-                                </li>
-                            ))}
-                        </ul>
+                        {hasUserData ? (
+                            <>
+                                <div
+                                    className="dashboard-chart-ring dashboard-chart-ring--secondary"
+                                    aria-label="Account activity chart"
+                                    style={{ background: chartData.userRingBackground }}
+                                >
+                                    <strong>{summary.activeAccountCount}</strong>
+                                    <span>active users</span>
+                                </div>
+                                <ul className="dashboard-chart-legend">
+                                    {chartData.userSegments.map((segment) => (
+                                        <li key={segment.label}>
+                                            <span className={segment.className} />
+                                            <strong>{segment.label}</strong>
+                                            <small>{String(segment.value)}</small>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </>
+                        ) : (
+                            <EmptyChartCallout
+                                label="No operator accounts have been created yet"
+                                title="active users"
+                            />
+                        )}
                         <dl className="dashboard-chart-list">
                             <div>
                                 <dt>Users created</dt>

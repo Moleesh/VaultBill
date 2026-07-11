@@ -121,8 +121,7 @@ export const duplicateDocumentDraft = (
 export const describeInventoryItem = (item: BuilderInventoryItem): string =>
     [
         item.isBuiltIn ? 'Built-in document' : 'Custom document',
-        item.isDefault ? 'Default document' : item.isEnabled ? 'Enabled' : 'Disabled',
-        item.templateName ?? 'No print template linked',
+        `Template: ${item.templateName ?? 'Not linked'}`,
         `${String(item.assetCount)} asset${item.assetCount === 1 ? '' : 's'}`,
         item.isValid ? 'Valid' : 'Needs attention',
     ].join(' • ');

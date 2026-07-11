@@ -5,6 +5,34 @@
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: var(--space-4);
 }
+
+.dashboard-quick-actions,
+.dashboard-workbench-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.dashboard-workbench {
+    align-content: space-between;
+    min-height: 18rem;
+    background:
+        radial-gradient(
+            circle at top right,
+            color-mix(in srgb, var(--color-primary) 12%, transparent),
+            transparent 52%
+        ),
+        var(--color-card);
+}
+
+.dashboard-workbench p {
+    max-width: 42rem;
+    margin: 0;
+    color: var(--color-text-muted);
+    line-height: 1.6;
+}
 .dashboard-metrics--sysadmin {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--space-5);
@@ -126,10 +154,14 @@
     grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
     gap: var(--space-5);
 }
+.dashboard-charts--sysadmin {
+    grid-template-columns: repeat(3, minmax(15rem, 1fr));
+}
 .dashboard-chart-card {
     display: grid;
-    gap: var(--space-5);
-    min-height: 18rem;
+    align-content: start;
+    gap: var(--space-4);
+    min-height: 16rem;
     border: var(--line-width) solid var(--color-border);
     border-radius: var(--radius-xl);
     background:
@@ -139,8 +171,17 @@
             transparent 68%
         ),
         var(--color-card);
-    padding: var(--space-6);
+    padding: var(--space-5);
     box-shadow: var(--shadow-card);
+}
+.dashboard-chart-card--empty {
+    background:
+        radial-gradient(
+            circle at top right,
+            color-mix(in srgb, var(--color-primary) 7%, transparent),
+            transparent 46%
+        ),
+        var(--color-card);
 }
 .dashboard-chart-card-body {
     display: grid;
@@ -157,7 +198,7 @@
     --chart-hole: 30%;
     display: grid;
     position: relative;
-    width: clamp(9rem, 28vw, 12rem);
+    width: clamp(7.25rem, 12vw, 9rem);
     aspect-ratio: 1;
     place-items: center;
     justify-self: center;
@@ -183,7 +224,7 @@
 .dashboard-chart-ring strong {
     display: block;
     font-family: var(--font-display);
-    font-size: clamp(2rem, 5vw, 3rem);
+    font-size: clamp(1.65rem, 3vw, 2.25rem);
     line-height: 1;
 }
 .dashboard-chart-ring span {
@@ -196,12 +237,58 @@
 .dashboard-chart-ring--secondary {
     color: var(--color-secondary);
 }
+.dashboard-chart-empty {
+    display: grid;
+    min-height: 8.5rem;
+    place-items: center;
+    border: var(--line-width) dashed color-mix(in srgb, var(--color-border) 80%, transparent);
+    border-radius: var(--radius-lg);
+    background:
+        linear-gradient(
+            135deg,
+            color-mix(in srgb, var(--color-primary) 8%, transparent),
+            color-mix(in srgb, var(--color-card) 92%, transparent)
+        ),
+        var(--color-card);
+    color: var(--color-text-muted);
+    text-align: center;
+}
+.dashboard-chart-empty strong {
+    display: block;
+    color: var(--color-primary);
+    font-family: var(--font-display);
+    font-size: clamp(1.7rem, 3vw, 2.25rem);
+    line-height: 1;
+}
+.dashboard-chart-empty span {
+    max-width: 9rem;
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-bold);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
 .dashboard-chart-stack {
     display: flex;
     overflow: hidden;
     min-height: 1rem;
     border-radius: 999px;
     background: var(--color-surface-muted);
+}
+.dashboard-chart-stack--empty {
+    min-height: 2.35rem;
+    align-items: center;
+    justify-content: center;
+    border: var(--line-width) dashed color-mix(in srgb, var(--color-border) 80%, transparent);
+    background:
+        repeating-linear-gradient(
+            135deg,
+            color-mix(in srgb, var(--color-primary) 5%, transparent) 0 0.45rem,
+            transparent 0.45rem 0.9rem
+        ),
+        var(--color-card);
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
 }
 .dashboard-chart-stack span {
     min-width: 0;
@@ -271,6 +358,11 @@
 }
 .dashboard-chart-segment--danger {
     background: var(--color-danger);
+}
+@media (max-width: 56rem) {
+    .dashboard-charts--sysadmin {
+        grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+    }
 }
 .dashboard-grid,
 .configuration-grid {

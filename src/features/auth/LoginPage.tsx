@@ -13,7 +13,10 @@ import { useCapabilities } from '../../capability/CapabilityContext';
 import { shouldRenderDesktopChrome } from '../../capability/CapabilityRegistry';
 import { AppBrandIcon } from '../../components/AppBrandIcon/AppBrandIcon';
 import { AppConfirmDialog } from '../../components/AppConfirmDialog/AppConfirmDialog';
-import { getSafeAppPathForRole } from '../../components/AppShellSupport';
+import {
+    getDesktopLastAppTabForRole,
+    getSafeAppPathForRole,
+} from '../../components/AppShellSupport';
 import { DesktopWindowControls } from '../../components/DesktopWindowControls';
 import { defaultRuntimeBranding } from '../../constants/RuntimeDefaults';
 import { isStaticHostedBrowserBuild } from '../../runtime/RuntimeMode';
@@ -66,6 +69,14 @@ export const LoginPage: FC<{ readonly onOpenSetupWizard?: () => void }> = ({
     const accountOptions = buildLoginAccountOptions(accounts, isSysAdminUnlocked);
     const fallbackSelectedAccountId = getLoginAccountId(accounts, isSysAdminUnlocked);
     const [selectedAccountId, setSelectedAccountId] = useState('');
+    const getPostLoginPath = (role: 'Admin' | 'SysAdmin' | 'User') => {
+        const requestedPath = getRequestedAppPath(location.state);
+        if (requestedPath) return getSafeAppPathForRole(role, requestedPath);
+        const rememberedDesktopTab = capabilities.isDesktop
+            ? getDesktopLastAppTabForRole(role)
+            : undefined;
+        return rememberedDesktopTab ?? getSafeAppPathForRole(role);
+    };
     const performLogin = async ({
         password,
         selectedAccountId,
@@ -81,8 +92,7 @@ export const LoginPage: FC<{ readonly onOpenSetupWizard?: () => void }> = ({
             await login(accountId, password);
             const accountRole =
                 accounts.find((account) => account.userId === accountId)?.role ?? 'Admin';
-            const requestedPath = getRequestedAppPath(location.state);
-            void navigate(getSafeAppPathForRole(accountRole, requestedPath));
+            void navigate(getPostLoginPath(accountRole));
         } catch (reason) {
             const message = reason instanceof Error ? reason.message : 'Login failed.';
             setError(
@@ -198,8 +208,7 @@ export const LoginPage: FC<{ readonly onOpenSetupWizard?: () => void }> = ({
     ]);
 
     if (operatorContext) {
-        const requestedPath = getRequestedAppPath(location.state);
-        return <Navigate replace to={getSafeAppPathForRole(operatorContext.role, requestedPath)} />;
+        return <Navigate replace to={getPostLoginPath(operatorContext.role)} />;
     }
 
     return (
