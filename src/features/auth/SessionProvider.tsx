@@ -2,7 +2,7 @@
 /* eslint-disable max-lines */
 
 import type { FC, PropsWithChildren } from 'react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -151,25 +151,28 @@ export const SessionProvider: FC<PropsWithChildren<{ readonly refreshRevision?: 
         });
     }, [queryClient, refreshRevision, sessionQueryKey]);
 
-    const syncSessionSnapshot = ({
-        account: nextAccount,
-        accounts: nextAccounts,
-        csrfToken,
-    }: {
-        readonly account: OperatorAccount | undefined;
-        readonly accounts: readonly OperatorAccount[];
-        readonly csrfToken: string | undefined;
-    }) => {
-        setAccounts(nextAccounts);
-        setAccount(nextAccount);
-        setStoredOperatorId(nextAccount?.userId);
-        setHostedCsrfToken(csrfToken);
-        queryClient.setQueryData(sessionQueryKey, {
-            accounts: nextAccounts,
+    const syncSessionSnapshot = useCallback(
+        ({
             account: nextAccount,
+            accounts: nextAccounts,
             csrfToken,
-        });
-    };
+        }: {
+            readonly account: OperatorAccount | undefined;
+            readonly accounts: readonly OperatorAccount[];
+            readonly csrfToken: string | undefined;
+        }) => {
+            setAccounts(nextAccounts);
+            setAccount(nextAccount);
+            setStoredOperatorId(nextAccount?.userId);
+            setHostedCsrfToken(csrfToken);
+            queryClient.setQueryData(sessionQueryKey, {
+                accounts: nextAccounts,
+                account: nextAccount,
+                csrfToken,
+            });
+        },
+        [queryClient, sessionQueryKey],
+    );
 
     const invalidateSetupState = () =>
         Promise.all([
@@ -295,6 +298,11 @@ export const SessionProvider: FC<PropsWithChildren<{ readonly refreshRevision?: 
                         .mutateAsync({ userId, ...(password !== undefined ? { password } : {}) })
                         .then(() => undefined),
                 logout: () => {
+                    syncSessionSnapshot({
+                        accounts,
+                        account: undefined,
+                        csrfToken: undefined,
+                    });
                     void logoutMutation.mutateAsync();
                 },
                 saveAccount: (nextAccount: OperatorAccount) =>
@@ -313,6 +321,7 @@ export const SessionProvider: FC<PropsWithChildren<{ readonly refreshRevision?: 
             logoutMutation,
             resetPasswordMutation,
             saveAccountMutation,
+            syncSessionSnapshot,
         ],
     );
 

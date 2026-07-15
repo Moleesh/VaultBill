@@ -28,11 +28,12 @@ export const SysAdminDashboard: FC = () => {
                     <p>Document formats, people, backups, and activation readiness in one place.</p>
                 </div>
                 <div className="dashboard-quick-actions">
-                    <ActionLink to="/app/builder">Document library</ActionLink>
-                    <ActionLink to="/app/settings#backup">Backup</ActionLink>
                     <ActionLink to="/app/records" variant="primary">
                         Create record
                     </ActionLink>
+                    <ActionLink to="/app/reports">Reports</ActionLink>
+                    <ActionLink to="/app/builder">Document library</ActionLink>
+                    <ActionLink to="/app/settings#backup">Backup</ActionLink>
                 </div>
             </section>
             <DashboardTrialCountdown

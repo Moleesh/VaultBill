@@ -101,6 +101,14 @@ describe('SysAdmin dashboard', () => {
         expect(screen.getByText('Users created')).toBeVisible();
         expect(screen.getByText('active users')).toBeVisible();
         expect(screen.getByText('Total records')).toBeVisible();
+        expect(screen.getByRole('link', { name: 'Create record' })).toHaveAttribute(
+            'href',
+            '/app/records',
+        );
+        expect(screen.getByRole('link', { name: 'Reports' })).toHaveAttribute(
+            'href',
+            '/app/reports',
+        );
     });
 
     it('uses compact empty chart states when there is no dashboard activity', async () => {

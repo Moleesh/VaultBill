@@ -5,7 +5,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 const config: CapacitorConfig = {
     appId: 'com.vaultbill.app',
     appName: 'VaultBill',
-    webDir: 'dist',
+    webDir: process.env.VAULTBILL_ANDROID === 'true' ? 'dist-android' : 'dist',
     server: {
         androidScheme: 'https',
     },

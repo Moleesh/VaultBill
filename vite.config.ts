@@ -61,7 +61,7 @@ export default defineConfig({
         strictPort: false,
     },
     build: {
-        outDir: 'dist',
+        outDir: isAndroidBuild ? 'dist-android' : 'dist',
         sourcemap: true,
     },
     test: {

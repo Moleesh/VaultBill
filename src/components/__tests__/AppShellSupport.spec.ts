@@ -6,6 +6,7 @@ import { shellSections } from '../../constants/RuntimeDefaults';
 import type { AppRouteId } from '../../types/AppTypes';
 import {
     appShellIcons,
+    clearDesktopLastAppTab,
     getAllowedSectionIds,
     getPageId,
     getSafeAppPathForRole,
@@ -22,7 +23,7 @@ describe('AppShellSupport', () => {
             new Set<AppRouteId>(['dashboard', 'records', 'reports']),
         );
         expect(getAllowedSectionIds(false, 'SysAdmin')).toEqual(
-            new Set<AppRouteId>(['dashboard', 'builder', 'settings']),
+            new Set<AppRouteId>(['dashboard', 'records', 'reports', 'builder', 'settings']),
         );
         expect(getAllowedSectionIds(false, 'User')).toEqual(
             new Set<AppRouteId>(['records', 'reports']),
@@ -32,10 +33,18 @@ describe('AppShellSupport', () => {
     it('keeps restored sessions on a safe requested tab', () => {
         expect(getSafeAppPathForRole('Admin', '/app/records/new')).toBe('/app/records/new');
         expect(getSafeAppPathForRole('User', '/app/dashboard')).toBe('/app/records');
-        expect(getSafeAppPathForRole('SysAdmin', '/app/reports')).toBe('/app/dashboard');
+        expect(getSafeAppPathForRole('SysAdmin', '/app/reports')).toBe('/app/reports');
     });
 
     it('exposes icons for each top-level shell section', () => {
         expect(Object.keys(appShellIcons)).toEqual(shellSections.map((section) => section.id));
+    });
+
+    it('clears the legacy desktop tab memory', () => {
+        window.localStorage.setItem('vaultbill.desktop.last-app-tab', '/app/settings');
+
+        clearDesktopLastAppTab();
+
+        expect(window.localStorage.getItem('vaultbill.desktop.last-app-tab')).toBeNull();
     });
 });

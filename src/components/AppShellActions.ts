@@ -3,6 +3,7 @@
 import type { NavigateFunction } from 'react-router-dom';
 
 import { canUseLocalHostedApi, requestHostedWindowAction } from '../runtime/HostedApi';
+import { clearDesktopLastAppTab, markDesktopLogoutFreshLogin } from './AppShellSupport';
 
 type AppShellActionDependencies = {
     readonly navigate: NavigateFunction;
@@ -65,8 +66,10 @@ export const createAppShellActions = ({
         window.location.reload();
     };
     const logOut = () => {
+        clearDesktopLastAppTab();
+        markDesktopLogoutFreshLogin();
         logout();
-        void navigate('/login');
+        void navigate('/login', { replace: true, state: { resetLoginForm: true } });
     };
     const resetDemo = () => {
         resetDemoData();

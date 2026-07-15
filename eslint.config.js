@@ -191,6 +191,7 @@ export default tseslint.config(
             'android/app/build',
             'android/app/src/main/assets',
             'dist',
+            'dist-android',
             'dist-electron',
             'release',
             'coverage',

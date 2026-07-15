@@ -504,8 +504,8 @@
     color: var(--window-control-minimize-text);
     background: linear-gradient(
         180deg,
-        var(--window-control-minimize-start),
-        var(--window-control-minimize-end)
+        color-mix(in srgb, var(--window-control-minimize-start) 72%, var(--color-primary) 28%),
+        color-mix(in srgb, var(--window-control-minimize-end) 76%, var(--color-primary-hover) 24%)
     );
 }
 .desktop-window-control--refresh {
@@ -527,11 +527,11 @@
 .desktop-window-controls .icon-button:hover,
 .app-shell-window-controls .icon-button:hover {
     transform: translateY(-1px);
-    filter: saturate(1.04) brightness(1.03);
+    filter: saturate(1.12) brightness(0.98);
     box-shadow:
-        inset 0 1px 0 color-mix(in srgb, white 18%, transparent),
-        inset 0 -1rem 1.6rem color-mix(in srgb, black 14%, transparent),
-        0 0.8rem 1.4rem color-mix(in srgb, black 16%, transparent);
+        inset 0 1px 0 color-mix(in srgb, white 12%, transparent),
+        inset 0 -1rem 1.6rem color-mix(in srgb, black 22%, transparent),
+        0 0.8rem 1.55rem color-mix(in srgb, black 22%, transparent);
 }
 .desktop-window-controls .icon-button:active,
 .app-shell-window-controls .icon-button:active {
@@ -546,18 +546,28 @@
 .desktop-window-control--close:hover {
     background: linear-gradient(
         180deg,
-        color-mix(in srgb, var(--window-control-close-start) 76%, white 24%),
-        color-mix(in srgb, var(--window-control-close-end) 90%, white 10%)
+        color-mix(in srgb, var(--window-control-close-start) 58%, var(--color-danger) 42%),
+        color-mix(in srgb, var(--window-control-close-end) 74%, black 26%)
     );
     color: var(--window-control-close-text);
 }
+
+.desktop-window-control--minimize:hover {
+    background: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--window-control-minimize-start) 52%, var(--color-primary) 48%),
+        color-mix(in srgb, var(--window-control-minimize-end) 62%, var(--color-primary-hover) 38%)
+    );
+    color: var(--color-primary-text);
+}
+
 .desktop-window-control--refresh:hover {
     background: linear-gradient(
         180deg,
-        color-mix(in srgb, var(--color-secondary) 66%, white 34%),
-        color-mix(in srgb, var(--color-primary) 84%, white 16%)
+        color-mix(in srgb, var(--color-secondary) 34%, var(--color-primary) 66%),
+        color-mix(in srgb, var(--color-primary-hover) 74%, black 26%)
     );
-    color: color-mix(in srgb, var(--color-primary-text) 96%, white 4%);
+    color: var(--color-primary-text);
 }
 @keyframes app-shell-topbar-glow {
     from {

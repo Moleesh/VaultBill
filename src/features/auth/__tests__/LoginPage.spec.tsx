@@ -13,7 +13,7 @@ import { CapabilityProvider } from '../../../capability/CapabilityContext';
 import { TestQueryProvider } from '../../../test/TestQueryProvider';
 import type { OperatorAccount } from '../AccountTypes';
 import { LoginPage } from '../LoginPage';
-import { SessionProvider } from '../SessionContext';
+import { SessionProvider, useSession } from '../SessionContext';
 
 const nonDemoCapabilities: CapabilityRegistry = {
     isDesktop: false,
@@ -47,6 +47,12 @@ const desktopCapabilities: CapabilityRegistry = {
     hasLocalDb: true,
 };
 
+const demoCapabilities: CapabilityRegistry = {
+    ...nonDemoCapabilities,
+    isDemoMode: true,
+    runtimePlatform: 'demo',
+};
+
 const adminAccount = {
     userId: 'admin_1',
     username: 'admin',
@@ -74,6 +80,16 @@ const renderPage = (children: ReactNode, capabilities = nonDemoCapabilities) =>
             </TestQueryProvider>
         </MemoryRouter>,
     );
+
+const SessionLogoutButton = () => {
+    const { logout } = useSession();
+
+    return (
+        <button onClick={logout} type="button">
+            Log out now
+        </button>
+    );
+};
 
 const setDesktopBridge = (accounts: readonly OperatorAccount[]) => {
     Object.defineProperty(window, 'vaultBillDesktop', {
@@ -150,7 +166,28 @@ describe('login UI', () => {
         expect(await screen.findByRole('heading', { name: 'Dashboard' })).toBeVisible();
     });
 
-    it('restores the remembered desktop tab after logging back in', async () => {
+    it('starts the browser demo with one click', async () => {
+        render(
+            <MemoryRouter initialEntries={['/login']}>
+                <TestQueryProvider>
+                    <CapabilityProvider value={demoCapabilities}>
+                        <SessionProvider>
+                            <Routes>
+                                <Route path="/login" element={<LoginPage />} />
+                                <Route path="/app/dashboard" element={<h1>Dashboard</h1>} />
+                            </Routes>
+                        </SessionProvider>
+                    </CapabilityProvider>
+                </TestQueryProvider>
+            </MemoryRouter>,
+        );
+
+        fireEvent.click(await screen.findByRole('button', { name: 'Start demo' }));
+
+        expect(await screen.findByRole('heading', { name: 'Dashboard' })).toBeVisible();
+    });
+
+    it('uses the role default page instead of restoring the remembered desktop tab', async () => {
         setDesktopBridge([adminAccount]);
         window.localStorage.setItem('vaultbill.desktop.last-app-tab', '/app/settings');
 
@@ -178,7 +215,152 @@ describe('login UI', () => {
         fireEvent.click(screen.getByRole('option', { name: /Operations Admin/i }));
         fireEvent.click(screen.getByRole('button', { name: 'Log in' }));
 
-        expect(await screen.findByRole('heading', { name: 'Settings' })).toBeVisible();
+        expect(await screen.findByRole('heading', { name: 'Dashboard' })).toBeVisible();
+    });
+
+    it('keeps the last selected operator after desktop logout', async () => {
+        const secondAdminAccount = {
+            ...adminAccount,
+            userId: 'admin_2',
+            username: 'second-admin',
+            displayName: 'Second Admin',
+        } as const;
+        setDesktopBridge([adminAccount, secondAdminAccount]);
+        window.localStorage.setItem('vaultbill.login.last-operator', secondAdminAccount.userId);
+
+        render(
+            <MemoryRouter
+                initialEntries={[
+                    {
+                        pathname: '/login',
+                        state: { resetLoginForm: true },
+                    },
+                ]}
+            >
+                <TestQueryProvider>
+                    <CapabilityProvider value={desktopCapabilities}>
+                        <SessionProvider>
+                            <LoginPage />
+                        </SessionProvider>
+                    </CapabilityProvider>
+                </TestQueryProvider>
+            </MemoryRouter>,
+        );
+
+        expect(
+            await screen.findByRole('button', {
+                name: /Operator account Second Admin/i,
+            }),
+        ).toBeVisible();
+        expect(screen.getByRole('button', { name: 'Log in' })).not.toBeDisabled();
+    });
+
+    it('ignores stale tab return paths after desktop logout', async () => {
+        setDesktopBridge([adminAccount]);
+        window.sessionStorage.setItem('vaultbill.desktop.logout-fresh-login', 'true');
+
+        render(
+            <MemoryRouter
+                initialEntries={[
+                    {
+                        pathname: '/login',
+                        state: { from: '/app/settings' },
+                    },
+                ]}
+            >
+                <TestQueryProvider>
+                    <CapabilityProvider value={desktopCapabilities}>
+                        <SessionProvider>
+                            <Routes>
+                                <Route path="/login" element={<LoginPage />} />
+                                <Route path="/app/dashboard" element={<h1>Dashboard</h1>} />
+                                <Route path="/app/settings" element={<h1>Settings</h1>} />
+                            </Routes>
+                        </SessionProvider>
+                    </CapabilityProvider>
+                </TestQueryProvider>
+            </MemoryRouter>,
+        );
+
+        await screen.findByRole('button', {
+            name: /Operator account Operations Admin/i,
+        });
+        fireEvent.click(screen.getByRole('button', { name: 'Log in' }));
+
+        expect(await screen.findByRole('heading', { name: 'Dashboard' })).toBeVisible();
+        expect(screen.queryByRole('heading', { name: 'Settings' })).toBeNull();
+        expect(window.sessionStorage.getItem('vaultbill.desktop.logout-fresh-login')).toBeNull();
+    });
+
+    it('remembers the operator selected during successful login', async () => {
+        setDesktopBridge([adminAccount]);
+
+        render(
+            <MemoryRouter initialEntries={['/login']}>
+                <TestQueryProvider>
+                    <CapabilityProvider value={desktopCapabilities}>
+                        <SessionProvider>
+                            <Routes>
+                                <Route path="/login" element={<LoginPage />} />
+                                <Route path="/app/dashboard" element={<h1>Dashboard</h1>} />
+                            </Routes>
+                        </SessionProvider>
+                    </CapabilityProvider>
+                </TestQueryProvider>
+            </MemoryRouter>,
+        );
+
+        await screen.findByRole('button', {
+            name: /Operator account Operations Admin/i,
+        });
+        fireEvent.click(screen.getByRole('button', { name: 'Log in' }));
+
+        expect(await screen.findByRole('heading', { name: 'Dashboard' })).toBeVisible();
+        expect(window.localStorage.getItem('vaultbill.login.last-operator')).toBe(
+            adminAccount.userId,
+        );
+    });
+
+    it('clears the desktop operator when logging out', async () => {
+        setDesktopBridge([adminAccount]);
+        window.localStorage.setItem('vaultbill.operator', adminAccount.userId);
+
+        render(
+            <MemoryRouter initialEntries={['/login']}>
+                <TestQueryProvider>
+                    <CapabilityProvider value={desktopCapabilities}>
+                        <SessionProvider>
+                            <SessionLogoutButton />
+                        </SessionProvider>
+                    </CapabilityProvider>
+                </TestQueryProvider>
+            </MemoryRouter>,
+        );
+
+        fireEvent.click(await screen.findByRole('button', { name: 'Log out now' }));
+
+        expect(window.localStorage.getItem('vaultbill.operator')).toBeNull();
+    });
+
+    it('keeps the desktop operator during refresh bootstrap', async () => {
+        setDesktopBridge([adminAccount]);
+        window.localStorage.setItem('vaultbill.operator', adminAccount.userId);
+
+        render(
+            <MemoryRouter initialEntries={['/login']}>
+                <TestQueryProvider>
+                    <CapabilityProvider value={desktopCapabilities}>
+                        <SessionProvider>
+                            <SessionLogoutButton />
+                        </SessionProvider>
+                    </CapabilityProvider>
+                </TestQueryProvider>
+            </MemoryRouter>,
+        );
+
+        await screen.findByRole('button', { name: 'Log out now' });
+
+        expect(window.localStorage.getItem('vaultbill.operator')).toBe(adminAccount.userId);
     });
 
     it('shows the account username as supporting detail in the operator selector', async () => {

@@ -4,5 +4,7 @@ coverage
 node_modules
 package-lock.json
 android/.gradle
+android/build
 android/app/build
 android/app/src/main/assets
+android/capacitor-cordova-android-plugins/build

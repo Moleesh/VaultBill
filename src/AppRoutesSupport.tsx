@@ -161,7 +161,7 @@ export const AppRouteTree: FC<AppRouteTreeProps> = ({
             <Route
                 path="records"
                 element={
-                    <ProtectedRoute roles={['Admin', 'User']}>
+                    <ProtectedRoute roles={['Admin', 'SysAdmin', 'User']}>
                         <RecordsPage />
                     </ProtectedRoute>
                 }
@@ -169,7 +169,7 @@ export const AppRouteTree: FC<AppRouteTreeProps> = ({
             <Route
                 path="records/new"
                 element={
-                    <ProtectedRoute roles={['Admin', 'User']}>
+                    <ProtectedRoute roles={['Admin', 'SysAdmin', 'User']}>
                         <RecordsPage />
                     </ProtectedRoute>
                 }
@@ -177,7 +177,7 @@ export const AppRouteTree: FC<AppRouteTreeProps> = ({
             <Route
                 path="records/:recordId"
                 element={
-                    <ProtectedRoute roles={['Admin', 'User']}>
+                    <ProtectedRoute roles={['Admin', 'SysAdmin', 'User']}>
                         <RecordsPage />
                     </ProtectedRoute>
                 }
@@ -185,7 +185,7 @@ export const AppRouteTree: FC<AppRouteTreeProps> = ({
             <Route
                 path="reports"
                 element={
-                    <ProtectedRoute roles={['Admin', 'User']}>
+                    <ProtectedRoute roles={['Admin', 'SysAdmin', 'User']}>
                         <ReportsPage />
                     </ProtectedRoute>
                 }

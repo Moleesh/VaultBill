@@ -6,6 +6,7 @@ import { shellSections } from '../constants/RuntimeDefaults';
 import type { AppRouteId, Role } from '../types/AppTypes';
 
 const desktopLastAppTabStorageKey = 'vaultbill.desktop.last-app-tab';
+const desktopLogoutFreshLoginSessionKey = 'vaultbill.desktop.logout-fresh-login';
 
 export type DesktopTrialStatus = Awaited<
     ReturnType<NonNullable<typeof window.vaultBillDesktop>['getTrialStatus']>
@@ -30,7 +31,7 @@ export const getAllowedSectionIds = (isDemoMode: boolean, role: Role) =>
     isDemoMode
         ? new Set<AppRouteId>(['dashboard', 'records', 'reports'])
         : role === 'SysAdmin'
-          ? new Set<AppRouteId>(['dashboard', 'builder', 'settings'])
+          ? new Set<AppRouteId>(['dashboard', 'records', 'reports', 'builder', 'settings'])
           : role === 'Admin'
             ? new Set<AppRouteId>(['dashboard', 'records', 'reports', 'settings'])
             : new Set<AppRouteId>(['records', 'reports']);
@@ -60,25 +61,39 @@ export const getSafeAppPathForRole = (role: Role, targetPath?: string): string =
     return getAppTabPath(getDefaultAppRouteForRole(role));
 };
 
-/** Remembers the last desktop shell tab so sign-in can resume there next time. */
-export const rememberDesktopLastAppTab = (pathname: string): void => {
-    const routeId = getAppRouteIdFromPath(pathname);
-    if (!routeId) return;
-
+/** Clears the legacy desktop tab memory so logout/login starts from the role default. */
+export const clearDesktopLastAppTab = (): void => {
     try {
-        window.localStorage.setItem(desktopLastAppTabStorageKey, getAppTabPath(routeId));
+        window.localStorage.removeItem(desktopLastAppTabStorageKey);
     } catch {
-        // Ignore storage failures and fall back to normal role-based landing routes.
+        // Ignore storage failures and continue with normal role-based landing routes.
     }
 };
 
-/** Restores the last remembered desktop shell tab when it is still allowed. */
-export const getDesktopLastAppTabForRole = (role: Role): string | undefined => {
+/** Marks the next desktop login as an intentional post-logout fresh start. */
+export const markDesktopLogoutFreshLogin = (): void => {
     try {
-        const rememberedPath = window.localStorage.getItem(desktopLastAppTabStorageKey);
-        if (!rememberedPath) return undefined;
-        return getSafeAppPathForRole(role, rememberedPath);
+        window.sessionStorage.setItem(desktopLogoutFreshLoginSessionKey, 'true');
     } catch {
-        return undefined;
+        // Ignore storage failures and fall back to route state only.
+    }
+};
+
+/** Reads whether the current login screen was reached from an explicit logout. */
+export const consumeDesktopLogoutFreshLogin = (): boolean => {
+    try {
+        const shouldReset = window.sessionStorage.getItem(desktopLogoutFreshLoginSessionKey);
+        return shouldReset === 'true';
+    } catch {
+        return false;
+    }
+};
+
+/** Clears the explicit logout marker once a fresh login path has been chosen. */
+export const clearDesktopLogoutFreshLogin = (): void => {
+    try {
+        window.sessionStorage.removeItem(desktopLogoutFreshLoginSessionKey);
+    } catch {
+        // Ignore storage failures and continue with normal route selection.
     }
 };

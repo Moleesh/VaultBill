@@ -111,8 +111,8 @@
     color: var(--window-control-minimize-text);
     background: linear-gradient(
         160deg,
-        var(--window-control-minimize-start),
-        var(--window-control-minimize-end)
+        color-mix(in srgb, var(--window-control-minimize-start) 72%, var(--color-primary) 28%),
+        color-mix(in srgb, var(--window-control-minimize-end) 76%, var(--color-primary-hover) 24%)
     );
 }
 
@@ -135,32 +135,36 @@
 }
 
 .login-page-chrome .desktop-window-controls .icon-button:hover {
+    filter: saturate(1.12) brightness(0.98);
     box-shadow:
-        inset 0 1px 0 color-mix(in srgb, white 30%, transparent),
-        0 1rem 1.8rem color-mix(in srgb, var(--color-panel-shadow) 18%, transparent);
+        inset 0 1px 0 color-mix(in srgb, white 14%, transparent),
+        inset 0 -0.9rem 1.35rem color-mix(in srgb, black 18%, transparent),
+        0 1rem 1.8rem color-mix(in srgb, var(--color-panel-shadow) 26%, transparent);
 }
 
 .login-page-chrome .desktop-window-controls .desktop-window-control--minimize:hover {
     background: linear-gradient(
         160deg,
-        color-mix(in srgb, var(--window-control-minimize-start) 72%, white 28%),
-        color-mix(in srgb, var(--window-control-minimize-end) 88%, white 12%)
+        color-mix(in srgb, var(--window-control-minimize-start) 52%, var(--color-primary) 48%),
+        color-mix(in srgb, var(--window-control-minimize-end) 62%, var(--color-primary-hover) 38%)
     );
+    color: var(--color-primary-text);
 }
 
 .login-page-chrome .desktop-window-controls .desktop-window-control--refresh:hover {
     background: linear-gradient(
         160deg,
-        color-mix(in srgb, var(--color-secondary) 66%, white 34%),
-        color-mix(in srgb, var(--color-primary) 84%, white 16%)
+        color-mix(in srgb, var(--color-secondary) 34%, var(--color-primary) 66%),
+        color-mix(in srgb, var(--color-primary-hover) 74%, black 26%)
     );
+    color: var(--color-primary-text);
 }
 
 .login-page-chrome .desktop-window-controls .desktop-window-control--close:hover {
     background: linear-gradient(
         160deg,
-        color-mix(in srgb, var(--window-control-close-start) 72%, white 28%),
-        color-mix(in srgb, var(--window-control-close-end) 90%, white 10%)
+        color-mix(in srgb, var(--window-control-close-start) 58%, var(--color-danger) 42%),
+        color-mix(in srgb, var(--window-control-close-end) 74%, black 26%)
     );
 }
 

@@ -52,5 +52,5 @@ export const canUseLocalApiAction = (
     action: 'list' | 'saveDraft' | 'finalize' | 'cancel' | 'configureLan',
 ): boolean => {
     if (action === 'configureLan' || action === 'cancel') return role !== 'User';
-    return role === 'Admin' || role === 'User';
+    return true;
 };

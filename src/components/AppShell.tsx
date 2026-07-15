@@ -20,7 +20,7 @@ import { AppShellManagedDialogs } from './AppShellManagedDialogs';
 import { AppShellMobileNav } from './AppShellMobileNav';
 import { AppShellSidebar } from './AppShellSidebar';
 import type { DesktopTrialStatus } from './AppShellSupport';
-import { getAllowedSectionIds, getPageId, rememberDesktopLastAppTab } from './AppShellSupport';
+import { getAllowedSectionIds, getPageId } from './AppShellSupport';
 import { AppShellTopbar } from './AppShellTopbar';
 
 import { usePersistentWorkspaceTheme } from '../hooks/usePersistentWorkspaceTheme';
@@ -84,11 +84,6 @@ export const AppShell: FC = () => {
         }
         setScrollProgress(0);
     }, [location.pathname]);
-
-    useEffect(() => {
-        if (!capabilities.isDesktop || !operatorContext) return;
-        rememberDesktopLastAppTab(location.pathname);
-    }, [capabilities.isDesktop, location.pathname, operatorContext]);
 
     useEffect(() => {
         if (!operatorContext) {

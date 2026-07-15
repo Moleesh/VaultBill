@@ -8,8 +8,8 @@ import {
     defaultPasswordHash,
     demoAccount,
     fallbackBrowserAccounts,
-    getStoredOperatorId,
     hashPassword,
+    getStoredOperatorId,
     validateManagedAccounts,
     type HostedSessionPayload,
 } from '../features/auth/SessionSupport';

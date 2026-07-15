@@ -275,6 +275,27 @@ body.has-animated-cursor .icon-only-button:hover:not(:disabled) {
     color: var(--color-primary-text);
 }
 
+.button-danger:hover:not(:disabled) {
+    border-color: color-mix(in srgb, var(--color-danger) 86%, black 14%);
+    background: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--color-danger) 92%, var(--window-control-close-start) 8%),
+        color-mix(in srgb, var(--color-danger) 82%, black 18%)
+    );
+    color: var(--color-primary-text);
+    box-shadow:
+        inset 0 1px 0 color-mix(in srgb, white 16%, transparent),
+        0 0.8rem 1.55rem color-mix(in srgb, var(--color-danger) 28%, transparent);
+}
+
+body.has-animated-cursor .button-danger:hover:not(:disabled) {
+    transform: none;
+    border-color: color-mix(in srgb, var(--color-danger) 86%, black 14%);
+    background: color-mix(in srgb, var(--color-danger) 86%, black 14%);
+    color: var(--color-primary-text);
+    box-shadow: inset 0 1px 0 color-mix(in srgb, white 16%, transparent);
+}
+
 .page-stack {
     display: grid;
     gap: var(--space-6);
@@ -479,4 +500,107 @@ body.has-animated-cursor .icon-only-button:hover:not(:disabled) {
     margin-top: var(--space-4);
     border: var(--line-width) solid var(--color-border);
     border-radius: var(--radius-md);
+}
+
+.desktop-window-controls
+    .icon-only-button.icon-button.desktop-window-control.desktop-window-control--minimize {
+    border-color: transparent;
+    background: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--color-secondary) 40%, var(--color-primary) 60%),
+        color-mix(in srgb, var(--color-primary-hover) 86%, black 14%)
+    );
+    color: var(--color-primary-text);
+}
+
+.desktop-window-controls
+    .icon-only-button.icon-button.desktop-window-control.desktop-window-control--refresh {
+    border-color: transparent;
+    background: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--color-secondary) 26%, var(--color-primary) 74%),
+        color-mix(in srgb, var(--color-primary-hover) 82%, black 18%)
+    );
+    color: var(--color-primary-text);
+}
+
+.desktop-window-controls
+    .icon-only-button.icon-button.desktop-window-control.desktop-window-control--close {
+    border-color: transparent;
+    background: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--window-control-close-start) 64%, var(--color-danger) 36%),
+        color-mix(in srgb, var(--window-control-close-end) 74%, black 26%)
+    );
+    color: var(--window-control-close-text);
+}
+
+.desktop-window-controls .icon-only-button.icon-button.desktop-window-control:hover:not(:disabled),
+body.has-animated-cursor
+    .desktop-window-controls
+    .icon-only-button.icon-button.desktop-window-control:hover:not(:disabled) {
+    border-color: transparent;
+    transform: translateY(-1px);
+    filter: saturate(1.16) brightness(0.94);
+    box-shadow:
+        inset 0 1px 0 color-mix(in srgb, white 14%, transparent),
+        inset 0 -1rem 1.55rem color-mix(in srgb, black 28%, transparent),
+        0 0.9rem 1.65rem color-mix(in srgb, black 24%, transparent);
+}
+
+body.has-animated-cursor
+    .desktop-window-controls
+    .icon-only-button.icon-button.desktop-window-control:hover:not(:disabled) {
+    transform: none;
+}
+
+.desktop-window-controls
+    .icon-only-button.icon-button.desktop-window-control.desktop-window-control--minimize:hover:not(
+        :disabled
+    ),
+body.has-animated-cursor
+    .desktop-window-controls
+    .icon-only-button.icon-button.desktop-window-control.desktop-window-control--minimize:hover:not(
+        :disabled
+    ) {
+    background: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--color-secondary) 22%, var(--color-primary) 78%),
+        color-mix(in srgb, var(--color-primary-active) 78%, black 22%)
+    );
+    color: var(--color-primary-text);
+}
+
+.desktop-window-controls
+    .icon-only-button.icon-button.desktop-window-control.desktop-window-control--refresh:hover:not(
+        :disabled
+    ),
+body.has-animated-cursor
+    .desktop-window-controls
+    .icon-only-button.icon-button.desktop-window-control.desktop-window-control--refresh:hover:not(
+        :disabled
+    ) {
+    background: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--color-secondary) 12%, var(--color-primary) 88%),
+        color-mix(in srgb, var(--color-primary-active) 80%, black 20%)
+    );
+    color: var(--color-primary-text);
+}
+
+.desktop-window-controls
+    .icon-only-button.icon-button.desktop-window-control.desktop-window-control--close:hover:not(
+        :disabled
+    ),
+body.has-animated-cursor
+    .desktop-window-controls
+    .icon-only-button.icon-button.desktop-window-control.desktop-window-control--close:hover:not(
+        :disabled
+    ) {
+    background: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--window-control-close-start) 38%, var(--color-danger) 62%),
+        color-mix(in srgb, var(--window-control-close-end) 54%, black 46%)
+    );
+    color: var(--window-control-close-text);
 }

@@ -257,10 +257,10 @@ describe('app shell', () => {
 
         await screen.findAllByRole('link', { name: 'Dashboard' });
         expectAvailableTab('Dashboard');
+        expectAvailableTab('Records');
+        expectAvailableTab('Reports');
         expectAvailableTab('Builder');
         expectAvailableTab('Settings');
-        expectUnavailableTab('Records');
-        expectUnavailableTab('Reports');
     });
 
     it('shows only the tabs available to User operators', async () => {
@@ -288,29 +288,5 @@ describe('app shell', () => {
         expectUnavailableTab('Dashboard');
         expectUnavailableTab('Builder');
         expectUnavailableTab('Settings');
-    });
-
-    it('remembers the last desktop shell tab for the next sign-in', async () => {
-        render(
-            <MemoryRouter initialEntries={['/app/settings#security']}>
-                <TestQueryProvider>
-                    <CapabilityProvider value={desktopCapabilities}>
-                        <SessionContext.Provider value={createTestSession(sysAdminAccount)}>
-                            <RecordStoreProvider>
-                                <Routes>
-                                    <Route path="/app/*" element={<AppShell />}>
-                                        <Route path="settings" element={<h1>Settings</h1>} />
-                                    </Route>
-                                </Routes>
-                            </RecordStoreProvider>
-                        </SessionContext.Provider>
-                    </CapabilityProvider>
-                </TestQueryProvider>
-            </MemoryRouter>,
-        );
-
-        await screen.findByRole('heading', { name: 'Settings' });
-
-        expect(window.localStorage.getItem('vaultbill.desktop.last-app-tab')).toBe('/app/settings');
     });
 });

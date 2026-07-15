@@ -14,7 +14,8 @@ import { shouldRenderDesktopChrome } from '../../capability/CapabilityRegistry';
 import { AppBrandIcon } from '../../components/AppBrandIcon/AppBrandIcon';
 import { AppConfirmDialog } from '../../components/AppConfirmDialog/AppConfirmDialog';
 import {
-    getDesktopLastAppTabForRole,
+    clearDesktopLogoutFreshLogin,
+    consumeDesktopLogoutFreshLogin,
     getSafeAppPathForRole,
 } from '../../components/AppShellSupport';
 import { DesktopWindowControls } from '../../components/DesktopWindowControls';
@@ -31,7 +32,13 @@ import {
     requestLoginMinimizeWindow,
     useSetupShortcutConfirmation,
 } from './LoginPageRuntimeSupport';
-import { buildLoginAccountOptions, findLoginAccount, getLoginAccountId } from './LoginPageSupport';
+import {
+    buildLoginAccountOptions,
+    findLoginAccount,
+    getLastLoginAccountId,
+    getLoginAccountId,
+    rememberLoginAccountId,
+} from './LoginPageSupport';
 import { useSession } from './SessionContext';
 
 import { useActivationForm, useLoginForm } from './useLoginForms';
@@ -45,6 +52,12 @@ const getRequestedAppPath = (state: unknown): string | undefined => {
     const { from } = state as Readonly<Record<'from', unknown>>;
     return typeof from === 'string' ? from : undefined;
 };
+
+const shouldResetLoginForm = (state: unknown): boolean =>
+    typeof state === 'object' &&
+    state !== null &&
+    'resetLoginForm' in state &&
+    (state as Readonly<Record<'resetLoginForm', unknown>>).resetLoginForm === true;
 
 /** Renders the compact login experience for the current runtime mode. */
 export const LoginPage: FC<{ readonly onOpenSetupWizard?: () => void }> = ({
@@ -65,17 +78,21 @@ export const LoginPage: FC<{ readonly onOpenSetupWizard?: () => void }> = ({
     const [isSetupShortcutConfirmOpen, setIsSetupShortcutConfirmOpen] = useState(false);
     const [isSysAdminUnlockMessageVisible, setIsSysAdminUnlockMessageVisible] = useState(false);
     const [activationMessage, setActivationMessage] = useState('');
+    const [pendingPostLoginPath, setPendingPostLoginPath] = useState('');
     const { isUnlocked: isSysAdminUnlocked } = useSysAdminUnlock();
     const accountOptions = buildLoginAccountOptions(accounts, isSysAdminUnlocked);
-    const fallbackSelectedAccountId = getLoginAccountId(accounts, isSysAdminUnlocked);
+    const [isLogoutFreshLogin, setIsLogoutFreshLogin] = useState(
+        () => shouldResetLoginForm(location.state) || consumeDesktopLogoutFreshLogin(),
+    );
+    const resetLoginForm = shouldResetLoginForm(location.state) || isLogoutFreshLogin;
+    const defaultSelectedAccountId = getLastLoginAccountId(accounts, isSysAdminUnlocked);
     const [selectedAccountId, setSelectedAccountId] = useState('');
     const getPostLoginPath = (role: 'Admin' | 'SysAdmin' | 'User') => {
+        if (capabilities.isDesktop) return getSafeAppPathForRole(role);
+        if (resetLoginForm || consumeDesktopLogoutFreshLogin()) return getSafeAppPathForRole(role);
         const requestedPath = getRequestedAppPath(location.state);
         if (requestedPath) return getSafeAppPathForRole(role, requestedPath);
-        const rememberedDesktopTab = capabilities.isDesktop
-            ? getDesktopLastAppTabForRole(role)
-            : undefined;
-        return rememberedDesktopTab ?? getSafeAppPathForRole(role);
+        return getSafeAppPathForRole(role);
     };
     const performLogin = async ({
         password,
@@ -92,7 +109,11 @@ export const LoginPage: FC<{ readonly onOpenSetupWizard?: () => void }> = ({
             await login(accountId, password);
             const accountRole =
                 accounts.find((account) => account.userId === accountId)?.role ?? 'Admin';
-            void navigate(getPostLoginPath(accountRole));
+            const nextPostLoginPath = getPostLoginPath(accountRole);
+            rememberLoginAccountId(accountId);
+            clearDesktopLogoutFreshLogin();
+            setIsLogoutFreshLogin(false);
+            setPendingPostLoginPath(nextPostLoginPath);
         } catch (reason) {
             const message = reason instanceof Error ? reason.message : 'Login failed.';
             setError(
@@ -105,11 +126,11 @@ export const LoginPage: FC<{ readonly onOpenSetupWizard?: () => void }> = ({
         }
     };
     const loginForm = useLoginForm({
-        defaultSelectedAccountId: fallbackSelectedAccountId,
+        defaultSelectedAccountId,
         onSubmit: performLogin,
     });
     const activationForm = useActivationForm();
-    const effectiveSelectedAccountId = selectedAccountId || fallbackSelectedAccountId;
+    const effectiveSelectedAccountId = selectedAccountId || defaultSelectedAccountId;
     const selectedAccount = findLoginAccount(accounts, effectiveSelectedAccountId);
     const isLoginDisabled = !effectiveSelectedAccountId || hostedConnectionState !== 'connected';
     const isPasswordRequired = Boolean(
@@ -157,16 +178,16 @@ export const LoginPage: FC<{ readonly onOpenSetupWizard?: () => void }> = ({
             selectedAccountId &&
             !accounts.some((account) => account.userId === selectedAccountId)
         ) {
-            setSelectedAccountId(fallbackSelectedAccountId);
-            loginForm.setFieldValue('selectedAccountId', fallbackSelectedAccountId);
+            setSelectedAccountId(defaultSelectedAccountId);
+            loginForm.setFieldValue('selectedAccountId', defaultSelectedAccountId);
             loginForm.setFieldValue('password', '');
             latestPasswordRef.current = '';
             return;
         }
 
-        if (!selectedAccountId && fallbackSelectedAccountId) {
-            setSelectedAccountId(fallbackSelectedAccountId);
-            loginForm.setFieldValue('selectedAccountId', fallbackSelectedAccountId);
+        if (!selectedAccountId && defaultSelectedAccountId) {
+            setSelectedAccountId(defaultSelectedAccountId);
+            loginForm.setFieldValue('selectedAccountId', defaultSelectedAccountId);
             return;
         }
 
@@ -200,15 +221,23 @@ export const LoginPage: FC<{ readonly onOpenSetupWizard?: () => void }> = ({
         }
     }, [
         accounts,
-        fallbackSelectedAccountId,
+        defaultSelectedAccountId,
         isSysAdminUnlocked,
         loginForm,
         selectedAccountId,
         effectiveSelectedAccountId,
     ]);
 
+    useEffect(() => {
+        if (!operatorContext || !pendingPostLoginPath) return;
+        setPendingPostLoginPath('');
+        void navigate(pendingPostLoginPath, { replace: true });
+    }, [navigate, operatorContext, pendingPostLoginPath]);
+
     if (operatorContext) {
-        return <Navigate replace to={getPostLoginPath(operatorContext.role)} />;
+        return (
+            <Navigate replace to={pendingPostLoginPath || getPostLoginPath(operatorContext.role)} />
+        );
     }
 
     return (
