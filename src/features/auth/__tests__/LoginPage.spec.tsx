@@ -4,7 +4,7 @@
 import type { ReactNode } from 'react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { createHash } from 'node:crypto';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -284,6 +284,9 @@ describe('login UI', () => {
 
         await screen.findByRole('button', {
             name: /Operator account Operations Admin/i,
+        });
+        await waitFor(() => {
+            expect(screen.getByRole('button', { name: 'Log in' })).not.toBeDisabled();
         });
         fireEvent.click(screen.getByRole('button', { name: 'Log in' }));
 

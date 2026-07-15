@@ -132,7 +132,10 @@ export const LoginPage: FC<{ readonly onOpenSetupWizard?: () => void }> = ({
     const activationForm = useActivationForm();
     const effectiveSelectedAccountId = selectedAccountId || defaultSelectedAccountId;
     const selectedAccount = findLoginAccount(accounts, effectiveSelectedAccountId);
-    const isLoginDisabled = !effectiveSelectedAccountId || hostedConnectionState !== 'connected';
+    const isLoginDisabled =
+        !effectiveSelectedAccountId ||
+        hostedConnectionState !== 'connected' ||
+        (!usesStaticHostedBrowserBuild && !selectedAccount);
     const isPasswordRequired = Boolean(
         selectedAccount?.passwordHash ?? selectedAccount?.passwordConfigured,
     );
@@ -160,6 +163,7 @@ export const LoginPage: FC<{ readonly onOpenSetupWizard?: () => void }> = ({
 
     const submitLogin = async () => {
         if (isLoginDisabled || loginSubmissionInFlightRef.current) return;
+        if (!usesStaticHostedBrowserBuild && !selectedAccount) return;
         const currentPassword = latestPasswordRef.current;
         const currentSelectedAccountId = effectiveSelectedAccountId;
 
