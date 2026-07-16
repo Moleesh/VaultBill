@@ -93,7 +93,8 @@ test('desktop bridge saves and reloads a draft between refreshes', async ({ page
         )
         .toContain(customerName);
     await page.getByRole('button', { name: 'Refresh window' }).click();
-    await expect(page.getByRole('heading', { name: /Create GST Invoice/u })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Welcome back/u })).toBeVisible();
+    await expect(page.getByText(customerName)).toBeVisible();
     await expect
         .poll(() =>
             page.evaluate(
