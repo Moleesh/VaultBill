@@ -65,6 +65,7 @@ export const useRecordsPageState = () => {
     const publishedFormatsQuery = useQuery({
         queryKey: queryKeys.publishedFormats(runtimeScope),
         queryFn: () => fetchPublishedFormats({ capabilities }),
+        refetchOnMount: 'always',
         staleTime: Number.POSITIVE_INFINITY,
     });
     const secretValuesQuery = useQuery({
@@ -85,13 +86,16 @@ export const useRecordsPageState = () => {
     const isReadOnly = actionState === 'Finalized' || actionState === 'Reprint';
     const workspaceSettings: WorkspaceSettings =
         workspaceSettingsQuery.data ?? defaultWorkspaceSettings;
-    const publishedFormats = publishedFormatsQuery.data ?? [];
+    const publishedFormats = useMemo(
+        () => publishedFormatsQuery.data ?? [],
+        [publishedFormatsQuery.data],
+    );
     const secretValues = secretValuesQuery.data ?? {};
     const activePrintPackage = activePrintPackageQuery.data as RecordPrintPackage | undefined;
     const defaultFormat = publishedFormats.find((format) => format.isDefault);
-    const formatOptions = resolveRecordsFormatOptions(
-        publishedFormats,
-        usesStaticHostedBrowserBuild,
+    const formatOptions = useMemo(
+        () => resolveRecordsFormatOptions(publishedFormats, usesStaticHostedBrowserBuild),
+        [publishedFormats, usesStaticHostedBrowserBuild],
     );
     const activeConfig = activePrintPackage?.config ?? builtInDefaultFormat;
     const recordTotals = useMemo(() => calculateRecordTotals(record), [record]);
@@ -132,6 +136,24 @@ export const useRecordsPageState = () => {
             };
         });
     }, [actionState, defaultFormat]);
+
+    useEffect(() => {
+        if (formatOptions.length === 0) return;
+        setRecord((current) => {
+            if (formatOptions.some((format) => format.value === current.formatId)) {
+                return current;
+            }
+            const fallbackFormat =
+                formatOptions.find((format) => format.value === defaultFormat?.formatId) ??
+                formatOptions[0];
+            if (!fallbackFormat) return current;
+            return {
+                ...current,
+                formatId: fallbackFormat.value,
+                formatName: fallbackFormat.label,
+            };
+        });
+    }, [defaultFormat?.formatId, formatOptions]);
 
     return {
         actionState,

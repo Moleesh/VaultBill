@@ -75,7 +75,12 @@ export const SearchableDropdownMenu: FC<SearchableDropdownMenuProps> = ({
                     filteredOptions.slice(0, 100).map((option, index) => (
                         <ActionButton
                             aria-selected={option.value === value}
-                            className={index === activeIndex ? 'is-active' : ''}
+                            className={[
+                                index === activeIndex ? 'is-active' : '',
+                                option.value === value ? 'is-selected' : '',
+                            ]
+                                .filter(Boolean)
+                                .join(' ')}
                             disabled={option.disabled}
                             onMouseEnter={() => {
                                 setActiveIndex(index);
@@ -87,7 +92,12 @@ export const SearchableDropdownMenu: FC<SearchableDropdownMenuProps> = ({
                             role="option"
                         >
                             <strong>
-                                {option.value === value ? <span aria-hidden="true">✓ </span> : null}
+                                <span
+                                    aria-hidden="true"
+                                    className="searchable-dropdown-option-check"
+                                >
+                                    {option.value === value ? '✓' : ''}
+                                </span>
                                 {option.label}
                             </strong>
                             {option.description ? <small>{option.description}</small> : null}

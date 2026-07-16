@@ -32,7 +32,7 @@ describe('useRecordsPageStateSupport', () => {
         ).resolves.toEqual(expect.objectContaining({ secrets: [] }));
     });
 
-    it('places the shared default document first in the records format picker', () => {
+    it('preserves the shared enabled document-library order in the records format picker', () => {
         expect(
             resolveRecordsFormatOptions(
                 [
@@ -42,8 +42,8 @@ describe('useRecordsPageStateSupport', () => {
                 false,
             ),
         ).toEqual([
-            { value: 'Bill', label: 'Bill' },
             { value: 'DeliveryNote', label: 'Delivery Note' },
+            { value: 'Bill', label: 'Bill', description: 'Default document format' },
         ]);
     });
 });

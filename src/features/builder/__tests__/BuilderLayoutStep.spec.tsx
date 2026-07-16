@@ -13,5 +13,28 @@ describe('BuilderLayoutStep', () => {
         expect(
             screen.getByText('Use columns and gap to shape a simple page flow for the form.'),
         ).toBeVisible();
+        expect(screen.getByText('Invoice date')).toBeVisible();
+        expect(screen.getByText('2026-06-04')).toBeVisible();
+    });
+
+    it('prefers configured document fields in the preview', () => {
+        render(
+            <BuilderLayoutStep
+                fields={[
+                    {
+                        FieldId: 'CustomerName',
+                        Label: 'Customer name',
+                        Type: 'Text',
+                        Required: true,
+                        Visible: true,
+                    },
+                ]}
+                layout={{ Columns: 2, Gap: 16 }}
+                onLayoutChange={vi.fn()}
+            />,
+        );
+
+        expect(screen.getByText('Customer name')).toBeVisible();
+        expect(screen.getByText('Acme Traders')).toBeVisible();
     });
 });

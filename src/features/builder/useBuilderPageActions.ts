@@ -177,7 +177,41 @@ export const useBuilderPageActions = ({
         event.currentTarget.value = '';
     };
 
-    const publish = async (): Promise<void> => {
+    const exportJson = (): void => {
+        const orderedConfig = orderConfigForPublish(config);
+        const json = JSON.stringify(
+            {
+                PackageVersion: 1,
+                Format: orderedConfig,
+            },
+            null,
+            2,
+        );
+        const blob = new Blob([json], { type: 'application/json' });
+        const anchor = document.createElement('a');
+        const fileName = `${orderedConfig.FormatId || 'document-format'}.json`;
+        const url = URL.createObjectURL(blob);
+        anchor.href = url;
+        anchor.download = fileName;
+        anchor.style.display = 'none';
+        document.body.appendChild(anchor);
+        anchor.click();
+        window.setTimeout(() => {
+            anchor.remove();
+            URL.revokeObjectURL(url);
+        }, 0);
+        setMessage(`${fileName} export started.`);
+        void navigator.clipboard.writeText(json).then(
+            () => {
+                setMessage(`${fileName} exported and copied to the clipboard.`);
+            },
+            () => {
+                setMessage(`${fileName} export started.`);
+            },
+        );
+    };
+
+    const publish = async (): Promise<boolean> => {
         const orderedConfig: DocumentFormatConfig = orderConfigForPublish(config);
         const nextPackage: {
             readonly config: DocumentFormatConfig;
@@ -192,11 +226,14 @@ export const useBuilderPageActions = ({
         };
         try {
             await publishMutation.mutateAsync(nextPackage);
+            setConfig(orderedConfig);
             setMessage('Format, print template, and assets published.');
+            return true;
         } catch (reason: unknown) {
             setMessage(reason instanceof Error ? reason.message : 'Publish failed.');
+            return false;
         }
     };
 
-    return { importAssets, importHtml, importJson, publish };
+    return { exportJson, importAssets, importHtml, importJson, publish };
 };

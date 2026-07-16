@@ -25,16 +25,20 @@ export type DropdownMenuPlacement = {
     readonly openDirection: 'above' | 'below';
 };
 
+export type DropdownMenuAlignment = 'left' | 'right';
+
 /** Calculates the best floating menu position for the searchable dropdown trigger. */
 export const getDropdownMenuPlacement = (
     rect: DOMRect,
     viewportHeight: number,
     viewportWidth: number,
+    alignment: DropdownMenuAlignment = 'left',
 ): DropdownMenuPlacement => {
     const availableBelow = Math.max(0, viewportHeight - rect.bottom - 12);
     const availableAbove = Math.max(0, rect.top - 12);
     const rawWidth = Math.max(rect.width, 280);
-    const left = Math.min(Math.max(16, rect.left), Math.max(16, viewportWidth - rawWidth - 16));
+    const preferredLeft = alignment === 'right' ? rect.right - rawWidth : rect.left;
+    const left = Math.min(Math.max(16, preferredLeft), Math.max(16, viewportWidth - rawWidth - 16));
     const openDirection: 'below' | 'above' =
         availableBelow >= 220 || availableBelow >= availableAbove ? 'below' : 'above';
     const maxHeight = Math.min(

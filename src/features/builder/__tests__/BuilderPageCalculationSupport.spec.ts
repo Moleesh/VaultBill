@@ -20,9 +20,9 @@ import { cloneDefault } from '../BuilderPageSupport';
 
 describe('BuilderPageCalculationSupport', () => {
     it('extracts formula references and flags bad calculation graphs', () => {
-        expect(formulaReferences('SUMALL(Amount) + Subtotal + GST + Secrets.CompanyGSTIN')).toEqual(
-            ['Amount', 'Subtotal', 'GST', 'Secrets.CompanyGSTIN'],
-        );
+        expect(
+            formulaReferences('ROUND(SUMALL(Amount) + Subtotal + GST + Secrets.CompanyGSTIN, 2)'),
+        ).toEqual(['Amount', 'Subtotal', 'GST', 'Secrets.CompanyGSTIN']);
         expect(
             collectReferencedFieldIds([
                 { FieldId: 'Subtotal', Formula: 'GST + Secrets.CompanyGSTIN' } as never,
@@ -36,7 +36,7 @@ describe('BuilderPageCalculationSupport', () => {
                 Label: 'Grand total',
                 Type: 'Money',
                 Calculated: true,
-                Formula: 'MissingField + Secrets.CompanyGSTIN',
+                Formula: 'ROUND(MissingField + Secrets.CompanyGSTIN)',
             } as never,
             {
                 FieldId: 'Description',

@@ -58,6 +58,20 @@ describe('BuilderStore', () => {
         ).toThrow('blocked element');
     });
 
+    it('allows static document metadata in print templates', () => {
+        directory = mkdtempSync(path.join(tmpdir(), 'vaultbill-builder-'));
+        store = new BuilderStore(path.join(directory, 'vaultbill.sqlite'));
+
+        const saved = store.save({
+            config: { FormatId: 'MetaTemplate', FormatName: 'Meta Template' },
+            templateHtml:
+                '<!doctype html><html><head><meta charset="UTF-8"></head><body>Safe</body></html>',
+            assets: [],
+        });
+
+        expect(saved.templateHtml).toContain('<meta charset="UTF-8">');
+    });
+
     it('rejects active content inside uploaded SVG assets', () => {
         directory = mkdtempSync(path.join(tmpdir(), 'vaultbill-builder-'));
         store = new BuilderStore(path.join(directory, 'vaultbill.sqlite'));
@@ -75,6 +89,27 @@ describe('BuilderStore', () => {
                 ],
             }),
         ).toThrow('SVG assets cannot contain');
+    });
+
+    it('allows standard SVG namespaces in bundled assets', () => {
+        directory = mkdtempSync(path.join(tmpdir(), 'vaultbill-builder-'));
+        store = new BuilderStore(path.join(directory, 'vaultbill.sqlite'));
+
+        const saved = store.save({
+            config: { FormatId: 'SvgNamespace', FormatName: 'SVG Namespace' },
+            templateHtml: '<main>{{Asset.Logo}}</main>',
+            assets: [
+                {
+                    name: 'Logo',
+                    type: 'image/svg+xml',
+                    dataBase64: Buffer.from(
+                        '<svg xmlns="http://www.w3.org/2000/svg"><rect width="1" height="1" /></svg>',
+                    ).toString('base64'),
+                },
+            ],
+        });
+
+        expect(saved.assets).toHaveLength(1);
     });
 
     it('deletes non-default formats and preserves the default one', () => {
@@ -100,5 +135,72 @@ describe('BuilderStore', () => {
         expect(() => {
             activeStore.delete('TaxInvoice');
         }).toThrow('default document cannot be deleted');
+    });
+
+    it('persists library metadata when default and enabled state changes', () => {
+        directory = mkdtempSync(path.join(tmpdir(), 'vaultbill-builder-'));
+        store = new BuilderStore(path.join(directory, 'vaultbill.sqlite'));
+        const activeStore = store;
+
+        activeStore.save({
+            config: {
+                FormatId: 'TaxInvoice',
+                FormatName: 'GST Invoice',
+                LibraryMeta: { isEnabled: true, isFavorite: true, sortOrder: 0 },
+            },
+            templateHtml: '<main>GST</main>',
+            assets: [],
+        });
+        activeStore.save({
+            config: {
+                FormatId: 'Bill',
+                FormatName: 'Bill',
+                LibraryMeta: { isEnabled: true, isFavorite: false, sortOrder: 1 },
+            },
+            templateHtml: '<main>Bill</main>',
+            assets: [],
+        });
+
+        activeStore.save({
+            config: {
+                FormatId: 'TaxInvoice',
+                FormatName: 'GST Invoice',
+                LibraryMeta: { isEnabled: true, isFavorite: false, sortOrder: 0 },
+            },
+            templateHtml: '<main>GST</main>',
+            assets: [],
+        });
+        activeStore.save({
+            config: {
+                FormatId: 'Bill',
+                FormatName: 'Bill',
+                LibraryMeta: { isEnabled: true, isFavorite: true, sortOrder: 1 },
+            },
+            templateHtml: '<main>Bill</main>',
+            assets: [],
+        });
+        activeStore.save({
+            config: {
+                FormatId: 'TaxInvoice',
+                FormatName: 'GST Invoice',
+                LibraryMeta: { isEnabled: false, isFavorite: false, sortOrder: 0 },
+            },
+            templateHtml: '<main>GST</main>',
+            assets: [],
+        });
+
+        expect(activeStore.listInventory()).toMatchObject([
+            {
+                formatId: 'TaxInvoice',
+                isDefault: false,
+                isEnabled: false,
+            },
+            {
+                formatId: 'Bill',
+                isDefault: true,
+                isEnabled: true,
+            },
+        ]);
+        expect(activeStore.loadDefault()?.config.FormatId).toBe('Bill');
     });
 });

@@ -4,6 +4,7 @@ import type { Dispatch, RefObject, SetStateAction } from 'react';
 import { useEffect } from 'react';
 
 import {
+    type DropdownMenuAlignment,
     getDropdownMenuPlacement,
     normalizeDropdownSearch,
     type DropdownOption,
@@ -33,11 +34,13 @@ export const getInitialDropdownActiveIndex = (
 
 /** Applies and keeps the floating dropdown menu aligned to its trigger button. */
 export const useSyncSearchableDropdownMenu = ({
+    alignment = 'left',
     isOpen,
     menuRef,
     onClose,
     triggerRef,
 }: {
+    readonly alignment?: DropdownMenuAlignment;
     readonly isOpen: boolean;
     readonly menuRef: RefObject<HTMLDivElement | null>;
     readonly onClose: () => void;
@@ -54,7 +57,12 @@ export const useSyncSearchableDropdownMenu = ({
 
             if (!rect || !menu) return;
 
-            const placement = getDropdownMenuPlacement(rect, window.innerHeight, window.innerWidth);
+            const placement = getDropdownMenuPlacement(
+                rect,
+                window.innerHeight,
+                window.innerWidth,
+                alignment,
+            );
             menu.style.left = placement.left;
             menu.style.width = placement.width;
             menu.style.top = placement.top;
@@ -95,7 +103,7 @@ export const useSyncSearchableDropdownMenu = ({
             window.removeEventListener('scroll', handleScroll, true);
             window.removeEventListener('resize', syncMenuPosition);
         };
-    }, [isOpen, menuRef, onClose, triggerRef]);
+    }, [alignment, isOpen, menuRef, onClose, triggerRef]);
 };
 
 /** Clears the transient query and active state together when the menu closes. */

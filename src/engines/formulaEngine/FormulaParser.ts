@@ -6,6 +6,7 @@ import {
     divideDecimal,
     multiplyDecimal,
     parseDecimal,
+    roundDecimal,
     subtractDecimal,
     type DecimalValue,
 } from './DecimalMath';
@@ -85,6 +86,10 @@ const parseFactor = (cursor: FormulaCursor): DecimalValue => {
     }
 
     if (token.type === 'Identifier') {
+        if (cursor.tokens[cursor.index]?.type === 'LeftParen') {
+            return parseFunctionCall(cursor, token.value);
+        }
+
         return resolveVariable(cursor.variables, token.value);
     }
 
@@ -105,6 +110,36 @@ const parseFactor = (cursor: FormulaCursor): DecimalValue => {
     }
 
     throw new Error(`Unexpected formula token: ${token.value}`);
+};
+
+const parseFunctionCall = (cursor: FormulaCursor, functionName: string): DecimalValue => {
+    if (functionName.toUpperCase() !== 'ROUND') {
+        throw new Error(`Unsupported formula function: ${functionName}`);
+    }
+
+    consumeExpected(cursor, 'LeftParen', 'Formula function is missing an opening parenthesis.');
+    const value = parseExpression(cursor);
+    const precision = consumeIf(cursor, 'Comma') ? decimalToInteger(parseExpression(cursor)) : 0;
+    consumeExpected(cursor, 'RightParen', 'Formula function is missing a closing parenthesis.');
+
+    if (precision < 0) {
+        throw new Error('ROUND precision must be zero or greater.');
+    }
+
+    return roundDecimal(value, precision, toRoundingMode(cursor.policy.RoundingMode));
+};
+
+const decimalToInteger = (value: DecimalValue): number => {
+    if (value.scale !== 0) {
+        throw new Error('ROUND precision must be an integer.');
+    }
+
+    const precision = Number(value.mantissa);
+    if (!Number.isSafeInteger(precision)) {
+        throw new Error('ROUND precision is too large.');
+    }
+
+    return precision;
 };
 
 const resolveVariable = (variables: FormulaVariableMap, identifier: string): DecimalValue => {
@@ -130,5 +165,27 @@ const consume = (cursor: FormulaCursor): FormulaToken => {
     }
 
     cursor.index += 1;
+    return token;
+};
+
+const consumeIf = (cursor: FormulaCursor, type: FormulaToken['type']): boolean => {
+    if (cursor.tokens[cursor.index]?.type !== type) {
+        return false;
+    }
+
+    cursor.index += 1;
+    return true;
+};
+
+const consumeExpected = (
+    cursor: FormulaCursor,
+    type: FormulaToken['type'],
+    message: string,
+): FormulaToken => {
+    const token = consume(cursor);
+    if (token.type !== type) {
+        throw new Error(message);
+    }
+
     return token;
 };

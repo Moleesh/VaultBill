@@ -403,8 +403,16 @@ body.has-animated-cursor .button-danger:hover:not(:disabled) {
     max-width: none;
 }
 
-.records-page-top .searchable-dropdown {
-    min-width: min(100%, 18rem);
+.records-page-top .searchable-dropdown,
+.records-format-dropdown {
+    width: min(100%, 21rem);
+    min-width: min(100%, 21rem);
+}
+
+.records-format-dropdown .searchable-dropdown-trigger {
+    width: 100%;
+    min-height: 3rem;
+    justify-content: space-between;
 }
 
 .records-page-top-tabs {

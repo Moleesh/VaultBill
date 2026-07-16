@@ -23,9 +23,21 @@ export const reportFieldOptions = [
     { value: 'updatedAt', label: 'Last updated' },
 ] as const;
 export const reportOptions = [
-    { value: 'sales-register', label: 'Sales register' },
-    { value: 'tax-summary', label: 'Tax summary' },
-    { value: 'customer-ledger', label: 'Customer ledger' },
+    {
+        value: 'sales-register',
+        label: 'Sales register',
+        description: 'Record-level business activity',
+    },
+    {
+        value: 'tax-summary',
+        label: 'Tax summary',
+        description: 'GST and taxable-value totals',
+    },
+    {
+        value: 'customer-ledger',
+        label: 'Customer ledger',
+        description: 'Customer-wise balances and movement',
+    },
 ] as const;
 
 export const formatReportFieldLabel = (field: string): string =>

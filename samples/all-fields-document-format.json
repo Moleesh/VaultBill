@@ -1,0 +1,400 @@
+{
+    "PackageVersion": 1,
+    "Format": {
+        "FormatId": "AllFieldsShowcase",
+        "FormatName": "All Fields Showcase",
+        "Description": "Import sample covering every supported VaultBill field type plus common field-state combinations.",
+        "Layout": {
+            "Columns": 3,
+            "Gap": 16
+        },
+        "Print": {
+            "PaperSize": "A4",
+            "MarginPreset": "Normal",
+            "BottomSpacingMm": 18
+        },
+        "Fields": [
+            {
+                "FieldId": "DocTitleLabel",
+                "Label": "All Fields Showcase",
+                "Type": "Label",
+                "ReadOnly": true,
+                "Visible": true,
+                "SampleValue": "All Fields Showcase"
+            },
+            {
+                "FieldId": "SectionBusiness",
+                "Label": "Business Details",
+                "Type": "Separator",
+                "ReadOnly": true,
+                "Visible": true
+            },
+            {
+                "FieldId": "CustomerName",
+                "Label": "Customer Name",
+                "Type": "Text",
+                "Required": true,
+                "Visible": true,
+                "Placeholder": "Business or customer name",
+                "DefaultValue": "Acme Traders",
+                "SampleValue": "Acme Traders",
+                "MaxLength": 80
+            },
+            {
+                "FieldId": "CustomerCode",
+                "Label": "Customer Code",
+                "Type": "Character",
+                "Required": true,
+                "Visible": true,
+                "Prefix": "C-",
+                "DefaultValue": "A",
+                "SampleValue": "A",
+                "MaxLength": 1
+            },
+            {
+                "FieldId": "BillingAddress",
+                "Label": "Billing Address",
+                "Type": "Textarea",
+                "Required": false,
+                "Visible": true,
+                "Placeholder": "Street, city, state, PIN",
+                "SampleValue": "12 Market Road\nBengaluru, Karnataka 560001",
+                "MaxLength": 500
+            },
+            {
+                "FieldId": "InvoiceNumber",
+                "Label": "Invoice Number",
+                "Type": "Text",
+                "Required": true,
+                "ReadOnly": true,
+                "Visible": true,
+                "Prefix": "INV-",
+                "DefaultValue": "0001",
+                "SampleValue": "INV-0001",
+                "MaxLength": 20
+            },
+            {
+                "FieldId": "InternalNoteHidden",
+                "Label": "Internal Note Hidden",
+                "Type": "Text",
+                "Required": false,
+                "Visible": false,
+                "Placeholder": "Hidden from operator form",
+                "SampleValue": "Hidden audit note"
+            },
+            {
+                "FieldId": "InvoiceDate",
+                "Label": "Invoice Date",
+                "Type": "Date",
+                "Required": true,
+                "Visible": true,
+                "DefaultValue": "2026-07-15",
+                "SampleValue": "2026-07-15"
+            },
+            {
+                "FieldId": "ServiceDateTime",
+                "Label": "Service Date Time",
+                "Type": "DateTime",
+                "Required": false,
+                "Visible": true,
+                "DefaultValue": "2026-07-15T10:30",
+                "SampleValue": "2026-07-15T10:30"
+            },
+            {
+                "FieldId": "CustomerType",
+                "Label": "Customer Type",
+                "Type": "Dropdown",
+                "Required": true,
+                "Visible": true,
+                "DefaultValue": "Registered",
+                "SampleValue": "Registered",
+                "Options": ["Registered", "Unregistered", "Export", "SEZ"]
+            },
+            {
+                "FieldId": "DeliveryModes",
+                "Label": "Delivery Modes",
+                "Type": "MultiSelect",
+                "Required": false,
+                "Visible": true,
+                "DefaultValue": ["Email", "Print"],
+                "SampleValue": ["Email", "WhatsApp"],
+                "Options": ["Email", "Print", "WhatsApp", "Courier"]
+            },
+            {
+                "FieldId": "IsReverseCharge",
+                "Label": "Reverse Charge",
+                "Type": "Checkbox",
+                "Required": false,
+                "Visible": true,
+                "DefaultValue": false,
+                "SampleValue": false
+            },
+            {
+                "FieldId": "AttachmentPo",
+                "Label": "Purchase Order Attachment",
+                "Type": "Attachment",
+                "Required": false,
+                "Visible": true,
+                "SampleValue": "po-1001.pdf",
+                "AllowedTypes": ["application/pdf", "image/png", "image/jpeg"]
+            },
+            {
+                "FieldId": "CustomerSignature",
+                "Label": "Customer Signature",
+                "Type": "Signature",
+                "Required": false,
+                "Visible": true,
+                "SampleValue": "Signed on delivery"
+            },
+            {
+                "FieldId": "InvoiceQr",
+                "Label": "Invoice QR",
+                "Type": "QRCode",
+                "ReadOnly": true,
+                "Visible": true,
+                "DefaultValue": "https://vaultbill.local/invoice/INV-0001",
+                "SampleValue": "https://vaultbill.local/invoice/INV-0001"
+            },
+            {
+                "FieldId": "VisualBlank",
+                "Label": "Visual Spacer",
+                "Type": "Blank",
+                "Visible": true
+            },
+            {
+                "FieldId": "ItemsSectionMarker",
+                "Label": "Line Items",
+                "Type": "LineItemSection",
+                "ReadOnly": true,
+                "Visible": true,
+                "SampleValue": "Items"
+            },
+            {
+                "FieldId": "Subtotal",
+                "Label": "Subtotal",
+                "Type": "Money",
+                "ReadOnly": true,
+                "Visible": true,
+                "Calculated": true,
+                "CalculationOrder": 20,
+                "Formula": "SUMALL(LineAmount)",
+                "Prefix": "₹",
+                "Precision": 2,
+                "SampleValue": "2500.00"
+            },
+            {
+                "FieldId": "DiscountAmount",
+                "Label": "Discount Amount",
+                "Type": "Money",
+                "Required": false,
+                "Visible": true,
+                "DefaultValue": "0.00",
+                "Prefix": "₹",
+                "Precision": 2,
+                "SampleValue": "50.00"
+            },
+            {
+                "FieldId": "TaxableValue",
+                "Label": "Taxable Value",
+                "Type": "Money",
+                "ReadOnly": true,
+                "Visible": true,
+                "Calculated": true,
+                "CalculationOrder": 30,
+                "Formula": "Subtotal - DiscountAmount",
+                "Prefix": "₹",
+                "Precision": 2,
+                "SampleValue": "2450.00"
+            },
+            {
+                "FieldId": "TaxRate",
+                "Label": "Tax Rate",
+                "Type": "Rate",
+                "Required": true,
+                "Visible": true,
+                "DefaultValue": "18.0000",
+                "Suffix": "%",
+                "Precision": 4,
+                "SampleValue": "18.0000"
+            },
+            {
+                "FieldId": "TaxAmount",
+                "Label": "Tax Amount",
+                "Type": "Money",
+                "ReadOnly": true,
+                "Visible": true,
+                "Calculated": true,
+                "CalculationOrder": 40,
+                "Formula": "TaxableValue * TaxRate / 100",
+                "Prefix": "₹",
+                "Precision": 2,
+                "SampleValue": "441.00"
+            },
+            {
+                "FieldId": "GrandTotal",
+                "Label": "Grand Total",
+                "Type": "Money",
+                "ReadOnly": true,
+                "Visible": true,
+                "Calculated": true,
+                "CalculationOrder": 50,
+                "Formula": "TaxableValue + TaxAmount",
+                "Prefix": "₹",
+                "Precision": 2,
+                "SampleValue": "2891.00"
+            },
+            {
+                "FieldId": "RoundedTotal",
+                "Label": "Rounded Total",
+                "Type": "Number",
+                "ReadOnly": true,
+                "Visible": true,
+                "Calculated": true,
+                "CalculationOrder": 60,
+                "Formula": "ROUND(GrandTotal)",
+                "Precision": 0,
+                "SampleValue": "2891"
+            },
+            {
+                "FieldId": "ProfitMargin",
+                "Label": "Profit Margin",
+                "Type": "Decimal",
+                "Required": false,
+                "Visible": true,
+                "DefaultValue": "12.50",
+                "Suffix": "%",
+                "Precision": 2,
+                "SampleValue": "12.50"
+            },
+            {
+                "FieldId": "Terms",
+                "Label": "Terms",
+                "Type": "Textarea",
+                "ReadOnly": true,
+                "Visible": true,
+                "DefaultValue": "Payment due within 15 days.",
+                "SampleValue": "Payment due within 15 days."
+            }
+        ],
+        "LineItemSections": [
+            {
+                "SectionId": "Items",
+                "Label": "Items",
+                "Enabled": true,
+                "MinRows": 1,
+                "MaxRows": 500,
+                "EssentialColumns": ["ItemName", "LineQuantity", "LineRate", "LineAmount"],
+                "AllowAddRows": true,
+                "AllowDuplicateRows": true,
+                "AllowReorderRows": true,
+                "AllowBulkPaste": true,
+                "AllowBulkUpload": true,
+                "Fields": [
+                    {
+                        "FieldId": "ItemName",
+                        "Label": "Item Name",
+                        "Type": "Text",
+                        "Required": true,
+                        "Visible": true,
+                        "Placeholder": "Product or service",
+                        "SampleValue": "Consulting service",
+                        "MaxLength": 120
+                    },
+                    {
+                        "FieldId": "ItemDescription",
+                        "Label": "Item Description",
+                        "Type": "Textarea",
+                        "Required": false,
+                        "Visible": true,
+                        "Placeholder": "Optional item details",
+                        "SampleValue": "Implementation and support"
+                    },
+                    {
+                        "FieldId": "LineQuantity",
+                        "Label": "Quantity",
+                        "Type": "Quantity",
+                        "Required": true,
+                        "Visible": true,
+                        "DefaultValue": "1.000",
+                        "Precision": 3,
+                        "SampleValue": "5.000"
+                    },
+                    {
+                        "FieldId": "LineRate",
+                        "Label": "Rate",
+                        "Type": "Rate",
+                        "Required": true,
+                        "Visible": true,
+                        "DefaultValue": "500.0000",
+                        "Prefix": "₹",
+                        "Precision": 4,
+                        "SampleValue": "500.0000"
+                    },
+                    {
+                        "FieldId": "LineDiscount",
+                        "Label": "Line Discount",
+                        "Type": "Decimal",
+                        "Required": false,
+                        "Visible": true,
+                        "DefaultValue": "0.00",
+                        "Suffix": "%",
+                        "Precision": 2,
+                        "SampleValue": "2.00"
+                    },
+                    {
+                        "FieldId": "LineAmount",
+                        "Label": "Line Amount",
+                        "Type": "Money",
+                        "ReadOnly": true,
+                        "Visible": true,
+                        "Calculated": true,
+                        "CalculationOrder": 10,
+                        "Formula": "LineQuantity * LineRate",
+                        "Prefix": "₹",
+                        "Precision": 2,
+                        "SampleValue": "2500.00"
+                    },
+                    {
+                        "FieldId": "LineTaxCode",
+                        "Label": "Tax Code",
+                        "Type": "Dropdown",
+                        "Required": false,
+                        "Visible": true,
+                        "DefaultValue": "GST18",
+                        "SampleValue": "GST18",
+                        "Options": ["GST0", "GST5", "GST12", "GST18", "GST28"]
+                    },
+                    {
+                        "FieldId": "LineTaxable",
+                        "Label": "Taxable",
+                        "Type": "Checkbox",
+                        "Required": false,
+                        "Visible": true,
+                        "DefaultValue": true,
+                        "SampleValue": true
+                    },
+                    {
+                        "FieldId": "LineInternalCode",
+                        "Label": "Internal Code Hidden",
+                        "Type": "Text",
+                        "Required": false,
+                        "Visible": false,
+                        "SampleValue": "INT-001"
+                    }
+                ]
+            }
+        ],
+        "CalculationPolicy": {
+            "Currency": "INR",
+            "MoneyPrecision": 2,
+            "QuantityPrecision": 3,
+            "RatePrecision": 4,
+            "RoundingMode": "HALF_UP",
+            "TaxRoundingLevel": "Line",
+            "DateFormat": "DD-MM-YYYY",
+            "DateTimeFormat": "DD-MM-YYYY HH:mm",
+            "DefaultPrefix": "",
+            "DefaultSuffix": ""
+        }
+    }
+}

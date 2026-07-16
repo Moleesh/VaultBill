@@ -164,36 +164,48 @@ export const BuilderFieldDrawer: FC<BuilderFieldDrawerProps> = ({
                     />
                 )}
             </form.Field>
-            <BuilderFieldToggles
-                isCalculated={Boolean(form.state.values.Calculated)}
-                isReadOnly={Boolean(form.state.values.ReadOnly)}
-                isRequired={Boolean(form.state.values.Required)}
-                isVisible={form.state.values.Visible !== false}
-                onCalculatedChange={(checked) => {
-                    const { ReadOnly } = form.state.values;
-                    form.setFieldValue('Calculated', checked);
-                    form.setFieldValue('ReadOnly', checked || Boolean(ReadOnly));
-                }}
-                onReadOnlyChange={(checked) => {
-                    form.setFieldValue('ReadOnly', checked);
-                }}
-                onRequiredChange={(checked) => {
-                    form.setFieldValue('Required', checked);
-                }}
-                onVisibleChange={(checked) => {
-                    form.setFieldValue('Visible', checked);
-                }}
-            />
-            {form.state.values.Calculated ? (
-                <BuilderFieldFormulaSection
-                    fieldId={form.state.values.FieldId}
-                    formula={form.state.values.Formula ?? ''}
-                    formulaSuggestions={formulaSuggestions}
-                    onFormulaChange={(value) => {
-                        form.setFieldValue('Formula', value);
-                    }}
-                />
-            ) : null}
+            <form.Subscribe
+                selector={(state) => ({
+                    calculated: Boolean(state.values.Calculated),
+                    formula: state.values.Formula ?? '',
+                    readOnly: Boolean(state.values.ReadOnly),
+                    required: Boolean(state.values.Required),
+                    visible: state.values.Visible !== false,
+                })}
+            >
+                {({ calculated, formula, readOnly, required, visible }) => (
+                    <>
+                        <BuilderFieldToggles
+                            isCalculated={calculated}
+                            isReadOnly={readOnly}
+                            isRequired={required}
+                            isVisible={visible}
+                            onCalculatedChange={(checked) => {
+                                form.setFieldValue('Calculated', checked);
+                                form.setFieldValue('ReadOnly', checked || readOnly);
+                            }}
+                            onReadOnlyChange={(checked) => {
+                                form.setFieldValue('ReadOnly', checked);
+                            }}
+                            onRequiredChange={(checked) => {
+                                form.setFieldValue('Required', checked);
+                            }}
+                            onVisibleChange={(checked) => {
+                                form.setFieldValue('Visible', checked);
+                            }}
+                        />
+                        {calculated ? (
+                            <BuilderFieldFormulaSection
+                                formula={formula}
+                                formulaSuggestions={formulaSuggestions}
+                                onFormulaChange={(value) => {
+                                    form.setFieldValue('Formula', value);
+                                }}
+                            />
+                        ) : null}
+                    </>
+                )}
+            </form.Subscribe>
             <BuilderFieldDrawerActions onCancel={onCancel} />
         </form>
     );

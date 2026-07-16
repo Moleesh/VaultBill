@@ -110,7 +110,7 @@ export type TemplateRow = {
 
 /** Rejects unsafe HTML before it is saved as a print template. */
 export const sanitizeTemplateHtml = (html: string): string => {
-    if (/<\s*\/?\s*(script|iframe|object|embed|form|meta|link)\b/iu.test(html)) {
+    if (/<\s*\/?\s*(script|iframe|object|embed|form|link)\b/iu.test(html)) {
         throw new Error('Print template HTML contains a blocked element.');
     }
     if (/\son[a-z]+\s*=/iu.test(html) || /(?:https?:\/\/|javascript:|file:)/iu.test(html)) {
@@ -122,10 +122,16 @@ export const sanitizeTemplateHtml = (html: string): string => {
 
 /** Rejects SVG content that can execute code or load external resources. */
 export const sanitizeSvg = (svg: string) => {
+    const svgWithoutStandardNamespaces = svg.replace(
+        /\sxmlns(?::[a-z][\w.-]*)?="https?:\/\/www\.w3\.org\/[^"]+"/giu,
+        '',
+    );
     if (
-        /<\s*(script|foreignObject|iframe|object|embed|form)\b/iu.test(svg) ||
-        /\son[a-z]+\s*=/iu.test(svg) ||
-        /(?:https?:\/\/|javascript:|file:)/iu.test(svg)
+        /<\s*(script|foreignObject|iframe|object|embed|form)\b/iu.test(
+            svgWithoutStandardNamespaces,
+        ) ||
+        /\son[a-z]+\s*=/iu.test(svgWithoutStandardNamespaces) ||
+        /(?:https?:\/\/|javascript:|file:)/iu.test(svgWithoutStandardNamespaces)
     ) {
         throw new Error(
             'SVG assets cannot contain scripts, active content, or external resources.',

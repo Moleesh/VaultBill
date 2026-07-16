@@ -48,7 +48,7 @@ export const BuilderPageWorkspace: FC<{ readonly controller: BuilderPageControll
                         activeStepIndex={controller.stepIndex}
                         onClose={controller.closeBuilder}
                         onExportJson={() => {
-                            void controller.publish();
+                            controller.exportJson();
                         }}
                         onImportJson={(event) => {
                             void controller.importJson(event);

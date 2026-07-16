@@ -1,8 +1,8 @@
 /** @format */
-/* eslint-disable max-lines */
+/* eslint-disable max-lines, @typescript-eslint/no-unnecessary-condition */
 
-import type { DragEvent, FC } from 'react';
-import { useMemo, useState } from 'react';
+import type { FC, KeyboardEvent, PointerEvent as ReactPointerEvent } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import {
     Eye,
@@ -10,15 +10,16 @@ import {
     GripVertical,
     MoreHorizontal,
     PencilLine,
+    Power,
+    PowerOff,
     Printer,
     RefreshCw,
-    Star,
+    BadgeCheck,
     Trash2,
 } from 'lucide-react';
 
 import { AppConfirmDialog } from '../../components/AppConfirmDialog/AppConfirmDialog';
 import { DragHandleButton } from '../../components/DragHandleButton';
-import { FormField } from '../../components/FormFields';
 import { IconButton } from '../../components/IconButton';
 import { IconOnlyButton } from '../../components/IconOnlyButton';
 import type { BuilderInventoryItem } from './BuilderDocumentLibrarySupport';
@@ -49,7 +50,7 @@ type BuilderDocumentLibraryProps = {
 
 type PendingConfirmation =
     | {
-          readonly kind: 'delete' | 'disable';
+          readonly kind: 'delete';
           readonly item: BuilderInventoryItem;
       }
     | undefined;
@@ -57,6 +58,14 @@ type PendingConfirmation =
 type DropTarget = {
     readonly formatId: string;
     readonly placement: 'before' | 'after';
+};
+
+type PointerDrag = {
+    readonly formatId: string;
+    readonly pointerId: number;
+    readonly startX: number;
+    readonly startY: number;
+    moved: boolean;
 };
 
 /** Shows the Builder document inventory with management actions per saved format. */
@@ -77,49 +86,127 @@ export const BuilderDocumentLibrary: FC<BuilderDocumentLibraryProps> = ({
 }) => {
     const [draggedFormatId, setDraggedFormatId] = useState<string>();
     const [dropTarget, setDropTarget] = useState<DropTarget>();
+    const [settledDropFormatId, setSettledDropFormatId] = useState<string>();
     const [openActionsFormatId, setOpenActionsFormatId] = useState<string>();
+    const [selectedReorderFormatId, setSelectedReorderFormatId] = useState<string>();
     const [pendingConfirmation, setPendingConfirmation] = useState<PendingConfirmation>();
+    const actionsMenuRef = useRef<HTMLDivElement | null>(null);
+    const pointerDragRef = useRef<PointerDrag | undefined>(undefined);
+    const suppressHandleClickRef = useRef(false);
     const currentDocumentSaved = inventory.some((item) => item.formatId === currentFormatId);
     const enabledCount = useMemo(
         () => inventory.filter((item) => item.isEnabled).length,
         [inventory],
     );
+    const confirmDescription = pendingConfirmation
+        ? `Delete "${pendingConfirmation.item.formatName}" from the document library? This cannot be undone.`
+        : '';
+    const confirmLabel = 'Delete document';
+    const confirmTitle = 'Delete document?';
 
-    const confirmDescription =
-        pendingConfirmation?.kind === 'delete'
-            ? `Delete "${pendingConfirmation.item.formatName}" from the document library? This cannot be undone.`
-            : pendingConfirmation
-              ? `Disable "${pendingConfirmation.item.formatName}" for operators? Keep at least one document enabled.`
-              : '';
+    useEffect(() => {
+        if (!openActionsFormatId) return undefined;
 
-    const confirmLabel =
-        pendingConfirmation?.kind === 'delete' ? 'Delete document' : 'Disable document';
+        const closeWhenClickingOutside = (event: PointerEvent) => {
+            if (event.target instanceof Node && actionsMenuRef.current?.contains(event.target)) {
+                return;
+            }
+            setOpenActionsFormatId(undefined);
+        };
 
-    const confirmTitle =
-        pendingConfirmation?.kind === 'delete' ? 'Delete document?' : 'Disable document?';
+        document.addEventListener('pointerdown', closeWhenClickingOutside);
+        return () => {
+            document.removeEventListener('pointerdown', closeWhenClickingOutside);
+        };
+    }, [openActionsFormatId]);
 
-    const getDropPlacement = (event: DragEvent<HTMLElement>): 'before' | 'after' => {
-        const rowBounds = event.currentTarget.getBoundingClientRect();
-        return event.clientY > rowBounds.top + rowBounds.height / 2 ? 'after' : 'before';
+    const getDropPlacement = (row: HTMLElement, clientY: number): 'before' | 'after' => {
+        const rowBounds = row.getBoundingClientRect();
+        return clientY > rowBounds.top + rowBounds.height / 2 ? 'after' : 'before';
     };
 
-    const onDropRow = (event: DragEvent<HTMLElement>, targetFormatId: string) => {
-        event.preventDefault();
-        const transferFormatId = event.dataTransfer.getData('text/plain');
-        const draggedId = draggedFormatId ?? transferFormatId;
-        const placement =
-            dropTarget?.formatId === targetFormatId
-                ? dropTarget.placement
-                : getDropPlacement(event);
+    const markDropSettled = (formatId: string) => {
+        setSettledDropFormatId(formatId);
+        window.setTimeout(() => {
+            setSettledDropFormatId((currentFormatId) =>
+                currentFormatId === formatId ? undefined : currentFormatId,
+            );
+        }, 520);
+    };
+
+    const finishPointerReorder = () => {
+        const draggedId = pointerDragRef.current?.formatId;
+        const target = dropTarget;
+        pointerDragRef.current = undefined;
         setDraggedFormatId(undefined);
         setDropTarget(undefined);
-        if (!draggedId || draggedId === targetFormatId) return;
-        void onReorderDocuments(draggedId, targetFormatId, placement);
+        if (!draggedId || !target || draggedId === target.formatId) return;
+        void onReorderDocuments(draggedId, target.formatId, target.placement);
+        markDropSettled(draggedId);
+    };
+
+    const updatePointerDropTarget = (event: ReactPointerEvent<HTMLElement>) => {
+        const dragState = pointerDragRef.current;
+        if (!dragState) return;
+
+        const movedDistance = Math.hypot(
+            event.clientX - dragState.startX,
+            event.clientY - dragState.startY,
+        );
+        if (movedDistance > 4) dragState.moved = true;
+        if (!dragState.moved) return;
+
+        const hoveredElement = document.elementFromPoint(event.clientX, event.clientY);
+        const hoveredRow = hoveredElement?.closest<HTMLElement>(
+            '.builder-document-library-row[data-format-id]',
+        );
+        const targetFormatId = hoveredRow?.dataset.formatId;
+        if (!hoveredRow || !targetFormatId || targetFormatId === dragState.formatId) {
+            setDropTarget(undefined);
+            return;
+        }
+
+        setDropTarget({
+            formatId: targetFormatId,
+            placement: getDropPlacement(hoveredRow, event.clientY),
+        });
+    };
+
+    const requestEnabledChange = (item: BuilderInventoryItem, nextIsEnabled: boolean) => {
+        void onSetDocumentEnabled(item, nextIsEnabled);
+    };
+
+    const onReorderHandleClick = (item: BuilderInventoryItem) => {
+        setOpenActionsFormatId(undefined);
+        setSelectedReorderFormatId((currentFormatId) =>
+            currentFormatId === item.formatId ? undefined : item.formatId,
+        );
+    };
+
+    const completeSelectedReorder = (
+        targetFormatId: string,
+        placement: 'before' | 'after' = 'before',
+    ) => {
+        const movedFormatId = selectedReorderFormatId;
+        if (!movedFormatId || movedFormatId === targetFormatId) return;
+        void onReorderDocuments(movedFormatId, targetFormatId, placement);
+        markDropSettled(movedFormatId);
+        setSelectedReorderFormatId(undefined);
+    };
+
+    const keepMenuInteractionLocal = (
+        event: KeyboardEvent<HTMLDivElement> | ReactPointerEvent<HTMLDivElement>,
+    ) => {
+        event.stopPropagation();
     };
 
     return (
         <>
-            <section className="builder-document-library" aria-label="Document library">
+            <section
+                className="builder-document-library"
+                aria-label="Document library"
+                data-dragging={draggedFormatId ? 'true' : undefined}
+            >
                 <div className="section-heading">
                     <div className="builder-document-library-intro">
                         <p className="eyebrow">Workspace</p>
@@ -153,21 +240,14 @@ export const BuilderDocumentLibrary: FC<BuilderDocumentLibraryProps> = ({
                 >
                     {inventory.length > 0 ? (
                         inventory.map((item) => {
-                            const disableBlocked =
-                                item.isBuiltIn ||
-                                item.isDefault ||
-                                (item.isEnabled && enabledCount <= 1);
+                            const disableBlocked = item.isDefault;
                             const deleteBlocked =
                                 item.isBuiltIn ||
                                 item.isDefault ||
                                 (item.isEnabled && enabledCount <= 1);
-                            const disableBlockedReason = item.isBuiltIn
-                                ? 'Built-in formats stay available.'
-                                : item.isDefault
-                                  ? 'Default format must remain enabled.'
-                                  : item.isEnabled && enabledCount <= 1
-                                    ? 'Keep at least one document enabled.'
-                                    : undefined;
+                            const disableBlockedReason = item.isDefault
+                                ? 'Default format must remain enabled.'
+                                : undefined;
                             const deleteBlockedReason = item.isBuiltIn
                                 ? 'Built-in formats cannot be deleted.'
                                 : item.isDefault
@@ -182,7 +262,9 @@ export const BuilderDocumentLibrary: FC<BuilderDocumentLibraryProps> = ({
                                         !item.isEnabled ? ' is-disabled' : ''
                                     }`}
                                     data-drag-target={
-                                        draggedFormatId && draggedFormatId !== item.formatId
+                                        (draggedFormatId && draggedFormatId !== item.formatId) ||
+                                        (selectedReorderFormatId &&
+                                            selectedReorderFormatId !== item.formatId)
                                             ? 'true'
                                             : undefined
                                     }
@@ -191,25 +273,21 @@ export const BuilderDocumentLibrary: FC<BuilderDocumentLibraryProps> = ({
                                             ? dropTarget.placement
                                             : undefined
                                     }
+                                    data-reorder-selected={
+                                        selectedReorderFormatId === item.formatId
+                                            ? 'true'
+                                            : undefined
+                                    }
+                                    data-dragging={
+                                        draggedFormatId === item.formatId ? 'true' : undefined
+                                    }
+                                    data-drop-settled={
+                                        settledDropFormatId === item.formatId ? 'true' : undefined
+                                    }
+                                    data-format-id={item.formatId}
                                     key={item.formatId}
-                                    onDragEnd={() => {
-                                        setDraggedFormatId(undefined);
-                                        setDropTarget(undefined);
-                                    }}
-                                    onDragOver={(event) => {
-                                        event.preventDefault();
-                                        event.dataTransfer.dropEffect = 'move';
-                                        if (!draggedFormatId || draggedFormatId === item.formatId) {
-                                            setDropTarget(undefined);
-                                            return;
-                                        }
-                                        setDropTarget({
-                                            formatId: item.formatId,
-                                            placement: getDropPlacement(event),
-                                        });
-                                    }}
-                                    onDrop={(event) => {
-                                        onDropRow(event, item.formatId);
+                                    onClick={() => {
+                                        completeSelectedReorder(item.formatId);
                                     }}
                                     role="listitem"
                                 >
@@ -218,15 +296,83 @@ export const BuilderDocumentLibrary: FC<BuilderDocumentLibraryProps> = ({
                                             aria-label={`Reorder ${item.formatName}`}
                                             className="builder-document-library-drag-handle"
                                             data-cursor-drag="true"
-                                            draggable
-                                            onDragStart={(event) => {
+                                            onClick={(event) => {
+                                                event.stopPropagation();
+                                                if (suppressHandleClickRef.current) {
+                                                    suppressHandleClickRef.current = false;
+                                                    return;
+                                                }
+                                                onReorderHandleClick(item);
+                                            }}
+                                            onPointerCancel={(event) => {
+                                                if (
+                                                    pointerDragRef.current?.pointerId !==
+                                                    event.pointerId
+                                                ) {
+                                                    return;
+                                                }
+                                                pointerDragRef.current = undefined;
+                                                setDraggedFormatId(undefined);
+                                                setDropTarget(undefined);
+                                            }}
+                                            onPointerDown={(event) => {
+                                                if (event.button !== 0) return;
+                                                event.stopPropagation();
+                                                setOpenActionsFormatId(undefined);
+                                                setSelectedReorderFormatId(undefined);
+                                                pointerDragRef.current = {
+                                                    formatId: item.formatId,
+                                                    pointerId: event.pointerId,
+                                                    startX: event.clientX,
+                                                    startY: event.clientY,
+                                                    moved: false,
+                                                };
                                                 setDraggedFormatId(item.formatId);
-                                                event.dataTransfer.effectAllowed = 'move';
-                                                event.dataTransfer.setData(
-                                                    'text/plain',
-                                                    item.formatId,
+                                                event.currentTarget.setPointerCapture?.(
+                                                    event.pointerId,
                                                 );
                                             }}
+                                            onPointerMove={(event) => {
+                                                if (
+                                                    pointerDragRef.current?.pointerId !==
+                                                    event.pointerId
+                                                ) {
+                                                    return;
+                                                }
+                                                event.preventDefault();
+                                                updatePointerDropTarget(event);
+                                            }}
+                                            onPointerUp={(event) => {
+                                                const dragState = pointerDragRef.current;
+                                                if (dragState?.pointerId !== event.pointerId) {
+                                                    return;
+                                                }
+                                                event.preventDefault();
+                                                event.stopPropagation();
+                                                suppressHandleClickRef.current = true;
+                                                if (
+                                                    event.currentTarget.hasPointerCapture?.(
+                                                        event.pointerId,
+                                                    )
+                                                ) {
+                                                    event.currentTarget.releasePointerCapture?.(
+                                                        event.pointerId,
+                                                    );
+                                                }
+                                                if (dragState.moved) {
+                                                    finishPointerReorder();
+                                                    return;
+                                                }
+                                                pointerDragRef.current = undefined;
+                                                setDraggedFormatId(undefined);
+                                                setDropTarget(undefined);
+                                                onReorderHandleClick(item);
+                                            }}
+                                            title={
+                                                selectedReorderFormatId === item.formatId
+                                                    ? 'Click another document row to move this document.'
+                                                    : `Reorder ${item.formatName}`
+                                            }
                                             icon={<GripVertical aria-hidden="true" size={18} />}
                                         />
                                         <div className="builder-document-library-row-copy">
@@ -257,9 +403,51 @@ export const BuilderDocumentLibrary: FC<BuilderDocumentLibraryProps> = ({
                                             <span className="builder-document-library-item-meta">
                                                 {describeInventoryItem(item)}
                                             </span>
+                                            {selectedReorderFormatId === item.formatId ? (
+                                                <span className="builder-document-library-reorder-hint">
+                                                    Pick where this document should move.
+                                                </span>
+                                            ) : null}
+                                            {selectedReorderFormatId &&
+                                            selectedReorderFormatId !== item.formatId ? (
+                                                <div
+                                                    className="builder-document-library-reorder-targets"
+                                                    onClick={(event) => {
+                                                        event.stopPropagation();
+                                                    }}
+                                                >
+                                                    <IconButton
+                                                        onClick={() => {
+                                                            completeSelectedReorder(
+                                                                item.formatId,
+                                                                'before',
+                                                            );
+                                                        }}
+                                                        variant="secondary"
+                                                    >
+                                                        Place before
+                                                    </IconButton>
+                                                    <IconButton
+                                                        onClick={() => {
+                                                            completeSelectedReorder(
+                                                                item.formatId,
+                                                                'after',
+                                                            );
+                                                        }}
+                                                        variant="secondary"
+                                                    >
+                                                        Place after
+                                                    </IconButton>
+                                                </div>
+                                            ) : null}
                                         </div>
                                     </div>
-                                    <div className="builder-document-library-row-side">
+                                    <div
+                                        className="builder-document-library-row-side"
+                                        onClick={(event) => {
+                                            event.stopPropagation();
+                                        }}
+                                    >
                                         <div className="builder-document-library-row-actions">
                                             <IconOnlyButton
                                                 aria-label={`Edit ${item.formatName}`}
@@ -271,31 +459,68 @@ export const BuilderDocumentLibrary: FC<BuilderDocumentLibraryProps> = ({
                                                 title={`Edit ${item.formatName}`}
                                             />
                                             <IconOnlyButton
-                                                aria-label={`Duplicate ${item.formatName}`}
-                                                className="builder-document-library-icon-action"
-                                                icon={<RefreshCw aria-hidden="true" size={18} />}
+                                                aria-label={
+                                                    item.isDefault
+                                                        ? `${item.formatName} is default`
+                                                        : `Set ${item.formatName} as default`
+                                                }
+                                                className={`builder-document-library-icon-action builder-document-library-default-action${
+                                                    item.isDefault ? ' is-default' : ''
+                                                }`}
+                                                disabled={item.isDefault}
+                                                icon={
+                                                    <BadgeCheck
+                                                        aria-hidden="true"
+                                                        fill={
+                                                            item.isDefault ? 'currentColor' : 'none'
+                                                        }
+                                                        size={18}
+                                                        strokeWidth={item.isDefault ? 2.4 : 2}
+                                                    />
+                                                }
                                                 onClick={() => {
-                                                    void onDuplicateDocument(item.formatId);
+                                                    void onSetDefaultDocument(item);
                                                 }}
-                                                title={`Duplicate ${item.formatName}`}
+                                                title={
+                                                    item.isDefault
+                                                        ? 'This is already the default document.'
+                                                        : `Set ${item.formatName} as default`
+                                                }
                                             />
                                             <IconOnlyButton
-                                                aria-label={`Preview ${item.formatName}`}
-                                                className="builder-document-library-icon-action"
-                                                icon={<Eye aria-hidden="true" size={18} />}
+                                                aria-label={
+                                                    item.isEnabled
+                                                        ? `Disable ${item.formatName}`
+                                                        : `Enable ${item.formatName}`
+                                                }
+                                                className={`builder-document-library-icon-action builder-document-library-availability-action${
+                                                    item.isEnabled ? ' is-enabled' : ' is-disabled'
+                                                }`}
+                                                disabled={item.isEnabled && disableBlocked}
+                                                icon={
+                                                    item.isEnabled ? (
+                                                        <Power
+                                                            aria-hidden="true"
+                                                            size={18}
+                                                            strokeWidth={2.35}
+                                                        />
+                                                    ) : (
+                                                        <PowerOff
+                                                            aria-hidden="true"
+                                                            size={18}
+                                                            strokeWidth={2.35}
+                                                        />
+                                                    )
+                                                }
                                                 onClick={() => {
-                                                    void onOpenPrintPreview(item.formatId);
+                                                    requestEnabledChange(item, !item.isEnabled);
                                                 }}
-                                                title={`Preview ${item.formatName}`}
-                                            />
-                                            <IconOnlyButton
-                                                aria-label={`Test print ${item.formatName}`}
-                                                className="builder-document-library-icon-action"
-                                                icon={<Printer aria-hidden="true" size={18} />}
-                                                onClick={() => {
-                                                    void onTestPrintDocument(item.formatId);
-                                                }}
-                                                title={`Test print ${item.formatName}`}
+                                                title={
+                                                    disableBlockedReason ??
+                                                    (item.isEnabled
+                                                        ? `Disable ${item.formatName}`
+                                                        : `Enable ${item.formatName}`)
+                                                }
                                             />
                                             <IconOnlyButton
                                                 aria-label={`Delete ${item.formatName}`}
@@ -319,6 +544,18 @@ export const BuilderDocumentLibrary: FC<BuilderDocumentLibraryProps> = ({
                                                         ? ' is-open'
                                                         : ''
                                                 }`}
+                                                onKeyDown={(event) => {
+                                                    if (event.key === 'Escape') {
+                                                        event.stopPropagation();
+                                                        setOpenActionsFormatId(undefined);
+                                                    }
+                                                }}
+                                                onPointerDown={keepMenuInteractionLocal}
+                                                ref={
+                                                    openActionsFormatId === item.formatId
+                                                        ? actionsMenuRef
+                                                        : undefined
+                                                }
                                             >
                                                 <IconOnlyButton
                                                     aria-label={`More actions for ${item.formatName}`}
@@ -345,6 +582,51 @@ export const BuilderDocumentLibrary: FC<BuilderDocumentLibraryProps> = ({
                                                     <div className="builder-document-library-more-panel">
                                                         <IconButton
                                                             icon={
+                                                                <RefreshCw
+                                                                    aria-hidden="true"
+                                                                    size={18}
+                                                                />
+                                                            }
+                                                            onClick={() => {
+                                                                void onDuplicateDocument(
+                                                                    item.formatId,
+                                                                );
+                                                            }}
+                                                            variant="secondary"
+                                                        >
+                                                            Duplicate
+                                                        </IconButton>
+                                                        <IconButton
+                                                            icon={
+                                                                <Eye aria-hidden="true" size={18} />
+                                                            }
+                                                            onClick={() => {
+                                                                void onOpenPrintPreview(
+                                                                    item.formatId,
+                                                                );
+                                                            }}
+                                                            variant="secondary"
+                                                        >
+                                                            Print preview
+                                                        </IconButton>
+                                                        <IconButton
+                                                            icon={
+                                                                <Printer
+                                                                    aria-hidden="true"
+                                                                    size={18}
+                                                                />
+                                                            }
+                                                            onClick={() => {
+                                                                void onTestPrintDocument(
+                                                                    item.formatId,
+                                                                );
+                                                            }}
+                                                            variant="secondary"
+                                                        >
+                                                            Test print
+                                                        </IconButton>
+                                                        <IconButton
+                                                            icon={
                                                                 <Eye aria-hidden="true" size={18} />
                                                             }
                                                             onClick={() => {
@@ -356,61 +638,6 @@ export const BuilderDocumentLibrary: FC<BuilderDocumentLibraryProps> = ({
                                                         >
                                                             Format preview
                                                         </IconButton>
-                                                        <IconButton
-                                                            disabled={item.isDefault}
-                                                            icon={
-                                                                <Star
-                                                                    aria-hidden="true"
-                                                                    size={18}
-                                                                />
-                                                            }
-                                                            onClick={() => {
-                                                                void onSetDefaultDocument(item);
-                                                            }}
-                                                            title={
-                                                                item.isDefault
-                                                                    ? 'This is already the default document.'
-                                                                    : `Set ${item.formatName} as default`
-                                                            }
-                                                            variant="secondary"
-                                                        >
-                                                            Set default
-                                                        </IconButton>
-                                                        <FormField.CheckboxField
-                                                            checked={item.isEnabled}
-                                                            disabled={
-                                                                item.isBuiltIn || item.isDefault
-                                                            }
-                                                            label={
-                                                                item.isEnabled
-                                                                    ? 'Enabled'
-                                                                    : 'Disabled'
-                                                            }
-                                                            onChange={(event) => {
-                                                                if (
-                                                                    !event.currentTarget.checked &&
-                                                                    disableBlocked
-                                                                ) {
-                                                                    return;
-                                                                }
-                                                                if (event.currentTarget.checked) {
-                                                                    void onSetDocumentEnabled(
-                                                                        item,
-                                                                        true,
-                                                                    );
-                                                                    return;
-                                                                }
-                                                                setPendingConfirmation({
-                                                                    kind: 'disable',
-                                                                    item,
-                                                                });
-                                                            }}
-                                                            title={
-                                                                disableBlockedReason ??
-                                                                `${item.formatName} availability`
-                                                            }
-                                                            wrapperClassName="builder-document-library-toggle"
-                                                        />
                                                     </div>
                                                 ) : null}
                                             </div>
@@ -437,11 +664,7 @@ export const BuilderDocumentLibrary: FC<BuilderDocumentLibraryProps> = ({
                     const nextConfirmation = pendingConfirmation;
                     setPendingConfirmation(undefined);
                     if (!nextConfirmation) return;
-                    if (nextConfirmation.kind === 'delete') {
-                        void onDeleteDocument(nextConfirmation.item);
-                        return;
-                    }
-                    void onSetDocumentEnabled(nextConfirmation.item, false);
+                    void onDeleteDocument(nextConfirmation.item);
                 }}
                 title={confirmTitle}
             />

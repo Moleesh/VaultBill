@@ -1,5 +1,4 @@
 /** @format */
-/* eslint-disable max-lines */
 
 import { act } from 'react';
 import { MemoryRouter } from 'react-router-dom';

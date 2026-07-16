@@ -76,6 +76,7 @@ export const formulaReferences = (formula: string): readonly string[] =>
             .replace(/\bSUMALL\(\s*/giu, '(')
             .replace(/\bSUM\(\s*Items\./giu, '(')
             .replace(/\bCOUNT\(\s*Items\s*\)/giu, '')
+            .replace(/\bROUND\(\s*/giu, '(')
             .matchAll(/\b([A-Za-z_][\w]*(?:\.[A-Za-z_][\w]*)*)\b/gu),
     ].map((match) => match[1] ?? '');
 

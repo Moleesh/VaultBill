@@ -81,6 +81,16 @@ describe('FormulaEngine', () => {
         ).toBe('-250.00');
     });
 
+    it('evaluates ROUND formulas with optional precision', () => {
+        expect(
+            evaluateFormula('ROUND(GrandTotal)', { GrandTotal: '2891.49' }, policy, 0).formatted,
+        ).toBe('2891');
+        expect(
+            evaluateFormula('ROUND(GrandTotal, 2)', { GrandTotal: '2891.495' }, policy, 2)
+                .formatted,
+        ).toBe('2891.50');
+    });
+
     it('throws when a variable is missing', () => {
         expect(() => evaluateFormula('Quantity * Rate', { Quantity: '2.000' }, policy, 2)).toThrow(
             /Rate/u,
@@ -97,6 +107,9 @@ describe('FormulaEngine', () => {
         expect(() =>
             evaluateFormula('Quantity Rate', { Quantity: '2', Rate: '3' }, policy, 2),
         ).toThrow(/trailing/u);
+        expect(() => evaluateFormula('ROUND(Quantity, 1.5)', { Quantity: '2' }, policy, 2)).toThrow(
+            /integer/u,
+        );
         expect(() => parseDecimal('not-a-decimal')).toThrow(/Invalid decimal/u);
         expect(() => decimalFromInteger(1.5)).toThrow(/integer/u);
     });

@@ -35,16 +35,14 @@ export const resolveRecordsFormatOptions = (
     usesStaticHostedBrowserBuild: boolean,
 ) =>
     (publishedFormats.length > 0
-        ? [...publishedFormats].sort((left, right) => {
-              if (left.isDefault !== right.isDefault) return left.isDefault ? -1 : 1;
-              return left.formatName.localeCompare(right.formatName);
-          })
+        ? publishedFormats
         : usesStaticHostedBrowserBuild
           ? builtInDocumentFormatSummaries.slice(0, 1)
           : builtInDocumentFormatSummaries
     ).map((format) => ({
         value: format.formatId,
         label: format.formatName,
+        ...(format.isDefault ? { description: 'Default document format' } : {}),
     }));
 
 /** Filters stored records down to printable reprint candidates using the active search query. */

@@ -41,6 +41,7 @@ export const BuilderPageStepSections: FC<BuilderPageStepSectionsProps> = ({
         ) : null}
         {controller.activeStep === 'Layout' ? (
             <BuilderLayoutStep
+                fields={controller.config.Fields}
                 layout={layout}
                 onLayoutChange={(nextLayout: BuilderLayoutConfig) => {
                     controller.setConfig({

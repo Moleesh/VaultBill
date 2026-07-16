@@ -264,8 +264,17 @@ export default tseslint.config(
         },
     },
     {
+        files: ['**/__tests__/**/*.{ts,tsx}'],
+        rules: {
+            'max-lines': ['error', { max: 500, skipBlankLines: true, skipComments: true }],
+        },
+    },
+    {
         files: [
             'src/components/__tests__/AppShell.spec.tsx',
+            'src/components/ReorderableRows/usePointerReorder.ts',
+            'src/features/builder/BuilderFieldDrawer.tsx',
+            'src/features/builder/useBuilderPageActions.ts',
             'src/features/reports/ReportsFilterPanel.tsx',
             'src/features/reports/useReportsPageFilters.ts',
             'src/features/settings/SettingsSecurityAccess.tsx',

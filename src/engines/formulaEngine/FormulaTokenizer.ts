@@ -64,6 +64,12 @@ export const tokenizeFormula = (formula: string): readonly FormulaToken[] => {
             continue;
         }
 
+        if (character === ',') {
+            tokens.push({ type: 'Comma', value: character });
+            index += 1;
+            continue;
+        }
+
         throw new Error(`Unsupported formula character: ${character}`);
     }
 

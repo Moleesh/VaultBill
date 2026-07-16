@@ -7,14 +7,12 @@ import { DialogActions } from '../../components/DialogActions';
 import { FormField } from '../../components/FormFields';
 
 type BuilderFieldFormulaSectionProps = {
-    readonly fieldId: string;
     readonly formula: string;
     readonly formulaSuggestions: readonly string[];
     readonly onFormulaChange: (value: string) => void;
 };
 
 export const BuilderFieldFormulaSection: FC<BuilderFieldFormulaSectionProps> = ({
-    fieldId,
     formula,
     formulaSuggestions,
     onFormulaChange,
@@ -22,19 +20,17 @@ export const BuilderFieldFormulaSection: FC<BuilderFieldFormulaSectionProps> = (
     <>
         <FormField.TextField
             label="Formula"
-            list={`formula-suggestions-${fieldId}`}
-            note="Examples: Quantity * Rate, SUMALL(Amount), SUM(Items.Amount), COUNT(Items), Secrets.Key"
+            note={
+                formulaSuggestions.length > 0
+                    ? `Examples: ${formulaSuggestions.join(', ')}`
+                    : 'Examples: Quantity * Rate, SUMALL(Amount), SUM(Items.Amount), COUNT(Items), Secrets.Key'
+            }
             onChange={(event) => {
                 onFormulaChange(event.currentTarget.value);
             }}
             value={formula}
             wrapperClassName="span-2"
         />
-        <datalist id={`formula-suggestions-${fieldId}`}>
-            {formulaSuggestions.map((suggestion) => (
-                <option key={suggestion} value={suggestion} />
-            ))}
-        </datalist>
     </>
 );
 

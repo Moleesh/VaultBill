@@ -4,38 +4,44 @@ import { createEvent, fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { BuilderDocumentLibrary } from '../BuilderDocumentLibrary';
+import type { BuilderInventoryItem } from '../BuilderDocumentLibrarySupport';
 
 const requireButton = (button: HTMLElement | undefined): HTMLElement => {
     if (!button) throw new Error('Expected document action button to be rendered.');
     return button;
 };
 
-const createDataTransfer = () => {
-    const values = new Map<string, string>();
-    return {
-        dropEffect: 'move',
-        effectAllowed: 'move',
-        getData: (format: string) => values.get(format) ?? '',
-        setData: (format: string, value: string) => {
-            values.set(format, value);
-        },
-    };
-};
-
-const fireDragEvent = (
+const firePointerEvent = (
     element: Element,
-    type: 'dragOver' | 'drop',
+    type: 'pointerDown' | 'pointerMove' | 'pointerUp',
     options: {
+        readonly button?: number;
+        readonly clientX: number;
         readonly clientY: number;
-        readonly dataTransfer: ReturnType<typeof createDataTransfer>;
+        readonly pointerId: number;
     },
 ) => {
-    const event = createEvent[type](element, {
-        dataTransfer: options.dataTransfer,
-    });
+    const event = createEvent[type](element);
+    Object.defineProperty(event, 'button', { value: options.button ?? 0 });
+    Object.defineProperty(event, 'clientX', { value: options.clientX });
     Object.defineProperty(event, 'clientY', { value: options.clientY });
+    Object.defineProperty(event, 'pointerId', { value: options.pointerId });
     fireEvent(element, event);
 };
+
+const makeInventoryItem = (
+    item: Pick<BuilderInventoryItem, 'formatId' | 'formatName'> & Partial<BuilderInventoryItem>,
+): BuilderInventoryItem => ({
+    isDefault: false,
+    isBuiltIn: false,
+    isEnabled: true,
+    updatedAt: '2026-06-15T00:00:00.000Z',
+    templateName: `${item.formatName} Print`,
+    assetCount: 1,
+    isValid: true,
+    sortOrder: 0,
+    ...item,
+});
 
 describe('BuilderDocumentLibrary', () => {
     beforeEach(() => {
@@ -59,30 +65,19 @@ describe('BuilderDocumentLibrary', () => {
                 currentFormatId="TaxInvoice"
                 currentFormatName="GST Invoice"
                 inventory={[
-                    {
+                    makeInventoryItem({
                         formatId: 'TaxInvoice',
                         formatName: 'GST Invoice',
                         isDefault: true,
                         isBuiltIn: true,
-                        isEnabled: true,
                         updatedAt: '2026-06-14T00:00:00.000Z',
-                        templateName: 'GST Invoice Print',
-                        assetCount: 1,
-                        isValid: true,
-                        sortOrder: 0,
-                    },
-                    {
+                    }),
+                    makeInventoryItem({
                         formatId: 'RetailInvoice',
                         formatName: 'Retail Invoice',
-                        isDefault: false,
-                        isBuiltIn: false,
-                        isEnabled: true,
-                        updatedAt: '2026-06-15T00:00:00.000Z',
-                        templateName: 'Retail Invoice Print',
                         assetCount: 2,
-                        isValid: true,
                         sortOrder: 1,
-                    },
+                    }),
                 ]}
                 onCreateNew={onCreateNew}
                 onDeleteDocument={onDeleteDocument}
@@ -102,14 +97,10 @@ describe('BuilderDocumentLibrary', () => {
         expect(screen.getByText('Default')).toBeVisible();
 
         const firstEditButton = screen.getByRole('button', { name: 'Edit GST Invoice' });
-        const firstDuplicateButton = screen.getByRole('button', {
-            name: 'Duplicate GST Invoice',
-        });
 
-        expect(screen.getByRole('button', { name: 'Preview GST Invoice' })).toBeVisible();
-        expect(screen.getByRole('button', { name: 'Preview Retail Invoice' })).toBeVisible();
-        expect(screen.getByRole('button', { name: 'Test print Retail Invoice' })).toBeVisible();
         expect(screen.getByRole('button', { name: 'Delete Retail Invoice' })).toBeVisible();
+        expect(screen.getByRole('button', { name: 'Set Retail Invoice as default' })).toBeVisible();
+        expect(screen.getByRole('button', { name: 'Disable Retail Invoice' })).toBeVisible();
         expect(screen.getByLabelText('GST Invoice is enabled')).toBeVisible();
         expect(screen.getByLabelText('Retail Invoice is enabled')).toBeVisible();
 
@@ -117,18 +108,20 @@ describe('BuilderDocumentLibrary', () => {
         expect(onEditDocument).toHaveBeenCalledWith('TaxInvoice');
 
         fireEvent.click(screen.getByRole('button', { name: /New document/u }));
-        fireEvent.click(firstDuplicateButton);
-        fireEvent.click(screen.getByRole('button', { name: 'Test print Retail Invoice' }));
         fireEvent.click(screen.getByRole('button', { name: 'More actions for Retail Invoice' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Duplicate' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Print preview' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Test print' }));
         fireEvent.click(screen.getByRole('button', { name: 'Format preview' }));
-        fireEvent.click(screen.getByRole('button', { name: 'Set default' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Set Retail Invoice as default' }));
         const deleteButton = requireButton(
             screen.queryByRole('button', { name: 'Delete Retail Invoice' }) ?? undefined,
         );
         fireEvent.click(deleteButton);
 
         expect(onCreateNew).toHaveBeenCalledTimes(1);
-        expect(onDuplicateDocument).toHaveBeenCalledWith('TaxInvoice');
+        expect(onDuplicateDocument).toHaveBeenCalledWith('RetailInvoice');
+        expect(onOpenPrintPreview).toHaveBeenCalledWith('RetailInvoice');
         expect(onOpenFormatPreview).toHaveBeenCalledWith('RetailInvoice');
         expect(onSetDefaultDocument).toHaveBeenCalledWith(
             expect.objectContaining({ formatId: 'RetailInvoice' }),
@@ -141,21 +134,50 @@ describe('BuilderDocumentLibrary', () => {
             expect.objectContaining({ formatId: 'RetailInvoice', isEnabled: true }),
         );
 
-        const dataTransfer = createDataTransfer();
-        fireEvent.dragStart(screen.getByRole('button', { name: 'Reorder Retail Invoice' }), {
-            dataTransfer,
-        });
         const gstInvoiceRow = screen.getByText('GST Invoice').closest('article');
         if (!gstInvoiceRow) throw new Error('Expected GST Invoice row to be rendered.');
-        fireEvent.drop(gstInvoiceRow, { clientY: 0, dataTransfer });
-        expect(onReorderDocuments).toHaveBeenCalledWith('RetailInvoice', 'TaxInvoice', 'before');
-
-        const afterDataTransfer = createDataTransfer();
-        fireEvent.dragStart(screen.getByRole('button', { name: 'Reorder GST Invoice' }), {
-            dataTransfer: afterDataTransfer,
-        });
         const retailInvoiceRow = screen.getByText('Retail Invoice').closest('article');
         if (!retailInvoiceRow) throw new Error('Expected Retail Invoice row to be rendered.');
+
+        fireEvent.click(screen.getByRole('button', { name: 'Reorder Retail Invoice' }));
+        fireEvent.click(gstInvoiceRow);
+        expect(onReorderDocuments).toHaveBeenCalledWith('RetailInvoice', 'TaxInvoice', 'before');
+
+        vi.spyOn(gstInvoiceRow, 'getBoundingClientRect').mockReturnValue({
+            bottom: 50,
+            height: 50,
+            left: 0,
+            right: 100,
+            top: 0,
+            width: 100,
+            x: 0,
+            y: 0,
+            toJSON: () => ({}),
+        });
+        const elementFromPointSpy = vi.fn(() => gstInvoiceRow);
+        Object.defineProperty(document, 'elementFromPoint', {
+            configurable: true,
+            value: elementFromPointSpy,
+        });
+        const retailHandle = screen.getByRole('button', { name: 'Reorder Retail Invoice' });
+        firePointerEvent(retailHandle, 'pointerDown', {
+            button: 0,
+            clientX: 0,
+            clientY: 0,
+            pointerId: 1,
+        });
+        firePointerEvent(retailHandle, 'pointerMove', {
+            clientX: 0,
+            clientY: 8,
+            pointerId: 1,
+        });
+        firePointerEvent(retailHandle, 'pointerUp', {
+            clientX: 0,
+            clientY: 8,
+            pointerId: 1,
+        });
+        expect(onReorderDocuments).toHaveBeenCalledWith('RetailInvoice', 'TaxInvoice', 'before');
+
         vi.spyOn(retailInvoiceRow, 'getBoundingClientRect').mockReturnValue({
             bottom: 50,
             height: 50,
@@ -167,35 +189,39 @@ describe('BuilderDocumentLibrary', () => {
             y: 0,
             toJSON: () => ({}),
         });
-        fireDragEvent(retailInvoiceRow, 'dragOver', {
-            clientY: 40,
-            dataTransfer: afterDataTransfer,
+        elementFromPointSpy.mockReturnValue(retailInvoiceRow);
+        const gstHandle = screen.getByRole('button', { name: 'Reorder GST Invoice' });
+        firePointerEvent(gstHandle, 'pointerDown', {
+            button: 0,
+            clientX: 0,
+            clientY: 0,
+            pointerId: 2,
         });
-        fireDragEvent(retailInvoiceRow, 'drop', {
+        firePointerEvent(gstHandle, 'pointerMove', {
+            clientX: 0,
             clientY: 40,
-            dataTransfer: afterDataTransfer,
+            pointerId: 2,
+        });
+        firePointerEvent(gstHandle, 'pointerUp', {
+            clientX: 0,
+            clientY: 40,
+            pointerId: 2,
         });
         expect(onReorderDocuments).toHaveBeenCalledWith('TaxInvoice', 'RetailInvoice', 'after');
     });
 
-    it('blocks destructive actions for the only enabled custom document', () => {
+    it('blocks deleting the only enabled custom document while allowing disable', () => {
         render(
             <BuilderDocumentLibrary
                 currentFormatId="RetailInvoice"
                 currentFormatName="Retail Invoice"
                 inventory={[
-                    {
+                    makeInventoryItem({
                         formatId: 'RetailInvoice',
                         formatName: 'Retail Invoice',
-                        isDefault: false,
-                        isBuiltIn: false,
-                        isEnabled: true,
-                        updatedAt: '2026-06-15T00:00:00.000Z',
-                        templateName: 'Retail Invoice Print',
                         assetCount: 2,
-                        isValid: true,
                         sortOrder: 1,
-                    },
+                    }),
                 ]}
                 onCreateNew={vi.fn()}
                 onDeleteDocument={vi.fn()}
@@ -215,5 +241,6 @@ describe('BuilderDocumentLibrary', () => {
             'title',
             'Keep at least one document enabled.',
         );
+        expect(screen.getByRole('button', { name: 'Disable Retail Invoice' })).not.toBeDisabled();
     });
 });

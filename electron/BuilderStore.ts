@@ -123,6 +123,7 @@ export class BuilderStore {
           ON CONFLICT(format_id) DO UPDATE SET
             format_name = excluded.format_name,
             format_json = excluded.format_json,
+            is_default = excluded.is_default,
             updated_at = excluded.updated_at;`,
                 )
                 .run(

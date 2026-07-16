@@ -1,7 +1,6 @@
 /** @format */
 
-import type { DragEvent, FC } from 'react';
-import { useState } from 'react';
+import type { FC } from 'react';
 
 import { Copy, GripVertical, Plus, Trash2 } from 'lucide-react';
 
@@ -11,6 +10,11 @@ import { IconButton } from '../../components/IconButton';
 import { IconOnlyButton } from '../../components/IconOnlyButton';
 import type { FieldConfig } from './BuilderPageSupport';
 import { move } from './BuilderPageSupport';
+
+import {
+    usePointerReorder,
+    type ReorderPlacement,
+} from '../../components/ReorderableRows/usePointerReorder';
 
 type BuilderFieldEditorProps = {
     readonly fields: readonly FieldConfig[];
@@ -28,23 +32,30 @@ export const BuilderFieldEditor: FC<BuilderFieldEditorProps> = ({
     onChange,
     onEdit,
 }) => {
-    const [draggedIndex, setDraggedIndex] = useState<number | undefined>();
-
     const reorder = (from: number, to: number) => {
         if (from === to) return;
         onChange(move(fields, from, to));
     };
 
-    const handleDrop = (event: DragEvent<HTMLElement>, index: number) => {
-        event.preventDefault();
-        const from = draggedIndex;
-        setDraggedIndex(undefined);
-        if (from === undefined) return;
-        reorder(from, index);
+    const reorderById = (
+        draggedFieldId: string,
+        targetFieldId: string,
+        placement: ReorderPlacement,
+    ) => {
+        const fromIndex = fields.findIndex((field) => field.FieldId === draggedFieldId);
+        const targetIndex = fields.findIndex((field) => field.FieldId === targetFieldId);
+        if (fromIndex < 0 || targetIndex < 0) return;
+        const destinationIndex = placement === 'after' ? targetIndex + 1 : targetIndex;
+        reorder(fromIndex, fromIndex < destinationIndex ? destinationIndex - 1 : destinationIndex);
     };
 
+    const reorderRows = usePointerReorder({
+        onReorder: reorderById,
+        rowSelector: '.builder-fields > article[data-reorder-id]',
+    });
+
     return (
-        <div className="builder-fields">
+        <div className="builder-fields" data-dragging={reorderRows.draggedId ? 'true' : undefined}>
             <div className="section-heading">
                 <div>
                     <h3>Configured fields</h3>
@@ -60,31 +71,19 @@ export const BuilderFieldEditor: FC<BuilderFieldEditorProps> = ({
             </div>
             {fields.map((field, index) => (
                 <article
-                    draggable
                     data-field-id={field.FieldId}
+                    {...reorderRows.getRowProps(field.FieldId)}
                     key={field.FieldId}
-                    onDragEnd={() => {
-                        setDraggedIndex(undefined);
-                    }}
-                    onDragOver={(event) => {
-                        event.preventDefault();
-                    }}
-                    onDragStart={(event) => {
-                        setDraggedIndex(index);
-                        event.dataTransfer.effectAllowed = 'move';
-                        event.dataTransfer.setData('text/plain', field.FieldId);
-                    }}
-                    onDrop={(event) => {
-                        handleDrop(event, index);
-                    }}
                 >
                     <DragHandleButton
                         aria-label={`Drag ${field.Label}`}
                         icon={<GripVertical aria-hidden="true" size={17} />}
+                        {...reorderRows.getHandleProps(field.FieldId)}
                         onClick={(event) => {
                             event.preventDefault();
+                            reorderRows.toggleSelectedFromHandle(field.FieldId);
                         }}
-                        tabIndex={-1}
+                        title={`Reorder ${field.Label}`}
                     />
                     <ActionButton
                         aria-label={`Edit ${field.Label}`}
@@ -101,6 +100,39 @@ export const BuilderFieldEditor: FC<BuilderFieldEditorProps> = ({
                                 <small className="builder-field-warning">Used in a formula</small>
                             ) : null}
                         </span>
+                        {reorderRows.selectedId === field.FieldId ? (
+                            <span className="builder-field-reorder-hint">
+                                Pick where this field should move.
+                            </span>
+                        ) : null}
+                        {reorderRows.selectedId && reorderRows.selectedId !== field.FieldId ? (
+                            <span
+                                className="builder-field-reorder-targets"
+                                onClick={(event) => {
+                                    event.stopPropagation();
+                                }}
+                            >
+                                <IconButton
+                                    onClick={() => {
+                                        reorderRows.completeSelectedReorder(
+                                            field.FieldId,
+                                            'before',
+                                        );
+                                    }}
+                                    variant="secondary"
+                                >
+                                    Place before
+                                </IconButton>
+                                <IconButton
+                                    onClick={() => {
+                                        reorderRows.completeSelectedReorder(field.FieldId, 'after');
+                                    }}
+                                    variant="secondary"
+                                >
+                                    Place after
+                                </IconButton>
+                            </span>
+                        ) : null}
                     </ActionButton>
                     <div className="builder-fields-actions">
                         <IconOnlyButton

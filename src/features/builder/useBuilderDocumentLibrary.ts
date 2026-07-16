@@ -180,6 +180,16 @@ export const useBuilderDocumentLibrary = ({
         return nextInventory;
     }, [capabilities, queryClient, runtimeScope]);
 
+    const updateInventoryCache = useCallback(
+        (updateItem: (item: BuilderInventoryItem) => BuilderInventoryItem) => {
+            queryClient.setQueryData<readonly BuilderInventoryItem[]>(
+                queryKeys.builderInventory(runtimeScope),
+                (currentInventory) => currentInventory?.map(updateItem) ?? currentInventory,
+            );
+        },
+        [queryClient, runtimeScope],
+    );
+
     useEffect(() => {
         if (!requestedPackageQuery.data) return;
         const applied = applyStoredBuilderPackage(requestedPackageQuery.data, {
@@ -393,38 +403,76 @@ export const useBuilderDocumentLibrary = ({
                 setMessage('The selected document could not be updated.');
                 return;
             }
-            const nextConfig = writeBuilderLibraryMeta(
-                sourcePackage.config as DocumentFormatConfig,
-                {
-                    isEnabled: true,
-                    isFavorite: true,
-                    sortOrder: item.sortOrder,
-                },
-            );
-            const savedPackage = await persistDocumentPackage({
-                ...sourcePackage,
-                config: nextConfig,
-            });
-            if (item.formatId === config.FormatId) {
-                setConfig(savedPackage.config);
+            updateInventoryCache((currentItem) => ({
+                ...currentItem,
+                isDefault: currentItem.formatId === item.formatId,
+                isEnabled: currentItem.formatId === item.formatId ? true : currentItem.isEnabled,
+            }));
+            try {
+                for (const currentItem of inventory) {
+                    if (!currentItem.isDefault || currentItem.formatId === item.formatId) continue;
+                    const currentPackage = await fetchDocumentPackage(currentItem.formatId);
+                    if (!currentPackage) continue;
+                    const currentMeta = readBuilderLibraryMeta(currentPackage.config);
+                    const savedCurrentPackage = await persistDocumentPackage({
+                        ...currentPackage,
+                        config: writeBuilderLibraryMeta(
+                            currentPackage.config as DocumentFormatConfig,
+                            {
+                                isEnabled: currentMeta.isEnabled,
+                                isFavorite: false,
+                                sortOrder: currentItem.sortOrder,
+                            },
+                        ),
+                    });
+                    if (currentItem.formatId === config.FormatId) {
+                        setConfig(savedCurrentPackage.config);
+                    }
+                }
+                const nextConfig = writeBuilderLibraryMeta(
+                    sourcePackage.config as DocumentFormatConfig,
+                    {
+                        isEnabled: true,
+                        isFavorite: true,
+                        sortOrder: item.sortOrder,
+                    },
+                );
+                const savedPackage = await persistDocumentPackage({
+                    ...sourcePackage,
+                    config: nextConfig,
+                });
+                if (item.formatId === config.FormatId) {
+                    setConfig(savedPackage.config);
+                }
+                await refreshInventory();
+                await queryClient.invalidateQueries({
+                    queryKey: queryKeys.publishedFormats(runtimeScope),
+                });
+                setMessage(`${item.formatName} is now the default document.`);
+            } catch {
+                setMessage(
+                    `${item.formatName} is default here, but VaultBill could not save it while the workspace is read-only.`,
+                );
             }
-            setMessage(`${item.formatName} is now the default document.`);
         },
-        [config.FormatId, fetchDocumentPackage, persistDocumentPackage, setConfig, setMessage],
+        [
+            config.FormatId,
+            fetchDocumentPackage,
+            inventory,
+            persistDocumentPackage,
+            queryClient,
+            refreshInventory,
+            runtimeScope,
+            setConfig,
+            setMessage,
+            updateInventoryCache,
+        ],
     );
 
     const setDocumentEnabled = useCallback(
         async (item: BuilderInventoryItem, isEnabled: boolean) => {
-            if (item.isBuiltIn) {
-                setMessage('Built-in documents remain available.');
-                return;
-            }
             if (item.isDefault) {
                 setMessage('The default document must stay enabled.');
-                return;
-            }
-            if (!isEnabled && inventory.filter((candidate) => candidate.isEnabled).length <= 1) {
-                setMessage('Keep at least one document enabled.');
                 return;
             }
             const sourcePackage = await fetchDocumentPackage(item.formatId);
@@ -432,32 +480,55 @@ export const useBuilderDocumentLibrary = ({
                 setMessage('The selected document could not be updated.');
                 return;
             }
-            const nextConfig = writeBuilderLibraryMeta(
-                sourcePackage.config as DocumentFormatConfig,
-                {
-                    isEnabled,
-                    isFavorite: false,
-                    sortOrder: item.sortOrder,
-                },
+            updateInventoryCache((currentItem) =>
+                currentItem.formatId === item.formatId
+                    ? {
+                          ...currentItem,
+                          isEnabled,
+                      }
+                    : currentItem,
             );
-            const savedPackage = await persistDocumentPackage({
-                ...sourcePackage,
-                config: nextConfig,
-            });
-            if (item.formatId === config.FormatId) {
-                setConfig(savedPackage.config);
+            try {
+                const nextConfig = writeBuilderLibraryMeta(
+                    sourcePackage.config as DocumentFormatConfig,
+                    {
+                        isEnabled,
+                        isFavorite: false,
+                        sortOrder: item.sortOrder,
+                    },
+                );
+                const savedPackage = await persistDocumentPackage({
+                    ...sourcePackage,
+                    config: nextConfig,
+                });
+                if (item.formatId === config.FormatId) {
+                    setConfig(savedPackage.config);
+                }
+                await refreshInventory();
+                await queryClient.invalidateQueries({
+                    queryKey: queryKeys.publishedFormats(runtimeScope),
+                });
+                setMessage(
+                    isEnabled
+                        ? `${item.formatName} is enabled.`
+                        : `${item.formatName} is disabled.`,
+                );
+            } catch {
+                setMessage(
+                    `${item.formatName} is ${isEnabled ? 'enabled' : 'disabled'} here, but VaultBill could not save it while the workspace is read-only.`,
+                );
             }
-            setMessage(
-                isEnabled ? `${item.formatName} is enabled.` : `${item.formatName} is disabled.`,
-            );
         },
         [
             config.FormatId,
             fetchDocumentPackage,
-            inventory,
             persistDocumentPackage,
+            queryClient,
+            refreshInventory,
+            runtimeScope,
             setConfig,
             setMessage,
+            updateInventoryCache,
         ],
     );
 
@@ -481,32 +552,52 @@ export const useBuilderDocumentLibrary = ({
                 0,
                 movedItem,
             );
-            for (const [index, item] of nextInventory.entries()) {
-                const sourcePackage = await fetchDocumentPackage(item.formatId);
-                if (!sourcePackage) continue;
-                const nextConfig = writeBuilderLibraryMeta(
-                    sourcePackage.config as DocumentFormatConfig,
-                    {
-                        isEnabled: readBuilderLibraryMeta(sourcePackage.config).isEnabled,
-                        isFavorite: item.isDefault,
-                        sortOrder: index,
-                    },
-                );
-                const savedPackage = await persistDocumentPackage({
-                    ...sourcePackage,
-                    config: nextConfig,
-                });
-                if (item.formatId === config.FormatId) {
-                    setConfig(savedPackage.config);
+            const orderedInventory = nextInventory.map((item, index) => ({
+                ...item,
+                sortOrder: index,
+            }));
+
+            queryClient.setQueryData(queryKeys.builderInventory(runtimeScope), orderedInventory);
+
+            try {
+                for (const [index, item] of orderedInventory.entries()) {
+                    const sourcePackage = await fetchDocumentPackage(item.formatId);
+                    if (!sourcePackage) continue;
+                    const nextConfig = writeBuilderLibraryMeta(
+                        sourcePackage.config as DocumentFormatConfig,
+                        {
+                            isEnabled: readBuilderLibraryMeta(sourcePackage.config).isEnabled,
+                            isFavorite: item.isDefault,
+                            sortOrder: index,
+                        },
+                    );
+                    const savedPackage = await persistDocumentPackage({
+                        ...sourcePackage,
+                        config: nextConfig,
+                    });
+                    if (item.formatId === config.FormatId) {
+                        setConfig(savedPackage.config);
+                    }
                 }
+                await refreshInventory();
+                await queryClient.invalidateQueries({
+                    queryKey: queryKeys.publishedFormats(runtimeScope),
+                });
+                setMessage('Document order updated.');
+            } catch {
+                setMessage(
+                    'Document order changed here, but VaultBill could not save it while the workspace is read-only.',
+                );
             }
-            setMessage('Document order updated.');
         },
         [
             config.FormatId,
             fetchDocumentPackage,
             inventory,
             persistDocumentPackage,
+            queryClient,
+            refreshInventory,
+            runtimeScope,
             setConfig,
             setMessage,
         ],

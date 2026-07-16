@@ -13,7 +13,13 @@ export type FormulaEvaluationContext = {
     readonly sumAll?: (fieldId: string) => string | number;
 };
 
-export type FormulaTokenType = 'Identifier' | 'Number' | 'Operator' | 'LeftParen' | 'RightParen';
+export type FormulaTokenType =
+    | 'Comma'
+    | 'Identifier'
+    | 'Number'
+    | 'Operator'
+    | 'LeftParen'
+    | 'RightParen';
 
 export type FormulaToken = {
     readonly type: FormulaTokenType;

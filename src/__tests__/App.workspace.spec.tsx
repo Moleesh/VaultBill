@@ -91,7 +91,7 @@ describe('product UI', () => {
                 'Run saved views fast, or build a focused report with reusable filters and presets.',
             ),
         ).toBeVisible();
-        expect(screen.getByRole('button', { name: /Format Sales register/u })).toBeVisible();
+        expect(screen.getByRole('button', { name: /Report Sales register/u })).toBeVisible();
         await clickAction(/New document/u);
         expect(await screen.findByRole('heading', { name: 'Document builder' })).toBeVisible();
         await clickAction(/^Print$/u);

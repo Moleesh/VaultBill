@@ -128,8 +128,16 @@ export const useBuilderPageController = () => {
         ...actions,
         ...documentLibrary,
         publish: async () => {
-            await actions.publish();
+            const didPublish = await actions.publish();
+            if (!didPublish) return;
             await documentLibrary.refreshInventory();
+            setViewMode('library');
+            setSearchParams((current) => {
+                const next = new URLSearchParams(current);
+                next.delete('step');
+                next.delete('format');
+                return next;
+            });
         },
         openBuilder: () => {
             setViewMode('builder');

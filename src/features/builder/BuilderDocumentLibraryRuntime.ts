@@ -38,8 +38,12 @@ export const applyStoredBuilderPackage = (
     setters: BuilderDocumentLibrarySetters,
 ): boolean => {
     if (!stored) return false;
-    const parsedConfig = DocumentFormatConfigSchema.parse(stored.config) as DocumentFormatConfig;
-    setters.setConfig(parsedConfig);
+    const parsedConfig = DocumentFormatConfigSchema.safeParse(stored.config);
+    if (!parsedConfig.success) {
+        setters.setMessage('The selected document format is invalid and could not be loaded.');
+        return false;
+    }
+    setters.setConfig(parsedConfig.data);
     setters.setTemplateHtml(stored.templateHtml);
     setters.setSavedTemplates(
         normalizeSavedPrintTemplates(stored.savedTemplates ?? defaultSavedPrintTemplates()),

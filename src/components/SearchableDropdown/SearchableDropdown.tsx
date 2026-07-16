@@ -18,6 +18,7 @@ import {
 } from './SearchableDropdownStateSupport';
 import {
     createSearchableDropdownKeyDownHandler,
+    type DropdownMenuAlignment,
     type DropdownOption,
 } from './SearchableDropdownSupport';
 
@@ -26,6 +27,7 @@ type SearchableDropdownProps = {
     readonly hideLabel?: boolean;
     readonly invalid?: boolean;
     readonly label: string;
+    readonly menuAlignment?: DropdownMenuAlignment;
     readonly note?: ReactNode;
     readonly options: readonly DropdownOption[];
     readonly onChange: (value: string) => void;
@@ -42,6 +44,7 @@ export const SearchableDropdown: FC<SearchableDropdownProps> = ({
     invalid = false,
     label,
     loading = false,
+    menuAlignment = 'left',
     note,
     onChange,
     options,
@@ -63,6 +66,7 @@ export const SearchableDropdown: FC<SearchableDropdownProps> = ({
     };
 
     useSyncSearchableDropdownMenu({
+        alignment: menuAlignment,
         isOpen,
         menuRef,
         onClose: closeDropdown,

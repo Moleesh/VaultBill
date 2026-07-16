@@ -39,6 +39,8 @@ export const RecordsPageTop: FC<RecordsPageTopProps> = ({
                     onChange={onFormatChange}
                     options={formatOptions}
                     value={selectedFormatId}
+                    menuAlignment="right"
+                    wrapperClassName="records-format-dropdown"
                 />
             ) : null}
         </div>

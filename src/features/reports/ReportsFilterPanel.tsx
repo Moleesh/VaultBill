@@ -187,7 +187,7 @@ export const ReportsFilterPanel: FC<ReportsFilterPanelProps> = ({
                     <form.Field name="reportId">
                         {(field) => (
                             <SearchableDropdown
-                                label="Format"
+                                label="Report"
                                 onChange={(value) => {
                                     field.handleChange(value);
                                 }}
