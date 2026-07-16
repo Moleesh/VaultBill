@@ -106,10 +106,12 @@ export class DesktopRecordStore {
         const query = parseReportQuery(rawQuery);
         const customer = query.customer.trim().toLocaleLowerCase();
         const invoiceNumber = query.invoiceNumber.trim().toLocaleLowerCase();
+        const formatId = query.formatId?.trim();
         const reportFilters = query.reportFilters.filter((filter) => filter.value.trim());
         const reportSorts = query.sorts.length > 0 ? query.sorts : ['updatedAt:desc'];
         let records = this.list()
             .filter((record) => query.includeDraftsInReports || record.status !== 'Draft')
+            .filter((record) => !formatId || record.formatId === formatId)
             .filter((record) => query.status === 'All' || record.status === query.status)
             .filter(
                 (record) => !customer || record.customerName.toLocaleLowerCase().includes(customer),

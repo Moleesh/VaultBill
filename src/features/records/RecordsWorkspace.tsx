@@ -4,6 +4,7 @@ import type { FC, KeyboardEvent, RefObject } from 'react';
 
 import { ActionBar, type RecordActionState } from '../../components/ActionBar';
 import { ActionButton } from '../../components/ActionButton';
+import type { BuilderLayoutConfig } from '../builder/BuilderPageSupport';
 import { RecordsFormSection } from './RecordsFormSection';
 import type { ConfiguredFieldDefinition } from './RecordsPageSupport';
 import type { AppRecord, EditableRecord, RecordLineItem } from './RecordStoreContext';
@@ -15,6 +16,7 @@ type RecordsWorkspaceProps = {
     readonly configuredLineFields: readonly ConfiguredFieldDefinition[];
     readonly formRef: RefObject<HTMLDivElement | null>;
     readonly isReadOnly: boolean;
+    readonly layout: BuilderLayoutConfig;
     readonly notice: string;
     readonly onAction: (actionId: string) => void;
     readonly onAddLineItem: () => void;
@@ -46,6 +48,7 @@ export const RecordsWorkspace: FC<RecordsWorkspaceProps> = ({
     configuredLineFields,
     formRef,
     isReadOnly,
+    layout,
     notice,
     onAction,
     onAddLineItem,
@@ -82,6 +85,7 @@ export const RecordsWorkspace: FC<RecordsWorkspaceProps> = ({
                 configuredDocumentFields={configuredDocumentFields}
                 configuredLineFields={configuredLineFields}
                 isReadOnly={isReadOnly}
+                layout={layout}
                 onAddLineItem={onAddLineItem}
                 onRecordChange={onRecordChange}
                 onUpdateLineItem={onUpdateLineItem}

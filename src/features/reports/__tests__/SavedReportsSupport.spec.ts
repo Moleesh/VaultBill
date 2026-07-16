@@ -71,7 +71,7 @@ describe('SavedReportsSupport', () => {
             createSavedReportDraft({
                 ownerUserId: 'admin_1',
                 name: 'Outstanding invoices',
-                formatId: 'sales-register',
+                formatId: 'TaxInvoice',
                 displayFields: ['customerName', 'grandTotal'],
                 filters: [
                     {
@@ -122,6 +122,6 @@ describe('SavedReportsSupport', () => {
             'is-not',
             'one-of',
         ]);
-        expect(reportSummaryLabel(report)).toContain('Sales register');
+        expect(reportSummaryLabel(report)).toContain('GST Invoice');
     });
 });

@@ -76,7 +76,7 @@ describe('reports page', () => {
             </MemoryRouter>,
         );
 
-        expect(await screen.findByRole('heading', { name: 'Sales register' })).toBeVisible();
+        expect(await screen.findByRole('heading', { name: 'GST Invoice' })).toBeVisible();
         expect(screen.getByText('Reports workspace')).toBeVisible();
         expect(screen.getByRole('button', { name: 'Print report' })).toBeVisible();
     });
@@ -106,10 +106,10 @@ describe('reports page', () => {
             </MemoryRouter>,
         );
 
-        expect(await screen.findByRole('heading', { name: 'Sales register' })).toBeVisible();
+        expect(await screen.findByRole('heading', { name: 'GST Invoice' })).toBeVisible();
         fireEvent.click(screen.getByRole('button', { name: 'Saved report Choose saved report' }));
         fireEvent.click(
-            await screen.findByRole('option', { name: /Today's report.*Sales register/u }),
+            await screen.findByRole('option', { name: /Today's report.*GST Invoice/u }),
         );
 
         expect(screen.getByText("Active view: Today's report")).toBeVisible();
@@ -148,15 +148,15 @@ describe('reports page', () => {
             </MemoryRouter>,
         );
 
-        expect(await screen.findByRole('heading', { name: 'Sales register' })).toBeVisible();
+        expect(await screen.findByRole('heading', { name: 'GST Invoice' })).toBeVisible();
 
         fireEvent.click(screen.getByRole('button', { name: 'Saved report Choose saved report' }));
 
         expect(
-            await screen.findByRole('option', { name: /Today's report.*Sales register/u }),
+            await screen.findByRole('option', { name: /Today's report.*GST Invoice/u }),
         ).toBeVisible();
         expect(
-            screen.queryByRole('option', { name: /Today's report.*Tax summary/u }),
+            screen.queryByRole('option', { name: /Today's report.*Bill/u }),
         ).not.toBeInTheDocument();
     });
 
@@ -165,7 +165,7 @@ describe('reports page', () => {
             createSavedReportDraft({
                 ownerUserId: 'sysadmin_1',
                 name: 'Month end snapshot',
-                formatId: 'sales-register',
+                formatId: 'TaxInvoice',
                 displayFields: ['customerName', 'grandTotal'],
                 filters: [],
                 preset: 'All',
@@ -198,11 +198,13 @@ describe('reports page', () => {
             </MemoryRouter>,
         );
 
-        expect(await screen.findByRole('heading', { name: 'Sales register' })).toBeVisible();
+        expect(await screen.findByRole('heading', { name: 'GST Invoice' })).toBeVisible();
 
         fireEvent.click(screen.getByRole('button', { name: 'Saved report Choose saved report' }));
 
-        expect(screen.getByRole('button', { name: 'Edit Month end snapshot' })).toBeVisible();
+        expect(
+            await screen.findByRole('button', { name: 'Edit Month end snapshot' }),
+        ).toBeVisible();
         expect(screen.getByRole('button', { name: 'Delete Month end snapshot' })).toBeVisible();
 
         expect(screen.getByRole('button', { name: 'Edit Month end snapshot' })).toBeEnabled();

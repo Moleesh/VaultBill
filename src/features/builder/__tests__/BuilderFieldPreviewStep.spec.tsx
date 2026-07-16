@@ -7,12 +7,15 @@ import { builtInDefaultFormat } from '../../../db/startup/BuiltInDefaultFormat';
 import { BuilderFieldPreviewStep } from '../BuilderFieldPreviewStep';
 
 describe('BuilderFieldPreviewStep', () => {
-    it('uses the configured layout columns and gap in the field preview grid', () => {
+    it.each([
+        { columns: 3, gap: 28 },
+        { columns: 5, gap: 16 },
+    ])('uses $columns columns and $gap px gap in the field preview grid', ({ columns, gap }) => {
         render(
             <BuilderFieldPreviewStep
                 config={builtInDefaultFormat}
                 fields={builtInDefaultFormat.Fields}
-                layout={{ Columns: 3, Gap: 28 }}
+                layout={{ Columns: columns, Gap: gap }}
                 lineSection={undefined}
             />,
         );
@@ -21,11 +24,17 @@ describe('BuilderFieldPreviewStep', () => {
         const layoutGrid = grid.querySelector('.builder-preview-grid--read-only');
 
         expect(layoutGrid).not.toBeNull();
-        expect(layoutGrid).toHaveStyle({ gap: '28px' });
+        expect(layoutGrid).toHaveStyle({ gap: `${String(gap)}px` });
+        expect(layoutGrid).toHaveStyle({ '--builder-layout-columns': String(columns) });
+        expect(layoutGrid).toHaveStyle({ '--builder-layout-gap': `${String(gap)}px` });
         expect(screen.getByRole('heading', { name: 'Field preview' })).toBeVisible();
         expect(screen.queryByText('Document fields')).toBeNull();
         expect(
-            screen.getByText(/Flex columns 3 with 28px gap\. This view is read-only/u),
+            screen.getByText(
+                `Flex columns ${String(columns)} with ${String(
+                    gap,
+                )}px gap. This view is read-only and mirrors the entry form order.`,
+            ),
         ).toBeVisible();
     });
 });

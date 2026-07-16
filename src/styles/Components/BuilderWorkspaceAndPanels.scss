@@ -35,6 +35,28 @@
     box-shadow: var(--shadow-card);
 }
 
+.builder-workspace--single {
+    padding-bottom: calc(clamp(var(--space-4), 4vw, var(--space-6)) + 5.5rem);
+}
+
+.builder-wizard-actions {
+    position: sticky;
+    z-index: 15;
+    bottom: var(--space-4);
+    margin-inline: calc(clamp(var(--space-4), 4vw, var(--space-6)) * -1);
+    margin-bottom: calc(clamp(var(--space-4), 4vw, var(--space-6)) * -1);
+    padding: var(--space-3);
+    border: var(--line-width) solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: color-mix(in srgb, var(--color-surface) 88%, transparent);
+    box-shadow: var(--shadow-panel);
+    backdrop-filter: blur(18px);
+}
+
+.builder-wizard-actions > button {
+    min-height: 44px;
+}
+
 .builder-field-list {
     display: grid;
     gap: var(--space-3);

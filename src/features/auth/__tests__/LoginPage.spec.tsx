@@ -218,7 +218,7 @@ describe('login UI', () => {
         expect(await screen.findByRole('heading', { name: 'Dashboard' })).toBeVisible();
     });
 
-    it('keeps the last selected operator after desktop logout', async () => {
+    it('ignores the last selected operator after desktop logout', async () => {
         const secondAdminAccount = {
             ...adminAccount,
             userId: 'admin_2',
@@ -249,9 +249,10 @@ describe('login UI', () => {
 
         expect(
             await screen.findByRole('button', {
-                name: /Operator account Second Admin/i,
+                name: /Operator account Operations Admin/i,
             }),
         ).toBeVisible();
+        expect(window.localStorage.getItem('vaultbill.login.last-operator')).toBeNull();
         expect(screen.getByRole('button', { name: 'Log in' })).not.toBeDisabled();
     });
 
@@ -295,7 +296,7 @@ describe('login UI', () => {
         expect(window.sessionStorage.getItem('vaultbill.desktop.logout-fresh-login')).toBeNull();
     });
 
-    it('remembers the operator selected during successful login', async () => {
+    it('does not remember the operator selected during successful login', async () => {
         setDesktopBridge([adminAccount]);
 
         render(
@@ -316,12 +317,13 @@ describe('login UI', () => {
         await screen.findByRole('button', {
             name: /Operator account Operations Admin/i,
         });
+        await waitFor(() => {
+            expect(screen.getByRole('button', { name: 'Log in' })).not.toBeDisabled();
+        });
         fireEvent.click(screen.getByRole('button', { name: 'Log in' }));
 
         expect(await screen.findByRole('heading', { name: 'Dashboard' })).toBeVisible();
-        expect(window.localStorage.getItem('vaultbill.login.last-operator')).toBe(
-            adminAccount.userId,
-        );
+        expect(window.localStorage.getItem('vaultbill.login.last-operator')).toBeNull();
     });
 
     it('clears the desktop operator when logging out', async () => {

@@ -142,6 +142,10 @@
     margin-top: var(--space-5);
 }
 
+.records-layout-grid {
+    grid-template-columns: repeat(var(--records-layout-columns, 2), minmax(0, 1fr));
+}
+
 .form-grid label,
 .report-filters label,
 .help-search {

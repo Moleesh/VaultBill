@@ -15,7 +15,7 @@ import { SearchableDropdown } from '../../components/SearchableDropdown/Searchab
 import { ReportFieldValueControl } from './ReportsFilterPanelSupport';
 import { defaultDisplayFieldsForReport, reportDisplayFieldOptionsFor } from './ReportsPageColumns';
 import { createReportFilter } from './ReportsPageFilterSupport';
-import { reportFieldOptions, reportOptions } from './ReportsPageSupport';
+import { reportFieldOptions } from './ReportsPageSupport';
 import type { ReportFieldFilter } from './ReportsPageTypes';
 import { SavedReportDropdown } from './SavedReportDropdown';
 import {
@@ -29,6 +29,11 @@ import type { ReportsFilterFormApi } from './useReportsPageFilters';
 
 type ReportsFilterPanelProps = {
     readonly form: ReportsFilterFormApi;
+    readonly formatOptions: readonly {
+        readonly value: string;
+        readonly label: string;
+        readonly description?: string;
+    }[];
     readonly reportFilters: readonly ReportFieldFilter[];
     readonly canManageReport: (report: SavedReportDefinition) => boolean;
     readonly onUpdateFilter: (id: string, next: Partial<ReportFieldFilter>) => void;
@@ -80,6 +85,7 @@ const serializeSavedSorts = (sorts: readonly ReportSortRule[]): readonly string[
 
 export const ReportsFilterPanel: FC<ReportsFilterPanelProps> = ({
     form,
+    formatOptions,
     reportFilters,
     canManageReport,
     onUpdateFilter,
@@ -112,13 +118,13 @@ export const ReportsFilterPanel: FC<ReportsFilterPanelProps> = ({
     );
     const wizardFormatId =
         wizardMode === 'edit'
-            ? (selectedSavedReport?.formatId ?? form.state.values.reportId)
-            : form.state.values.reportId;
+            ? (selectedSavedReport?.formatId ?? form.state.values.formatId)
+            : form.state.values.formatId;
     const wizardDisplayFieldOptions = reportDisplayFieldOptionsFor(wizardFormatId);
     const promptFilters = reportFilters.filter((filter) => filter.promptAtRun);
     const activeFormatLabel =
-        reportOptions.find((option) => option.value === form.state.values.reportId)?.label ??
-        form.state.values.reportId;
+        formatOptions.find((option) => option.value === form.state.values.formatId)?.label ??
+        form.state.values.formatId;
     const selectedReportLabel = selectedSavedReport?.name ?? 'Custom filters';
     const openWizard = (mode: 'create' | 'edit', reportOverride?: SavedReportDefinition) => {
         const targetReport = reportOverride ?? selectedSavedReport;
@@ -129,9 +135,9 @@ export const ReportsFilterPanel: FC<ReportsFilterPanelProps> = ({
                 ? targetReport?.displayFields.length
                     ? targetReport.displayFields
                     : defaultDisplayFieldsForReport(
-                          targetReport?.formatId ?? form.state.values.reportId,
+                          targetReport?.formatId ?? form.state.values.formatId,
                       )
-                : defaultDisplayFieldsForReport(form.state.values.reportId),
+                : defaultDisplayFieldsForReport(form.state.values.formatId),
         );
         setWizardSorts(
             parseSavedSorts(
@@ -184,14 +190,14 @@ export const ReportsFilterPanel: FC<ReportsFilterPanelProps> = ({
             </div>
             <section className="data-panel">
                 <div className="report-filter-toolbar">
-                    <form.Field name="reportId">
+                    <form.Field name="formatId">
                         {(field) => (
                             <SearchableDropdown
-                                label="Report"
+                                label="Format"
                                 onChange={(value) => {
                                     field.handleChange(value);
                                 }}
-                                options={reportOptions.map((option) => ({ ...option }))}
+                                options={formatOptions.map((option) => ({ ...option }))}
                                 value={field.state.value}
                             />
                         )}
@@ -651,7 +657,7 @@ export const ReportsFilterPanel: FC<ReportsFilterPanelProps> = ({
                         onClick={() => {
                             onSaveReport({
                                 name: reportName.trim(),
-                                formatId: form.state.values.reportId,
+                                formatId: form.state.values.formatId,
                                 ...(wizardMode === 'edit'
                                     ? { reportId: selectedSavedReportId }
                                     : {}),

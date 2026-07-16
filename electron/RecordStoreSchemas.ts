@@ -70,7 +70,8 @@ export const StoredRecordSchema = EditableRecordSchema.extend({
 });
 
 const ReportQuerySchema = z.object({
-    reportId: z.enum(['sales-register', 'tax-summary', 'customer-ledger']),
+    reportId: z.string().min(1),
+    formatId: z.string().min(1).optional(),
     customer: z.string().default(''),
     invoiceNumber: z.string().default(''),
     reportFilters: z.array(ReportFieldFilterSchema).default([]),

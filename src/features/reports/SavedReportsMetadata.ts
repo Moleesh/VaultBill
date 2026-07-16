@@ -1,7 +1,7 @@
 /** @format */
 
+import { builtInDocumentFormatSummaries } from '../../constants/BuiltInDocumentFormats';
 import { defaultDisplayFieldsForReport, reportDisplayFieldOptionsFor } from './ReportsPageColumns';
-import { reportOptions } from './ReportsPageSupport';
 import type { ReportFieldFilter } from './ReportsPageTypes';
 
 export type SavedReportDefinition = {
@@ -44,7 +44,10 @@ export const defaultDisplayFields = defaultDisplayFieldsForReport('sales-registe
 
 export const defaultSorts = ['updatedAt:desc'] as const;
 
-const builtInFormats = ['sales-register', 'tax-summary', 'customer-ledger'] as const;
+const builtInFormats = builtInDocumentFormatSummaries.map((format) => ({
+    formatId: format.formatId,
+    formatName: format.formatName,
+}));
 
 const fieldKinds: Readonly<Record<string, ReportFieldKind>> = {
     customerName: 'string',
@@ -99,13 +102,13 @@ export const reportOperatorOptionsByKind: Readonly<
 
 /** Built-in report definitions seeded for every output format. */
 export const builtInSavedReports: readonly SavedReportDefinition[] = builtInFormats.flatMap(
-    (formatId) => [
+    (format) => [
         {
-            reportId: `builtin-${formatId}-today`,
+            reportId: `builtin-${format.formatId}-today`,
             ownerUserId: 'system',
             name: "Today's report",
-            formatId,
-            displayFields: defaultDisplayFieldsForReport(formatId),
+            formatId: format.formatId,
+            displayFields: defaultDisplayFieldsForReport(format.formatId),
             sorts: ['updatedAt:desc'],
             filters: [],
             preset: 'Today',
@@ -115,11 +118,11 @@ export const builtInSavedReports: readonly SavedReportDefinition[] = builtInForm
             updatedAt: 'system',
         },
         {
-            reportId: `builtin-${formatId}-this-month`,
+            reportId: `builtin-${format.formatId}-this-month`,
             ownerUserId: 'system',
             name: 'This month report',
-            formatId,
-            displayFields: defaultDisplayFieldsForReport(formatId),
+            formatId: format.formatId,
+            displayFields: defaultDisplayFieldsForReport(format.formatId),
             sorts: ['invoiceDate:desc'],
             filters: [],
             preset: 'ThisMonth',
@@ -166,7 +169,8 @@ export const normalizeReportFilters = (
 /** Summarizes a saved report for compact dropdown labels. */
 export const reportSummaryLabel = (report: SavedReportDefinition): string => {
     const formatLabel =
-        reportOptions.find((option) => option.value === report.formatId)?.label ?? report.formatId;
+        builtInFormats.find((format) => format.formatId === report.formatId)?.formatName ??
+        report.formatId;
     const fieldCount =
         report.displayFields.length || reportDisplayFieldOptionsFor(report.formatId).length;
     const filterCount = report.filters.length;

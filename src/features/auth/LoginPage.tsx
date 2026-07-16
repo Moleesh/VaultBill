@@ -110,7 +110,7 @@ export const LoginPage: FC<{ readonly onOpenSetupWizard?: () => void }> = ({
             const accountRole =
                 accounts.find((account) => account.userId === accountId)?.role ?? 'Admin';
             const nextPostLoginPath = getPostLoginPath(accountRole);
-            rememberLoginAccountId(accountId);
+            rememberLoginAccountId();
             clearDesktopLogoutFreshLogin();
             setIsLogoutFreshLogin(false);
             setPendingPostLoginPath(nextPostLoginPath);

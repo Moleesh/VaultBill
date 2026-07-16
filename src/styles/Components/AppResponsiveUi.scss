@@ -4,6 +4,7 @@
 
 @include respond-to('phone') {
     .form-grid,
+    .records-layout-grid,
     .report-filters,
     .login-card {
         grid-template-columns: 1fr;

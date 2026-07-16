@@ -37,7 +37,7 @@ export const BuilderPageFooter: FC<BuilderPageFooterProps> = ({
                 {message}
             </p>
         ) : null}
-        <footer className="wizard-actions">
+        <footer className="wizard-actions builder-wizard-actions">
             <ActionButton disabled={stepIndex === 0} onClick={onBack}>
                 Back
             </ActionButton>

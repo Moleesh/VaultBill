@@ -15,6 +15,7 @@ import type { ReportFieldFilter } from './ReportsPageTypes';
 
 type ReportQueryState = Readonly<{
     reportId: string;
+    formatId: string;
     reportFilters: readonly ReportFieldFilter[];
     fromDate: string;
     toDate: string;

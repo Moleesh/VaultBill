@@ -1,12 +1,13 @@
 /** @format */
 
-import type { FC } from 'react';
+import type { CSSProperties, FC } from 'react';
 import { useEffect } from 'react';
 
 import { useForm } from '@tanstack/react-form';
 
 import { AppDatePicker } from '../../components/AppDatePicker/AppDatePicker';
 import { FormField } from '../../components/FormFields';
+import type { BuilderLayoutConfig } from '../builder/BuilderPageSupport';
 import { RecordsFieldControl } from './RecordsFieldControl';
 import { RecordsLineItemsSection } from './RecordsLineItemsSection';
 import type { ConfiguredFieldDefinition } from './RecordsPageSupport';
@@ -24,6 +25,7 @@ type RecordsFormSectionProps = {
     readonly configuredDocumentFields: readonly ConfiguredFieldDefinition[];
     readonly configuredLineFields: readonly ConfiguredFieldDefinition[];
     readonly isReadOnly: boolean;
+    readonly layout: BuilderLayoutConfig;
     readonly onAddLineItem: () => void;
     readonly onRecordChange: (nextRecord: EditableRecord) => void;
     readonly onUpdateLineItem: (rowId: string, changes: Partial<RecordLineItem>) => void;
@@ -42,6 +44,7 @@ export const RecordsFormSection: FC<RecordsFormSectionProps> = ({
     configuredDocumentFields,
     configuredLineFields,
     isReadOnly,
+    layout,
     onAddLineItem,
     onRecordChange,
     onUpdateLineItem,
@@ -49,6 +52,8 @@ export const RecordsFormSection: FC<RecordsFormSectionProps> = ({
     recordTotals,
     selectedStoredRecord,
 }) => {
+    const columns = Math.max(1, Math.min(5, layout.Columns));
+    const gap = Math.max(0, layout.Gap);
     const form = useForm({
         defaultValues: {
             billingAddress: record.billingAddress,
@@ -84,7 +89,15 @@ export const RecordsFormSection: FC<RecordsFormSectionProps> = ({
                     <strong>{selectedStoredRecord.documentNumber}</strong>
                 </div>
             ) : null}
-            <div className="form-grid">
+            <div
+                className="form-grid records-layout-grid"
+                style={
+                    {
+                        gap: `${String(gap)}px`,
+                        '--records-layout-columns': String(columns),
+                    } as CSSProperties
+                }
+            >
                 <form.Field name="invoiceDate">
                     {(field) => (
                         <AppDatePicker
@@ -160,7 +173,6 @@ export const RecordsFormSection: FC<RecordsFormSectionProps> = ({
                             }}
                             placeholder="Address shown on the document"
                             readOnly={isReadOnly}
-                            wrapperClassName="span-2"
                             value={field.state.value}
                         />
                     )}

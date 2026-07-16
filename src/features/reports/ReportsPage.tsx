@@ -34,6 +34,7 @@ export const ReportsPage: FC = () => {
         <div className="page-stack reports-page">
             <ReportsFilterPanel
                 customers={controller.customers}
+                formatOptions={controller.formatOptions}
                 form={controller.form}
                 canManageReport={controller.canManageReport}
                 isDynamicPromptOpen={controller.isDynamicPromptOpen}

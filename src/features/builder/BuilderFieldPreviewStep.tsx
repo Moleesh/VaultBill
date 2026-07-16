@@ -43,6 +43,7 @@ export const BuilderFieldPreviewStep: FC<BuilderFieldPreviewStepProps> = ({
                         {
                             gap: `${String(Math.max(0, layout.Gap))}px`,
                             '--builder-layout-columns': String(columns),
+                            '--builder-layout-gap': `${String(Math.max(0, layout.Gap))}px`,
                         } as CSSProperties
                     }
                 >

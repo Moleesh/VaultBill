@@ -31,6 +31,7 @@ import {
 } from './SavedReportsSupport';
 
 type ReportsFilterFormValues = {
+    readonly formatId: string;
     readonly fromDate: string;
     readonly preset: string;
     readonly reportField: string;
@@ -43,6 +44,7 @@ type ReportsFilterFormValues = {
 const useReportsFilterForm = () =>
     useForm({
         defaultValues: {
+            formatId: 'TaxInvoice',
             fromDate: '',
             preset: 'All',
             reportField: defaultReportField,
@@ -57,6 +59,11 @@ export type ReportsFilterFormApi = ReturnType<typeof useReportsFilterForm>;
 export const useReportsPageFilters = (
     includeDraftsInReports: boolean,
     operator: { readonly role: Role; readonly userId: string } | undefined,
+    formatOptions: readonly {
+        readonly value: string;
+        readonly label: string;
+        readonly description?: string;
+    }[],
 ) => {
     const { records } = useRecordStore();
     const [additionalFilters, setAdditionalFilters] = useState<readonly ReportFieldFilter[]>([]);
@@ -74,11 +81,14 @@ export const useReportsPageFilters = (
     const [isDynamicPromptOpen, setIsDynamicPromptOpen] = useState(false);
     const [visibleCount, setVisibleCount] = useState(pageSize);
     const form = useReportsFilterForm();
-    const { fromDate, preset, reportField, reportFieldValue, reportId, status, toDate } =
+    const { formatId, fromDate, preset, reportField, reportFieldValue, reportId, status, toDate } =
         form.state.values;
+    useEffect(() => {
+        setSavedReports(readSavedReports());
+    }, []);
     const filteredSavedReports = useMemo(
-        () => savedReports.filter((report) => report.formatId === reportId),
-        [reportId, savedReports],
+        () => savedReports.filter((report) => report.formatId === formatId),
+        [formatId, savedReports],
     );
     const reportFilters = useMemo(
         () => [
@@ -91,6 +101,7 @@ export const useReportsPageFilters = (
     const browserMatchingRecords = useMemo(() => {
         let result = records
             .filter((record) => includeDraftsInReports || record.status !== 'Draft')
+            .filter((record) => !formatId || record.formatId === formatId)
             .filter((record) => status === 'All' || record.status === status)
             .filter((record) => !fromDate || record.invoiceDate >= fromDate)
             .filter((record) => !toDate || record.invoiceDate <= toDate)
@@ -101,6 +112,7 @@ export const useReportsPageFilters = (
     }, [
         fromDate,
         includeDraftsInReports,
+        formatId,
         preset,
         records,
         reportFilters,
@@ -111,6 +123,7 @@ export const useReportsPageFilters = (
     const query = useMemo(
         () => ({
             reportId,
+            formatId,
             reportFilters: reportFilters.filter(
                 (filter) =>
                     filter.field &&
@@ -127,6 +140,7 @@ export const useReportsPageFilters = (
         }),
         [
             fromDate,
+            formatId,
             includeDraftsInReports,
             preset,
             reportFilters,
@@ -142,7 +156,7 @@ export const useReportsPageFilters = (
     const applySavedReport = (report: SavedReportDefinition) => {
         const normalizedFilters = normalizeReportFilters(report.filters);
         const primaryFilter = normalizedFilters[0];
-        form.setFieldValue('reportId', report.formatId);
+        form.setFieldValue('formatId', report.formatId);
         form.setFieldValue('status', report.status);
         form.setFieldValue('preset', report.preset);
         form.setFieldValue('reportField', primaryFilter?.field ?? defaultReportField);
@@ -175,6 +189,18 @@ export const useReportsPageFilters = (
         setIsDynamicPromptOpen(normalizedFilters.some((filter) => filter.promptAtRun));
     };
     useEffect(() => {
+        if (formatOptions.length === 0) return;
+        if (formatOptions.some((format) => format.value === formatId)) return;
+        const fallbackFormat =
+            formatOptions.find((format) => format.description === 'Default document format') ??
+            formatOptions[0];
+        if (!fallbackFormat) return;
+        form.setFieldValue('formatId', fallbackFormat.value);
+        setSelectedDisplayFields(defaultDisplayFieldsForReport(fallbackFormat.value));
+        setSelectedSavedReportId('');
+        setIsDynamicPromptOpen(false);
+    }, [formatId, formatOptions, form]);
+    useEffect(() => {
         if (!operator || selectedSavedReportId) return;
         const defaultReportId = readDefaultSavedReportId(operator.userId);
         if (!defaultReportId) return;
@@ -190,13 +216,14 @@ export const useReportsPageFilters = (
         const selectedReport = savedReports.find(
             (report) => report.reportId === selectedSavedReportId,
         );
-        if (!selectedReport || selectedReport.formatId === reportId) return;
+        if (!selectedReport || selectedReport.formatId === formatId) return;
         setSelectedSavedReportId('');
-        setSelectedDisplayFields(defaultDisplayFieldsForReport(reportId));
+        setSelectedDisplayFields(defaultDisplayFieldsForReport(formatId));
         setIsDynamicPromptOpen(false);
-    }, [reportId, savedReports, selectedSavedReportId]);
+    }, [formatId, savedReports, selectedSavedReportId]);
     const reset = () => {
         form.reset({
+            formatId,
             fromDate: '',
             preset: 'All',
             reportField: defaultReportField,
@@ -208,7 +235,7 @@ export const useReportsPageFilters = (
         setAdditionalFilters([]);
         setPrimaryFilterDetails({});
         setSelectedReportSorts(defaultReportSorts);
-        setSelectedDisplayFields(defaultDisplayFieldsForReport(reportId));
+        setSelectedDisplayFields(defaultDisplayFieldsForReport(formatId));
         setSelectedSavedReportId('');
         setIsDynamicPromptOpen(false);
     };
@@ -277,6 +304,7 @@ export const useReportsPageFilters = (
         browserMatchingRecords,
         customers,
         form,
+        formatId,
         fromDate,
         query,
         reportId,
@@ -295,6 +323,9 @@ export const useReportsPageFilters = (
         setReportFieldValue,
         setReportId: (value: string) => {
             form.setFieldValue('reportId', value);
+        },
+        setFormatId: (value: string) => {
+            form.setFieldValue('formatId', value);
             if (!selectedSavedReportId) {
                 setSelectedDisplayFields(defaultDisplayFieldsForReport(value));
             }

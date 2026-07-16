@@ -2,6 +2,7 @@
 
 import type { FC } from 'react';
 
+import { defaultBuilderLayout } from '../builder/BuilderPageSupport';
 import { RecordsDialogs } from './RecordsDialogs';
 import { createEmptyRecord, emptyLineItem } from './RecordsPageSupport';
 import { RecordsPageTop } from './RecordsPageTop';
@@ -57,6 +58,7 @@ export const RecordsPage: FC = () => {
                     configuredLineFields={controller.configuredLineFields}
                     formRef={controller.formRef}
                     isReadOnly={controller.isReadOnly}
+                    layout={controller.activeConfig.Layout ?? defaultBuilderLayout}
                     notice={controller.notice}
                     onAction={controller.runAction}
                     onAddLineItem={() => {

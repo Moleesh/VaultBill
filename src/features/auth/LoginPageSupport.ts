@@ -25,7 +25,7 @@ export const buildLoginAccountOptions = (
 export const getLoginAccountId = (accounts: readonly OperatorAccount[], includeSysAdmin = false) =>
     accounts.find((account) => isSelectableLoginAccount(account, includeSysAdmin))?.userId ?? '';
 
-/** Returns the last selected operator when it is still available. */
+/** Returns the default operator and clears the legacy remembered-operator key. */
 export const getLastLoginAccountId = (
     accounts: readonly OperatorAccount[],
     includeSysAdmin = false,
@@ -33,11 +33,7 @@ export const getLastLoginAccountId = (
     const fallbackAccountId = getLoginAccountId(accounts, includeSysAdmin);
 
     try {
-        const storedAccountId = window.localStorage.getItem(lastLoginAccountStorageKey);
-        const storedAccount = accounts.find((account) => account.userId === storedAccountId);
-        if (storedAccount && isSelectableLoginAccount(storedAccount, includeSysAdmin)) {
-            return storedAccount.userId;
-        }
+        window.localStorage.removeItem(lastLoginAccountStorageKey);
     } catch {
         return fallbackAccountId;
     }
@@ -45,13 +41,9 @@ export const getLastLoginAccountId = (
     return fallbackAccountId;
 };
 
-/** Remembers the operator choice without restoring a logged-in desktop session. */
-export const rememberLoginAccountId = (userId: string) => {
+/** Clears legacy operator-choice persistence so every user login starts fresh. */
+export const rememberLoginAccountId = () => {
     try {
-        if (userId.trim().length > 0) {
-            window.localStorage.setItem(lastLoginAccountStorageKey, userId);
-            return;
-        }
         window.localStorage.removeItem(lastLoginAccountStorageKey);
     } catch {
         // Ignore storage failures so sign-in remains available in restricted runtimes.

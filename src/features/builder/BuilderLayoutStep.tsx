@@ -128,8 +128,8 @@ export const BuilderLayoutStep: FC<BuilderLayoutStepProps> = ({
                             key={`${field.label}-${String(cellIndex)}`}
                             className="layout-preview-flow"
                             style={{
-                                flex: `1 1 ${cellBasis}`,
-                                minWidth: columns > 1 ? '12rem' : '100%',
+                                flex: `0 0 ${cellBasis}`,
+                                minWidth: '0',
                                 minHeight: '7rem',
                             }}
                         >

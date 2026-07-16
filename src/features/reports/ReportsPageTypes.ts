@@ -44,6 +44,11 @@ export type ReportsPageController = {
     readonly error: string;
     readonly exportAll: () => void;
     readonly form: ReportsFilterFormApi;
+    readonly formatOptions: readonly {
+        readonly value: string;
+        readonly label: string;
+        readonly description?: string;
+    }[];
     readonly fromDate: string;
     readonly canManageReport: (report: SavedReportDefinition) => boolean;
     readonly reportFilters: readonly ReportFieldFilter[];
