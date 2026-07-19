@@ -97,4 +97,64 @@ describe('BuilderPagePreviewSupport', () => {
             updateOptionalNumber({ FieldId: 'Price' } as never, 'Precision', Number.NaN),
         ).toEqual({ FieldId: 'Price', Precision: undefined });
     });
+
+    it('resolves built-in print aliases and clears unknown placeholders', () => {
+        const config = cloneDefault();
+        config.Fields = [
+            {
+                FieldId: 'TaxAmount',
+                Label: 'Tax Amount',
+                Type: 'Money',
+                SampleValue: '441.00',
+            } as never,
+            {
+                FieldId: 'GrandTotal',
+                Label: 'Grand Total',
+                Type: 'Money',
+                SampleValue: '2891.00',
+            } as never,
+        ];
+        const lineSection = config.LineItemSections[0];
+        if (!lineSection) throw new Error('Default builder seed should include one line section.');
+        config.LineItemSections = [
+            {
+                ...lineSection,
+                Fields: [
+                    {
+                        FieldId: 'LineAmount',
+                        Label: 'Line Amount',
+                        Type: 'Money',
+                        SampleValue: '2500.00',
+                    } as never,
+                ],
+            },
+        ];
+
+        const html = renderBuilderPreview(
+            '<main>{{ Items.0.Amount }} {{Record.TaxTotal}} {{Record.GrandTotal}} {{Record.Unknown}}</main>',
+            config,
+            [],
+            defaultBuilderPrintSettings,
+        );
+
+        expect(html).toContain('2500.00');
+        expect(html).toContain('441.00');
+        expect(html).toContain('2891.00');
+        expect(html).not.toContain('{{Record.Unknown}}');
+    });
+
+    it('keeps screen preview overflow on the themed wrapper, not the iframe document', () => {
+        const html = renderBuilderPreview('<main>{{FormatName}}</main>', cloneDefault(), [], {
+            ...defaultBuilderPrintSettings,
+            PageWidthCm: 29.7,
+            PageHeightCm: 21,
+            Orientation: 'Landscape',
+        });
+
+        expect(html).toContain('size: 29.7cm 21cm');
+        expect(html).toContain('@media screen');
+        expect(html).toContain('overflow: hidden');
+        expect(html).toContain('@media print');
+        expect(html).toContain('padding: 0 0 18mm');
+    });
 });

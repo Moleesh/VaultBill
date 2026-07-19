@@ -5,7 +5,6 @@ import type { FC } from 'react';
 import { ActionButton } from '../../components/ActionButton';
 import { FormField } from '../../components/FormFields';
 import { BuilderFieldEditor } from './BuilderFieldEditor';
-import { BuilderLineItemsPreview } from './BuilderLineItemsStepSupport';
 import type { FieldConfig } from './BuilderPageSupport';
 
 type LineSection = {
@@ -96,7 +95,6 @@ export const BuilderLineItemsStep: FC<BuilderLineItemsStepProps> = ({
                     referencedFieldIds={referencedFieldIds}
                 />
             ) : null}
-            <BuilderLineItemsPreview enabled={enabled} fields={lineSection.Fields} />
         </>
     );
 };

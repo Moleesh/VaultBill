@@ -12,6 +12,9 @@ export const builtInDefaultFormat: DocumentFormatConfig = {
     },
     Print: {
         PaperSize: 'A4',
+        Orientation: 'Portrait',
+        PageWidthCm: 21,
+        PageHeightCm: 29.7,
         MarginPreset: 'Normal',
         BottomSpacingMm: 18,
     },

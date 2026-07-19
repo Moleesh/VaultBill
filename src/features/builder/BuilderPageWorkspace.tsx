@@ -8,7 +8,8 @@ import { BuilderFieldPreviewStep } from './BuilderFieldPreviewStep';
 import { BuilderPageDrawer } from './BuilderPageDrawer';
 import { BuilderPageHeader } from './BuilderPageHeader';
 import { BuilderPageStepContent } from './BuilderPageStepContent';
-import { defaultBuilderLayout, defaultBuilderPrintSettings } from './BuilderPageSupport';
+import { defaultBuilderLayout, normalizePrintSettings } from './BuilderPageSupport';
+import { BuilderPrintPreviewStep } from './BuilderPrintPreviewStep';
 
 import type { BuilderPageController } from './useBuilderPageController';
 
@@ -16,9 +17,9 @@ import type { BuilderPageController } from './useBuilderPageController';
 export const BuilderPageWorkspace: FC<{ readonly controller: BuilderPageController }> = ({
     controller,
 }) => {
-    const { lineSection, referencedFieldIds } = controller;
+    const { lineSection, printPreviewPackage, referencedFieldIds } = controller;
     const layout = controller.config.Layout ?? defaultBuilderLayout;
-    const printSettings = controller.config.Print ?? defaultBuilderPrintSettings;
+    const printSettings = normalizePrintSettings(controller.config.Print);
 
     return (
         <div className="page-stack builder-page">
@@ -37,7 +38,7 @@ export const BuilderPageWorkspace: FC<{ readonly controller: BuilderPageControll
                         void controller.openFieldPreview(formatId);
                     }}
                     onOpenPrintPreview={(formatId) => {
-                        void controller.openDocumentAtStep(formatId, 7);
+                        void controller.openPrintPreview(formatId);
                     }}
                     onReorderDocuments={controller.reorderDocuments}
                     onSetDefaultDocument={controller.setDefaultDocument}
@@ -83,6 +84,34 @@ export const BuilderPageWorkspace: FC<{ readonly controller: BuilderPageControll
                                 controller.fieldPreviewPackage.config.Layout ?? defaultBuilderLayout
                             }
                             lineSection={controller.fieldPreviewPackage.config.LineItemSections[0]}
+                        />
+                    </div>
+                ) : null}
+            </AppModal>
+            <AppModal
+                className="builder-field-preview-modal-frame"
+                isOpen={Boolean(printPreviewPackage)}
+                onClose={controller.closePrintPreview}
+                showScrollProgress
+                title="Print preview"
+            >
+                {printPreviewPackage ? (
+                    <div className="builder-field-preview-modal">
+                        <BuilderPrintPreviewStep
+                            assets={printPreviewPackage.assets}
+                            config={printPreviewPackage.config}
+                            onPrintSettingsChange={(nextPrint) => {
+                                controller.setPrintPreviewPackage({
+                                    ...printPreviewPackage,
+                                    config: {
+                                        ...printPreviewPackage.config,
+                                        Print: nextPrint,
+                                    },
+                                });
+                            }}
+                            printSettings={normalizePrintSettings(printPreviewPackage.config.Print)}
+                            templateHtml={printPreviewPackage.templateHtml}
+                            validation={[]}
                         />
                     </div>
                 ) : null}

@@ -8,7 +8,12 @@ import { BuilderFieldsStep } from './BuilderFieldsStep';
 import { BuilderFormatStep } from './BuilderFormatStep';
 import { BuilderLayoutStep } from './BuilderLayoutStep';
 import { BuilderLineItemsStep } from './BuilderLineItemsStep';
-import { newField, type BuilderLayoutConfig, type BuilderPrintConfig } from './BuilderPageSupport';
+import {
+    newField,
+    newSummaryField,
+    type BuilderLayoutConfig,
+    type BuilderPrintConfig,
+} from './BuilderPageSupport';
 import { BuilderPrintPreviewStep } from './BuilderPrintPreviewStep';
 import { BuilderPrintStep } from './BuilderPrintStep';
 import { BuilderSummaryStep } from './BuilderSummaryStep';
@@ -115,6 +120,14 @@ export const BuilderPageStepSections: FC<BuilderPageStepSectionsProps> = ({
         {controller.activeStep === 'Summary' ? (
             <BuilderSummaryStep
                 fields={controller.config.Fields}
+                onAdd={() => {
+                    const fields = [
+                        ...controller.config.Fields,
+                        newSummaryField(controller.config.Fields),
+                    ];
+                    controller.updateFields('document', fields);
+                    controller.setEditing({ kind: 'document', index: fields.length - 1 });
+                }}
                 onChange={(fields) => {
                     controller.updateFields('document', fields);
                 }}

@@ -174,6 +174,9 @@ export const BuilderLayoutSchema = z
 export const BuilderPrintSettingsSchema = z
     .object({
         PaperSize: z.enum(['A4', 'Letter', 'Thermal']),
+        Orientation: z.enum(['Portrait', 'Landscape']),
+        PageWidthCm: z.number().positive().max(120),
+        PageHeightCm: z.number().positive().max(120),
         MarginPreset: z.enum(['Normal', 'Compact', 'Wide']),
         BottomSpacingMm: z.number().int().min(0).max(60),
     })

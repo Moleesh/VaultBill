@@ -1,6 +1,7 @@
 /** @format */
 
 import type { FC } from 'react';
+import type { CSSProperties } from 'react';
 
 import { HorizontalProgress } from '../../components/HorizontalProgress/HorizontalProgress';
 import { previewValue } from './BuilderPagePreviewSupport';
@@ -25,7 +26,11 @@ export const BuilderLineItemPreview: FC<BuilderLineItemPreviewProps> = ({
     lineItemColumns,
     lineItemDetails,
 }) => {
+    const tableWidth = `${String(Math.max(44, lineItemColumns.length * 9))}rem`;
     const gridTemplateColumns = `repeat(${String(lineItemColumns.length || 1)}, minmax(8rem, 1fr))`;
+    const rowBlockStyle = {
+        minWidth: tableWidth,
+    } as CSSProperties;
 
     return (
         <>
@@ -53,7 +58,11 @@ export const BuilderLineItemPreview: FC<BuilderLineItemPreviewProps> = ({
                         ))}
                     </div>
                     {['Sample row 1', 'Sample row 2'].map((rowLabel, rowIndex) => (
-                        <div className="builder-preview-row-block" key={rowLabel}>
+                        <div
+                            className="builder-preview-row-block"
+                            key={rowLabel}
+                            style={rowBlockStyle}
+                        >
                             <div
                                 className="builder-preview-table-row builder-preview-table-row--body"
                                 style={{ gridTemplateColumns }}
@@ -66,6 +75,9 @@ export const BuilderLineItemPreview: FC<BuilderLineItemPreviewProps> = ({
                             </div>
                             {lineItemDetails.length > 0 ? (
                                 <div className="builder-preview-line-details">
+                                    <span className="builder-preview-line-details-label">
+                                        Sub fields
+                                    </span>
                                     {lineItemDetails.map((field) => (
                                         <div key={`${field.FieldId}-${String(rowIndex)}-detail`}>
                                             <span>{field.Label}</span>

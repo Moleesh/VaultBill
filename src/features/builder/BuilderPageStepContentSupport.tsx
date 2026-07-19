@@ -33,13 +33,15 @@ export const BuilderPageStepContentOutlet: FC<BuilderPageStepContentProps> = ({
             </div>
             <p>{helperFor(controller.activeStep)}</p>
         </header>
-        <BuilderPageStepSections
-            controller={controller}
-            layout={layout}
-            lineSection={lineSection}
-            printSettings={printSettings}
-            referencedFieldIds={referencedFieldIds}
-        />
+        <div className="builder-step-sections">
+            <BuilderPageStepSections
+                controller={controller}
+                layout={layout}
+                lineSection={lineSection}
+                printSettings={printSettings}
+                referencedFieldIds={referencedFieldIds}
+            />
+        </div>
         <BuilderPageFooter
             importWarnings={controller.importWarnings}
             message={controller.message}

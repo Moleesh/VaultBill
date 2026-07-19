@@ -26,7 +26,7 @@ import { renderBuilderPreview } from './BuilderPagePreviewSupport';
 import {
     base64ByteLength,
     builtInSampleAsset,
-    defaultBuilderPrintSettings,
+    normalizePrintSettings,
     steps,
     type AssetSummary,
     type SavedPrintTemplate,
@@ -52,9 +52,12 @@ type BuilderDocumentLibraryArgs = {
     readonly templateHtml: string;
 };
 
-type BuilderFieldPreviewPackage = Omit<StoredBuilderPackage, 'config'> & {
+type BuilderFieldPreviewPackage = Omit<StoredBuilderPackage, 'assets' | 'config'> & {
+    readonly assets: readonly AssetSummary[];
     readonly config: DocumentFormatConfig;
 };
+
+type BuilderPrintPreviewPackage = BuilderFieldPreviewPackage;
 
 /** Loads the builder document inventory and switchable draft package. */
 export const useBuilderDocumentLibrary = ({
@@ -75,6 +78,7 @@ export const useBuilderDocumentLibrary = ({
     const runtimeScope = getRuntimeQueryScope(capabilities);
     const [searchParams, setSearchParams] = useSearchParams();
     const [fieldPreviewPackage, setFieldPreviewPackage] = useState<BuilderFieldPreviewPackage>();
+    const [printPreviewPackage, setPrintPreviewPackage] = useState<BuilderPrintPreviewPackage>();
     const requestedFormatId = searchParams.get('format') ?? undefined;
     const inventoryQuery = useQuery({
         queryKey: queryKeys.builderInventory(runtimeScope),
@@ -630,7 +634,7 @@ export const useBuilderDocumentLibrary = ({
                 sourcePackage.templateHtml,
                 sourcePackage.config as DocumentFormatConfig,
                 normalizeLoadedAssets(sourcePackage),
-                (sourcePackage.config as DocumentFormatConfig).Print ?? defaultBuilderPrintSettings,
+                normalizePrintSettings((sourcePackage.config as DocumentFormatConfig).Print),
             );
             const iframe = document.createElement('iframe');
             iframe.style.position = 'fixed';
@@ -661,11 +665,33 @@ export const useBuilderDocumentLibrary = ({
             }
             setFieldPreviewPackage({
                 ...sourcePackage,
+                assets: normalizeLoadedAssets(sourcePackage),
                 config: sourcePackage.config as DocumentFormatConfig,
             });
             setMessage('');
         },
-        [fetchDocumentPackage, setMessage],
+        [fetchDocumentPackage, normalizeLoadedAssets, setMessage],
+    );
+
+    const openPrintPreview = useCallback(
+        async (formatId: string) => {
+            const sourcePackage = await fetchDocumentPackage(formatId);
+            if (!sourcePackage) {
+                setMessage('The selected print preview could not be loaded.');
+                return;
+            }
+            const sourceConfig = sourcePackage.config as DocumentFormatConfig;
+            setPrintPreviewPackage({
+                ...sourcePackage,
+                assets: normalizeLoadedAssets(sourcePackage),
+                config: {
+                    ...sourceConfig,
+                    Print: normalizePrintSettings(sourceConfig.Print),
+                },
+            });
+            setMessage('');
+        },
+        [fetchDocumentPackage, normalizeLoadedAssets, setMessage],
     );
 
     const deleteDocument = useCallback(
@@ -716,12 +742,18 @@ export const useBuilderDocumentLibrary = ({
         duplicateDocument,
         duplicateCurrentDocument,
         fieldPreviewPackage,
+        printPreviewPackage,
         inventory,
         loadDocument,
         closeFieldPreview: () => {
             setFieldPreviewPackage(undefined);
         },
+        closePrintPreview: () => {
+            setPrintPreviewPackage(undefined);
+        },
         openFieldPreview,
+        openPrintPreview,
+        setPrintPreviewPackage,
         openDocumentAtStep,
         refreshInventory,
         reorderDocuments,

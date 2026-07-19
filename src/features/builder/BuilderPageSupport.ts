@@ -45,6 +45,9 @@ export type BuilderLayoutConfig = {
 /** Printable page settings surfaced during the print step. */
 export type BuilderPrintConfig = {
     readonly PaperSize: 'A4' | 'Letter' | 'Thermal';
+    readonly Orientation: 'Portrait' | 'Landscape';
+    readonly PageWidthCm: number;
+    readonly PageHeightCm: number;
     readonly MarginPreset: 'Normal' | 'Compact' | 'Wide';
     readonly BottomSpacingMm: number;
 };
@@ -242,6 +245,25 @@ export const newField = (index: number): FieldConfig => ({
     Visible: true,
 });
 
+/** Creates a calculated field ready to appear in the summary totals area. */
+export const newSummaryField = (fields: readonly FieldConfig[]): FieldConfig => {
+    let nextNumber = fields.filter((field) => /^SummaryTotal\d+$/u.test(field.FieldId)).length + 1;
+    while (fields.some((field) => field.FieldId === `SummaryTotal${String(nextNumber)}`)) {
+        nextNumber += 1;
+    }
+
+    return {
+        ...newField(fields.length),
+        FieldId: `SummaryTotal${String(nextNumber)}`,
+        Label: `Summary total ${String(nextNumber)}`,
+        Type: 'Money',
+        Calculated: true,
+        Formula: '0',
+        DisplayPlacement: 'Summary',
+        Visible: true,
+    };
+};
+
 /** Moves one item inside a readonly array and returns a reordered copy. */
 export const move = <T>(items: readonly T[], from: number, to: number): readonly T[] => {
     const next = [...items];
@@ -311,8 +333,52 @@ export const defaultBuilderLayout: BuilderLayoutConfig = {
 /** Default print settings shown before a format customizes paper output. */
 export const defaultBuilderPrintSettings: BuilderPrintConfig = {
     PaperSize: 'A4',
+    Orientation: 'Portrait',
+    PageWidthCm: 21,
+    PageHeightCm: 29.7,
     MarginPreset: 'Normal',
     BottomSpacingMm: 18,
+};
+
+const paperDimensionsCm: Readonly<
+    Record<BuilderPrintConfig['PaperSize'], readonly [number, number]>
+> = {
+    A4: [21, 29.7],
+    Letter: [21.6, 27.9],
+    Thermal: [8, 42],
+};
+
+/** Returns the page dimensions for the selected paper and orientation. */
+export const dimensionsForPaper = (
+    paperSize: BuilderPrintConfig['PaperSize'],
+    orientation: BuilderPrintConfig['Orientation'],
+): Pick<BuilderPrintConfig, 'PageWidthCm' | 'PageHeightCm'> => {
+    const [portraitWidth, portraitHeight] = paperDimensionsCm[paperSize];
+    const [width, height] =
+        orientation === 'Landscape'
+            ? [portraitHeight, portraitWidth]
+            : [portraitWidth, portraitHeight];
+
+    return {
+        PageWidthCm: width,
+        PageHeightCm: height,
+    };
+};
+
+/** Merges legacy print config with current defaults. */
+export const normalizePrintSettings = (
+    printSettings?: Partial<BuilderPrintConfig>,
+): BuilderPrintConfig => {
+    const dimensions = dimensionsForPaper(
+        printSettings?.PaperSize ?? defaultBuilderPrintSettings.PaperSize,
+        printSettings?.Orientation ?? defaultBuilderPrintSettings.Orientation,
+    );
+
+    return {
+        ...defaultBuilderPrintSettings,
+        ...dimensions,
+        ...printSettings,
+    };
 };
 
 /** Keeps builder column counts inside the supported layout range. */

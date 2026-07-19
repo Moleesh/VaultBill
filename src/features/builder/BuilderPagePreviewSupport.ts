@@ -3,17 +3,72 @@
 import type { DocumentFormatConfig } from '../../db/startup/ConfigSchemas';
 import type { AssetSummary, BuilderPrintConfig } from './BuilderPageSupport';
 
-const paperSizeStyles: Readonly<Record<BuilderPrintConfig['PaperSize'], string>> = {
-    A4: '210mm 297mm',
-    Letter: '216mm 279mm',
-    Thermal: '80mm auto',
-};
-
 const marginStyles: Readonly<Record<BuilderPrintConfig['MarginPreset'], string>> = {
     Compact: '10mm',
     Normal: '18mm',
     Wide: '24mm',
 };
+
+const setValue = (values: Record<string, string>, key: string, value: string) => {
+    values[key] = value;
+};
+
+const setRecordValue = (values: Record<string, string>, fieldId: string, value: string) => {
+    setValue(values, fieldId, value);
+    setValue(values, `Record.${fieldId}`, value);
+};
+
+const setLineValue = (
+    values: Record<string, string>,
+    rowIndex: number,
+    fieldId: string,
+    value: string,
+) => {
+    setValue(values, `Items.${String(rowIndex)}.${fieldId}`, value);
+};
+
+const applyRecordAliases = (values: Record<string, string>) => {
+    const aliasPairs: readonly (readonly [string, string])[] = [
+        ['Record.TaxAmount', 'Record.TaxTotal'],
+        ['Record.TaxTotal', 'Record.TaxAmount'],
+        ['Record.GstTotal', 'Record.TaxTotal'],
+        ['Record.TaxTotal', 'Record.GstTotal'],
+        ['Record.GST', 'Record.TaxTotal'],
+        ['Record.Total', 'Record.GrandTotal'],
+        ['Record.GrandTotal', 'Record.Total'],
+        ['Record.RoundOff', 'Record.RoundedTotal'],
+        ['Record.RoundedTotal', 'Record.RoundOff'],
+    ];
+
+    for (const [alias, source] of aliasPairs) {
+        const sourceValue = values[source];
+        if (sourceValue !== undefined && values[alias] === undefined) values[alias] = sourceValue;
+    }
+};
+
+const applyLineAliases = (
+    values: Record<string, string>,
+    rowIndex: number,
+    fieldId: string,
+    value: string,
+) => {
+    const normalized = fieldId.toLocaleLowerCase();
+    if (normalized === 'lineamount') setLineValue(values, rowIndex, 'Amount', value);
+    if (normalized === 'amount') setLineValue(values, rowIndex, 'LineAmount', value);
+    if (normalized === 'itemdescription') setLineValue(values, rowIndex, 'Description', value);
+    if (normalized === 'description') setLineValue(values, rowIndex, 'ItemDescription', value);
+};
+
+const replaceTemplatePlaceholders = (
+    templateHtml: string,
+    values: Readonly<Record<string, string>>,
+): string =>
+    templateHtml.replace(/\{\{\s*([^}]+?)\s*\}\}/gu, (match, rawKey: string) => {
+        const key = rawKey.trim();
+        const value = values[key];
+        if (value !== undefined) return key.startsWith('Asset.') ? value : escapePreviewHtml(value);
+        return key.startsWith('Asset.') ? match : '';
+    });
 
 export const renderBuilderPreview = (
     templateHtml: string,
@@ -38,29 +93,33 @@ export const renderBuilderPreview = (
     for (const field of config.Fields) {
         const sample = field.SampleValue ?? field.DefaultValue ?? field.Label;
         const preview = previewValue(sample);
-        values[field.FieldId] = preview;
-        values[`Record.${field.FieldId}`] = preview;
+        setRecordValue(values, field.FieldId, preview);
     }
+    applyRecordAliases(values);
     for (const section of config.LineItemSections) {
         if (section.Enabled === false) continue;
         for (const field of section.Fields) {
             const sample = field.SampleValue ?? field.DefaultValue ?? field.Label;
             const preview = previewValue(sample);
-            values[`Items.0.${field.FieldId}`] = preview;
-            values[`Items.1.${field.FieldId}`] =
+            setLineValue(values, 0, field.FieldId, preview);
+            applyLineAliases(values, 0, field.FieldId, preview);
+            const secondPreview =
                 field.Type === 'Text' || field.Type === 'Textarea' ? `${preview} 2` : preview;
+            setLineValue(values, 1, field.FieldId, secondPreview);
+            applyLineAliases(values, 1, field.FieldId, secondPreview);
         }
     }
     for (const asset of assets) {
         values[`Asset.${asset.name}`] = `data:${asset.type};base64,${asset.dataBase64}`;
     }
-    for (const [key, value] of Object.entries(values)) {
-        rendered = rendered.replaceAll(`{{${key}}}`, escapePreviewHtml(value));
-    }
+    rendered = replaceTemplatePlaceholders(rendered, values);
+    const paperMargin = marginStyles[printSettings.MarginPreset];
+    const bottomSpacing = `${String(printSettings.BottomSpacingMm)}mm`;
+    const pageSize = `${String(printSettings.PageWidthCm)}cm ${String(printSettings.PageHeightCm)}cm`;
     const previewStyle = `
       @page {
-        size: ${paperSizeStyles[printSettings.PaperSize]};
-        margin: ${marginStyles[printSettings.MarginPreset]};
+        size: ${pageSize};
+        margin: ${paperMargin};
       }
       html {
         width: 100%;
@@ -73,7 +132,6 @@ export const renderBuilderPreview = (
       }
       body {
         margin: 0;
-        padding: 0 0 ${String(printSettings.BottomSpacingMm)}mm;
         background: #eef6f4;
         color: #18302c;
         overflow: visible;
@@ -86,6 +144,21 @@ export const renderBuilderPreview = (
         width: 100%;
         min-height: 100%;
         overflow: visible;
+      }
+      @media screen {
+        html,
+        body {
+          overflow: hidden;
+        }
+
+        body {
+          padding: ${paperMargin} ${paperMargin} calc(${paperMargin} + ${bottomSpacing});
+        }
+      }
+      @media print {
+        body {
+          padding: 0 0 ${bottomSpacing};
+        }
       }
     `;
     return rendered.includes('</head>')

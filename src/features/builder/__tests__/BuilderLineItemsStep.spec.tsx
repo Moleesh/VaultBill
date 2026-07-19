@@ -1,8 +1,7 @@
 /** @format */
 
 /**
- * Exercises the line-item step bridge and summary copy so subtotal and total
- * guidance stays visible where users configure repeatable rows.
+ * Exercises the line-item step bridge and editor-only line-item configuration.
  */
 
 import { render, screen } from '@testing-library/react';
@@ -11,7 +10,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { BuilderLineItemsStep } from '../BuilderLineItemsStep';
 
 describe('BuilderLineItemsStep', () => {
-    it('renders the previous-step bridge, row preview, and subtotal summary', () => {
+    it('renders the previous-step bridge and line-item field editor without preview clutter', () => {
         render(
             <BuilderLineItemsStep
                 enabled
@@ -45,9 +44,9 @@ describe('BuilderLineItemsStep', () => {
         );
 
         expect(screen.getByRole('button', { name: /Previous: Fields/u })).toBeVisible();
-        expect(screen.getAllByText('Subtotal')[0]).toBeVisible();
-        expect(screen.getAllByText('Total')[0]).toBeVisible();
-        expect(screen.getByRole('heading', { name: 'Sample rows' })).toBeVisible();
-        expect(screen.getByText('Sample row 1')).toBeVisible();
+        expect(screen.getByRole('button', { name: /Add field/u })).toBeVisible();
+        expect(screen.getByText('Edit Item name')).toBeVisible();
+        expect(screen.queryByRole('heading', { name: 'Sample rows' })).not.toBeInTheDocument();
+        expect(screen.queryByText('Sample row 1')).not.toBeInTheDocument();
     });
 });

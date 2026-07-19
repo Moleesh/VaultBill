@@ -37,18 +37,34 @@
 
 .builder-workspace--single {
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto minmax(0, 1fr) auto;
-    align-content: stretch;
+    grid-template-rows: auto;
+    align-content: start;
     min-height: max(32rem, calc(100svh - var(--app-shell-topbar-height, 0rem) - 14rem));
     padding-bottom: clamp(var(--space-4), 4vw, var(--space-6));
+}
+
+.builder-workspace--single > * {
+    grid-column: 1 / -1;
+}
+
+.builder-workspace--single > .span-2 {
+    grid-column: 1 / -1;
 }
 
 .builder-workspace--single > :not(.builder-step-header, .builder-wizard-actions) {
     align-self: start;
 }
 
+.builder-step-sections {
+    display: grid;
+    align-content: start;
+    gap: var(--space-4);
+    min-width: 0;
+}
+
 .builder-workspace--single > .builder-wizard-actions {
     align-self: end;
+    justify-self: stretch;
 }
 
 .builder-wizard-actions {
@@ -58,6 +74,8 @@
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--space-3);
+    width: 100%;
+    box-sizing: border-box;
     margin-inline: 0;
     margin-bottom: 0;
     padding: var(--space-3);

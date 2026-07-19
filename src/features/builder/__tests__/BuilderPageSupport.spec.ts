@@ -18,6 +18,8 @@ import {
     mimeTypeFromName,
     move,
     newField,
+    newSummaryField,
+    normalizePrintSettings,
     readConfig,
     steps,
     writeBuilderPackage,
@@ -49,6 +51,19 @@ describe('BuilderPageSupport', () => {
         expect(helperFor('Print Preview')).toContain('paper settings');
         expect(move([1, 2, 3], 0, 2)).toEqual([2, 3, 1]);
         expect(newField(0)).toMatchObject({ FieldId: 'Field1', Label: 'New field 1' });
+        expect(newSummaryField([{ FieldId: 'SummaryTotal1' } as never])).toMatchObject({
+            FieldId: 'SummaryTotal2',
+            Type: 'Money',
+            Calculated: true,
+            DisplayPlacement: 'Summary',
+            Visible: true,
+        });
+        expect(
+            normalizePrintSettings({ PaperSize: 'Letter', Orientation: 'Landscape' }),
+        ).toMatchObject({
+            PageWidthCm: 27.9,
+            PageHeightCm: 21.6,
+        });
         expect(mimeTypeFromName('logo.WEBP')).toBe('image/webp');
         expect(templateNameFromFile('shared-template.html')).toBe('shared-template');
         expect(defaultSavedPrintTemplates()).toHaveLength(1);
