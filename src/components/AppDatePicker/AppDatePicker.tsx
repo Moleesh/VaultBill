@@ -7,7 +7,6 @@ import { addMonths, format, getDay, getDaysInMonth, parseISO, startOfMonth } fro
 
 import { FormField } from '../FormFields';
 import { IconOnlyButton } from '../IconOnlyButton';
-import { getDropdownMenuPlacement } from '../SearchableDropdown/SearchableDropdownSupport';
 import { AppDatePickerPopup } from './AppDatePickerPopup';
 
 type AppDatePickerProps = {
@@ -21,6 +20,36 @@ type AppDatePickerProps = {
     readonly requiredIndicator?: boolean;
     readonly value: string;
     readonly wrapperClassName?: string;
+};
+
+const calendarMinimumWidth = 320;
+const calendarPreferredHeight = 380;
+
+const getCalendarPopupPlacement = (
+    rect: DOMRect,
+    viewportHeight: number,
+    viewportWidth: number,
+) => {
+    const rawWidth = Math.max(rect.width, calendarMinimumWidth);
+    const left = Math.min(Math.max(16, rect.left), Math.max(16, viewportWidth - rawWidth - 16));
+    const availableBelow = Math.max(0, viewportHeight - rect.bottom - 12);
+    const availableAbove = Math.max(0, rect.top - 12);
+    const openDirection: 'above' | 'below' =
+        availableBelow >= calendarPreferredHeight || availableBelow >= availableAbove
+            ? 'below'
+            : 'above';
+
+    return {
+        bottom:
+            openDirection === 'above'
+                ? `${String(Math.max(12, viewportHeight - rect.top + 1))}px`
+                : 'auto',
+        left: `${String(left)}px`,
+        maxHeight: `${String(Math.min(calendarPreferredHeight, Math.max(260, openDirection === 'below' ? availableBelow : availableAbove)))}px`,
+        openDirection,
+        top: openDirection === 'below' ? `${String(Math.max(12, rect.bottom + 1))}px` : 'auto',
+        width: `${String(rawWidth)}px`,
+    };
 };
 
 export const AppDatePicker: FC<AppDatePickerProps> = ({
@@ -49,7 +78,7 @@ export const AppDatePicker: FC<AppDatePickerProps> = ({
         const popup = popupRef.current;
         if (!rect || !popup) return;
 
-        const placement = getDropdownMenuPlacement(rect, window.innerHeight, window.innerWidth);
+        const placement = getCalendarPopupPlacement(rect, window.innerHeight, window.innerWidth);
         popup.style.left = placement.left;
         popup.style.width = placement.width;
         popup.style.top = placement.top;

@@ -69,6 +69,11 @@
     margin-top: var(--space-2);
 }
 
+.horizontal-progress-controls[data-controls='false'] {
+    grid-template-columns: minmax(0, 1fr);
+    margin-top: var(--space-1);
+}
+
 .horizontal-progress-controls button {
     min-height: 2rem;
     padding: 0 var(--space-3);
@@ -84,6 +89,7 @@
 .horizontal-progress-bar span {
     display: block;
     width: var(--scroll-progress);
+    min-width: 0.75rem;
     height: 100%;
     background: var(--color-primary);
     transition: width var(--motion-fast);
@@ -143,7 +149,24 @@
 }
 
 .records-layout-grid {
+    align-items: start;
     grid-template-columns: repeat(var(--records-layout-columns, 2), minmax(0, 1fr));
+}
+
+.records-layout-grid > .form-field {
+    align-self: start;
+}
+
+.records-layout-grid input,
+.records-layout-grid .field-input-shell,
+.records-layout-grid .app-date-picker,
+.records-layout-grid .app-date-picker-trigger {
+    min-height: var(--control-height);
+}
+
+.records-layout-grid textarea {
+    min-height: calc(var(--control-height) * 1.85);
+    resize: vertical;
 }
 
 .form-grid label,

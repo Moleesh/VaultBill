@@ -35,9 +35,13 @@ export const calculateConfiguredLineItem = (
         ItemName: item.itemName,
         HsnSac: item.hsnSac,
         Quantity: item.quantity,
+        LineQuantity: item.quantity,
         Rate: item.rate,
+        LineRate: item.rate,
         TaxPercent: item.taxPercent,
+        LineTaxPercent: item.taxPercent,
         Amount: item.amount,
+        LineAmount: item.amount,
         ...(item.values ?? {}),
         ...secretValues,
     };
@@ -53,8 +57,9 @@ export const calculateConfiguredLineItem = (
             ).formatted;
             values[field.FieldId] = value;
             const normalized = normalizeId(field.FieldId);
-            if (normalized === 'amount') next = { ...next, amount: value };
-            else next = { ...next, values: { ...(next.values ?? {}), [field.FieldId]: value } };
+            if (normalized === 'amount' || normalized === 'lineamount') {
+                next = { ...next, amount: value };
+            } else next = { ...next, values: { ...(next.values ?? {}), [field.FieldId]: value } };
         } catch {
             // Builder validation reports invalid formulas; entry keeps the last valid value.
         }
@@ -140,9 +145,15 @@ export const lineItemFieldValue = (item: RecordLineItem, fieldId: string): strin
         itemname: item.itemName,
         hsnsac: item.hsnSac,
         quantity: item.quantity,
+        linequantity: item.quantity,
+        qty: item.quantity,
+        lineqty: item.quantity,
         rate: item.rate,
+        linerate: item.rate,
         taxpercent: item.taxPercent,
+        linetaxpercent: item.taxPercent,
         amount: item.amount,
+        lineamount: item.amount,
     };
     return values[normalizeId(fieldId)] ?? item.values?.[fieldId] ?? '';
 };

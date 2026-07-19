@@ -2,6 +2,7 @@
 
 import type { FC } from 'react';
 
+import { HorizontalProgress } from '../../components/HorizontalProgress/HorizontalProgress';
 import { previewValue } from './BuilderPagePreviewSupport';
 import type { FieldConfig } from './BuilderPageSupport';
 
@@ -51,47 +52,54 @@ export const BuilderLineItemsPreview: FC<BuilderLineItemsPreviewProps> = ({ enab
             </div>
             {enabled ? (
                 <>
-                    <div className="builder-preview-table builder-preview-table--desktop">
-                        <div
-                            className="builder-preview-table-row builder-preview-table-row--header"
-                            style={{
-                                gridTemplateColumns: `repeat(${String(fields.length || 1)}, minmax(8rem, 1fr))`,
-                            }}
-                        >
-                            {fields.map((field) => (
-                                <span key={`header-${field.FieldId}`}>{field.Label}</span>
-                            ))}
-                        </div>
-                        {sampleRows.map((rowLabel, rowIndex) => (
+                    <HorizontalProgress
+                        className="builder-preview-table-scroll builder-preview-table-scroll--desktop"
+                        label="Line item preview"
+                        showControls={false}
+                    >
+                        <div className="builder-preview-table builder-preview-table--desktop">
                             <div
-                                className="builder-preview-table-row builder-preview-table-row--body"
-                                key={rowLabel}
+                                className="builder-preview-table-row builder-preview-table-row--header"
                                 style={{
                                     gridTemplateColumns: `repeat(${String(fields.length || 1)}, minmax(8rem, 1fr))`,
                                 }}
                             >
                                 {fields.map((field) => (
-                                    <span key={`${field.FieldId}-${String(rowIndex)}`}>
-                                        {previewValue(
-                                            rowIndex === 0
-                                                ? (field.SampleValue ??
-                                                      field.DefaultValue ??
-                                                      field.Label)
-                                                : field.Type === 'Text' || field.Type === 'Textarea'
-                                                  ? `${previewValue(
-                                                        field.SampleValue ??
-                                                            field.DefaultValue ??
-                                                            field.Label,
-                                                    )} 2`
-                                                  : (field.SampleValue ??
-                                                    field.DefaultValue ??
-                                                    'Sample'),
-                                        )}
-                                    </span>
+                                    <span key={`header-${field.FieldId}`}>{field.Label}</span>
                                 ))}
                             </div>
-                        ))}
-                    </div>
+                            {sampleRows.map((rowLabel, rowIndex) => (
+                                <div
+                                    className="builder-preview-table-row builder-preview-table-row--body"
+                                    key={rowLabel}
+                                    style={{
+                                        gridTemplateColumns: `repeat(${String(fields.length || 1)}, minmax(8rem, 1fr))`,
+                                    }}
+                                >
+                                    {fields.map((field) => (
+                                        <span key={`${field.FieldId}-${String(rowIndex)}`}>
+                                            {previewValue(
+                                                rowIndex === 0
+                                                    ? (field.SampleValue ??
+                                                          field.DefaultValue ??
+                                                          field.Label)
+                                                    : field.Type === 'Text' ||
+                                                        field.Type === 'Textarea'
+                                                      ? `${previewValue(
+                                                            field.SampleValue ??
+                                                                field.DefaultValue ??
+                                                                field.Label,
+                                                        )} 2`
+                                                      : (field.SampleValue ??
+                                                        field.DefaultValue ??
+                                                        'Sample'),
+                                            )}
+                                        </span>
+                                    ))}
+                                </div>
+                            ))}
+                        </div>
+                    </HorizontalProgress>
                     <div className="builder-preview-table builder-preview-table--mobile">
                         {sampleRows.map((rowLabel, rowIndex) => (
                             <article className="builder-preview-table-mobile-row" key={rowLabel}>

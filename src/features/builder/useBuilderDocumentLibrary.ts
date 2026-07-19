@@ -1,7 +1,7 @@
 /** @format */
 /* eslint-disable max-lines */
 
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -52,6 +52,10 @@ type BuilderDocumentLibraryArgs = {
     readonly templateHtml: string;
 };
 
+type BuilderFieldPreviewPackage = Omit<StoredBuilderPackage, 'config'> & {
+    readonly config: DocumentFormatConfig;
+};
+
 /** Loads the builder document inventory and switchable draft package. */
 export const useBuilderDocumentLibrary = ({
     assets,
@@ -70,6 +74,7 @@ export const useBuilderDocumentLibrary = ({
     const queryClient = useQueryClient();
     const runtimeScope = getRuntimeQueryScope(capabilities);
     const [searchParams, setSearchParams] = useSearchParams();
+    const [fieldPreviewPackage, setFieldPreviewPackage] = useState<BuilderFieldPreviewPackage>();
     const requestedFormatId = searchParams.get('format') ?? undefined;
     const inventoryQuery = useQuery({
         queryKey: queryKeys.builderInventory(runtimeScope),
@@ -647,6 +652,22 @@ export const useBuilderDocumentLibrary = ({
         [fetchDocumentPackage, normalizeLoadedAssets, setMessage],
     );
 
+    const openFieldPreview = useCallback(
+        async (formatId: string) => {
+            const sourcePackage = await fetchDocumentPackage(formatId);
+            if (!sourcePackage) {
+                setMessage('The selected document preview could not be loaded.');
+                return;
+            }
+            setFieldPreviewPackage({
+                ...sourcePackage,
+                config: sourcePackage.config as DocumentFormatConfig,
+            });
+            setMessage('');
+        },
+        [fetchDocumentPackage, setMessage],
+    );
+
     const deleteDocument = useCallback(
         async (item: BuilderInventoryItem) => {
             if (item.isDefault || item.isBuiltIn) {
@@ -694,8 +715,13 @@ export const useBuilderDocumentLibrary = ({
         deleteDocument,
         duplicateDocument,
         duplicateCurrentDocument,
+        fieldPreviewPackage,
         inventory,
         loadDocument,
+        closeFieldPreview: () => {
+            setFieldPreviewPackage(undefined);
+        },
+        openFieldPreview,
         openDocumentAtStep,
         refreshInventory,
         reorderDocuments,

@@ -11,6 +11,7 @@ type HorizontalProgressProps = PropsWithChildren<{
     readonly label: string;
     readonly className?: string;
     readonly activeIndex?: number;
+    readonly showControls?: boolean;
 }>;
 
 export const HorizontalProgress: FC<HorizontalProgressProps> = ({
@@ -18,6 +19,7 @@ export const HorizontalProgress: FC<HorizontalProgressProps> = ({
     activeIndex,
     className = '',
     label,
+    showControls = true,
 }) => {
     const trackRef = useRef<HTMLDivElement>(null);
     const [position, setPosition] = useState(0);
@@ -103,14 +105,19 @@ export const HorizontalProgress: FC<HorizontalProgressProps> = ({
                 {children}
             </div>
             {hasOverflow ? (
-                <div className="horizontal-progress-controls">
-                    <IconOnlyButton
-                        aria-label={`Previous ${label}`}
-                        icon="←"
-                        onClick={() => {
-                            scrollByPage(-1);
-                        }}
-                    />
+                <div
+                    className="horizontal-progress-controls"
+                    data-controls={showControls ? 'true' : 'false'}
+                >
+                    {showControls ? (
+                        <IconOnlyButton
+                            aria-label={`Previous ${label}`}
+                            icon="←"
+                            onClick={() => {
+                                scrollByPage(-1);
+                            }}
+                        />
+                    ) : null}
                     <div
                         aria-label={`${String(Math.round(position * 100))} percent scrolled`}
                         aria-valuemax={100}
@@ -121,13 +128,15 @@ export const HorizontalProgress: FC<HorizontalProgressProps> = ({
                     >
                         <span />
                     </div>
-                    <IconOnlyButton
-                        aria-label={`Next ${label}`}
-                        icon="→"
-                        onClick={() => {
-                            scrollByPage(1);
-                        }}
-                    />
+                    {showControls ? (
+                        <IconOnlyButton
+                            aria-label={`Next ${label}`}
+                            icon="→"
+                            onClick={() => {
+                                scrollByPage(1);
+                            }}
+                        />
+                    ) : null}
                 </div>
             ) : null}
         </section>

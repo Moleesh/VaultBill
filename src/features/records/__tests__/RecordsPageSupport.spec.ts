@@ -17,6 +17,7 @@ import {
     documentFieldValue,
     emptyLineItem,
     firstMissingRequiredField,
+    isKnownLineFieldDefinition,
     isNumericField,
     knownDocumentFields,
     knownLineFields,
@@ -38,6 +39,34 @@ describe('RecordsPageSupport', () => {
         expect(normalizeId('Grand Total!')).toBe('grandtotal');
         expect(knownDocumentFields.has('grandtotal')).toBe(true);
         expect(knownLineFields.has('amount')).toBe(true);
+        expect(
+            isKnownLineFieldDefinition({
+                FieldId: 'LineQuantity',
+                Label: 'Quantity',
+                Type: 'Quantity',
+            } as never),
+        ).toBe(true);
+        expect(
+            isKnownLineFieldDefinition({
+                FieldId: 'LineRate',
+                Label: 'Rate',
+                Type: 'Rate',
+            } as never),
+        ).toBe(true);
+        expect(
+            isKnownLineFieldDefinition({
+                FieldId: 'LineAmount',
+                Label: 'Line Amount',
+                Type: 'Money',
+            } as never),
+        ).toBe(true);
+        expect(
+            isKnownLineFieldDefinition({
+                FieldId: 'LineDiscount',
+                Label: 'Line Discount',
+                Type: 'Decimal',
+            } as never),
+        ).toBe(false);
     });
 
     it('calculates configured items and document totals', () => {
@@ -99,5 +128,35 @@ describe('RecordsPageSupport', () => {
         expect(lineItemFieldValue(nextItem, 'Amount')).toBe('38.00');
         expect(defaultFieldValue({ DefaultValue: 25 } as never)).toBe('25');
         expect(isNumericField({ Type: 'Money' } as never)).toBe(true);
+    });
+
+    it('maps configured line aliases to the fixed row values for calculations', () => {
+        const config = {
+            ...cloneDefault(),
+            LineItemSections: [
+                {
+                    ...cloneDefault().LineItemSections[0],
+                    Fields: [
+                        {
+                            FieldId: 'LineAmount',
+                            Label: 'Line Amount',
+                            Type: 'Money',
+                            Calculated: true,
+                            Formula: 'LineQuantity * LineRate',
+                            Precision: 2,
+                        } as never,
+                    ],
+                },
+            ],
+        };
+        const next = calculateConfiguredLineItem(
+            { ...emptyLineItem(), quantity: '3', rate: '25' },
+            config as never,
+        );
+
+        expect(next.amount).toBe('75.00');
+        expect(lineItemFieldValue(next, 'LineQuantity')).toBe('3');
+        expect(lineItemFieldValue(next, 'LineRate')).toBe('25');
+        expect(lineItemFieldValue(next, 'LineAmount')).toBe('75.00');
     });
 });

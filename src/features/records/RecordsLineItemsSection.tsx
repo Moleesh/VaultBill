@@ -1,15 +1,19 @@
 /** @format */
 
-import type { FC } from 'react';
+import type { CSSProperties, FC, ReactNode } from 'react';
 
 import { ActionButton } from '../../components/ActionButton';
-import { FormField } from '../../components/FormFields';
 import { HorizontalProgress } from '../../components/HorizontalProgress/HorizontalProgress';
 import { RecordsFieldControl } from './RecordsFieldControl';
-import type { ConfiguredFieldDefinition } from './RecordsPageSupport';
+import {
+    knownLineFieldRole,
+    lineItemFieldValue,
+    type ConfiguredFieldDefinition,
+} from './RecordsPageSupport';
 import type { EditableRecord, RecordLineItem } from './RecordStoreContext';
 
 type RecordsLineItemsSectionProps = {
+    readonly children?: ReactNode;
     readonly configuredLineFields: readonly ConfiguredFieldDefinition[];
     readonly isReadOnly: boolean;
     readonly onAddLineItem: () => void;
@@ -25,137 +29,95 @@ type RecordsLineItemsSectionProps = {
 
 /** Renders the repeating line-item rows and summary totals. */
 export const RecordsLineItemsSection: FC<RecordsLineItemsSectionProps> = ({
+    children,
     configuredLineFields,
     isReadOnly,
     onAddLineItem,
     onUpdateLineItem,
     record,
     recordTotals,
-}) => (
-    <>
-        <HorizontalProgress className="line-item-grid" label="Line item columns">
-            <div className="line-item-grid-row line-item-grid-header">
-                <span>Item</span>
-                <span>HSN/SAC</span>
-                <span>Qty</span>
-                <span>Rate</span>
-                <span>Tax</span>
-                <span>Amount</span>
-            </div>
-            {record.lineItems.map((item) => (
-                <div className="line-item-grid-item" key={item.rowId}>
-                    <div className="line-item-grid-row">
-                        <FormField.TextField
-                            disabled={isReadOnly}
-                            hideLabel
-                            label="Item name"
-                            onChange={(event) => {
-                                onUpdateLineItem(item.rowId, {
-                                    itemName: event.currentTarget.value,
-                                });
-                            }}
-                            placeholder="Item or service"
-                            readOnly={isReadOnly}
-                            value={item.itemName}
-                            wrapperClassName="line-item-grid-control"
-                        />
-                        <FormField.TextField
-                            disabled={isReadOnly}
-                            hideLabel
-                            label="HSN or SAC"
-                            onChange={(event) => {
-                                onUpdateLineItem(item.rowId, { hsnSac: event.currentTarget.value });
-                            }}
-                            readOnly={isReadOnly}
-                            value={item.hsnSac}
-                            wrapperClassName="line-item-grid-control"
-                        />
-                        <FormField.TextField
-                            disabled={isReadOnly}
-                            hideLabel
-                            inputMode="decimal"
-                            label="Quantity"
-                            onChange={(event) => {
-                                onUpdateLineItem(item.rowId, {
-                                    quantity: event.currentTarget.value,
-                                });
-                            }}
-                            placeholder="0"
-                            readOnly={isReadOnly}
-                            value={item.quantity}
-                            wrapperClassName="line-item-grid-control"
-                        />
-                        <FormField.TextField
-                            disabled={isReadOnly}
-                            hideLabel
-                            inputMode="decimal"
-                            label="Rate"
-                            onChange={(event) => {
-                                onUpdateLineItem(item.rowId, { rate: event.currentTarget.value });
-                            }}
-                            placeholder="0.00"
-                            readOnly={isReadOnly}
-                            value={item.rate}
-                            wrapperClassName="line-item-grid-control"
-                        />
-                        <FormField.TextField
-                            disabled={isReadOnly}
-                            hideLabel
-                            inputMode="decimal"
-                            label="Tax"
-                            onChange={(event) => {
-                                onUpdateLineItem(item.rowId, {
-                                    taxPercent: event.currentTarget.value,
-                                });
-                            }}
-                            placeholder="0"
-                            readOnly={isReadOnly}
-                            value={item.taxPercent}
-                            wrapperClassName="line-item-grid-control"
-                        />
-                        <output aria-label="Amount">₹{item.amount}</output>
-                    </div>
-                    {configuredLineFields.length > 0 ? (
-                        <div className="line-item-grid-custom">
+}) => {
+    const columns = Math.max(1, configuredLineFields.length);
+    const tableWidth = `${String(Math.max(52, columns * 10))}rem`;
+    const gridStyle = {
+        gridTemplateColumns: `repeat(${String(columns)}, minmax(10rem, 1fr))`,
+        minWidth: tableWidth,
+        width: tableWidth,
+    } as CSSProperties;
+    const onLineFieldChange = (
+        item: RecordLineItem,
+        field: ConfiguredFieldDefinition,
+        value: string,
+    ) => {
+        const role = knownLineFieldRole(field);
+        if (role === 'itemName') onUpdateLineItem(item.rowId, { itemName: value });
+        else if (role === 'hsnSac') onUpdateLineItem(item.rowId, { hsnSac: value });
+        else if (role === 'quantity') onUpdateLineItem(item.rowId, { quantity: value });
+        else if (role === 'rate') onUpdateLineItem(item.rowId, { rate: value });
+        else if (role === 'taxPercent') onUpdateLineItem(item.rowId, { taxPercent: value });
+        else
+            onUpdateLineItem(item.rowId, {
+                values: {
+                    ...(item.values ?? {}),
+                    [field.FieldId]: value,
+                },
+            });
+    };
+
+    return (
+        <>
+            <HorizontalProgress className="line-item-grid" label="Line item columns">
+                <div className="line-item-grid-row line-item-grid-header" style={gridStyle}>
+                    {configuredLineFields.map((field) => (
+                        <span key={field.FieldId}>{field.Label}</span>
+                    ))}
+                </div>
+                {record.lineItems.map((item) => (
+                    <div className="line-item-grid-item" key={item.rowId} style={gridStyle}>
+                        <div className="line-item-grid-row" style={gridStyle}>
                             {configuredLineFields.map((field) => (
                                 <RecordsFieldControl
-                                    disabled={isReadOnly || Boolean(field.ReadOnly)}
+                                    disabled={
+                                        isReadOnly ||
+                                        Boolean(field.ReadOnly) ||
+                                        Boolean(field.Calculated)
+                                    }
                                     field={field}
+                                    hideLabel
                                     key={field.FieldId}
                                     onChange={(value) => {
-                                        onUpdateLineItem(item.rowId, {
-                                            values: {
-                                                ...(item.values ?? {}),
-                                                [field.FieldId]: value,
-                                            },
-                                        });
+                                        onLineFieldChange(item, field, value);
                                     }}
-                                    value={item.values?.[field.FieldId] ?? ''}
+                                    value={lineItemFieldValue(item, field.FieldId)}
+                                    wrapperClassName="line-item-grid-control"
                                 />
                             ))}
                         </div>
-                    ) : null}
+                    </div>
+                ))}
+            </HorizontalProgress>
+            {!isReadOnly ? (
+                <ActionButton onClick={onAddLineItem}>Add line item</ActionButton>
+            ) : null}
+            {children}
+            <div className="record-summary" aria-label="Record totals">
+                <div>
+                    <span>Subtotal</span>
+                    <strong>₹{recordTotals.subtotal}</strong>
                 </div>
-            ))}
-        </HorizontalProgress>
-        {!isReadOnly ? <ActionButton onClick={onAddLineItem}>Add line item</ActionButton> : null}
-        <div className="record-summary" aria-label="Record totals">
-            <div>
-                <span>Subtotal</span>
-                <strong>₹{recordTotals.subtotal}</strong>
+                <div>
+                    <span>GST / tax</span>
+                    <strong>₹{recordTotals.taxTotal}</strong>
+                </div>
+                <div>
+                    <span>Round off</span>
+                    <strong>₹{recordTotals.roundOff}</strong>
+                </div>
+                <div className="record-summary-grand">
+                    <span>Grand total</span>
+                    <strong>₹{recordTotals.grandTotal}</strong>
+                </div>
             </div>
-            <div>
-                <span>GST / tax</span>
-                <strong>₹{recordTotals.taxTotal}</strong>
-            </div>
-            <div>
-                <span>Round off</span>
-                <strong>₹{recordTotals.roundOff}</strong>
-            </div>
-            <div className="record-summary-grand">
-                <span>Grand total</span>
-                <strong>₹{recordTotals.grandTotal}</strong>
-            </div>
-        </div>
-    </>
-);
+        </>
+    );
+};

@@ -260,6 +260,10 @@ export const BuilderDocumentLibrary: FC<BuilderDocumentLibraryProps> = ({
                                 <article
                                     className={`builder-document-library-row${
                                         !item.isEnabled ? ' is-disabled' : ''
+                                    }${
+                                        openActionsFormatId === item.formatId
+                                            ? ' is-actions-open'
+                                            : ''
                                     }`}
                                     data-drag-target={
                                         (draggedFormatId && draggedFormatId !== item.formatId) ||
@@ -601,9 +605,24 @@ export const BuilderDocumentLibrary: FC<BuilderDocumentLibraryProps> = ({
                                                                 <Eye aria-hidden="true" size={18} />
                                                             }
                                                             onClick={() => {
+                                                                void onOpenFormatPreview(
+                                                                    item.formatId,
+                                                                );
+                                                                setOpenActionsFormatId(undefined);
+                                                            }}
+                                                            variant="secondary"
+                                                        >
+                                                            Field preview
+                                                        </IconButton>
+                                                        <IconButton
+                                                            icon={
+                                                                <Eye aria-hidden="true" size={18} />
+                                                            }
+                                                            onClick={() => {
                                                                 void onOpenPrintPreview(
                                                                     item.formatId,
                                                                 );
+                                                                setOpenActionsFormatId(undefined);
                                                             }}
                                                             variant="secondary"
                                                         >
@@ -620,23 +639,11 @@ export const BuilderDocumentLibrary: FC<BuilderDocumentLibraryProps> = ({
                                                                 void onTestPrintDocument(
                                                                     item.formatId,
                                                                 );
+                                                                setOpenActionsFormatId(undefined);
                                                             }}
                                                             variant="secondary"
                                                         >
                                                             Test print
-                                                        </IconButton>
-                                                        <IconButton
-                                                            icon={
-                                                                <Eye aria-hidden="true" size={18} />
-                                                            }
-                                                            onClick={() => {
-                                                                void onOpenFormatPreview(
-                                                                    item.formatId,
-                                                                );
-                                                            }}
-                                                            variant="secondary"
-                                                        >
-                                                            Format preview
                                                         </IconButton>
                                                     </div>
                                                 ) : null}

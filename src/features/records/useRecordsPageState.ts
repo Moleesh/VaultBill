@@ -23,7 +23,6 @@ import type { OutputTask } from './RecordsPageOutputTypes';
 import {
     createEmptyRecord,
     knownDocumentFields,
-    knownLineFields,
     normalizeId,
     toEditableRecord,
 } from './RecordsPageSupport';
@@ -109,7 +108,7 @@ export const useRecordsPageState = () => {
     const configuredLineFields = useMemo(
         () =>
             (activeConfig.LineItemSections[0]?.Fields ?? []).filter(
-                (field) => !knownLineFields.has(normalizeId(field.FieldId)),
+                (field) => field.Visible !== false,
             ),
         [activeConfig],
     );

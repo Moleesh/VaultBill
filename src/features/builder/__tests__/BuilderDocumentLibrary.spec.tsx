@@ -110,9 +110,11 @@ describe('BuilderDocumentLibrary', () => {
         fireEvent.click(screen.getByRole('button', { name: /New document/u }));
         fireEvent.click(screen.getByRole('button', { name: 'More actions for Retail Invoice' }));
         fireEvent.click(screen.getByRole('button', { name: 'Duplicate' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Field preview' }));
+        fireEvent.click(screen.getByRole('button', { name: 'More actions for Retail Invoice' }));
         fireEvent.click(screen.getByRole('button', { name: 'Print preview' }));
+        fireEvent.click(screen.getByRole('button', { name: 'More actions for Retail Invoice' }));
         fireEvent.click(screen.getByRole('button', { name: 'Test print' }));
-        fireEvent.click(screen.getByRole('button', { name: 'Format preview' }));
         fireEvent.click(screen.getByRole('button', { name: 'Set Retail Invoice as default' }));
         const deleteButton = requireButton(
             screen.queryByRole('button', { name: 'Delete Retail Invoice' }) ?? undefined,

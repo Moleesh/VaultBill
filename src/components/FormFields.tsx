@@ -5,6 +5,7 @@ import { useId, useState } from 'react';
 
 import { Eye, EyeOff } from 'lucide-react';
 
+import { CheckboxField } from './FormCheckboxField';
 import { IconOnlyButton } from './IconOnlyButton';
 
 type FieldWrapperProps = {
@@ -33,20 +34,12 @@ type PasswordFieldProps = Omit<TextFieldProps, 'type'>;
 type TextAreaFieldProps = Omit<ComponentPropsWithoutRef<'textarea'>, 'children'> &
     FieldControlProps;
 
-type CheckboxFieldProps = Omit<ComponentPropsWithoutRef<'input'>, 'children' | 'type'> & {
-    readonly label: ReactNode;
-    readonly note?: ReactNode | undefined;
-    readonly requiredIndicator?: boolean | undefined;
-    readonly wrapperClassName?: string | undefined;
-};
-
 const RequiredIndicator: FC = () => (
     <span aria-hidden="true" className="required-indicator">
         *
     </span>
 );
 
-/** Shared labeled field wrapper with one consistent prop contract across forms. */
 const FieldWrapper: FC<FieldWrapperProps> = ({
     as = 'label',
     children,
@@ -74,7 +67,6 @@ const FieldWrapper: FC<FieldWrapperProps> = ({
     );
 };
 
-/** Shared single-line text input field. */
 const TextField: FC<TextFieldProps> = ({
     id,
     invalid = false,
@@ -119,7 +111,6 @@ const TextField: FC<TextFieldProps> = ({
     );
 };
 
-/** Shared multiline textarea field. */
 const TextAreaField: FC<TextAreaFieldProps> = ({
     id,
     invalid = false,
@@ -152,7 +143,6 @@ const TextAreaField: FC<TextAreaFieldProps> = ({
     );
 };
 
-/** Shared password input with a built-in show/hide toggle. */
 const PasswordField: FC<PasswordFieldProps> = (props) => {
     const [isVisible, setIsVisible] = useState(false);
 
@@ -187,28 +177,6 @@ const PasswordField: FC<PasswordFieldProps> = (props) => {
     );
 };
 
-/** Shared checkbox field with consistent label and note layout. */
-const CheckboxField: FC<CheckboxFieldProps> = ({
-    label,
-    note,
-    requiredIndicator = false,
-    wrapperClassName,
-    ...inputProps
-}) => (
-    <label className={wrapperClassName ? `checkbox-field ${wrapperClassName}` : 'checkbox-field'}>
-        <input {...inputProps} type="checkbox" />
-        <span aria-hidden="true" className="checkbox-field-control" />
-        <span className="checkbox-field-copy">
-            <span className="checkbox-field-label">
-                {label}
-                {requiredIndicator ? <RequiredIndicator /> : null}
-            </span>
-            {note ? <p className="field-note">{note}</p> : null}
-        </span>
-    </label>
-);
-
-/** Namespaced shared field primitives for consistent form composition. */
 export const FormField = {
     CheckboxField,
     Wrapper: FieldWrapper,

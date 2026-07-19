@@ -1,28 +1,60 @@
 /** @format */
 @use '../Breakpoints' as *;
 .builder-preview-table {
-    overflow-x: auto;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: visible;
     border: var(--line-width) solid var(--color-border);
     border-radius: var(--radius-md);
-    scrollbar-width: none;
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--color-primary) 88%, white 12%)
+        color-mix(in srgb, var(--color-border-strong) 46%, transparent);
 }
 .builder-preview-table--mobile {
     display: none;
     overflow: visible;
 }
 .builder-preview-table::-webkit-scrollbar {
-    display: none;
+    height: 0.35rem;
+}
+.builder-preview-table::-webkit-scrollbar-track {
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--color-border-strong) 46%, transparent);
+}
+.builder-preview-table::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--color-primary) 88%, white 12%);
+}
+.builder-preview-table-scroll {
+    display: grid;
+    gap: 0;
+    min-width: 0;
+}
+.builder-preview-table-scroll .horizontal-progress-track {
+    border: var(--line-width) solid var(--color-border);
+    border-radius: var(--radius-md);
+}
+.builder-preview-table-scroll .builder-preview-table {
+    width: 100%;
+    max-width: none;
+    border: 0;
+    border-radius: 0;
+}
+.builder-preview-table-scroll .builder-preview-table-heading {
+    min-width: 100%;
 }
 .builder-preview-table-row {
     display: grid;
-    min-width: max-content;
+    width: max-content;
+    min-width: 100%;
 }
 .builder-preview-table-row span {
     display: flex;
     align-items: center;
+    min-width: 0;
     padding: var(--space-3);
     border-right: var(--line-width) solid var(--color-border);
-    white-space: nowrap;
+    overflow-wrap: anywhere;
 }
 .builder-preview-table-row span:last-child {
     border-right: 0;
@@ -241,7 +273,7 @@
         grid-template-columns: 1fr;
     }
     .builder-preview-grid--read-only {
-        flex-direction: column;
+        grid-template-columns: 1fr;
     }
     .builder-preview-field {
         min-width: 100%;

@@ -2,7 +2,9 @@
 
 import type { FC } from 'react';
 
+import { AppModal } from '../../components/AppModal/AppModal';
 import { BuilderDocumentLibrary } from './BuilderDocumentLibrary';
+import { BuilderFieldPreviewStep } from './BuilderFieldPreviewStep';
 import { BuilderPageDrawer } from './BuilderPageDrawer';
 import { BuilderPageHeader } from './BuilderPageHeader';
 import { BuilderPageStepContent } from './BuilderPageStepContent';
@@ -32,7 +34,7 @@ export const BuilderPageWorkspace: FC<{ readonly controller: BuilderPageControll
                     onDuplicateDocument={controller.duplicateDocument}
                     onEditDocument={controller.loadDocument}
                     onOpenFormatPreview={(formatId) => {
-                        void controller.openDocumentAtStep(formatId, 6);
+                        void controller.openFieldPreview(formatId);
                     }}
                     onOpenPrintPreview={(formatId) => {
                         void controller.openDocumentAtStep(formatId, 7);
@@ -65,6 +67,26 @@ export const BuilderPageWorkspace: FC<{ readonly controller: BuilderPageControll
                     <BuilderPageDrawer controller={controller} lineSection={lineSection} />
                 </>
             )}
+            <AppModal
+                className="builder-field-preview-modal-frame"
+                isOpen={Boolean(controller.fieldPreviewPackage)}
+                onClose={controller.closeFieldPreview}
+                showScrollProgress
+                title="Field preview"
+            >
+                {controller.fieldPreviewPackage ? (
+                    <div className="builder-field-preview-modal">
+                        <BuilderFieldPreviewStep
+                            config={controller.fieldPreviewPackage.config}
+                            fields={controller.fieldPreviewPackage.config.Fields}
+                            layout={
+                                controller.fieldPreviewPackage.config.Layout ?? defaultBuilderLayout
+                            }
+                            lineSection={controller.fieldPreviewPackage.config.LineItemSections[0]}
+                        />
+                    </div>
+                ) : null}
+            </AppModal>
         </div>
     );
 };

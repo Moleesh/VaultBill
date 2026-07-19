@@ -13,6 +13,13 @@ import {
 import type { AppRecord, EditableRecord, RecordLineItem } from './RecordStoreContext';
 
 export type ConfiguredFieldDefinition = DocumentFormatConfig['Fields'][number];
+export type KnownLineFieldRole =
+    | 'amount'
+    | 'hsnSac'
+    | 'itemName'
+    | 'quantity'
+    | 'rate'
+    | 'taxPercent';
 
 export const emptyLineItem = (): RecordLineItem => ({
     rowId: crypto.randomUUID(),
@@ -74,10 +81,40 @@ export const knownLineFields = new Set([
     'itemname',
     'hsnsac',
     'quantity',
+    'linequantity',
     'rate',
+    'linerate',
     'taxpercent',
+    'linetaxpercent',
     'amount',
+    'lineamount',
 ]);
+
+/** Resolves configured line fields that are backed by the fixed record row model. */
+export const knownLineFieldRole = (
+    field: Pick<ConfiguredFieldDefinition, 'FieldId' | 'Label' | 'Type'>,
+): KnownLineFieldRole | undefined => {
+    const fieldId = normalizeId(field.FieldId);
+    const label = normalizeId(field.Label);
+    if (fieldId === 'itemname' || label === 'itemname' || label === 'item') return 'itemName';
+    if (fieldId === 'hsnsac' || label === 'hsnsac') return 'hsnSac';
+    if (
+        fieldId === 'quantity' ||
+        fieldId === 'linequantity' ||
+        label === 'quantity' ||
+        label === 'qty'
+    )
+        return 'quantity';
+    if (fieldId === 'rate' || fieldId === 'linerate' || label === 'rate') return 'rate';
+    if (fieldId === 'taxpercent' || fieldId === 'linetaxpercent' || label === 'tax')
+        return 'taxPercent';
+    if (fieldId === 'amount' || fieldId === 'lineamount' || label === 'amount') return 'amount';
+    return undefined;
+};
+
+/** Identifies configured line fields already represented by the fixed row columns. */
+export const isKnownLineFieldDefinition = (field: ConfiguredFieldDefinition): boolean =>
+    knownLineFieldRole(field) !== undefined;
 
 export const firstMissingRequiredField = (
     record: EditableRecord,

@@ -90,6 +90,7 @@
     user-select: none;
 }
 .builder-document-library-row {
+    position: relative;
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
     gap: var(--space-4);
@@ -104,6 +105,11 @@
         background var(--motion-fast),
         box-shadow var(--motion-fast),
         transform var(--motion-fast);
+}
+.builder-document-library-row.is-actions-open {
+    z-index: 60;
+    border-color: color-mix(in srgb, var(--color-primary) 48%, var(--color-border));
+    box-shadow: 0 0.9rem 1.8rem color-mix(in srgb, var(--color-shadow) 10%, transparent);
 }
 .builder-document-library-row:hover,
 .builder-document-library-row:focus-within {
@@ -390,19 +396,22 @@ button.builder-document-library-default-action.is-default:disabled:not(.button-p
 }
 .builder-document-library-more-panel {
     position: absolute;
-    z-index: 30;
-    top: calc(100% + var(--space-1));
+    z-index: 80;
+    top: calc(100% + var(--space-2));
     right: 0;
     display: grid;
-    width: min(17.5rem, calc(100vw - 3rem));
-    gap: var(--space-1);
-    border: var(--line-width) solid color-mix(in srgb, var(--color-border) 72%, transparent);
+    width: min(15rem, calc(100vw - 3rem));
+    gap: 0.2rem;
+    border: var(--line-width) solid
+        color-mix(in srgb, var(--color-primary) 34%, var(--color-border));
     border-radius: var(--radius-md);
-    background: var(--color-card);
-    padding: var(--space-2);
+    background: color-mix(in srgb, var(--color-card) 98%, white 2%);
+    padding: var(--space-1);
     box-shadow:
-        0 1rem 2.2rem color-mix(in srgb, var(--color-shadow) 18%, transparent),
-        inset 0 1px 0 color-mix(in srgb, white 34%, transparent);
+        0 1.1rem 2.4rem color-mix(in srgb, var(--color-shadow) 24%, transparent),
+        0 0 0 1px color-mix(in srgb, white 34%, transparent),
+        inset 0 1px 0 color-mix(in srgb, white 42%, transparent);
+    isolation: isolate;
 }
 .builder-document-library-more-panel .checkbox-field {
     min-height: var(--control-height);
@@ -415,12 +424,12 @@ button.builder-document-library-default-action.is-default:disabled:not(.button-p
 .builder-document-library-more-panel > button {
     justify-content: flex-start;
     width: 100%;
-    min-height: 2.65rem;
+    min-height: 2.25rem;
     border-color: transparent;
     background: transparent;
-    padding: 0.55rem 0.7rem;
+    padding: 0.42rem 0.58rem;
     box-shadow: none;
-    font-size: var(--font-size-md);
+    font-size: var(--font-size-sm);
     gap: var(--space-2);
     line-height: 1.35;
 }
@@ -732,20 +741,6 @@ button.builder-document-library-default-action.is-default:disabled:not(.button-p
     }
 }
 .line-item-grid-item {
-    min-width: 62rem;
-}
-.line-item-grid-custom {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
-    gap: var(--space-3);
-    border: var(--line-width) solid var(--color-border);
-    border-top: 0;
-    background: var(--color-surface-muted);
-    padding: var(--space-3);
-}
-.line-item-grid-custom label {
-    display: grid;
-    gap: var(--space-1);
-    color: var(--color-label);
-    font-weight: var(--font-weight-semibold);
+    min-width: 100%;
+    box-sizing: border-box;
 }
