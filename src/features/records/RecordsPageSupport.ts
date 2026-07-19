@@ -74,7 +74,6 @@ export const knownDocumentFields = new Set([
     'gstin',
     'state',
     'billingaddress',
-    'grandtotal',
 ]);
 
 export const knownLineFields = new Set([

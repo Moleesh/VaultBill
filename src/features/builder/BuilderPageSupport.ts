@@ -18,6 +18,7 @@ import {
     writeBuilderLibraryMeta,
     type BuilderInventoryItem,
 } from './BuilderDocumentLibrarySupport';
+import { withNormalizedFieldPlacements } from './BuilderFieldPlacementSupport';
 
 /** Ordered builder steps used by the document-format wizard. */
 export const steps = [
@@ -25,6 +26,7 @@ export const steps = [
     'Layout',
     'Fields',
     'Line Items',
+    'Summary',
     'Calculations',
     'Print',
     'Field Preview',
@@ -79,7 +81,11 @@ export type SavedPrintTemplate = {
 
 /** Deep-clones the bundled document format so builder edits never mutate startup defaults. */
 export const cloneDefault = (): DocumentFormatConfig =>
-    DocumentFormatConfigSchema.parse(JSON.parse(JSON.stringify(builtInDefaultFormat)) as unknown);
+    withNormalizedFieldPlacements(
+        DocumentFormatConfigSchema.parse(
+            JSON.parse(JSON.stringify(builtInDefaultFormat)) as unknown,
+        ),
+    );
 
 /** Shared starter asset that keeps the builder preview useful on first open. */
 export const builtInSampleAsset: AssetSummary = {
@@ -114,7 +120,9 @@ const normalizeStoredBuilderPackage = (
 const initializeBrowserBuilderPackages = () => {
     if (browserBuilderPackages.size > 0) return;
     for (const [index, storedFormat] of builtInStoredFormats.entries()) {
-        const parsed = JSON.parse(storedFormat.formatJson) as DocumentFormatConfig;
+        const parsed = withNormalizedFieldPlacements(
+            DocumentFormatConfigSchema.parse(JSON.parse(storedFormat.formatJson) as unknown),
+        );
         const config = writeBuilderLibraryMeta(parsed, {
             isEnabled: true,
             isFavorite: storedFormat.isDefault,
@@ -142,7 +150,7 @@ const updateBrowserDefaultMetadata = (favoriteFormatId: string) => {
 
 /** Reads the current in-memory builder config for demo-mode editing. */
 export const readConfig = (): DocumentFormatConfig => {
-    return DocumentFormatConfigSchema.parse(browserBuilderConfig);
+    return withNormalizedFieldPlacements(DocumentFormatConfigSchema.parse(browserBuilderConfig));
 };
 
 /** Reads the active print-template HTML for demo-mode editing. */
@@ -162,8 +170,10 @@ export const writeBuilderPackage = (builderPackage: {
     readonly savedTemplates: readonly SavedPrintTemplate[];
 }) => {
     initializeBrowserBuilderPackages();
-    browserBuilderConfig = DocumentFormatConfigSchema.parse(
-        JSON.parse(JSON.stringify(builderPackage.config)) as unknown,
+    browserBuilderConfig = withNormalizedFieldPlacements(
+        DocumentFormatConfigSchema.parse(
+            JSON.parse(JSON.stringify(builderPackage.config)) as unknown,
+        ),
     );
     browserBuilderTemplateHtml = builderPackage.templateHtml;
     browserBuilderAssets = [...builderPackage.assets];
@@ -171,8 +181,10 @@ export const writeBuilderPackage = (builderPackage: {
     const configWithLibraryMeta = builderPackage.config;
     const libraryMeta = readBuilderLibraryMeta(configWithLibraryMeta);
     browserBuilderPackages.set(configWithLibraryMeta.FormatId, {
-        config: DocumentFormatConfigSchema.parse(
-            JSON.parse(JSON.stringify(configWithLibraryMeta)) as unknown,
+        config: withNormalizedFieldPlacements(
+            DocumentFormatConfigSchema.parse(
+                JSON.parse(JSON.stringify(configWithLibraryMeta)) as unknown,
+            ),
         ),
         templateHtml: builderPackage.templateHtml,
         savedTemplates: [...builderPackage.savedTemplates],
@@ -186,7 +198,9 @@ export const listBrowserBuilderInventory = (): readonly BuilderInventoryItem[] =
     const now = new Date().toISOString();
     return sortBuilderInventory(
         [...browserBuilderPackages.values()].map((storedPackage) => {
-            const config = DocumentFormatConfigSchema.parse(storedPackage.config);
+            const config = withNormalizedFieldPlacements(
+                DocumentFormatConfigSchema.parse(storedPackage.config),
+            );
             const libraryMeta = readBuilderLibraryMeta(config);
             return {
                 formatId: config.FormatId,
@@ -244,6 +258,7 @@ export const helperFor = (step: BuilderStep): string =>
         Fields: 'Add the business fields shown above the line-item table.',
         'Line Items':
             'Design repeatable product or service rows and keep subtotal and total formulas visible.',
+        Summary: 'Choose which calculated fields appear in the totals area below line items.',
         Calculations:
             'Connect numeric fields with same-row math, SUMALL totals, Secrets.Key values, GST, and round-off helpers.',
         Print: 'Upload one HTML file and the images or fonts it references.',

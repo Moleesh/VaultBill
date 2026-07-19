@@ -52,6 +52,11 @@ export type ReportsPageController = {
     readonly fromDate: string;
     readonly canManageReport: (report: SavedReportDefinition) => boolean;
     readonly reportFilters: readonly ReportFieldFilter[];
+    readonly reportFieldOptions: readonly {
+        readonly value: string;
+        readonly label: string;
+        readonly description?: string;
+    }[];
     readonly savedReports: readonly SavedReportDefinition[];
     readonly selectedDisplayFields: readonly string[];
     readonly selectedSavedReportId: string;

@@ -4,10 +4,15 @@ import { useQuery } from '@tanstack/react-query';
 
 import { useCapabilities } from '../../capability/CapabilityContext';
 import { getRuntimeQueryScope, queryKeys } from '../../query/QueryKeys';
-import { fetchPublishedFormats, fetchWorkspaceSettings } from '../../query/RuntimeQueries';
+import {
+    fetchBuilderPackage,
+    fetchPublishedFormats,
+    fetchWorkspaceSettings,
+} from '../../query/RuntimeQueries';
 import { isStaticHostedBrowserBuild } from '../../runtime/RuntimeMode';
 import { defaultWorkspaceSettings } from '../../runtime/WorkspaceSettings';
 import { useSession } from '../auth/SessionContext';
+import { reportFieldOptionsForDocument } from './ReportsPageSupport';
 
 import { resolveRecordsFormatOptions } from '../records/useRecordsPageStateSupport';
 import { useReportsPageFilters } from './useReportsPageFilters';
@@ -41,6 +46,17 @@ export const useReportsPageData = () => {
             : undefined,
         formatOptions,
     );
+    const activeBuilderPackageQuery = useQuery({
+        queryKey: queryKeys.builderPackage(runtimeScope, filters.formatId || '__current__'),
+        queryFn: () => fetchBuilderPackage({ capabilities, formatId: filters.formatId }),
+        enabled: Boolean(filters.formatId),
+        staleTime: Number.POSITIVE_INFINITY,
+    });
+    const dynamicReportFieldOptions = reportFieldOptionsForDocument(
+        activeBuilderPackageQuery.data?.config as Parameters<
+            typeof reportFieldOptionsForDocument
+        >[0],
+    );
 
     const paging = useReportsPagePaging(
         filters.query,
@@ -53,6 +69,7 @@ export const useReportsPageData = () => {
     return {
         capabilities,
         formatOptions,
+        reportFieldOptions: dynamicReportFieldOptions,
         ...filters,
         ...paging,
         error: paging.pageError,

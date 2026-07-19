@@ -17,6 +17,7 @@ import {
     sortBuilderInventory,
     type BuilderInventoryItem,
 } from '../features/builder/BuilderDocumentLibrarySupport';
+import { withNormalizedFieldPlacements } from '../features/builder/BuilderFieldPlacementSupport';
 import type { DocumentFormatConfig } from '../features/builder/BuilderPageControllerSupport';
 import type {
     AssetSummary,
@@ -837,7 +838,9 @@ export const updateRuntimeBackupPassword = async ({
     }
 
     if (capabilities.isHostedWeb) {
-        await requestHostedApi('/credentials/backup-password', 'POST', { backupPassword });
+        await requestHostedApi('/credentials/backup-password', 'POST', {
+            backupPassword,
+        });
         return;
     }
 
@@ -853,7 +856,9 @@ export const createRuntimeBackup = async ({
     readonly encryptBackup: boolean;
 }): Promise<RuntimeBackupResult> => {
     if (window.vaultBillDesktop) {
-        const result = await window.vaultBillDesktop.createBackup({ encrypted: encryptBackup });
+        const result = await window.vaultBillDesktop.createBackup({
+            encrypted: encryptBackup,
+        });
         if (result.cancelled) {
             return { success: false, warning: 'Backup creation cancelled.' };
         }
@@ -1161,25 +1166,36 @@ export const fetchBuilderPackage = async ({
     readonly formatId: string | undefined;
 }): Promise<StoredBuilderPackage | null> => {
     const fallbackBuiltInPackage = readBrowserBuilderPackage(formatId);
+    const normalizePackage = (builderPackage: StoredBuilderPackage | null | undefined) =>
+        builderPackage
+            ? {
+                  ...builderPackage,
+                  config: withNormalizedFieldPlacements(
+                      builderPackage.config as DocumentFormatConfig,
+                  ),
+              }
+            : null;
     if (window.vaultBillDesktop) {
-        return (
-            (await window.vaultBillDesktop.loadBuilderPackage(formatId)) ?? fallbackBuiltInPackage
+        return normalizePackage(
+            (await window.vaultBillDesktop.loadBuilderPackage(formatId)) ?? fallbackBuiltInPackage,
         );
     }
     if (capabilities.isHostedWeb) {
         const query = formatId ? `?formatId=${encodeURIComponent(formatId)}` : '';
-        return (
+        return normalizePackage(
             (await requestHostedApi<StoredBuilderPackage | undefined>(
                 `/builder/package${query}`,
-            )) ?? fallbackBuiltInPackage
+            )) ?? fallbackBuiltInPackage,
         );
     }
-    return (fallbackBuiltInPackage ?? {
-        config: readConfig(),
-        templateHtml: readTemplateHtml(),
-        savedTemplates: readSavedTemplates(),
-        assets: readBuilderAssets(),
-    }) satisfies StoredBuilderPackage;
+    return normalizePackage(
+        fallbackBuiltInPackage ?? {
+            config: readConfig(),
+            templateHtml: readTemplateHtml(),
+            savedTemplates: readSavedTemplates(),
+            assets: readBuilderAssets(),
+        },
+    );
 };
 
 export const removeBuilderPackage = async ({
@@ -1276,11 +1292,10 @@ export const runPrintHtmlOutput = async ({
         return;
     }
     if (capabilities.isHostedWeb) {
-        const result = await requestHostedApi<{ success: boolean; warning?: string }>(
-            '/print/html',
-            'POST',
-            { html, jobId },
-        );
+        const result = await requestHostedApi<{
+            success: boolean;
+            warning?: string;
+        }>('/print/html', 'POST', { html, jobId });
         if (!result.success) throw new Error(result.warning ?? 'Host printing failed.');
         return;
     }

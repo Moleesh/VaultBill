@@ -2,9 +2,13 @@
 
 import type { CSSProperties, FC } from 'react';
 
-import { HorizontalProgress } from '../../components/HorizontalProgress/HorizontalProgress';
 import type { DocumentFormatConfig } from '../../db/startup/ConfigSchemas';
 import { splitFieldsAroundLineItems } from './BuilderFieldFlowSupport';
+import {
+    groupDocumentFieldsByPlacement,
+    groupLineFieldsByPlacement,
+} from './BuilderFieldPlacementSupport';
+import { BuilderLineItemPreview } from './BuilderLineItemPreview';
 import { previewValue } from './BuilderPagePreviewSupport';
 import type { BuilderLayoutConfig, FieldConfig } from './BuilderPageSupport';
 
@@ -29,8 +33,11 @@ export const BuilderFieldPreviewStep: FC<BuilderFieldPreviewStepProps> = ({
     lineSection,
 }) => {
     const columns = Math.max(1, Math.min(5, layout.Columns));
-    const lineItemFields = lineSection?.Fields ?? [];
-    const { afterLineItems, beforeLineItems } = splitFieldsAroundLineItems(fields);
+    const { formFields, summaryFields } = groupDocumentFieldsByPlacement(fields);
+    const { lineItemColumns, lineItemDetails } = groupLineFieldsByPlacement(
+        lineSection?.Fields ?? [],
+    );
+    const { afterLineItems, beforeLineItems } = splitFieldsAroundLineItems(formFields);
     const renderFields = (previewFields: readonly FieldConfig[]) =>
         previewFields.map((field) => (
             <article key={field.FieldId} aria-label={field.Label} className="builder-preview-field">
@@ -63,120 +70,25 @@ export const BuilderFieldPreviewStep: FC<BuilderFieldPreviewStepProps> = ({
                     {renderFields(beforeLineItems)}
                 </div>
                 {lineSection && lineSection.Enabled !== false ? (
-                    <>
-                        <HorizontalProgress
-                            className="builder-preview-table-scroll builder-preview-table-scroll--desktop"
-                            label="Line item preview"
-                            showControls={false}
-                        >
-                            <div
-                                className="builder-preview-table builder-preview-table--desktop"
-                                aria-label="Line item preview"
-                            >
-                                <div className="builder-preview-table-heading">
-                                    <div>
-                                        <strong>{lineSection.Label}</strong>
-                                        <small>
-                                            Two sample rows stay visible for row-level review.
-                                        </small>
-                                    </div>
-                                </div>
-                                <div
-                                    className="builder-preview-table-row builder-preview-table-row--header"
-                                    style={{
-                                        gridTemplateColumns: `repeat(${String(
-                                            lineItemFields.length || 1,
-                                        )}, minmax(8rem, 1fr))`,
-                                    }}
-                                >
-                                    {lineItemFields.map((field) => (
-                                        <span key={field.FieldId}>{field.Label}</span>
-                                    ))}
-                                </div>
-                                {['Sample row 1', 'Sample row 2'].map((rowLabel, rowIndex) => (
-                                    <div
-                                        className="builder-preview-table-row builder-preview-table-row--body"
-                                        key={rowLabel}
-                                        style={{
-                                            gridTemplateColumns: `repeat(${String(
-                                                lineItemFields.length || 1,
-                                            )}, minmax(8rem, 1fr))`,
-                                        }}
-                                    >
-                                        {lineItemFields.map((field) => (
-                                            <span key={`${field.FieldId}-${String(rowIndex)}`}>
-                                                {previewValue(
-                                                    rowIndex === 0
-                                                        ? (field.SampleValue ??
-                                                              field.DefaultValue ??
-                                                              field.Label)
-                                                        : field.Type === 'Text' ||
-                                                            field.Type === 'Textarea'
-                                                          ? `${previewValue(
-                                                                field.SampleValue ??
-                                                                    field.DefaultValue ??
-                                                                    field.Label,
-                                                            )} 2`
-                                                          : (field.SampleValue ??
-                                                            field.DefaultValue ??
-                                                            'Sample'),
-                                                )}
-                                            </span>
-                                        ))}
-                                    </div>
-                                ))}
+                    <BuilderLineItemPreview
+                        label={lineSection.Label}
+                        lineItemColumns={lineItemColumns}
+                        lineItemDetails={lineItemDetails}
+                    />
+                ) : null}
+                {summaryFields.length > 0 ? (
+                    <dl className="builder-preview-summary">
+                        {summaryFields.map((field) => (
+                            <div key={field.FieldId}>
+                                <dt>{field.Label}</dt>
+                                <dd>
+                                    {previewValue(
+                                        field.SampleValue ?? field.DefaultValue ?? '0.00',
+                                    )}
+                                </dd>
                             </div>
-                        </HorizontalProgress>
-                        <div
-                            className="builder-preview-table builder-preview-table--mobile"
-                            aria-label="Line item preview"
-                        >
-                            <div className="builder-preview-table-heading">
-                                <div>
-                                    <strong>{lineSection.Label}</strong>
-                                    <small>
-                                        Two sample rows stay visible for row-level review.
-                                    </small>
-                                </div>
-                            </div>
-                            {['Sample row 1', 'Sample row 2'].map((rowLabel, rowIndex) => (
-                                <article
-                                    className="builder-preview-table-mobile-row"
-                                    key={rowLabel}
-                                >
-                                    <strong>{rowLabel}</strong>
-                                    <div className="builder-preview-table-mobile-grid">
-                                        {lineItemFields.map((field) => (
-                                            <div
-                                                className="builder-preview-table-mobile-cell"
-                                                key={`${field.FieldId}-${String(rowIndex)}-mobile`}
-                                            >
-                                                <span>{field.Label}</span>
-                                                <strong>
-                                                    {previewValue(
-                                                        rowIndex === 0
-                                                            ? (field.SampleValue ??
-                                                                  field.DefaultValue ??
-                                                                  field.Label)
-                                                            : field.Type === 'Text' ||
-                                                                field.Type === 'Textarea'
-                                                              ? `${previewValue(
-                                                                    field.SampleValue ??
-                                                                        field.DefaultValue ??
-                                                                        field.Label,
-                                                                )} 2`
-                                                              : (field.SampleValue ??
-                                                                field.DefaultValue ??
-                                                                'Sample'),
-                                                    )}
-                                                </strong>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </article>
-                            ))}
-                        </div>
-                    </>
+                        ))}
+                    </dl>
                 ) : null}
                 {afterLineItems.length > 0 ? (
                     <div

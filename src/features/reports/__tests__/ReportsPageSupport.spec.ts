@@ -11,12 +11,14 @@ vi.mock('../../../runtime/HostedApi', () => ({
 }));
 
 import { canUseLocalHostedApi, requestHostedApi } from '../../../runtime/HostedApi';
+import { cloneDefault } from '../../builder/BuilderPageSupport';
 import { loadRecordPrintPackage } from '../../records/RecordPrintHtml';
 import type { AppRecord } from '../../records/RecordStoreSupport';
 import {
     loadPrintPackages,
     pageSize,
     printBatchSize,
+    reportFieldOptionsForDocument,
     reportOptions,
     requestReportPage,
 } from '../ReportsPageSupport';
@@ -59,6 +61,25 @@ describe('ReportsPageSupport', () => {
             'Tax summary',
             'Customer ledger',
         ]);
+    });
+
+    it('adds visible document fields from the selected document format', () => {
+        const config = {
+            ...cloneDefault(),
+            Fields: [
+                { FieldId: 'CustomerName', Label: 'Customer name', Type: 'Text' },
+                { FieldId: 'ProfitMargin', Label: 'Profit margin', Type: 'Decimal' },
+                { FieldId: 'AuditOnly', Label: 'Audit only', Type: 'Text', Visible: false },
+            ],
+        };
+
+        const options = reportFieldOptionsForDocument(config as never);
+
+        expect(options.some((option) => option.value === 'customerName')).toBe(true);
+        expect(options).toContainEqual(
+            expect.objectContaining({ value: 'ProfitMargin', label: 'Profit margin' }),
+        );
+        expect(options.some((option) => option.value === 'AuditOnly')).toBe(false);
     });
 
     it('loads print packages for the matching document formats only', async () => {

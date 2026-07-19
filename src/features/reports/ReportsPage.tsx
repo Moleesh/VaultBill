@@ -43,6 +43,7 @@ export const ReportsPage: FC = () => {
                 onSaveReport={controller.saveCurrentReport}
                 onSelectSavedReport={controller.setSelectedSavedReportId}
                 onUpdateFilter={controller.updateReportFilter}
+                reportFieldOptions={controller.reportFieldOptions}
                 reportFilters={controller.reportFilters}
                 savedReports={controller.savedReports}
                 selectedSavedReportId={controller.selectedSavedReportId}

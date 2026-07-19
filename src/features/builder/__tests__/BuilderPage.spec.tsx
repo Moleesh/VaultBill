@@ -9,6 +9,7 @@ import type { CapabilityRegistry } from '../../../capability/Capability.types';
 import { CapabilityProvider } from '../../../capability/CapabilityContext';
 import { TestQueryProvider } from '../../../test/TestQueryProvider';
 import { BuilderPage } from '../BuilderPage';
+import { steps } from '../BuilderPageSupport';
 
 const demoCapabilities: CapabilityRegistry = {
     isDesktop: false,
@@ -68,7 +69,7 @@ describe('builder page', () => {
         fireEvent.click(await screen.findByRole('button', { name: /New document/u }));
         expect(await screen.findByRole('heading', { name: 'Document builder' })).toBeVisible();
 
-        for (let index = 0; index < 7; index += 1) {
+        for (let index = 0; index < steps.length - 1; index += 1) {
             fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
         }
 

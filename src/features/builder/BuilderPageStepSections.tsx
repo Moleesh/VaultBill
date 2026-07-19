@@ -11,6 +11,7 @@ import { BuilderLineItemsStep } from './BuilderLineItemsStep';
 import { newField, type BuilderLayoutConfig, type BuilderPrintConfig } from './BuilderPageSupport';
 import { BuilderPrintPreviewStep } from './BuilderPrintPreviewStep';
 import { BuilderPrintStep } from './BuilderPrintStep';
+import { BuilderSummaryStep } from './BuilderSummaryStep';
 
 import type { BuilderPageController } from './useBuilderPageController';
 
@@ -109,6 +110,17 @@ export const BuilderPageStepSections: FC<BuilderPageStepSectionsProps> = ({
                     });
                 }}
                 referencedFieldIds={referencedFieldIds}
+            />
+        ) : null}
+        {controller.activeStep === 'Summary' ? (
+            <BuilderSummaryStep
+                fields={controller.config.Fields}
+                onChange={(fields) => {
+                    controller.updateFields('document', fields);
+                }}
+                onEdit={(index) => {
+                    controller.setEditing({ kind: 'document', index });
+                }}
             />
         ) : null}
         {controller.activeStep === 'Calculations' ? (

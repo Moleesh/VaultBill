@@ -113,6 +113,9 @@ export const FieldConfigSchema = z
         FieldId: z.string().min(1),
         Label: z.string().min(1),
         Type: FieldTypeSchema,
+        DisplayPlacement: z
+            .enum(['Form', 'LineItemColumn', 'LineItemDetail', 'Summary', 'Hidden'])
+            .optional(),
         Required: z.boolean().optional(),
         DefaultValue: z.unknown().optional(),
         Prefix: z.string().optional(),

@@ -3,6 +3,10 @@
 import type { CSSProperties, FC } from 'react';
 
 import { splitFieldsAroundLineItems } from '../builder/BuilderFieldFlowSupport';
+import {
+    groupDocumentFieldsByPlacement,
+    groupLineFieldsByPlacement,
+} from '../builder/BuilderFieldPlacementSupport';
 import type { BuilderLayoutConfig } from '../builder/BuilderPageSupport';
 import { RecordsFieldControl } from './RecordsFieldControl';
 import { RecordsLineItemsSection } from './RecordsLineItemsSection';
@@ -42,8 +46,9 @@ export const RecordsFormSection: FC<RecordsFormSectionProps> = ({
 }) => {
     const columns = Math.max(1, Math.min(5, layout.Columns));
     const gap = Math.min(28, Math.max(12, layout.Gap));
-    const { afterLineItems, beforeLineItems } =
-        splitFieldsAroundLineItems(configuredDocumentFields);
+    const { formFields, summaryFields } = groupDocumentFieldsByPlacement(configuredDocumentFields);
+    const { lineItemColumns, lineItemDetails } = groupLineFieldsByPlacement(configuredLineFields);
+    const { afterLineItems, beforeLineItems } = splitFieldsAroundLineItems(formFields);
     const gridStyle = {
         gap: `${String(gap)}px`,
         '--records-layout-columns': String(columns),
@@ -80,7 +85,9 @@ export const RecordsFormSection: FC<RecordsFormSectionProps> = ({
                 {beforeLineItems.map(renderConfiguredDocumentField)}
             </div>
             <RecordsLineItemsSection
-                configuredLineFields={configuredLineFields}
+                configuredLineDetailFields={lineItemDetails}
+                configuredLineFields={lineItemColumns}
+                configuredSummaryFields={summaryFields}
                 isReadOnly={isReadOnly}
                 onAddLineItem={onAddLineItem}
                 onUpdateLineItem={onUpdateLineItem}

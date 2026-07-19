@@ -37,7 +37,7 @@ describe('RecordsPageSupport', () => {
             'Acme',
         );
         expect(normalizeId('Grand Total!')).toBe('grandtotal');
-        expect(knownDocumentFields.has('grandtotal')).toBe(true);
+        expect(knownDocumentFields.has('grandtotal')).toBe(false);
         expect(knownLineFields.has('amount')).toBe(true);
         expect(
             isKnownLineFieldDefinition({

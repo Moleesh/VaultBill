@@ -192,6 +192,13 @@ textarea:focus::placeholder {
     min-width: 100%;
 }
 
+.line-item-grid-item {
+    display: grid;
+    width: 100%;
+    min-width: 100%;
+    box-sizing: border-box;
+}
+
 .line-item-grid-row > * {
     min-width: 0;
     min-height: 3rem;
@@ -215,6 +222,21 @@ textarea:focus::placeholder {
     background: transparent;
     padding: 0;
     box-shadow: none;
+}
+
+.line-item-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+    gap: var(--space-3);
+    border: var(--line-width) solid var(--color-border);
+    border-top: 0;
+    border-radius: 0 0 var(--radius-md) var(--radius-md);
+    background: color-mix(in srgb, var(--color-secondary) 7%, var(--color-surface-muted));
+    padding: var(--space-3);
+}
+
+.line-item-detail-control textarea {
+    min-height: calc(var(--control-height) * 1.55);
 }
 
 .line-item-grid-header {

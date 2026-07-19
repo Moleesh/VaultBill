@@ -13,6 +13,7 @@ import {
     BuilderFieldFormulaSection,
     BuilderFieldToggles,
 } from './BuilderFieldDrawerSupport';
+import { formatPlacementLabel, type FieldDisplayPlacement } from './BuilderFieldPlacementSupport';
 import type { FieldConfig } from './BuilderPageSupport';
 
 type BuilderFieldDrawerProps = {
@@ -25,6 +26,13 @@ type BuilderFieldDrawerProps = {
 const readStringFieldValue = (value: unknown): string => (typeof value === 'string' ? value : '');
 const readNumberFieldValue = (value: unknown): number | '' =>
     typeof value === 'number' ? value : '';
+const placementOptions: readonly FieldDisplayPlacement[] = [
+    'Form',
+    'LineItemColumn',
+    'LineItemDetail',
+    'Summary',
+    'Hidden',
+];
 
 /** Renders the editable drawer for a single document or line-item field. */
 export const BuilderFieldDrawer: FC<BuilderFieldDrawerProps> = ({
@@ -89,6 +97,29 @@ export const BuilderFieldDrawer: FC<BuilderFieldDrawerProps> = ({
                             value: type,
                             label: type,
                         }))}
+                    />
+                )}
+            </form.Field>
+            <form.Field name="DisplayPlacement">
+                {(fieldApi) => (
+                    <SearchableDropdown
+                        label="Placement"
+                        note="Controls where this field appears in Records and previews."
+                        onChange={(value) => {
+                            if (!placementOptions.includes(value as FieldDisplayPlacement)) return;
+                            fieldApi.handleChange(value);
+                        }}
+                        options={placementOptions.map((placement) => ({
+                            value: placement,
+                            label: formatPlacementLabel(placement),
+                        }))}
+                        value={
+                            placementOptions.includes(
+                                readStringFieldValue(fieldApi.state.value) as FieldDisplayPlacement,
+                            )
+                                ? readStringFieldValue(fieldApi.state.value)
+                                : 'Form'
+                        }
                     />
                 )}
             </form.Field>

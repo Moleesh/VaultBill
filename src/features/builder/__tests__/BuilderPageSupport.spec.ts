@@ -35,6 +35,7 @@ describe('BuilderPageSupport', () => {
             'Layout',
             'Fields',
             'Line Items',
+            'Summary',
             'Calculations',
             'Print',
             'Field Preview',
@@ -42,6 +43,7 @@ describe('BuilderPageSupport', () => {
         ]);
         expect(helperFor('Format')).toContain('document name');
         expect(helperFor('Layout')).toContain('flex columns and gap');
+        expect(helperFor('Summary')).toContain('calculated fields');
         expect(helperFor('Calculations')).toContain('same-row math');
         expect(helperFor('Field Preview')).toContain('read-only field layout');
         expect(helperFor('Print Preview')).toContain('paper settings');

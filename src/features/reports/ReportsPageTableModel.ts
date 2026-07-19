@@ -23,6 +23,7 @@ const normalizeDisplayFields = (
     reportId: string,
     displayFields: readonly string[],
 ): readonly string[] => {
+    if (reportId === 'sales-register' && displayFields.length > 0) return displayFields;
     const allowedFields = new Set(
         reportDisplayFieldOptionsFor(reportId).map((option) => option.value),
     );
@@ -132,7 +133,7 @@ const buildSalesRegisterTableModel = (
                 if (field === 'grandTotal') return formatMoney(record.grandTotal);
                 if (field === 'status') return record.status;
                 if (field === 'updatedAt') return record.updatedAt;
-                return '';
+                return record.fieldValues?.[field] ?? '';
             }),
         ),
     };

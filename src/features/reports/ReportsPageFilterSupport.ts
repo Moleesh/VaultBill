@@ -32,7 +32,7 @@ const reportFieldValueFor = (
     if (field === 'status') return record.status;
     if (field === 'grandTotal') return record.grandTotal;
     if (field === 'updatedAt') return record.updatedAt;
-    return '';
+    return record.fieldValues?.[field] ?? '';
 };
 
 /** Applies the saved sort order to report records before rendering or export. */

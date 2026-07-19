@@ -1,7 +1,9 @@
 /** @format */
 
+import type { DocumentFormatConfig } from '../../db/startup/ConfigSchemas';
 import { fetchReportPage } from '../../query/RuntimeQueries';
 import { canUseLocalHostedApi } from '../../runtime/HostedApi';
+import { normalizeFieldPlacement } from '../builder/BuilderFieldPlacementSupport';
 import { loadRecordPrintPackage, type RecordPrintPackage } from '../records/RecordPrintHtml';
 import type { AppRecord } from '../records/RecordStoreSupport';
 export {
@@ -42,6 +44,23 @@ export const reportOptions = [
 
 export const formatReportFieldLabel = (field: string): string =>
     reportFieldOptions.find((option) => option.value === field)?.label ?? field;
+
+export const reportFieldOptionsForDocument = (
+    config: DocumentFormatConfig | undefined,
+): readonly { readonly value: string; readonly label: string; readonly description?: string }[] => {
+    const builtInOptions = reportFieldOptions.map((option) => ({ ...option }));
+    if (!config) return builtInOptions;
+    const configuredOptions = config.Fields.filter(
+        (field) => normalizeFieldPlacement(field, 'document') !== 'Hidden',
+    )
+        .filter((field) => !builtInOptions.some((option) => option.value === field.FieldId))
+        .map((field) => ({
+            value: field.FieldId,
+            label: field.Label,
+            description: field.Calculated ? 'Calculated document field' : 'Document field',
+        }));
+    return [...builtInOptions, ...configuredOptions];
+};
 
 export type PrintTask = {
     readonly kind: 'report' | 'records';

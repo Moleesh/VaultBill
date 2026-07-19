@@ -15,7 +15,6 @@ import { SearchableDropdown } from '../../components/SearchableDropdown/Searchab
 import { ReportFieldValueControl } from './ReportsFilterPanelSupport';
 import { defaultDisplayFieldsForReport, reportDisplayFieldOptionsFor } from './ReportsPageColumns';
 import { createReportFilter } from './ReportsPageFilterSupport';
-import { reportFieldOptions } from './ReportsPageSupport';
 import type { ReportFieldFilter } from './ReportsPageTypes';
 import { SavedReportDropdown } from './SavedReportDropdown';
 import {
@@ -35,6 +34,11 @@ type ReportsFilterPanelProps = {
         readonly description?: string;
     }[];
     readonly reportFilters: readonly ReportFieldFilter[];
+    readonly reportFieldOptions: readonly {
+        readonly value: string;
+        readonly label: string;
+        readonly description?: string;
+    }[];
     readonly canManageReport: (report: SavedReportDefinition) => boolean;
     readonly onUpdateFilter: (id: string, next: Partial<ReportFieldFilter>) => void;
     readonly customers: readonly string[];
@@ -87,6 +91,7 @@ export const ReportsFilterPanel: FC<ReportsFilterPanelProps> = ({
     form,
     formatOptions,
     reportFilters,
+    reportFieldOptions,
     canManageReport,
     onUpdateFilter,
     customers,
@@ -120,7 +125,10 @@ export const ReportsFilterPanel: FC<ReportsFilterPanelProps> = ({
         wizardMode === 'edit'
             ? (selectedSavedReport?.formatId ?? form.state.values.formatId)
             : form.state.values.formatId;
-    const wizardDisplayFieldOptions = reportDisplayFieldOptionsFor(wizardFormatId);
+    const wizardDisplayFieldOptions =
+        wizardFormatId === form.state.values.formatId
+            ? reportFieldOptions
+            : reportDisplayFieldOptionsFor(wizardFormatId);
     const promptFilters = reportFilters.filter((filter) => filter.promptAtRun);
     const activeFormatLabel =
         formatOptions.find((option) => option.value === form.state.values.formatId)?.label ??
@@ -193,7 +201,7 @@ export const ReportsFilterPanel: FC<ReportsFilterPanelProps> = ({
                     <form.Field name="formatId">
                         {(field) => (
                             <SearchableDropdown
-                                label="Format"
+                                label="Document format"
                                 onChange={(value) => {
                                     field.handleChange(value);
                                 }}
