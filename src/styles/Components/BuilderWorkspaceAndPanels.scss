@@ -36,7 +36,19 @@
 }
 
 .builder-workspace--single {
-    padding-bottom: calc(clamp(var(--space-4), 4vw, var(--space-6)) + 4.75rem);
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    align-content: stretch;
+    min-height: max(32rem, calc(100svh - var(--app-shell-topbar-height, 0rem) - 14rem));
+    padding-bottom: clamp(var(--space-4), 4vw, var(--space-6));
+}
+
+.builder-workspace--single > :not(.builder-step-header, .builder-wizard-actions) {
+    align-self: start;
+}
+
+.builder-workspace--single > .builder-wizard-actions {
+    align-self: end;
 }
 
 .builder-wizard-actions {
